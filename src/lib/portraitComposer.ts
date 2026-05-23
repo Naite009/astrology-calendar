@@ -17,10 +17,10 @@ const SUN_FEELS: Record<string, string> = {
   Aries: "they need to move first and be the one who starts things",
   Taurus: "they need things to feel steady and physically safe before they commit",
   Gemini: "they need to talk, ask questions, and try a few angles before settling",
-  Cancer: "they feel the emotional weather of a room before anything else",
+  Cancer: "they notice emotional shifts quickly and try to protect the bond",
   Leo: "they need to be seen as themselves, not as a role they're playing",
   Virgo: "they need things to actually work, and they'll notice what's off",
-  Libra: "they're tracking fairness and the connection in the room at all times",
+  Libra: "they need the choice to be fair and still honestly theirs",
   Scorpio: "they need to know what's really going on under the surface",
   Sagittarius: "they need the bigger why before they'll fully buy in",
   Capricorn: "they need a real plan and to be treated as capable",
@@ -50,7 +50,7 @@ const MOON_FEELS: Record<string, string> = {
   Cancer: "settles by closeness and knowing the plan ahead of time",
   Leo: "settles by warm, sincere attention from someone they trust",
   Virgo: "settles by completing a small, competent task",
-  Libra: "settles in a calm room where fairness has been named out loud",
+  Libra: "settles when the terms are clear, calm, and fair",
   Scorpio: "settles in privacy and one-on-one trust, never in a crowd",
   Sagittarius: "settles when given honesty and room to move",
   Capricorn: "settles when there's clear structure and they have one piece of control",
@@ -81,7 +81,7 @@ const MOON_SAFETY: Record<string, string> = {
   Cancer: "physical closeness, soft tone, and knowing the plan",
   Leo: "warm eye contact and being noticed sincerely",
   Virgo: "small competent tasks and clean order",
-  Libra: "a calm room and fairness named out loud",
+  Libra: "clear terms, calm tone, and fairness named out loud",
   Scorpio: "privacy, one-on-one trust, and the real story",
   Sagittarius: "honesty, room to roam, and the big-picture why",
   Capricorn: "clear structure and being treated as capable",
@@ -91,7 +91,7 @@ const MOON_SAFETY: Record<string, string> = {
 
 const MARS_RESET: Record<string, string> = {
   Aries: "discharge first (run, jump, hit something safe), talk second",
-  Taurus: "a physical anchor, food, blanket, ground — pace down",
+  Taurus: "a physical anchor, food, blanket, ground, pace down",
   Gemini: "let them talk it out fast, give words to the feeling",
   Cancer: "co-regulate with closeness or water before discussing",
   Leo: "warmth and acknowledgment first, never shame in front of others",
@@ -132,7 +132,7 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
   },
   Gemini: {
     looksLike: "interrupting, jumping topics, asking the same question three different ways",
-    actuallyIs: "they think by talking, so the conversation is the thinking — not a report on it",
+    actuallyIs: "they think by talking, so the conversation is the thinking, not a report on it",
   },
   Cancer: {
     looksLike: "going quiet after something small, or reacting big to a tone shift you didn't notice",
@@ -147,8 +147,8 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
     actuallyIs: "they're trying to make the thing actually work, and they can see the gap nobody else can",
   },
   Libra: {
-    looksLike: "changing their answer based on who's in the room, or stalling on a decision",
-    actuallyIs: "they're tracking how the choice will land on every person before they commit to one",
+    looksLike: "stalling, giving two answers, or asking what someone else thinks before naming their own answer",
+    actuallyIs: "they're trying to make a clean choice without betraying either fairness or their own preference",
   },
   Scorpio: {
     looksLike: "going silent, watching from the corner, or telling you only part of the story",
@@ -185,7 +185,7 @@ const MOON12_MISREAD =
 // ── Composer types ───────────────────────────────────────────────────────────
 
 export interface ComposedPortrait {
-  oneSentence: string;
+  corePortrait: string;
   systemMechanism: {
     driver: { label: string; detail: string };
     translator: { label: string; detail: string };
@@ -242,16 +242,14 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const marsHouse = p.energyDischarge?.marsHouse ?? null;
   const sunHouse = p.identityInvitation.sun?.house ?? null;
 
-  // ── 1. PORTRAIT PARAGRAPH ──────────────────────────────────────────────────
-  // Not a stitched-together Sun + house template. A short paragraph that
-  // interlocks Sun, Sun house, chart ruler (sign + house), Moon, and the
-  // tightest live aspect — so the result reads as a specific recognizable
-  // person, and changes meaningfully when any of those factors change.
+  // ── 1. CORE PORTRAIT ────────────────────────────────────────────────────────
+  // Not a stitched-together Sun + house template. This has to explain how the
+  // placements blend into one working system, then land in a parent-usable move.
 
   // Concrete real-life arena per house (what this part of life actually IS,
   // in plain English).
   const HOUSE_ARENA: Record<number, string> = {
-    1: "how they start things, choose for themselves, use their body, and decide whether to step forward or hold back",
+    1: "self-direction, body pace, visible preferences, and the right to choose openly",
     2: "what they own, what they're worth, and what their body counts as safe",
     3: "the small daily back-and-forth, talking, texting, siblings, school, errands",
     4: "home, family, and the private inner life nobody at work sees",
@@ -281,73 +279,119 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Pisces: "absorbs everything and needs to drain it out",
   };
 
-  // Surface read per Sun sign (the part you see first).
-  const SUN_SURFACE: Record<string, string> = {
-    Aries: "moves first, asks later, and burns fast",
-    Taurus: "steady, slow to switch, and hard to push",
-    Gemini: "talks to think, skips angles, asks questions",
-    Cancer: "reads the mood before anyone speaks",
-    Leo: "wants to be met as themselves, not as a role",
-    Virgo: "sees the small thing that's off and can't relax until it's fixed",
-    Libra: "tracks how a choice will land on every person in the room",
-    Scorpio: "watches first, edits what they show, and only goes real one-on-one",
-    Sagittarius: "needs the bigger reason or the thing means nothing",
-    Capricorn: "carries weight other people don't see and takes the long view",
-    Aquarius: "questions the rule itself and prefers their own method",
-    Pisces: "absorbs the feelings of a room without meaning to",
+  const SUN_CORE_MOTIVE: Record<string, string> = {
+    Aries: "make a clean move before doubt takes over",
+    Taurus: "stay steady long enough to know what is actually worth keeping",
+    Gemini: "turn experience into words, questions, and connections",
+    Cancer: "protect what feels emotionally real without becoming responsible for everything",
+    Leo: "be visibly themselves and receive warmth without performing for it",
+    Virgo: "make life work in a concrete way without shrinking into constant correction",
+    Libra: "make a clean choice that stays fair without erasing their own preference",
+    Scorpio: "trust the real story without having to control how much everyone else sees",
+    Sagittarius: "live by a truth big enough to keep moving toward",
+    Capricorn: "build a life that proves capable because it is actually theirs",
+    Aquarius: "keep their own signal clear while still staying connected",
+    Pisces: "stay open-hearted without absorbing more than their system can sort",
   };
 
-  // Build sentence 1: surface portrait — Sun + the actual arena it plays in.
-  // Use Sun house as the LIFE DOMAIN where the Sun's behavior actually shows up.
-  const surface = sunSign ? SUN_SURFACE[sunSign] : null;
-  const arena = sunHouse ? HOUSE_ARENA[sunHouse] : null;
-  let sentence1: string;
-  if (surface && arena) {
-    sentence1 = `${name} ${surface}, and the place this lives in their life is ${arena}.`;
-  } else if (surface) {
-    sentence1 = `${name} ${surface}.`;
+  const SUN_HOUSE_TASK: Record<number, string> = {
+    1: "That work has to become visible as a real preference, a pace, a yes or no, and a way of moving through the day.",
+    2: "That work is tested through body safety, money, appetite, ownership, and what they decide is worth protecting.",
+    3: "That work comes through daily language, school, siblings, texts, questions, and the small exchanges that shape a day.",
+    4: "That work gets most honest at home, where family patterns and private needs cannot be hidden for long.",
+    5: "That work comes alive through play, performance, romance, creativity, and the right to enjoy what they make.",
+    6: "That work is practiced through routine, health, tasks, skill, and the small things that either regulate or irritate the body.",
+    7: "That work gets revealed through one-on-one bonds, where another person's response becomes a mirror and a test.",
+    8: "That work comes through trust, shared resources, grief, intimacy, and the private conversations that change a person.",
+    9: "That work grows through truth, study, travel, faith, teaching, and the search for a larger frame.",
+    10: "That work becomes public through vocation, reputation, responsibility, and the name they are willing to put on their work.",
+    11: "That work moves through friends, groups, causes, and the future they are trying to build with others.",
+    12: "That work happens quietly through solitude, dreams, retreat, and the parts of life that need privacy before they can speak.",
+  };
+
+  const RULER_SIGN_NEED: Record<string, string> = {
+    Aries: "freedom to act before the moment goes cold",
+    Taurus: "proof that the body can trust the pace",
+    Gemini: "language, movement, and more than one angle",
+    Cancer: "emotional safety before action",
+    Leo: "warmth, pride, and a reason to show up wholeheartedly",
+    Virgo: "usefulness, precision, and something practical to improve",
+    Libra: "fairness, proportion, and a choice that can stand up in daylight",
+    Scorpio: "truth, privacy, and no fake answer",
+    Sagittarius: "truth, room, and a bigger reason",
+    Capricorn: "structure, competence, and respect for the long game",
+    Aquarius: "logic, distance from pressure, and permission to do it differently",
+    Pisces: "quiet, imagination, and time to separate their feeling from the atmosphere",
+  };
+
+  const MOON_NEED: Record<string, string> = {
+    Aries: "the feeling settles after the body gets to move",
+    Taurus: "the feeling settles when the pace is predictable and the body feels safe",
+    Gemini: "the feeling settles after it has words, options, and a chance to ask",
+    Cancer: "the feeling settles with softness, closeness, and a clear plan",
+    Leo: "the feeling settles when warmth is unmistakable and not performative",
+    Virgo: "the feeling settles when one small thing becomes orderly and doable",
+    Libra: "the feeling settles when the terms are balanced and fairness is named plainly",
+    Scorpio: "the feeling settles in privacy with someone who can handle the truth",
+    Sagittarius: "the feeling settles with honesty, movement, and a wider view",
+    Capricorn: "the feeling settles when there is structure and one piece they can control",
+    Aquarius: "the feeling settles when they are not emotionally crowded or guilted",
+    Pisces: "the feeling settles with low stimulation, rest, and fewer signals coming in",
+  };
+
+  const supportBySun: Record<string, string> = {
+    Libra: `Do not push ${name} to decide faster. Name the actual choices, name what would be fair, then ask which option still feels honest when ${name} is allowed to want something too.`,
+    Aries: `Do not turn every impulse into a lecture. Give ${name} a safe first move, then help ${name} look back and choose the next move with more aim.`,
+    Taurus: `Do not rush the shift. Give ${name} a concrete reason, a body anchor, and enough time for the new choice to feel safe.`,
+    Gemini: `Do not demand one final answer too early. Let ${name} talk through the options, then help ${name} pick the one that still makes sense after the talking is done.`,
+    Cancer: `Do not dismiss the feeling as too much. Name the emotional stake first, then help ${name} choose without carrying everyone else's mood.`,
+    Leo: `Do not shame the need to be seen. Give warm attention first, then help ${name} choose from pride rather than performance.`,
+    Virgo: `Do not make perfection the price of moving. Name the next useful step, then let good enough become real progress.`,
+    Scorpio: `Do not force disclosure. Build trust, ask the real question quietly, and let ${name} choose what is safe to share.`,
+    Sagittarius: `Do not trap ${name} in small rules with no reason. Give the larger why, then ask what truth ${name} is willing to act on.`,
+    Capricorn: `Do not confuse caution with coldness. Give ${name} responsibility that is clear, earned, and not loaded with extra judgment.`,
+    Aquarius: `Do not use guilt to create closeness. Give ${name} space to think, then invite connection without asking them to copy the group.`,
+    Pisces: `Do not add more noise when ${name} is flooded. Lower the input, separate what belongs to ${name}, and choose after the feeling has drained.`,
+  };
+
+  const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
+  const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
+  const identityWork = sunSign ? SUN_CORE_MOTIVE[sunSign] : null;
+  const houseTask = sunHouse ? SUN_HOUSE_TASK[sunHouse] : null;
+
+  const portraitParts: string[] = [];
+  if (identityWork) {
+    portraitParts.push(`${name}'s core work is to ${identityWork}. ${houseTask ?? "This shows up through the ordinary choices where identity has to become behavior."}`);
   } else {
-    sentence1 = `${name} runs on a specific rhythm that the rest of this reading is going to walk through.`;
+    portraitParts.push(`${name}'s chart shows a specific inner rhythm, and the rest of this portrait explains how that rhythm becomes behavior.`);
   }
 
-  // Sentence 2: the chart ruler — what's actually underneath the surface,
-  // named with its sign texture AND its house arena (so two people with the
-  // same Sun read differently).
-  let sentence2 = "";
   if (p.chartRuler) {
-    const rText = RULER_TEXTURE[p.chartRuler.rulerSign] || "runs its own way";
-    const rArena = p.chartRuler.rulerHouse ? HOUSE_ARENA[p.chartRuler.rulerHouse] : null;
-    if (rArena) {
-      sentence2 =
-        ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} ` +
-        `sitting in ${rArena}, so the engine ${rText}, and it spends most of its time in that part of life.`;
+    const rulerNeed = RULER_SIGN_NEED[p.chartRuler.rulerSign] || RULER_TEXTURE[p.chartRuler.rulerSign] || "a very specific kind of permission";
+    const rulerArena = p.chartRuler.rulerHouse ? HOUSE_ARENA[p.chartRuler.rulerHouse] : null;
+    portraitParts.push(
+      `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} steers the system, so ${name} cannot simply perform the Sun sign on command. The deeper engine needs ${rulerNeed}` +
+        (rulerArena ? `, especially around ${rulerArena}.` : ".")
+    );
+  }
+
+  if (moonSignEarly && MOON_NEED[moonSignEarly]) {
+    portraitParts.push(`The Moon adds the regulation key: ${MOON_NEED[moonSignEarly]}. If that need is ignored, the choice may look mental, but the body is still trying to get safe.`);
+  }
+
+  if (liveEdge) {
+    const involvesChiron = liveEdge.a === "Chiron" || liveEdge.b === "Chiron";
+    const involvesSun = liveEdge.a === "Sun" || liveEdge.b === "Sun";
+    if (involvesSun && involvesChiron) {
+      portraitParts.push(`The tender wire is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°): ${name} is practicing how to have a clear want without turning that want into a trial about whether it is selfish, too much, or allowed.`);
     } else {
-      sentence2 =
-        ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, ` +
-        `which ${rText}.`;
+      portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), so this pattern gets louder under stress: ${liveEdge.line}`);
     }
   }
 
-  // Sentence 3: the inside / Moon contradiction — what they need to feel
-  // settled, said in a way that contrasts with the surface.
-  const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
-  let sentence3 = "";
-  if (moonSignEarly && MOON_SAFETY[moonSignEarly]) {
-    sentence3 =
-      ` Privately though, ${name} doesn't actually settle through any of that. They settle through ${MOON_SAFETY[moonSignEarly]}. ` +
-      `So the outside picture and the inside need aren't the same thing, and the system stays on edge until both get met.`;
-  }
+  portraitParts.push(sunSign && supportBySun[sunSign] ? supportBySun[sunSign] : `The landing is practical: name what is happening, reduce pressure, and help ${name} choose the next honest step instead of asking for a perfect explanation.`);
 
-  // Sentence 4: the live edge — only if there's a tight (<2°) hard aspect,
-  // so it earns its spot. Use the aspect's own plain-language line.
-  let sentence4 = "";
-  const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
-  if (liveEdge && liveEdge.line) {
-    sentence4 = ` The loudest live wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b}, which shows up as ${liveEdge.line}`;
-    if (!/[.!?]$/.test(sentence4)) sentence4 += ".";
-  }
-
-  const oneSentence = `${sentence1}${sentence2}${sentence3}${sentence4}`.trim();
+  const corePortrait = portraitParts.join(" ");
 
   // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
   // Driver = chart ruler (engine). Translator = Sun (how it comes out).
@@ -586,7 +630,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
     // Behavior + "what helps" tail tuned to which pair we picked.
     const behaviorByPair: Record<string, string> = {
-      "Sun|Mercury": `when you ask ${name} a direct question in the moment, the answer may not show up right away — not because ${name} is avoiding it, but because the part that feels and the part that thinks need a beat to catch up to each other. Giving ${name} a little space works because it lets those two parts meet.`,
+      "Sun|Mercury": `when you ask ${name} a direct question in the moment, the answer may not show up right away, not because ${name} is avoiding it, but because the part that feels and the part that thinks need a beat to catch up to each other. Giving ${name} a little space works because it lets those two parts meet.`,
       "Sun|Moon": `when something hard happens, what ${name} needs to feel safe is not always the same as what ${name} is trying to be in the world. Both have to be honored, or the system stays on edge. Naming the difference out loud is what brings it down.`,
       "Moon|Mercury": `${name} can talk about a feeling clearly and still not feel settled, because thinking it through and actually calming down are two different jobs. Help with both, in that order, and the system lands.`,
       "Sun|Mars": `${name} can know what they want and still get stuck on how to push for it, because the wanting and the doing run on different fuel. Giving the body its outlet first usually unlocks the rest.`,
@@ -726,7 +770,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   ].filter(Boolean) as string[];
 
   return {
-    oneSentence,
+    corePortrait,
     systemMechanism,
     bridge,
     stageAsk,

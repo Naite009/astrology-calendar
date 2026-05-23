@@ -533,24 +533,24 @@ const RISING_FILTER: Record<string, { stereotype: string; verb: string; surfaceJ
   Pisces: { stereotype: "dreamy", verb: "use a soft, permeable presence", surfaceJob: "let the room's mood enter so it can be read from the inside" },
 };
 
-// ── Rising Scanner: physical "what does this sign scan a room for" + mask label + safety payoff
+// ── Rising Scanner: first safety filter + mask label + safety payoff
 // Used by the Identity Invitation Filter section to follow the Scanner / Boss / Synthesis / Why template.
 const RISING_SCANNER: Record<string, { mask: string; scanFor: string; safety: string }> = {
   Aries:       { mask: "Starter",         scanFor: "Who's in charge here? Where's the first move?",            safety: "moving first so no one can pin them in place" },
   Taurus:      { mask: "Anchor",          scanFor: "What feels solid? What's about to get rushed?",            safety: "setting the pace so nothing can shove their body" },
   Gemini:      { mask: "Reporter",        scanFor: "What's the story? Who's actually saying what?",            safety: "gathering options before anyone locks them into one" },
-  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who is hurting in the room?",                 safety: "reading the emotional weather before they expose their own" },
+  Cancer:      { mask: "Caretaker",       scanFor: "Who is safe? Who needs care?",                            safety: "checking emotional safety before they expose their own" },
   Leo:         { mask: "Performer",       scanFor: "Where is the warmth? Who is actually looking?",            safety: "controlling how they get seen instead of being caught off-guard" },
   Virgo:       { mask: "Editor",          scanFor: "What is out of place? What's about to break?",             safety: "fixing the small thing first so the big thing can't blindside them" },
-  Libra:       { mask: "Diplomat",        scanFor: "Who's uncomfortable? Where's the imbalance in the room?",  safety: "smoothing the surface so no one turns hostile toward them" },
+  Libra:       { mask: "Diplomat",        scanFor: "What is fair here? Where is the pressure to choose too fast?", safety: "keeping enough balance to choose without being pushed" },
   Scorpio:     { mask: "X-Ray",           scanFor: "What is the real story underneath what people are saying?", safety: "knowing the truth before anyone can use it against them" },
   Sagittarius: { mask: "Explorer",        scanFor: "Where's the exit? Where's the bigger story?",              safety: "keeping a door open so they never feel cornered" },
   Capricorn:   { mask: "Manager",         scanFor: "Who's in charge here? What are the rules?",                safety: "knowing the structure before they have to play inside it" },
   Aquarius:    { mask: "Outsider",        scanFor: "What is the group missing? Where can I stand outside this?", safety: "staying one step outside the group so it can't absorb them" },
-  Pisces:      { mask: "Sponge",          scanFor: "What is the mood in this room? Who is hurting?",           safety: "absorbing the room first so nothing surprises their nervous system" },
+  Pisces:      { mask: "Sponge",          scanFor: "What feeling is in the air? Who is hurting?",              safety: "noticing the emotional weather before it overwhelms their nervous system" },
 };
 
-// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo literally looks like in the room.
+// ── Kitchen-at-8AM Behavior: what the Rising mask + Ruler combo can look like in daily life.
 // Keyed by Rising sign. Concrete, observable behavior, no astro-nouns.
 const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Aries:       "they walk in already moving, already deciding what's for breakfast before anyone else is awake",
@@ -559,7 +559,7 @@ const RISING_KITCHEN_BEHAVIOR: Record<string, string> = {
   Cancer:      "they read the face of whoever walked in first to check what kind of morning this is going to be",
   Leo:         "they need a warm hello and eye contact, or the whole day reads as cold",
   Virgo:       "they spot the one thing out of place, the crumbs, the wrong mug, and can't unsee it",
-  Libra:       "they smooth the first tension in the room before they've even sat down",
+  Libra:       "they wait to see what feels fair before they name what they want",
   Scorpio:     "they go quiet and watch, reading who is actually safe to talk to first",
   Sagittarius: "they're already half out the door, talking about the trip, the plan, anything past this kitchen",
   Capricorn:   "they want to know the plan for the day before they'll fully arrive in the morning",
@@ -1627,7 +1627,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   // === 2. Identity Invitation =============================================
   const ascSign = Asc?.sign;
   // Rising Filter = Behavioral Astrology only. No invented archetypes (no "Explorer/Teacher/CEO").
-  // Structure: Sun+Rising combo as Nervous-System Goal → ruler as the engine/drive → kitchen scene → elder advice.
+  // Structure: Sun+Rising combo as Nervous-System Goal, ruler as the engine/drive, daily behavior, support.
   // The ruler is cited as planet-in-sign-in-house with its drive, NOT relabeled as a mask archetype.
   let risingLine = "";
   if (ascSign) {
@@ -1650,39 +1650,39 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         ? "Zero Entanglements: the right to change their mind and walk away without negotiating it"
         : (RULER_SIGN_DRIVE[rulerSignForFilter] ?? "what matters most to them");
       const houseClause = rulerHouseForFilter ? `, ${ordinal(rulerHouseForFilter)} house` : "";
-      // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Kitchen + elder.
+      // 1) Sun+Rising behavioral truth. 2) Ruler = engine/drive (no archetype label). 3) Nervous-system goal. 4) Daily behavior + support.
       const lead = sunSign
-        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
-        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) through a ${scanner.mask} filter (${ascSign} Rising), so the self-work has to pass through the safety system first. `
+        : `${chart.name} meets life through a ${scanner.mask} filter (${ascSign} Rising). `;
       risingLine =
         lead +
-        `The engine running that scan is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}, and it needs ${drive}. ` +
+        `The engine running that filter is ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause}, and it needs ${drive}. ` +
         `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety} so ${drive} stays intact. ` +
-        (kitchen ? `What this looks like at 8 AM in the kitchen: ${kitchen}. ` : "") +
-        (elderTip ? `For the adult in the room: ${elderTip}` : "");
+        (kitchen ? `In daily life this can look like: ${kitchen}. ` : "") +
+        (elderTip ? `Support that works: ${elderTip}` : "");
 
       // SURGICAL OVERRIDE: Libra Rising + 1st House Sun = "Nice for a Reason" / polite buffer copy.
       if (ascSign === "Libra" && sunHouse === 1) {
         const venusClause = isVenusSag2H
-          ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to clear the room.`
+          ? ` The Venus in Sagittarius (2nd house) underneath that mask values Zero Entanglements: ${chart.name} will trade comfort for the right to walk away. If a situation starts closing in, the Libra charm drops and Sagittarius bluntness comes out to create distance fast.`
           : ` Underneath, ${rulerNameForFilter} in ${rulerSignForFilter}${houseClause} is the engine: it needs ${drive}.`;
         risingLine =
-          `${chart.name} uses a Libra Diplomat mask to build a polite buffer around themselves. ` +
-          `${chart.name} isn't being nice to be liked; being nice keeps people at a distance so they don't interfere with the 1st-house need to just be themselves. ` +
-          `It is a peace treaty ${chart.name} signs every morning to buy a little space.` +
+          `${chart.name} uses Libra manners as a boundary system, not as a personality summary. ` +
+          `${chart.name} is not being pleasant just to be liked; the pleasant layer buys time to choose without being pushed, corrected, or pulled into someone else's agenda. ` +
+          `The 1st-house work is simple and hard: have a preference without immediately putting it on trial.` +
           venusClause +
-          (kitchen ? ` At 8 AM in the kitchen: ${kitchen}.` : "") +
-          (elderTip ? ` For the adult in the room: ${elderTip}` : "");
+          (kitchen ? ` In daily life this can look like: ${kitchen}.` : "") +
+          (elderTip ? ` Support that works: ${elderTip}` : "");
       }
     } else if (scanner) {
       const lead = sunSign
-        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) and scans the room as a ${scanner.mask} (${ascSign} Rising) so that work can happen safely. `
-        : `${chart.name} scans the room as a ${scanner.mask} (${ascSign} Rising). `;
+        ? `${chart.name} is practicing ${sunPracticeHere} (${sunSign} Sun${sunHouseClause}) through a ${scanner.mask} filter (${ascSign} Rising), so the self-work has to pass through the safety system first. `
+        : `${chart.name} meets life through a ${scanner.mask} filter (${ascSign} Rising). `;
       risingLine =
         lead +
         `${chart.name} isn't ${falseStory}; the nervous-system goal is ${scanner.safety}. ` +
-        (kitchen ? `At 8 AM in the kitchen: ${kitchen}. ` : "") +
-        (elderTip ? `For the adult in the room: ${elderTip}` : "");
+        (kitchen ? `In daily life this can look like: ${kitchen}. ` : "") +
+        (elderTip ? `Support that works: ${elderTip}` : "");
     } else {
       risingLine = `${chart.name}'s ${ascSign} Rising is the filter people meet first. It is a scan pattern, not the inner self.`;
     }
@@ -1696,7 +1696,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     const tightSun = sunAspects[0];
     // 1st-house Sun overlay: the pressure is to Exist Out Loud (concrete behavior, not "self-advocacy").
     const firstHouseOverlay = sunHouse === 1
-      ? ` Because the Sun sits in the 1st house, ${chart.name} feels like their very existence has to be "fair", a lot of energy goes into checking whether they are allowed to take up space. The work isn't self-advocacy in the abstract; it is standing still in the center of the room without apologizing for it.`
+      ? ` Because the Sun sits in the 1st house, ${chart.name} can feel like even having a preference has to be justified. The work is not self-advocacy in the abstract; it is naming a want before editing it into something more acceptable.`
       : "";
     if (tightSun && tightSun.orb <= 6.0 && SUN_BLEND_MODIFIER[tightSun.to]) {
       const ap = tightSun.to;
@@ -1712,13 +1712,13 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         `This looks like taking two steps forward and then auditing whether they were allowed to. ` +
         `${chart.name} isn't being difficult or distant, the nervous system is protecting ${goal} from getting exposed too fast.` +
         firstHouseOverlay + ` ` +
-        `For the adult in the room: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
+        `Support that works: don't critique the hesitation. Name what they already did and let that be enough out loud.`;
     } else {
       sunLine =
         `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
         `This is what they are growing into, not what they already are.` +
         firstHouseOverlay + ` ` +
-        `For the adult in the room: reflect back the moments you actually see them do it. That is what locks it in.`;
+        `Support that works: reflect back the moments you actually see them do it. That is what locks it in.`;
     }
   }
 
