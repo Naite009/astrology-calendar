@@ -8,6 +8,7 @@
 
 import type { ChildPortrait } from "./childPortrait";
 import type { NatalChart } from "@/hooks/useNatalChart";
+import { validateComposedPortrait } from "./portraitValidator";
 
 // ── Plain-language "what this placement actually does in real life" ──────────
 // These are deliberately concrete and behavioral, so the bridge sentence
