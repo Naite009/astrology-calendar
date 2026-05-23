@@ -622,6 +622,95 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     portraitParts.push(`And here is what that actually feels like in the body. ${collisionLines.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
   }
 
+  // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
+  // planet, and that planet's voltage/medium is the circuit being stress-tested
+  // right now. This is what makes the same chart feel different at 17 vs. 47.
+  const stageName = p.developmentalAnchor?.stage || "";
+  const PHASE_PLANET: Array<{ match: RegExp; planet: string; label: string }> = [
+    { match: /Lunar Phase/i,        planet: "Moon",    label: "Lunar Phase" },
+    { match: /Mercury Phase/i,      planet: "Mercury", label: "Mercury Phase" },
+    { match: /Mars/i,               planet: "Mars",    label: "Mars / Identity Phase" },
+    { match: /Saturn Return: Building/i, planet: "Saturn",  label: "First Saturn Return" },
+    { match: /Uranus Opposition/i,  planet: "Uranus",  label: "Uranus Opposition" },
+    { match: /Chiron Return/i,      planet: "Chiron",  label: "Chiron Return" },
+    { match: /Second Saturn Return/i,    planet: "Saturn",  label: "Second Saturn Return" },
+  ];
+  const activePhase = PHASE_PLANET.find(ph => ph.match.test(stageName));
+  if (activePhase) {
+    const phPlanetData = (chart?.planets as any)?.[activePhase.planet];
+    const phSign = phPlanetData?.sign as string | undefined;
+    const phHouse = calcHouse(phPlanetData?.sign, phPlanetData?.degree, phPlanetData?.minutes);
+    const phMed = phHouse ? HOUSE_DENSITY[phHouse] : undefined;
+    const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
+    if (phMed && phVolt) {
+      portraitParts.push(
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the circuit being stress-tested. ${phSign} ${activePhase.planet} as ${phVolt.phrase} running through ${phMed.phrase} is the exact wire under load. The "pushing back" or "shutting down" you are seeing at this age is not character. It is ${name} finding out how much voltage this hardware can actually carry before the breaker trips.`,
+      );
+    } else if (phSign && phHouse) {
+      portraitParts.push(
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the circuit being stress-tested. The behavior that looks like rebellion or shutdown is ${name} running load tests on this specific wire.`,
+      );
+    }
+  }
+
+  // 6c. MIRROR / MAGNET FLIP — when Sun and Mars sit in houses of different
+  // density (especially Sun in a submerged/wireless house and Mars in a reflex
+  // or friction house), the system can flip from "absorbing the room" to
+  // "broadcasting from the body" to protect itself.
+  const sunMed = sunHouse ? HOUSE_DENSITY[sunHouse] : undefined;
+  const marsMed = marsHouse ? HOUSE_DENSITY[marsHouse] : undefined;
+  if (sunMed && marsMed && sunHouse !== marsHouse && sunMed.class !== marsMed.class) {
+    const ABSORB_MODE: Partial<Record<Density, string>> = {
+      submerged: `absorbing (the Sun in the ${ord(sunHouse!)} sits in submerged medium, so ${name} takes the room in)`,
+      wireless:  `mirroring (the Sun in the ${ord(sunHouse!)} sits in wireless medium, so ${name} reflects what is in the room)`,
+      reflex:    `tracking (the Sun in the ${ord(sunHouse!)} sits in reflex medium, so ${name} reads the room at the skin)`,
+      friction:  `metabolizing (the Sun in the ${ord(sunHouse!)} sits in friction medium, so ${name} runs the room through the body first)`,
+    };
+    const BROADCAST_MODE: Partial<Record<Density, string>> = {
+      reflex:    `broadcasting from the skin (Mars in the ${ord(marsHouse!)} is reflex medium, the signal goes out instantly)`,
+      friction:  `discharging through the body (Mars in the ${ord(marsHouse!)} is friction medium, the heat has to come out physically)`,
+      submerged: `going underground (Mars in the ${ord(marsHouse!)} is submerged medium, the heat drops below the surface)`,
+      wireless:  `firing out in words (Mars in the ${ord(marsHouse!)} is wireless medium, the heat exits as fast speech)`,
+    };
+    const absorb = ABSORB_MODE[sunMed.class];
+    const broadcast = BROADCAST_MODE[marsMed.class];
+    if (absorb && broadcast) {
+      portraitParts.push(
+        `There is a switch between two modes. Default position is ${absorb}. When the static gets too loud, the system flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is the switch flipping from absorb to broadcast to protect a system that was getting overloaded.`,
+      );
+    }
+  }
+
+  // 6d. MUTUAL RECEPTION — Universal Remote. When Mercury and another personal
+  // planet host each other's sign, the inner critic / structure / heat has a
+  // direct line into the nervous system, so "doing it wrong" raises the static.
+  const planetsAny = (chart?.planets ?? {}) as any;
+  const merc = planetsAny.Mercury;
+  if (merc?.sign) {
+    const partners = ["Saturn", "Mars", "Venus", "Sun", "Moon", "Jupiter"];
+    for (const partnerName of partners) {
+      const partner = planetsAny[partnerName];
+      if (!partner?.sign) continue;
+      const mercRuler = RULER_OF[merc.sign];
+      const partnerRuler = RULER_OF[partner.sign];
+      if (mercRuler === partnerName && partnerRuler === "Mercury") {
+        const PARTNER_VOICE: Record<string, string> = {
+          Saturn: "the inner critic and structure",
+          Mars:   "anger and survival heat",
+          Venus:  "the love-and-worth voice",
+          Sun:    "the core identity voice",
+          Moon:   "the emotional regulator",
+          Jupiter:"the meaning-and-belief voice",
+        };
+        portraitParts.push(
+          `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That is a universal remote: ${PARTNER_VOICE[partnerName]} has a direct line into ${name}'s nervous system. The upside is real discipline applied to ${name}'s own unconventional thinking. The cost is that the second ${name} feels like they are "doing it wrong," the static in the chest and throat literally increases, because ${partnerName} is plugged straight into the speech circuit.`,
+        );
+        break;
+      }
+    }
+  }
+
+
   // 7. Moon regulation layer (after the mechanism, before the fix).
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
     portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, every layer above gets louder and none of them land cleanly.`);
