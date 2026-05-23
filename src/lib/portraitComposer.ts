@@ -495,25 +495,131 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     // Fallback: any other live edge worth naming.
     portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
   }
+  // 6. SYNTHESIS — Physics version. Hardware Audit + Collision Report.
+  // Planet+Sign = Voltage. Planet+House = Medium (density). Collision = Sensation.
+  // No personality labels. No topics. Just what the body actually feels.
 
-  // 6. SYNTHESIS — the "what is actually happening" stack, in one tight beat.
-  // This is the part the user asked for: a compressed list of every active wire,
-  // in plain language, so the whole mechanism is visible at once.
-  const stackLines: string[] = [];
-  if (sunSign) stackLines.push(`${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)}` : ""} is tracking the room and ${name} at the same time.`);
-  if (p.chartRuler) stackLines.push(`${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} wants the clean, true version of the answer.`);
-  if (rulerHardCheck && rulerCheckOther) stackLines.push(`${rulerCheckOther} hard-angles the ruler, so the answer has to clear a cost check first.`);
-  if (mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse] && [4,6,8,9,12].includes(mercuryHouse)) {
-    stackLines.push(`${mercurySign ? `${mercurySign} ` : ""}Mercury in the ${ord(mercuryHouse)} delays the words — they form underneath first.`);
+  type Density = "reflex" | "friction" | "submerged" | "wireless";
+  const HOUSE_DENSITY: Record<number, { class: Density; phrase: string }> = {
+    1:  { class: "reflex",    phrase: "a reflex 1st-house medium (live wire at the skin, zero latency)" },
+    4:  { class: "submerged", phrase: "a submerged 4th-house medium (private inner room, slow to surface)" },
+    7:  { class: "reflex",    phrase: "a reflex 7th-house medium (the signal hits whoever is across from them first)" },
+    10: { class: "reflex",    phrase: "a reflex 10th-house medium (it broadcasts publicly before it is edited)" },
+    6:  { class: "friction",  phrase: "a friction 6th-house medium (hard wired to the nervous system, the body has to conduct it)" },
+    2:  { class: "friction",  phrase: "a friction 2nd-house medium (routed through the body and what it counts as safe)" },
+    8:  { class: "submerged", phrase: "a submerged 8th-house medium (the real version stays underwater until trust is proven)" },
+    12: { class: "submerged", phrase: "a submerged 12th-house medium (the information is there, but underwater, and the words surface late)" },
+    3:  { class: "wireless",  phrase: "a wireless 3rd-house medium (thought and speech move at the same speed)" },
+    5:  { class: "wireless",  phrase: "a wireless 5th-house medium (it comes out through play and expression with no translation step)" },
+    9:  { class: "wireless",  phrase: "a wireless 9th-house medium (it reaches for the big frame fast)" },
+    11: { class: "wireless",  phrase: "a wireless 11th-house medium (it broadcasts to the group with low friction)" },
+  };
+
+  type VoltageClass = "high-voltage" | "high-pressure" | "balanced" | "diffuse" | "steady" | "live-wire" | "compressed";
+  const VOLTAGE: Record<string, { class: VoltageClass; phrase: string }> = {
+    "Mercury-Aquarius":   { class: "high-voltage",  phrase: "high-voltage lightning (non-linear, the whole answer arrives at once)" },
+    "Mercury-Gemini":     { class: "high-voltage",  phrase: "high-voltage chatter (fast, branching, three angles at once)" },
+    "Mercury-Sagittarius":{ class: "high-voltage",  phrase: "high-voltage truth-pulse (the honest version fires before the filter)" },
+    "Mercury-Aries":      { class: "high-voltage",  phrase: "high-voltage spark (the first thought is the answer)" },
+    "Mercury-Libra":      { class: "balanced",      phrase: "a balanced signal (edited for fairness in real time)" },
+    "Mercury-Virgo":      { class: "balanced",      phrase: "a precise signal (sorted and corrected before it is released)" },
+    "Mercury-Pisces":     { class: "diffuse",       phrase: "a diffuse signal (arrives as impression first, words second)" },
+    "Mercury-Cancer":     { class: "diffuse",       phrase: "a feeling-routed signal (the mood gets read before the words form)" },
+    "Mercury-Scorpio":    { class: "compressed",    phrase: "a compressed signal (held back until the real version is safe to release)" },
+    "Mercury-Capricorn":  { class: "compressed",    phrase: "a structured signal (will not speak until it is sound)" },
+    "Mercury-Taurus":     { class: "steady",        phrase: "a steady signal (slow, concrete, refuses to be rushed)" },
+    "Mercury-Leo":        { class: "high-pressure", phrase: "a performance-grade signal (needs an audience to think clearly)" },
+    "Mars-Scorpio":       { class: "high-pressure", phrase: "a pressure cooker (the stakes go up when something matters, not down)" },
+    "Mars-Aries":         { class: "live-wire",     phrase: "a live-wire discharge (fires before the thought finishes)" },
+    "Mars-Capricorn":     { class: "compressed",    phrase: "compressed voltage (the heat gets pushed down to be processed later)" },
+    "Mars-Leo":           { class: "high-pressure", phrase: "high-visibility heat (the response cannot be small)" },
+    "Mars-Cancer":        { class: "diffuse",       phrase: "sideways pressure (protects by indirection, not confrontation)" },
+    "Mars-Libra":         { class: "balanced",      phrase: "fairness-routed pressure (tries to stay even with both sides, which can freeze)" },
+    "Mars-Taurus":        { class: "steady",        phrase: "slow-burn pressure (digs in, will not be moved off the position)" },
+    "Mars-Gemini":        { class: "high-voltage",  phrase: "scattered voltage (the heat multiplies into words)" },
+    "Mars-Virgo":         { class: "balanced",      phrase: "precision pressure (narrows into correction, which can read as criticism)" },
+    "Mars-Sagittarius":   { class: "high-voltage",  phrase: "fire-pulse (wants to leave the room and reframe from outside)" },
+    "Mars-Aquarius":      { class: "high-voltage",  phrase: "principled voltage (detaches a step and answers from logic)" },
+    "Mars-Pisces":        { class: "diffuse",       phrase: "diffuse pressure (hard to locate, often looks like withdrawal)" },
+  };
+
+  function describeCollision(v: VoltageClass, d: Density, planet: string): string | null {
+    if (d === "wireless") {
+      return `With ${planet} on a wireless medium, thought and speech arrive together, so this part of the system does not have a translation lag.`;
+    }
+    const key = `${v}|${d}`;
+    switch (key) {
+      case "high-voltage|friction":
+        return `That is a data jam. The brain has finished, but the nerves are still grounding the current, so ${name} feels fullness or static in the chest or throat before any words come.`;
+      case "high-voltage|submerged":
+        return `That is signal fog with sparks. Flashes of total clarity arrive underwater, and it takes time for any one of them to surface as a sentence.`;
+      case "high-voltage|reflex":
+        return `That is a live-wire broadcast. The thought reaches the skin and the room at the same instant, with no buffer in between.`;
+      case "high-pressure|reflex":
+        return `That is the wall. The body throws up a shield at the skin level before the mind has finished downloading the actual reply.`;
+      case "high-pressure|friction":
+        return `That is a pressure cooker held inside the hardware. The heat stays in the body and releases later as an outburst or a shutdown, rarely as a real-time conversation.`;
+      case "high-pressure|submerged":
+        return `That is buried heat. The intensity is real, but it stays underwater and only the small surface version reaches the room.`;
+      case "balanced|submerged":
+        return `That is deep-sea lag. The understanding is there in real time, but the language has to travel up from underwater, so the right words arrive after the moment has moved on.`;
+      case "balanced|friction":
+        return `That is a careful current. Every word gets routed through the nervous system for a fairness check before it leaves the body, which costs seconds the room does not give back.`;
+      case "balanced|reflex":
+        return `That is a fast edit at the skin. The reply is being shaped for fairness in the same instant it is being said.`;
+      case "diffuse|submerged":
+        return `That is total absorption underwater. ${name} is taking in more signal than the room is showing, and sorting whose feeling is whose takes time the conversation does not allow.`;
+      case "diffuse|reflex":
+        return `That is an impression broadcast. Whatever the room is feeling lands on the skin and goes out again before it can be filtered.`;
+      case "diffuse|friction":
+        return `That is mood routed through the body. ${name} feels the room physically before they can name what was even off.`;
+      case "compressed|submerged":
+        return `That is double containment. The real answer is held back twice, once by the medium and once by the voltage, so almost nothing surfaces in the moment.`;
+      case "compressed|reflex":
+        return `That is composure at the skin. The face holds, the voice holds, and the actual reaction gets processed in private hours later.`;
+      case "compressed|friction":
+        return `That is held current in the hardware. The pressure is real and the body knows it, but the release waits for a private moment.`;
+      case "steady|friction":
+        return `That is grounded current. Slow, physical, conducted through the body at the body's pace, not the conversation's.`;
+      case "steady|submerged":
+        return `That is anchored depth. Things settle slowly, underwater, and will not be hurried to the surface.`;
+      case "steady|reflex":
+        return `That is a slow live wire. The signal reaches the skin, but at the body's pace, not the room's.`;
+      case "live-wire|reflex":
+        return `That is the system at full discharge. The signal hits the room before any internal review has happened.`;
+      case "live-wire|friction":
+        return `That is voltage caught in the body. The discharge wants out, but the nervous system makes it physical first.`;
+      case "live-wire|submerged":
+        return `That is sudden surfacing. The discharge breaks through underwater density in bursts, then goes quiet again.`;
+      default:
+        return null;
+    }
   }
-  if (marsSign && (marsSign === "Scorpio" || marsSign === "Capricorn" || marsSign === "Aries" || marsSign === "Libra")) {
-    stackLines.push(`Mars in ${marsSign} raises the pressure when it matters, instead of dropping it.`);
+
+  const hardwareLines: string[] = [];
+  const collisionLines: string[] = [];
+
+  const auditPlanet = (planet: string, sign: string | undefined, house: number | null | undefined) => {
+    if (!sign || !house) return;
+    const med = HOUSE_DENSITY[house];
+    const volt = VOLTAGE[`${planet}-${sign}`];
+    if (!med || !volt) return;
+    hardwareLines.push(`${sign} ${planet} runs as ${volt.phrase} through ${med.phrase}.`);
+    const coll = describeCollision(volt.class, med.class, planet);
+    if (coll) collisionLines.push(coll);
+  };
+
+  auditPlanet("Mercury", mercurySign, mercuryHouse);
+  auditPlanet("Mars", marsSign, marsHouse);
+  if (p.chartRuler && p.chartRuler.rulerName !== "Mercury" && p.chartRuler.rulerName !== "Mars") {
+    auditPlanet(p.chartRuler.rulerName, p.chartRuler.rulerSign, p.chartRuler.rulerHouse ?? null);
   }
-  if (sunChiron) stackLines.push(`Sun ${sunChiron.aspect} Chiron asks whether the want is even allowed.`);
-  if (stackLines.length >= 3) {
-    portraitParts.push(
-      `So the actual pattern in real life is not "people pleasing" or "stalling." It is this: ${stackLines.join(" ")} That is too many chart functions trying to speak through one moment — which is why the right words usually arrive after the conversation is over, not during it. The frustration is not lack of thought. It is a processing-timing issue.`,
-    );
+
+  if (hardwareLines.length >= 1) {
+    portraitParts.push(`Here is the hardware. ${hardwareLines.join(" ")}`);
+  }
+  if (collisionLines.length >= 1) {
+    portraitParts.push(`And here is what that actually feels like in the body. ${collisionLines.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
   }
 
   // 7. Moon regulation layer (after the mechanism, before the fix).
