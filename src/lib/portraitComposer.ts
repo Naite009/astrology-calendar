@@ -991,14 +991,21 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     let loop: string[] | undefined;
     let mutualReception: { a: string; b: string; aSign: string; bSign: string } | undefined;
 
-    // Push step 0 (chart ruler itself).
+    // Push step 0: the Rising sign itself (the doorway every situation enters through).
+    steps.push({
+      planet: `${p.chartRuler.ascSign} Rising`,
+      sign: p.chartRuler.ascSign,
+      house: 1,
+      reason: `Every situation enters through ${p.chartRuler.ascSign}'s filter first — that's the doorway. ${p.chartRuler.ascSign} is ruled by ${currentName}, so the doorway hands authority to ${currentName}.`,
+    });
+    // Push step 1: the chart ruler (the planet that runs the doorway).
     steps.push({
       planet: currentName!,
       sign: currentSign!,
       house: currentHouse,
-      reason: `Chart ruler. This is the planet ${name} reports to before anyone else, because it rules the Rising sign (${p.chartRuler.ascSign}).`,
+      reason: `Chart ruler. This is the planet ${name} actually reports to, because it runs the Rising sign.`,
     });
-    seen.set(currentName!, 0);
+    seen.set(currentName!, 1);
 
     let safety = 0;
     while (safety++ < 12 && currentSign) {
