@@ -778,9 +778,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
-      privacyNote = ` Moon in ${moonSignEarly} in the 11th house is the reset, not language. The sign shows that ${name} regulates through ${moonSignEarly === "Cancer" ? "emotional safety, softness, and familiarity" : MOON_NEED[moonSignEarly]?.replace(/^.*?(by |through )/, "") || "their natural settling style"}. The 11th house shows that regulation depends on trusted belonging: feeling included, accepted, and still part of the group. ${name} does not fully reset just because the conversation is over; ${name} resets when ${name}'s place in the circle feels secure again.`;
+      privacyNote = ` ${name} settles when ${name} feels emotionally safe and still included. Moon in ${moonSignEarly} in the 11th house means the sign brings the softness and familiarity, and the house ties regulation to trusted belonging. If ${name} thinks ${name} has been pushed outside the circle, logic alone will not reset ${name}. ${name} needs to know ${name} still has a place.`;
     }
-    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    if (mHouse === 11) {
+      portraitParts.push(privacyNote.trim());
+    } else {
+      portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    }
   }
 
   // 8. The pace fix. Timing change, not personality change.
