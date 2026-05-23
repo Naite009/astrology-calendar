@@ -712,22 +712,22 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const marsMed = marsHouse ? HOUSE_DENSITY[marsHouse] : undefined;
   if (sunMed && marsMed && sunHouse !== marsHouse && sunMed.class !== marsMed.class) {
     const ABSORB_MODE: Partial<Record<Density, string>> = {
-      submerged: `absorbing (the Sun in the ${ord(sunHouse!)} sits in submerged medium, so ${name} takes the room in)`,
-      wireless:  `mirroring (the Sun in the ${ord(sunHouse!)} sits in wireless medium, so ${name} reflects what is in the room)`,
-      reflex:    `tracking (the Sun in the ${ord(sunHouse!)} sits in reflex medium, so ${name} reads the room at the skin)`,
-      friction:  `metabolizing (the Sun in the ${ord(sunHouse!)} sits in friction medium, so ${name} runs the room through the body first)`,
+      submerged: `absorbing, because the Sun in the ${ord(sunHouse!)} takes the room in before ${name} knows what to do with it`,
+      wireless:  `mirroring, because the Sun in the ${ord(sunHouse!)} reflects what is in the room quickly`,
+      reflex:    `tracking, because the Sun in the ${ord(sunHouse!)} reads the room at the skin`,
+      friction:  `metabolizing, because the Sun in the ${ord(sunHouse!)} runs the room through the body first`,
     };
     const BROADCAST_MODE: Partial<Record<Density, string>> = {
-      reflex:    `broadcasting from the skin (Mars in the ${ord(marsHouse!)} is reflex medium, the signal goes out instantly)`,
-      friction:  `discharging through the body (Mars in the ${ord(marsHouse!)} is friction medium, the heat has to come out physically)`,
-      submerged: `going underground (Mars in the ${ord(marsHouse!)} is submerged medium, the heat drops below the surface)`,
-      wireless:  `firing out in words (Mars in the ${ord(marsHouse!)} is wireless medium, the heat exits as fast speech)`,
+      reflex:    `showing the reaction immediately, because Mars in the ${ord(marsHouse!)} reaches the surface fast`,
+      friction:  `moving the heat through the body, because Mars in the ${ord(marsHouse!)} has to act physically before it can settle`,
+      submerged: `going underground, because Mars in the ${ord(marsHouse!)} drops the heat below the surface first`,
+      wireless:  `pushing the heat outward fast, because Mars in the ${ord(marsHouse!)} needs expression before reflection`,
     };
     const absorb = ABSORB_MODE[sunMed.class];
     const broadcast = BROADCAST_MODE[marsMed.class];
     if (absorb && broadcast) {
       portraitParts.push(
-        `There is a switch between two modes. Default position is ${absorb}. When the static gets too loud, the system flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is the switch flipping from absorb to broadcast to protect a system that was getting overloaded.`,
+        `There is a switch between two modes. Default position is ${absorb}. When the room gets too loud inside, ${name} flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is usually protection, not a sudden change in character.`,
       );
     }
   }
