@@ -185,6 +185,7 @@ const MOON12_MISREAD =
 // ── Composer types ───────────────────────────────────────────────────────────
 
 export interface ComposedPortrait {
+  lifeStageChapter: string;
   corePortrait: string;
   systemMechanism: {
     driver: { label: string; detail: string };
