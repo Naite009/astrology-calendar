@@ -981,12 +981,24 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     );
   }
   if (tightAspects.length > 0) {
-    const top = tightAspects.slice(0, 2);
-    storyParts.push(
-      `The tightest active conversations in the chart are: ` +
-        top.map(a => `${a.a} ${a.aspect} ${a.b} (${a.orb.toFixed(1)}°)`).join("; ") +
-        `. Those are the loudest internal dynamics.`
-    );
+    const fmt = (a: typeof tightAspects[number]) => `${a.a} ${a.aspect} ${a.b} (${a.orb.toFixed(1)}°)`;
+    const mainPressure = tightAspects.find(a => a.quality === "hard");
+    const softResources = tightAspects.filter(a => a.quality !== "hard").slice(0, 2);
+    const parts: string[] = [];
+    if (mainPressure) {
+      parts.push(`The main pressure conversation is ${fmt(mainPressure)}.`);
+    }
+    if (softResources.length > 0) {
+      parts.push(`The strongest emotional resources are ${softResources.map(fmt).join(" and ")}.`);
+    }
+    if (parts.length === 0) {
+      // No hard/soft split available — fall back to listing the tightest.
+      parts.push(
+        `The tightest active conversations in the chart are: ` +
+          tightAspects.slice(0, 2).map(fmt).join("; ") + `.`
+      );
+    }
+    storyParts.push(parts.join(" "));
   }
   // Life-stage planet
   if (phase === "adult" && age != null) {
