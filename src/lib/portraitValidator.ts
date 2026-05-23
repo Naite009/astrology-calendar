@@ -516,5 +516,9 @@ export function sanitizeComposedPortrait(
   portrait: ComposedPortrait,
   ctx?: ChartValidationContext,
 ): ComposedPortrait {
-  return sanitizeWalk(portrait, ctx) as ComposedPortrait;
+  const sanitized = sanitizeWalk(portrait, ctx) as ComposedPortrait;
+  sanitized.misreads = (sanitized.misreads ?? []).filter(
+    (m) => m.looksLike?.trim().length > 0 && m.actuallyIs?.trim().length > 0,
+  );
+  return sanitized;
 }
