@@ -1297,12 +1297,19 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const moonHouseHere = calcHouse(moonPlanet?.sign, moonPlanet?.degree, moonPlanet?.minutes);
 
     if (mercurySign) {
+      const expLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
+      const expNote =
+        expLag === "delayed"
+          ? ` Processing is accurate at this speed, but DELIVERY is delayed because Mercury sits in the ${ord(mercuryHouse!)} house — the words arrive later than the understanding does.`
+          : expLag === "immediate"
+          ? ` Delivery is immediate at this speed because Mercury sits in the ${ord(mercuryHouse!)} house — words exit as fast as they form.`
+          : "";
       signals.push({
         role: "Processing + language speed",
         planet: "Mercury",
         sign: mercurySign,
         house: mercuryHouse,
-        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.`,
+        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.${expNote}`,
       });
     }
     if (marsSign) {
