@@ -391,7 +391,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Sagittarius: `The move is to add the context before the verdict instead of after. Leading with the reason gives the honest answer somewhere to land that is not a grenade.`,
     Capricorn: `The move is to give the unfiltered reaction one sentence of air before the composed one takes over. The composed answer is fine, but it should not be the only one in the room.`,
     Aquarius: `The move is to name that the unconventional take exists, even if not defending it fully in the moment. "There is a different way to look at this, I want to think it through" keeps the signal alive.`,
-    Pisces: `The move is to separate whose feeling it is before answering. One internal check, "is this mine or theirs," then respond from what is actually yours.`,
+    Pisces: `Adults can help by slowing the emotional room down before asking for an answer. Give ${"them"} a chance to sort what belongs to them from what they picked up from someone else. The useful question is not "Why did you say that?" It is: "What part of that was yours, and what part were you reacting to in the room?"`,
   };
 
   const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
