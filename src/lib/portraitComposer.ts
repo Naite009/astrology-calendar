@@ -760,7 +760,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
-      privacyNote = ` In the 11th house, the Moon regulates through emotional safety inside a trusted group. ${name} settles when ${name} feels still inside the circle — still has a place, still belongs, is not being pushed out. When the group bond feels shaky, no other regulation strategy fully lands.`;
+      privacyNote = ` Moon in ${moonSignEarly} in the 11th house is the reset, not language. The sign shows that ${name} regulates through ${moonSignEarly === "Cancer" ? "emotional safety, softness, and familiarity" : MOON_NEED[moonSignEarly]?.replace(/^.*?(by |through )/, "") || "their natural settling style"}. The 11th house shows that regulation depends on trusted belonging: feeling included, accepted, and still part of the group. ${name} does not fully reset just because the conversation is over; ${name} resets when ${name}'s place in the circle feels secure again.`;
     }
     portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
   }
@@ -1391,10 +1391,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       4: "submerged", 12: "submerged",
     };
     // Moon REGULATION timing by house (reset, not speech).
-    type MoonTiming = "in-the-moment" | "balanced" | "private" | "delayed";
+    type MoonTiming = "in-the-moment" | "balanced" | "private" | "delayed" | "belonging";
     const MOON_HOUSE_TIMING: Record<number, MoonTiming> = {
       1: "in-the-moment", 7: "in-the-moment",
-      3: "balanced", 5: "balanced", 9: "balanced", 10: "balanced", 11: "balanced", 2: "balanced", 6: "balanced",
+      3: "balanced", 5: "balanced", 9: "balanced", 10: "balanced", 2: "balanced", 6: "balanced",
+      11: "belonging",
       4: "private", 8: "private",
       12: "delayed",
     };
@@ -1489,6 +1490,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         balanced: "regulation happens in ordinary daily rhythm",
         private: "regulation happens privately, away from the room that triggered it",
         delayed: "regulation happens later and underground, not in the moment",
+        belonging: `regulation depends on trusted belonging — ${name} resets only when ${name} feels included, accepted, and still part of the group, not just because the conversation is over`,
       }[moonTiming];
       signals.push({
         role: "Regulation and reset (not speech)",
@@ -1568,19 +1570,38 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house does not regulate in the room; reset happens later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house can regulate in the room itself, which closes the loop faster than the words or the body can.`
-      : ` The Moon regulates after the moment, on ordinary daily rhythm.`;
+      : moonTiming === "belonging"
+      ? ` The Moon in the 11th house resets through trusted belonging — ${name} settles when ${name} feels still included and accepted by the group, not just because the moment has ended.`
+      : ` The Moon regulates after the moment, on its own rhythm.`;
     mismatch += moonNote;
+
+    // Detect Mercury–Saturn traditional mutual reception here too, so the
+    // "late" copy can name the loop instead of pointing at the Moon.
+    const _mercP = (chart?.planets as any)?.Mercury;
+    const _satP = (chart?.planets as any)?.Saturn;
+    const mercSatReceptionLocal =
+      _mercP?.sign && _satP?.sign &&
+      RULER_OF[_mercP.sign] === "Saturn" && RULER_OF[_satP.sign] === "Mercury";
 
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
-    const lastOut = bodyFirst ? "Mercury (the words)" : wordsFirst ? "Mars (the body)" : "the Moon (regulation)";
+    const moonRegLine = moonTiming === "belonging"
+      ? `The Moon in ${moonSignEarly} in the 11th settles only when ${name} feels emotionally safe and still included.`
+      : moonTiming === "delayed" || moonTiming === "private"
+      ? `The Moon in ${moonSignEarly} resets later, privately, on its own timeline.`
+      : moonTiming === "in-the-moment"
+      ? `The Moon in ${moonSignEarly} can reset in the room itself.`
+      : `The Moon in ${moonSignEarly} resets on its own rhythm after the moment.`;
+    const lateLine = mercSatReceptionLocal
+      ? `What shows up late: The Mercury/Saturn loop keeps reviewing the answer after the moment. That is the "I should have said…" or "was that accurate enough?" replay. What regulates late: ${moonRegLine}`
+      : `What shows up late: The processing loop keeps reviewing the answer after the moment ("I should have said…" or "was that accurate enough?"). What regulates late: ${moonRegLine}`;
     const realTimeOutput = {
       comesOut: `What exits first is ${firstOut}. ${bodyFirst ? `A physical reaction or shift in tone hits the room before any sentence forms.` : wordsFirst ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then delivers the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} medium${mercTiming === "delayed" ? " (output is partial or arrives later than the understanding)" : mercTiming === "strained" ? " (output has to be worked through the body before it lands)" : ""}.`,
       blocked: p.chartRuler
         ? `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} processes the words BEFORE they exit — Mercury wants the answer to be true to ${name}'s own thinking, and the ruler checks whether it is precise enough to release. The full version is held back until it clears that check.`
         : `What gets blocked is the part of the response that has not finished forming; the system will not release it half-formed.`,
-      late: `What shows up late is ${lastOut}'s version. That is the "I should have said..." or the body finally registering what happened, minutes or hours after the moment.`,
+      late: lateLine,
       othersExperience: `What others experience is the ${firstOut} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
     };
 
@@ -1595,7 +1616,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         : `${name} can say and do the appropriate thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
       actuallyIs: `Understanding, expression, reaction, and regulation are four different jobs on four different clocks. ${bodyFirst ? `Here, Mars (body) arrives before Mercury (words).` : wordsFirst ? `Here, Mercury (words) arrives before Mars (body).` : `Here, Mercury and Mars arrive together.`} ${moonTiming === "delayed" || moonTiming === "private" ? `The Moon does not regulate in the room; reset is a separate, later step.` : `The Moon regulates after, not during.`}`,
       whatHelps: isParenting
-        ? `${bodyFirst ? `Let ${name} have the body-reset first (movement, water, low stimulation), then ask for the words. Asking for the explanation before the body is reset will stall.` : wordsFirst ? `Do not assume ${name}'s articulate in-the-moment answer is the whole story. Check back in once the body has had time to catch up; that is when the real version arrives.` : `Build in a pause on purpose. Without one, the only version that exists is the in-the-moment one, and it will not have the depth ${name} is actually capable of.`} Regulation timing is set by the Moon, not by the conversation; honor it.`
+        ? `${bodyFirst ? `Let ${name} have the body-reset first (movement, water, low stimulation), then ask for the words. Asking for the explanation before the body is reset will stall.` : wordsFirst ? `Do not assume ${name}'s articulate in-the-moment answer is the whole story. Check back in once the body has had time to catch up; that is when the real version arrives.` : `Adults should create the pause for ${name} instead of demanding ${name} create it under pressure. Say, "You don't have to answer perfectly right now. Think it through and come back." That protects the ${mercSatReceptionLocal ? "Mercury/Saturn loop" : "processing loop"} from turning into self-criticism.`} Regulation timing is set by the Moon, not by the conversation; honor it${moonTiming === "belonging" ? ` — and remember the 11th-house Moon needs to feel still included before it can fully reset` : ""}.`
         : `${bodyFirst ? `Reset the body before retrying the words. The explanation will not form while the body is still activated.` : wordsFirst ? `Treat the first articulate answer as a draft, not the final. Check back with the body an hour or a day later; that is where the rest of the signal lives.` : `Build a pause in on purpose. The whole signal needs more than the moment is giving it.`} Regulation timing is set by the Moon, not by the room.`,
     };
 
