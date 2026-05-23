@@ -205,6 +205,14 @@ export interface ComposedPortrait {
       rank: string;      // why this step was picked (priority rule)
     }>;
   };
+  // NEW: Planet Interaction System — Signal → Medium → Collision → Output → Translation.
+  planetInteraction?: {
+    signals: Array<{ role: string; planet: string; sign: string; house: number | null; fn: string }>;
+    mediums: Array<{ planet: string; house: number; medium: string }>;
+    timingCollision: { comparison: string; mismatch: string };
+    realTimeOutput: { comesOut: string; blocked: string; late: string; othersExperience: string };
+    humanTranslation: { looksLike: string; actuallyIs: string; whatHelps: string };
+  };
   bridge?: {
     paragraph: string;
     placements: string[];
@@ -1229,6 +1237,176 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
   }
 
+  // ── PLANET INTERACTION SYSTEM ──────────────────────────────────────────────
+  // Signal (planet+sign as a function) → Medium (house as processing condition)
+  // → Timing Collision (compare speeds) → Real-time Output → Human Translation.
+  let planetInteraction: ComposedPortrait["planetInteraction"] = undefined;
+  {
+    // Speed classes — how fast a planet's signal forms and exits in this sign.
+    type Speed = "fast" | "balanced" | "slow" | "mood-paced";
+    const MERC_SPEED: Record<string, Speed> = {
+      Aries: "fast", Gemini: "fast", Leo: "fast", Sagittarius: "fast", Aquarius: "fast",
+      Libra: "balanced", Virgo: "balanced",
+      Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
+      Cancer: "mood-paced", Pisces: "mood-paced",
+    };
+    const MARS_SPEED: Record<string, Speed> = {
+      Aries: "fast", Leo: "fast", Sagittarius: "fast", Gemini: "fast",
+      Libra: "balanced", Aquarius: "balanced", Virgo: "balanced",
+      Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
+      Cancer: "mood-paced", Pisces: "mood-paced",
+    };
+    const MOON_RESET: Record<string, Speed> = {
+      Aries: "fast", Gemini: "fast", Sagittarius: "fast",
+      Leo: "balanced", Virgo: "balanced", Libra: "balanced", Aquarius: "balanced",
+      Taurus: "slow", Capricorn: "slow",
+      Cancer: "mood-paced", Scorpio: "mood-paced", Pisces: "mood-paced",
+    };
+
+    // House-as-medium phrasing (processing condition, NOT life area).
+    const HOUSE_MEDIUM: Record<number, string> = {
+      1: "immediate, reflex, body-first — the signal hits the surface before it is screened",
+      2: "routed through what the body counts as safe — the signal stalls if safety is in question",
+      3: "direct verbal processing — the signal forms in words and exits at conversational speed",
+      4: "private inner-room processing — the signal forms underground first and surfaces only when home-base is steady",
+      5: "expressive processing — the signal has to come out as performance, play, or creation to even fully form",
+      6: "friction wiring — the signal has to be conducted through the nervous system and the body before it lands as words",
+      7: "mirror processing — the signal does not finalize until it is bounced off the person across from them",
+      8: "pressurized and guarded — the signal stays compressed until trust is proven, then arrives all at once",
+      9: "wide-frame processing — the signal reaches for the bigger context first and the small in-the-moment answer can lag",
+      10: "broadcast medium — the signal goes public before it gets edited",
+      11: "group-channel processing — the signal forms by checking it against the wider network",
+      12: "delayed and submerged, not fully conscious — the understanding is there in real time, the language is not",
+    };
+
+    // Build SIGNAL list (planet+sign as function, not trait).
+    const signals: NonNullable<ComposedPortrait["planetInteraction"]>["signals"] = [];
+    const moonPlanet = (chart?.planets as any)?.Moon;
+    const moonHouseHere = calcHouse(moonPlanet?.sign, moonPlanet?.degree, moonPlanet?.minutes);
+
+    if (mercurySign) {
+      signals.push({
+        role: "Processing + language speed",
+        planet: "Mercury",
+        sign: mercurySign,
+        house: mercuryHouse,
+        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.`,
+      });
+    }
+    if (marsSign) {
+      signals.push({
+        role: "Reaction + action speed",
+        planet: "Mars",
+        sign: marsSign,
+        house: marsHouse,
+        fn: `fires reaction and physical drive at ${MARS_SPEED[marsSign] ?? "balanced"} speed; this is how fast the body moves once something hits.`,
+      });
+    }
+    if (moonSignEarly) {
+      signals.push({
+        role: "Regulation + reset",
+        planet: "Moon",
+        sign: moonSignEarly,
+        house: moonHouseHere,
+        fn: `runs nervous-system regulation and the reset cycle at ${MOON_RESET[moonSignEarly] ?? "balanced"} speed; this is how fast the body returns to baseline after activation.`,
+      });
+    }
+    if (p.chartRuler) {
+      signals.push({
+        role: "Core operating system",
+        planet: p.chartRuler.rulerName,
+        sign: p.chartRuler.rulerSign,
+        house: p.chartRuler.rulerHouse,
+        fn: `runs the operating system underneath everything else; every other planet's output eventually has to pass through this filter.`,
+      });
+    }
+    if (activePhase) {
+      const ph = (chart?.planets as any)?.[activePhase.planet];
+      if (ph?.sign) {
+        signals.push({
+          role: "Current life-stage focus",
+          planet: activePhase.planet,
+          sign: ph.sign,
+          house: calcHouse(ph.sign, ph.degree, ph.minutes),
+          fn: `is the planet under active load right now because of the ${activePhase.label}; its circuit is being stress-tested in this chapter.`,
+        });
+      }
+    }
+
+    // Build MEDIUM list (house as processing condition).
+    const mediums: NonNullable<ComposedPortrait["planetInteraction"]>["mediums"] = [];
+    const addMedium = (planet: string, house: number | null) => {
+      if (house && HOUSE_MEDIUM[house]) mediums.push({ planet, house, medium: HOUSE_MEDIUM[house] });
+    };
+    addMedium("Mercury", mercuryHouse);
+    addMedium("Mars", marsHouse);
+    addMedium("Moon", moonHouseHere);
+    if (p.chartRuler?.rulerName && p.chartRuler.rulerName !== "Mercury" && p.chartRuler.rulerName !== "Mars" && p.chartRuler.rulerName !== "Moon") {
+      addMedium(p.chartRuler.rulerName, p.chartRuler.rulerHouse);
+    }
+
+    // TIMING COLLISION — compare Mercury vs Mars speed, and check Moon reset.
+    const mercSpeed: Speed = mercurySign ? (MERC_SPEED[mercurySign] ?? "balanced") : "balanced";
+    const marsSpeed: Speed = marsSign ? (MARS_SPEED[marsSign] ?? "balanced") : "balanced";
+    const moonSpeed: Speed = moonSignEarly ? (MOON_RESET[moonSignEarly] ?? "balanced") : "balanced";
+
+    const speedRank: Record<Speed, number> = { fast: 3, balanced: 2, "mood-paced": 1, slow: 1 };
+    const mercFaster = speedRank[mercSpeed] > speedRank[marsSpeed];
+    const marsFaster = speedRank[marsSpeed] > speedRank[mercSpeed];
+
+    let comparison: string;
+    let mismatch: string;
+    if (mercFaster) {
+      comparison = `Mercury in ${mercurySign} (${mercSpeed}) processes faster than Mars in ${marsSign} (${marsSpeed}) reacts.`;
+      mismatch = `The words arrive before the body is ready to back them up. That shows up as talking past a feeling, then later noticing the body never caught up. Pressure is felt in the gap between what was said and what the body actually did with it.`;
+    } else if (marsFaster) {
+      comparison = `Mars in ${marsSign} (${marsSpeed}) reacts faster than Mercury in ${mercurySign} (${mercSpeed}) can form the words.`;
+      mismatch = `The body moves first and the words show up late. That shows up as a reaction (a tightening, a leaving, a shutdown) before there is language for it, which can read to other people as out of nowhere when it is actually delayed processing.`;
+    } else {
+      comparison = `Mercury in ${mercurySign} and Mars in ${marsSign} run at the same speed (${mercSpeed}).`;
+      mismatch = `Reaction and language fire together, which is efficient but leaves no buffer. There is no second voice arriving late to soften the first, so whatever comes out in the moment is the version the room gets to keep.`;
+    }
+    // Moon reset note (overwhelm if reset is slow while everything else is fast/mood-paced).
+    const moonNote =
+      moonSpeed === "slow" || moonSpeed === "mood-paced"
+        ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
+        : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
+        ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up, which can look like brushing it off when actually it just got metabolized first.`
+        : "";
+    mismatch += moonNote;
+
+    // REAL-TIME OUTPUT
+    const fastest = mercFaster ? "Mercury" : marsFaster ? "Mars" : "Mercury and Mars together";
+    const slowest = mercFaster ? "Mars" : marsFaster ? "Mercury" : "the Moon";
+    const realTimeOutput = {
+      comesOut: `What actually exits the body first is whatever ${fastest} produces — ${mercFaster ? "a sentence" : marsFaster ? "a physical reaction or a tone shift" : "speech and reaction at the same time"} — shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium.`,
+      blocked: p.chartRuler
+        ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the output before it lands, so the full version is held back until it passes that gate.`
+        : `What gets blocked is the part of the response that has not finished forming yet — the system will not release it half-formed.`,
+      late: `What shows up late is ${slowest}'s version of the answer. That is the "I should have said..." or "I should have done..." that arrives minutes or hours after the moment.`,
+      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They hear or see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
+    };
+
+    // HUMAN TRANSLATION
+    const isParenting = phase === "child";
+    const humanTranslation = {
+      looksLike: mercFaster
+        ? `${name} can sound articulate and "fine" in the moment and then have a delayed body reaction (tiredness, irritability, going quiet) hours later.`
+        : marsFaster
+        ? `${name} can react physically (walking out, going silent, snapping) before they can explain why, and the explanation only arrives later.`
+        : `${name} can say and do the right thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
+      actuallyIs: `The mismatch is not a behavior problem. It is two different planets running on two different clocks: ${mercFaster ? `Mercury (${mercSpeed}) gets there first, Mars (${marsSpeed}) shows up after.` : marsFaster ? `Mars (${marsSpeed}) gets there first, Mercury (${mercSpeed}) shows up after.` : `Mercury and Mars fire together with no buffer.`} The Moon in ${moonSignEarly ?? "the chart"} sets how long it takes the system to fully reset after.`,
+      whatHelps: isParenting
+        ? `${marsFaster ? `Give ${name} the body-reset first (movement, water, low stimulation), then ask for the words. Asking for the explanation before the body is reset will stall.` : mercFaster ? `Do not assume ${name}'s articulate in-the-moment answer is the whole story. Check back in once the body has had time to catch up — that is when the real version arrives.` : `Build in a pause on purpose. Without one, the only version that exists is the in-the-moment one, and it will not have the depth ${name} is actually capable of.`} Reset time is set by the Moon, not by the conversation — honor it.`
+        : `${marsFaster ? `Reset the body before retrying the words. The explanation will not form while the body is still activated.` : mercFaster ? `Treat the first articulate answer as a draft, not the final. Check back with the body an hour or a day later — that is where the rest of the signal lives.` : `Build a pause in on purpose. The whole signal needs more than the moment is giving it.`} Reset time is set by the Moon, not by the room.`,
+    };
+
+    if (signals.length >= 2 && mediums.length >= 1) {
+      planetInteraction = { signals, mediums, timingCollision: { comparison, mismatch }, realTimeOutput, humanTranslation };
+    }
+  }
+
+
   // Themes picked (for transparency)
   const themesPicked = [
     "developmental anchor",
@@ -1249,6 +1427,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     corePortrait,
     systemMechanism,
     realTimeSequence,
+    planetInteraction,
     bridge,
     stageAsk,
     misreads: misreads.slice(0, 3),

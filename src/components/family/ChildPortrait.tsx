@@ -198,6 +198,99 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </section>
             )}
 
+            {/* ── NEW · PLANET INTERACTION SYSTEM ── Signal → Medium → Collision → Output → Translation */}
+            {composed.planetInteraction && (
+              <section className="rounded-lg border-2 border-indigo-500/50 bg-indigo-50/60 dark:bg-indigo-950/20 p-4 space-y-5">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500" aria-hidden />
+                  <div className="text-[10px] uppercase tracking-widest text-indigo-700 dark:text-indigo-300 font-bold">
+                    Planet Interaction System · How These Planets Work Together
+                  </div>
+                </div>
+
+                {/* Step 1 — Signal */}
+                <div className="space-y-2">
+                  <div className="font-bold text-sm">1. Signal · what each planet is doing as a function</div>
+                  <ul className="space-y-1.5">
+                    {composed.planetInteraction.signals.map((s, i) => (
+                      <li key={i} className="rounded border border-indigo-500/25 bg-background/60 p-2.5">
+                        <div className="text-[10px] uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-semibold">
+                          {s.role}
+                        </div>
+                        <div className="text-sm font-medium">
+                          {s.planet} in {s.sign}{s.house ? ` (${ord(s.house)} house)` : ""}
+                        </div>
+                        <div className="text-sm text-muted-foreground leading-relaxed mt-0.5">{s.fn}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Step 2 — Medium */}
+                <div className="space-y-2">
+                  <div className="font-bold text-sm">2. Medium · how the signal travels (house as processing condition)</div>
+                  <ul className="space-y-1.5">
+                    {composed.planetInteraction.mediums.map((m, i) => (
+                      <li key={i} className="rounded border border-indigo-500/25 bg-background/60 p-2.5">
+                        <div className="text-sm">
+                          <span className="font-semibold">{m.planet} runs through the {ord(m.house)} house:</span>{" "}
+                          <span className="text-muted-foreground">{m.medium}.</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Step 3 — Timing Collision */}
+                <div className="space-y-2">
+                  <div className="font-bold text-sm">3. Timing collision · who arrives first</div>
+                  <div className="rounded border border-indigo-500/25 bg-background/60 p-3 space-y-2">
+                    <p className="text-sm font-medium leading-relaxed">{composed.planetInteraction.timingCollision.comparison}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{composed.planetInteraction.timingCollision.mismatch}</p>
+                  </div>
+                </div>
+
+                {/* Step 4 — Real-time output */}
+                <div className="space-y-2">
+                  <div className="font-bold text-sm">4. Real-time output · what actually happens in the moment</div>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {[
+                      { label: "What comes out", value: composed.planetInteraction.realTimeOutput.comesOut },
+                      { label: "What gets blocked", value: composed.planetInteraction.realTimeOutput.blocked },
+                      { label: "What shows up late", value: composed.planetInteraction.realTimeOutput.late },
+                      { label: "What others experience", value: composed.planetInteraction.realTimeOutput.othersExperience },
+                    ].map((b, i) => (
+                      <div key={i} className="rounded border border-indigo-500/25 bg-background/60 p-2.5">
+                        <div className="text-[10px] uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-semibold mb-1">
+                          {b.label}
+                        </div>
+                        <p className="text-sm leading-relaxed">{b.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 5 — Human translation */}
+                <div className="space-y-2">
+                  <div className="font-bold text-sm">5. Human translation · plain language</div>
+                  <div className="rounded border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/15 p-3 space-y-2">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300 font-semibold">What it looks like: </span>
+                      <span className="text-sm">{composed.planetInteraction.humanTranslation.looksLike}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold">What is actually happening: </span>
+                      <span className="text-sm">{composed.planetInteraction.humanTranslation.actuallyIs}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 font-semibold">What helps: </span>
+                      <span className="text-sm">{composed.planetInteraction.humanTranslation.whatHelps}</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* ── BOX 1 · REAL LIFE (green) ── what to do, no astrology language */}
             <section className="rounded-lg border-2 border-emerald-500/50 bg-emerald-50/60 dark:bg-emerald-950/20 p-4 space-y-5">
               <div className="flex items-center gap-2">
