@@ -253,16 +253,16 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const HOUSE_ARENA: Record<number, string> = {
     1: "how they walk into a room and the first impression their body gives off",
     2: "what they own, what they're worth, and what their body counts as safe",
-    3: "the small daily back-and-forth — talking, texting, siblings, school, errands",
+    3: "the small daily back-and-forth, talking, texting, siblings, school, errands",
     4: "home, family, and the private inner life nobody at work sees",
     5: "play, creating, performing, romance, and (for parents) their kids",
     6: "daily routine, work, the body, and the small stuff that has to function",
-    7: "close one-on-one relationships — partners, best friends, the person across from them",
-    8: "the private, intense layer — money shared with someone, sex, grief, what's hidden",
+    7: "close one-on-one relationships, partners, best friends, the person across from them",
+    8: "the private, intense layer: money shared with someone, sex, grief, what's hidden",
     9: "travel, big ideas, belief, teaching, and what they're chasing meaning-wise",
     10: "their public role, career, and what they end up being known for",
     11: "their friend group, the wider community, and the future they're trying to build",
-    12: "what happens behind a curtain — alone, in dreams, in the parts no one sees",
+    12: "what happens behind a curtain, alone, in dreams, in the parts no one sees",
   };
 
   // What the chart-ruler sign does in motion (engine texture).
@@ -320,7 +320,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (rArena) {
       sentence2 =
         ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} ` +
-        `sitting in ${rArena} — so the engine ${rText}, and it spends most of its time in that part of life.`;
+        `sitting in ${rArena}, so the engine ${rText}, and it spends most of its time in that part of life.`;
     } else {
       sentence2 =
         ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, ` +
@@ -334,7 +334,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   let sentence3 = "";
   if (moonSignEarly && MOON_SAFETY[moonSignEarly]) {
     sentence3 =
-      ` Privately though, ${name} doesn't actually settle through any of that — they settle through ${MOON_SAFETY[moonSignEarly]}. ` +
+      ` Privately though, ${name} doesn't actually settle through any of that. They settle through ${MOON_SAFETY[moonSignEarly]}. ` +
       `So the outside picture and the inside need aren't the same thing, and the system stays on edge until both get met.`;
   }
 
@@ -343,7 +343,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   let sentence4 = "";
   const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
   if (liveEdge && liveEdge.line) {
-    sentence4 = ` The loudest live wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} — ${liveEdge.line}`;
+    sentence4 = ` The loudest live wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b}, which shows up as ${liveEdge.line}`;
     if (!/[.!?]$/.test(sentence4)) sentence4 += ".";
   }
 
