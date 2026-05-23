@@ -20,7 +20,7 @@ const SUN_FEELS: Record<string, string> = {
   Cancer: "they feel the emotional weather of a room before anything else",
   Leo: "they need to be seen as themselves, not as a role they're playing",
   Virgo: "they need things to actually work, and they'll notice what's off",
-  Libra: "they're tracking fairness and the connection in the room at all times",
+  Libra: "they need the choice to be fair and still honestly theirs",
   Scorpio: "they need to know what's really going on under the surface",
   Sagittarius: "they need the bigger why before they'll fully buy in",
   Capricorn: "they need a real plan and to be treated as capable",
@@ -81,7 +81,7 @@ const MOON_SAFETY: Record<string, string> = {
   Cancer: "physical closeness, soft tone, and knowing the plan",
   Leo: "warm eye contact and being noticed sincerely",
   Virgo: "small competent tasks and clean order",
-  Libra: "a calm room and fairness named out loud",
+  Libra: "clear terms, calm tone, and fairness named out loud",
   Scorpio: "privacy, one-on-one trust, and the real story",
   Sagittarius: "honesty, room to roam, and the big-picture why",
   Capricorn: "clear structure and being treated as capable",
@@ -147,8 +147,8 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
     actuallyIs: "they're trying to make the thing actually work, and they can see the gap nobody else can",
   },
   Libra: {
-    looksLike: "changing their answer based on who's in the room, or stalling on a decision",
-    actuallyIs: "they're tracking how the choice will land on every person before they commit to one",
+    looksLike: "stalling, giving two answers, or asking what someone else thinks before naming their own answer",
+    actuallyIs: "they're trying to make a clean choice without betraying either fairness or their own preference",
   },
   Scorpio: {
     looksLike: "going silent, watching from the corner, or telling you only part of the story",
