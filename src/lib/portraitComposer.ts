@@ -1576,6 +1576,8 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       const style = MOON_STYLE[moonSignEarly] ?? "";
       const timingPhrase = moonSignEarly === "Sagittarius" && moonHouseHere === 2
         ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+        : moonHouseHere === 2
+        ? `regulation depends on body safety, steadiness, food, water, and enough physical calm for the feeling to come down`
         : ({
         "in-the-moment": "regulation can happen in the room",
         balanced: "regulation happens in ordinary daily rhythm",
@@ -1657,7 +1659,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       mismatch = `Reaction and expression arrive close together with little buffer. Whatever surfaces in the moment is the version the room keeps; the second voice arrives later, if at all.`;
     }
     // Moon regulation note — AFTER the moment, not during.
-    const moonNote = moonTiming === "delayed" || moonTiming === "private"
+    const moonNote = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+      ? ` Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      : moonHouseHere === 2
+      ? ` The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
+      : moonTiming === "delayed" || moonTiming === "private"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house does not regulate in the room; reset happens later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house can regulate in the room itself, which closes the loop faster than the words or the body can.`
@@ -1677,10 +1683,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
-    const moonRegLine = moonTiming === "belonging"
+    const moonRegLine = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+      ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      : moonHouseHere === 2
+      ? `The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
+      : moonTiming === "belonging"
       ? `The Moon in ${moonSignEarly} in the 11th settles only when ${name} feels emotionally safe and still included.`
-        : moonSignEarly === "Sagittarius" && moonHouseHere === 2
-        ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
       : moonTiming === "delayed" || moonTiming === "private"
       ? `The Moon in ${moonSignEarly} resets later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
