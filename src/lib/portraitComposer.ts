@@ -235,7 +235,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // Regulation source: prefer explicit Mars house discharge, then Moon-sign safety,
   // then 12th-house cloaking note.
-  const moonSign = p.moonPhaseProfile ? undefined : undefined; // moon sign isn't on portrait directly
+  // moon sign is read later from `chart` when computing the bridge.
   // We derive moon-sign regulation from Moon hard aspects' presence; otherwise fall back to Mars sign.
   const marsSign = p.energyDischarge?.marsSign;
   const regulationParts: string[] = [];
