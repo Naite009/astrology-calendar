@@ -1326,20 +1326,40 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       rank: "What the room gets: a filtered Mercury output, not the full underlying signal.",
     });
 
-    // STEP 7 — AFTER THE MOMENT (chart ruler finishes offline)
+    // STEP 7 — AFTER THE MOMENT (chart ruler finishes offline).
+    // Final-authority framing depends on what is actually carrying it in the chart:
+    //   - Mercury/Saturn mutual reception → the loop itself has final authority
+    //   - Sun–Saturn tight hard aspect → pressure-check has final authority
+    //   - Sun–Chiron tight → permission check has final authority
+    //   - otherwise → Mercury's timing has it
     if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
+      let finalAuthorityLine: string;
+      let finalAuthorityRank: string;
+      if (mercSatReception) {
+        finalAuthorityLine = `Final authority sits with Mercury trying to produce the answer while Saturn audits whether it is correct enough to say. Neither one overrides the other — they hand the decision back and forth until both sign off.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury/Saturn loop${activePhase ? ` + ${activePhase.label} life-stage pressure` : ""}.`;
+      } else if (sunSaturn && sunSaturn.orb < 3) {
+        finalAuthorityLine = `Final authority on the outcome sits with the Sun–Saturn pressure check — whether the version that exits is accurate and worth standing behind — not with Mars or with what got said in the heat of it.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Sun–Saturn pressure check.`;
+      } else if (permissionGate) {
+        finalAuthorityLine = `Final authority on the outcome sits with Mercury's timing and the Sun–Chiron permission check, not with Mars or with what got said.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury timing + Sun–Chiron permission.`;
+      } else {
+        finalAuthorityLine = `Final authority on the outcome sits with Mercury's timing — the full version arrives once the words finish forming — not with Mars or with what got said in the moment.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury timing.`;
+      }
       seqSteps.push({
         cue: "After the moment:",
         lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
-        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. Final authority on the outcome sits with Mercury's timing and the Chiron permission check, not with Mars or with what got said.`,
-        rank: "Closing: chart ruler finishes offline. Final authority = Mercury timing + Chiron permission.",
+        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
+        rank: finalAuthorityRank,
       });
     }
 
     if (seqSteps.length >= 2) {
       realTimeSequence = {
         intro: `When everything in ${name}'s chart fires at once, the planets do not all hit at the same volume. They activate in a specific order, and the order is what makes the moment feel the way it does.`,
-        priorityNote: `Ranked by HOUSE and ASPECTS (not sign): (1) Sun–Chiron permission gate when tight, (2) tightest hard aspect or life-stage anchor, (3) Mars body-reaction timed by house, (4) Mercury delivery timed by house (12th/4th delayed, 6th strained, 1st/3rd immediate), (5) Venus + Jupiter value filters, (6) chart ruler operating system, (7) Sun as identity filter. Mercury delivers the words; Mars is body reaction (not language); Moon regulates after, not during.`,
+        priorityNote: `Ranked by HOUSE and ASPECTS (not sign): (1) Sun–Saturn pressure gate or Sun–Chiron permission gate when tight, (2) tightest hard aspect or life-stage anchor, (3) Mars body-reaction timed by house, (4) Mercury delivery timed by house (12th/4th delayed, 6th strained, 1st/3rd immediate), (5) Venus + Jupiter value filters, (6) chart ruler operating system, (7) Sun as identity filter. Mercury delivers the words; Mars is body reaction (not language); Moon regulates after, not during.`,
         steps: seqSteps,
       };
     }
