@@ -7,6 +7,71 @@
 // This file is presentation-layer prioritization only.
 
 import type { ChildPortrait } from "./childPortrait";
+import type { NatalChart } from "@/hooks/useNatalChart";
+
+// ── Plain-language "what this placement actually does in real life" ──────────
+// These are deliberately concrete and behavioral, so the bridge sentence
+// reads like an explanation, not an astrology lookup.
+
+const SUN_FEELS: Record<string, string> = {
+  Aries: "they need to move first and be the one who starts things",
+  Taurus: "they need things to feel steady and physically safe before they commit",
+  Gemini: "they need to talk, ask questions, and try a few angles before settling",
+  Cancer: "they feel the emotional weather of a room before anything else",
+  Leo: "they need to be seen as themselves, not as a role they're playing",
+  Virgo: "they need things to actually work, and they'll notice what's off",
+  Libra: "they're tracking fairness and the connection in the room at all times",
+  Scorpio: "they need to know what's really going on under the surface",
+  Sagittarius: "they need the bigger why before they'll fully buy in",
+  Capricorn: "they need a real plan and to be treated as capable",
+  Aquarius: "they need to be met as their own person, not a category",
+  Pisces: "they absorb everything happening around them, even when they don't show it",
+};
+
+const MERCURY_FEELS: Record<string, string> = {
+  Aries: "processes fast and out loud, and gets blunt when forced to slow down",
+  Taurus: "processes slowly, needs concrete examples, and won't be rushed into an answer",
+  Gemini: "processes by talking, comparing, and sampling several ideas at once",
+  Cancer: "processes through memory and feeling, so logic comes after the mood is read",
+  Leo: "processes through story and self-expression, and needs an audience to think clearly",
+  Virgo: "processes by sorting details and checking what's wrong before what's right",
+  Libra: "processes by weighing both sides, which can look like indecision",
+  Scorpio: "processes privately, goes deep on one thing, and won't share until it's true",
+  Sagittarius: "processes through the big picture and gets impatient with small steps",
+  Capricorn: "processes by structure and consequence, and won't speak until it's sound",
+  Aquarius: "processes logically and needs space to figure out what's true on their own",
+  Pisces: "processes through impression and feeling, so words can lag behind what they know",
+};
+
+const MOON_FEELS: Record<string, string> = {
+  Aries: "settles by doing something physical, not by talking it through",
+  Taurus: "settles by predictable rhythm, food, and not being rushed",
+  Gemini: "settles by being talked with and given a few options",
+  Cancer: "settles by closeness and knowing the plan ahead of time",
+  Leo: "settles by warm, sincere attention from someone they trust",
+  Virgo: "settles by completing a small, competent task",
+  Libra: "settles in a calm room where fairness has been named out loud",
+  Scorpio: "settles in privacy and one-on-one trust, never in a crowd",
+  Sagittarius: "settles when given honesty and room to move",
+  Capricorn: "settles when there's clear structure and they have one piece of control",
+  Aquarius: "settles when they're treated as their own person and given space",
+  Pisces: "settles with low stimulation, soft input, and rest",
+};
+
+const MARS_FEELS: Record<string, string> = {
+  Aries: "discharges fast and physical, so the energy needs an outlet before talking",
+  Taurus: "burns slow and steady, but locks in hard once pushed past a limit",
+  Gemini: "fires through words and quick switches, and scatters under pressure",
+  Cancer: "protects sideways, through care and indirect action, not confrontation",
+  Leo: "needs the energy to come out through performance, play, or being seen",
+  Virgo: "channels into fixing and improving, and turns critical when blocked",
+  Libra: "fights by negotiating, and freezes when forced to pick a side",
+  Scorpio: "goes underground with the energy until it can come out one-on-one",
+  Sagittarius: "needs to move while it processes, no face-to-face cornering",
+  Capricorn: "channels into a plan and pushes through, but quietly resents being managed",
+  Aquarius: "acts on principle and refuses guilt as a motivator",
+  Pisces: "needs low stimulation to reset; otherwise it leaks out as withdrawal",
+};
 
 // ── Plain-language sign lookups for composer-only copy ───────────────────────
 const MOON_SAFETY: Record<string, string> = {
