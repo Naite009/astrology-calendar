@@ -309,7 +309,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   // Pick trigger
   const tightHard = tightAspects.find(a => a.quality === "hard");
   const tightMoonHard = moonAspectsHard[0];
-  let trigger: { label: string; detail: string };
+  let trigger: { label: string; detail: string; derivation: string };
   let reaction: string;
   let bridgeWhy: string; // why this trigger relates to THIS engine
   if (p.pressureSignature) {
