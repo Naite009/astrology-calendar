@@ -167,12 +167,44 @@ const FINAL_AUTHORITY_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"
   },
 ];
 
+// MECHANICAL-VOICE bans for the main Portrait text. These words may appear
+// inside the deep-dive "mechanism" layer but must not show up in core/parent
+// paragraphs. Detected via field paths; see validateComposedPortrait below.
+const MECHANICAL_WORDS = /(?:circuit|voltage|hardware|the (?:signal|output)|discharges the circuit|firing the circuit)/i;
+const MECHANICAL_BAN = {
+  re: MECHANICAL_WORDS,
+  rule: "mechanical-voice" as const,
+  expected:
+    "Main Portrait must read human. Translate mechanical wording into: what it feels like, what it looks like, what helps. Reserve circuit/voltage/signal for the deep-dive layer.",
+};
+
+// PARENTING-BURDEN bans: child must not be told to self-regulate or
+// self-pause. Adults create the pause and lower the pressure.
+const PARENTING_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"]; expected: string }> = [
+  {
+    re: /\b(the child|he|she|they) should (pause|regulate|self-?regulate|slow down|calm down)\b/i,
+    rule: "parenting-burden",
+    expected: "Reframe as adult action: 'Adults should create the pause' / 'Adults should lower the pressure and give space.'",
+  },
+  {
+    re: /\bbuild in a pause on purpose\b/i,
+    rule: "parenting-burden",
+    expected: "Reframe as adult-directed: 'Adults should create the pause for them instead of demanding they create it under pressure.'",
+  },
+];
+
 const ALL_BANS = [
   ...PLANET_JOB_BANS,
   ...HOUSE_MEANING_BANS,
   ...SIGN_SPEED_BANS,
   ...FINAL_AUTHORITY_BANS,
+  ...PARENTING_BANS,
 ];
+
+// Field paths where mechanical wording is NOT allowed (main Portrait, parent
+// translation, headlines). The "deepDive" / "mechanism" / "chartStory" paths
+// are exempt because that's where the technical layer lives.
+const MECHANICAL_PROTECTED_PATHS = /^(corePortrait|parentTranslation|headline|tagline|liveMechanic|finalAuthority)/i;
 
 // Walk every string leaf in the portrait and yield [path, value] pairs.
 function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
