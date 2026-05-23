@@ -1134,7 +1134,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         loop = steps.slice(startIdx).map(s => s.planet).concat(nextName);
         steps.push({
           planet: nextName, sign: nextPlanet.sign, house: nextHouse,
-          reason: `Closes the loop. ${loop.join(" -> ")} all point at each other, so the system has no single final boss; authority circulates.`,
+          reason: `Closes the loop. ${loop.join(" -> ")} all point at each other, so the system has no single final boss; it forms a closed loop between their separate jobs.`,
         });
         break;
       }
