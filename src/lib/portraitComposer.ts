@@ -837,16 +837,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         ? `the same engine runs deep and won't let things stay surface, which means small pressures stack up internally`
         : `the same engine is wired straight into Pluto, so ordinary friction lands with extra weight`;
   } else if (tightHard) {
-    trigger = {
-      label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
-      detail: `two internal voices that pull against each other in real time`,
-      derivation:
-        `Picked because this is the tightest hard aspect in the chart (orb ${tightHard.orb.toFixed(1)}°, under 2.5°), ` +
-        `which means it's loud and active in daily life. Tight squares, oppositions, and conjunctions are felt as ` +
-        `internal arguments that don't resolve, so they show up as repeated friction points.`,
-    };
-    reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
-    bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
+    // (already handled above as the second-priority branch; keep this as a no-op
+    // so the structure below stays intact for downstream branches)
+    trigger = trigger!;
+    reaction = reaction!;
+    bridgeWhy = bridgeWhy!;
   } else if (tightMoonHard) {
     trigger = {
       label: `Moon hard-angled to ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
