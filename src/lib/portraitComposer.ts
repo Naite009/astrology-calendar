@@ -279,34 +279,38 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Pisces: "absorbs everything and needs to drain it out",
   };
 
+  // What this person actually IS and DOES. Concrete behavior a parent or partner
+  // would recognize, not abstract life-tasks. Read as: "is the kind of person who ___".
   const SUN_CORE_MOTIVE: Record<string, string> = {
-    Aries: "make a clean move before doubt takes over",
-    Taurus: "stay steady long enough to know what is actually worth keeping",
-    Gemini: "turn experience into words, questions, and connections",
-    Cancer: "protect what feels emotionally real without becoming responsible for everything",
-    Leo: "be visibly themselves and receive warmth without performing for it",
-    Virgo: "make life work in a concrete way without shrinking into constant correction",
-    Libra: "make a clean choice that stays fair without erasing their own preference",
-    Scorpio: "trust the real story without having to control how much everyone else sees",
-    Sagittarius: "live by a truth big enough to keep moving toward",
-    Capricorn: "build a life that proves capable because it is actually theirs",
-    Aquarius: "keep their own signal clear while still staying connected",
-    Pisces: "stay open-hearted without absorbing more than their system can sort",
+    Aries: "moves first and thinks second, hates being slowed down, and would rather try the thing and find out than sit in a planning conversation",
+    Taurus: "needs warning before things change, settles in slowly, and digs in hard the moment someone tries to push the pace",
+    Gemini: "thinks by talking, switches subjects mid-sentence, and gets restless and snappy when there is nothing new to take in",
+    Cancer: "feels the mood of the room before anyone says anything, takes things personally that were not aimed at them, and protects the people they love by going quiet or going prickly",
+    Leo: "wants real attention from the people who matter, lights up when someone notices the effort, and shuts down hard when they feel ignored or made small",
+    Virgo: "notices what is off before anyone else does, fixes things by tweaking small details, and turns on themselves when they cannot make the situation right",
+    Libra: "checks how the other person will feel before they answer, has a real opinion underneath but hides it to keep the peace, and gets stuck the moment two people want different things",
+    Scorpio: "watches more than they talk, will not be rushed into trusting anyone, and either lets you all the way in or keeps you fully out",
+    Sagittarius: "needs a reason before they will cooperate, gets claustrophobic in small rules and tight schedules, and tells the truth even when it is inconvenient",
+    Capricorn: "takes themselves seriously, wants to be treated as capable, and would rather do it alone than be managed or hovered over",
+    Aquarius: "thinks sideways, needs to be allowed to do it their own way, and goes cold when anyone tries to use guilt or pressure to get them to comply",
+    Pisces: "picks up on what other people are feeling and confuses it with their own, drifts when there is too much going on, and needs quiet to come back to themselves",
   };
 
+  // The actual arena of life where the personality above plays out, in plain
+  // language a parent can recognize in their day.
   const SUN_HOUSE_TASK: Record<number, string> = {
-    1: "That work has to become visible as a real preference, a pace, a yes or no, and a way of moving through the day.",
-    2: "That work is tested through body safety, money, appetite, ownership, and what they decide is worth protecting.",
-    3: "That work comes through daily language, school, siblings, texts, questions, and the small exchanges that shape a day.",
-    4: "That work gets most honest at home, where family patterns and private needs cannot be hidden for long.",
-    5: "That work comes alive through play, performance, romance, creativity, and the right to enjoy what they make.",
-    6: "That work is practiced through routine, health, tasks, skill, and the small things that either regulate or irritate the body.",
-    7: "That work gets revealed through one-on-one bonds, where another person's response becomes a mirror and a test.",
-    8: "That work comes through trust, shared resources, grief, intimacy, and the private conversations that change a person.",
-    9: "That work grows through truth, study, travel, faith, teaching, and the search for a larger frame.",
-    10: "That work becomes public through vocation, reputation, responsibility, and the name they are willing to put on their work.",
-    11: "That work moves through friends, groups, causes, and the future they are trying to build with others.",
-    12: "That work happens quietly through solitude, dreams, retreat, and the parts of life that need privacy before they can speak.",
+    1: "You will see this most in how they walk into a new situation, whether they will speak first, and how hard they push back when someone tries to decide for them.",
+    2: "You will see this most around food, money, possessions, and pace. Their body keeps the score, so when they feel unsafe it shows up as appetite, sleep, or grip on their stuff.",
+    3: "You will see this most in talking, school, siblings, and the constant small back-and-forth of the day. They process out loud, so silence usually means something is wrong.",
+    4: "You will see this most at home and with family. They can hold it together outside the house and then fall apart the moment they walk in, because home is where the real feelings come out.",
+    5: "You will see this most in play, creativity, and what they choose for fun. They need to be allowed to enjoy what they make without it being graded or made useful.",
+    6: "You will see this most in routine, body, and daily tasks. Their nervous system reads the small stuff, so a missed meal or a chaotic morning lands harder than the big things.",
+    7: "You will see this most in one-on-one relationships. They figure themselves out by bouncing off another person, so a best friend or partner has outsized weight on their mood.",
+    8: "You will see this most around trust, privacy, and big feelings they do not show. They have an inner world they protect, and they will test you before they let you near it.",
+    9: "You will see this most in their questions, their beliefs, and their need for a bigger picture. Rules without a reason will not hold them.",
+    10: "You will see this most around achievement, being known for something, and how they handle being watched. They take public failure hard because identity is wrapped into it.",
+    11: "You will see this most around friend groups, fairness, and the future they are trying to build. Belonging matters, but they will not fake themselves to keep it.",
+    12: "You will see this most in what they do not say. They need real solitude to recover, and they process the day inwardly long before they can talk about it.",
   };
 
   const RULER_SIGN_NEED: Record<string, string> = {
