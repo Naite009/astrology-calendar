@@ -270,7 +270,76 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.trigger.detail}</div>
                   </div>
                 </div>
+
+                {/* How the Stress Trigger was derived */}
+                <details className="rounded border border-amber-500/30 bg-background/40 mt-2">
+                  <summary className="cursor-pointer p-2.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-muted/40 rounded">
+                    How was the stress trigger picked?
+                  </summary>
+                  <div className="px-3 pb-3 pt-1 text-xs text-muted-foreground leading-relaxed">
+                    {composed.systemMechanism.trigger.derivation}
+                  </div>
+                </details>
               </div>
+
+              {/* Chain of Command (Dispositor walk) */}
+              {composed.chainOfCommand && composed.chainOfCommand.steps.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-sky-700 dark:text-sky-300" />
+                    <div className="font-semibold text-base">Chain of Command (Who Reports To Whom)</div>
+                  </div>
+                  <div className="rounded-md border border-sky-500/40 bg-background/60 p-3 space-y-3">
+                    {/* Visual chain */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {composed.chainOfCommand.steps.map((s, i) => (
+                        <span key={i} className="inline-flex items-center gap-1.5">
+                          <span className="inline-block rounded border border-sky-500/40 bg-sky-50 dark:bg-sky-950/40 px-2 py-1 text-xs font-medium">
+                            {s.planet} <span className="opacity-60">in {s.sign}</span>
+                          </span>
+                          {i < composed.chainOfCommand!.steps.length - 1 && (
+                            <span className="text-sky-600/70" aria-hidden>→</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Step-by-step reasoning */}
+                    <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
+                      {composed.chainOfCommand.steps.map((s, i) => (
+                        <li key={i} className="leading-relaxed">
+                          <span className="font-medium text-foreground">{s.planet} in {s.sign}.</span>{" "}
+                          {s.reason}
+                        </li>
+                      ))}
+                    </ol>
+
+                    {/* Plain-language narrative: what this means for the person */}
+                    <p className="text-sm leading-relaxed text-foreground/90 pt-2 border-t border-border">
+                      {composed.chainOfCommand.narrative}
+                    </p>
+
+                    {/* Tag the resolution */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {composed.chainOfCommand.finalDispositor && (
+                        <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
+                          Final dispositor: {composed.chainOfCommand.finalDispositor.planet}
+                        </Badge>
+                      )}
+                      {composed.chainOfCommand.mutualReception && (
+                        <Badge variant="outline" className="text-[10px] border-violet-500/40 text-violet-700 dark:text-violet-300">
+                          Mutual reception: {composed.chainOfCommand.mutualReception.a} ↔ {composed.chainOfCommand.mutualReception.b}
+                        </Badge>
+                      )}
+                      {composed.chainOfCommand.loop && (
+                        <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-700 dark:text-amber-300">
+                          Loop: {composed.chainOfCommand.loop.join(" → ")}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Chart Story */}
               {composed.chartStory && (
@@ -286,6 +355,9 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                 </div>
               )}
             </section>
+
+
+
 
 
             {/* ── BOX 4 · OPTIONAL DEEP DIVE (purple) ── collapsibles, not the main reading */}
