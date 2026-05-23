@@ -540,7 +540,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 5. Sun–Chiron specifically: the quiet permission check under every "I want."
   if (sunChiron) {
-    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real wire in the chart, not a mood.`);
+    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real pattern in the chart, not a mood.`);
   } else if (liveEdge && !rulerHardCheck) {
     // Fallback: any other live edge worth naming.
     portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
@@ -695,11 +695,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
     if (phMed && phVolt) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the circuit being stress-tested. ${phSign} ${activePhase.planet} as ${phVolt.phrase} running through ${phMed.phrase} is the exact wire under load. The "pushing back" or "shutting down" you are seeing at this age is not character. It is ${name} finding out how much voltage this hardware can actually carry before the breaker trips.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} finding out how much pressure this part of life can hold before it needs support.`,
       );
     } else if (phSign && phHouse) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the circuit being stress-tested. The behavior that looks like rebellion or shutdown is ${name} running load tests on this specific wire.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the chart part under pressure. The behavior that looks like rebellion or shutdown is ${name} learning what this part of life can carry.`,
       );
     }
   }
