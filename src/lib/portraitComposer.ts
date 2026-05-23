@@ -279,53 +279,54 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Pisces: "absorbs everything and needs to drain it out",
   };
 
-  // What this person actually IS and DOES. Concrete behavior a parent or partner
-  // would recognize, not abstract life-tasks. Read as: "is the kind of person who ___".
-  const SUN_CORE_MOTIVE: Record<string, string> = {
-    Aries: "moves first and thinks second, hates being slowed down, and would rather try the thing and find out than sit in a planning conversation",
-    Taurus: "needs warning before things change, settles in slowly, and digs in hard the moment someone tries to push the pace",
-    Gemini: "thinks by talking, switches subjects mid-sentence, and gets restless and snappy when there is nothing new to take in",
-    Cancer: "feels the mood of the room before anyone says anything, takes things personally that were not aimed at them, and protects the people they love by going quiet or going prickly",
-    Leo: "wants real attention from the people who matter, lights up when someone notices the effort, and shuts down hard when they feel ignored or made small",
-    Virgo: "notices what is off before anyone else does, fixes things by tweaking small details, and turns on themselves when they cannot make the situation right",
-    Libra: "checks how the other person will feel before they answer, has a real opinion underneath but hides it to keep the peace, and gets stuck the moment two people want different things",
-    Scorpio: "watches more than they talk, will not be rushed into trusting anyone, and either lets you all the way in or keeps you fully out",
-    Sagittarius: "needs a reason before they will cooperate, gets claustrophobic in small rules and tight schedules, and tells the truth even when it is inconvenient",
-    Capricorn: "takes themselves seriously, wants to be treated as capable, and would rather do it alone than be managed or hovered over",
-    Aquarius: "thinks sideways, needs to be allowed to do it their own way, and goes cold when anyone tries to use guilt or pressure to get them to comply",
-    Pisces: "picks up on what other people are feeling and confuses it with their own, drifts when there is too much going on, and needs quiet to come back to themselves",
+  // ── The Sun's LIVE mechanic: what the body does reflexively in real time,
+  // before thinking catches up. This is what makes the behavior feel involuntary.
+  const SUN_LIVE: Record<string, string> = {
+    Aries: "answers before the sentence is fully formed, because the body reads hesitation as losing the moment",
+    Taurus: "stalls and goes quiet when the pace shifts, because the body refuses to commit until it has felt the new ground",
+    Gemini: "starts talking to think, jumps to a related angle, and then has three half-formed positions on the table at once",
+    Cancer: "scans the emotional temperature of the room and softens or sharpens the words to match it, before any of that is conscious",
+    Leo: "tracks whether they are being received, and the voice and face adjust to whatever is or is not coming back from the other person",
+    Virgo: "spots the one thing that is off and starts mentally fixing it, which pulls attention out of what is actually being said",
+    Libra: "reads how the other person will take the answer and edits the wording in real time to keep the table even",
+    Scorpio: "goes still and watches, holds the real answer back, and gives a smaller version to see what the other person does with it",
+    Sagittarius: "blurts the honest version before the social filter arrives, and then has to manage the room they just disturbed",
+    Capricorn: "freezes the face, gives a measured answer, and processes the actual reaction privately later",
+    Aquarius: "detaches a half-step, observes the conversation from outside it, and answers from logic rather than from the heat",
+    Pisces: "absorbs the mood of whoever is speaking and starts feeling what they feel, which blurs where their own position even was",
   };
 
-  // The actual arena of life where the personality above plays out, in plain
-  // language a parent can recognize in their day.
-  const SUN_HOUSE_TASK: Record<number, string> = {
-    1: "You will see this most in how they walk into a new situation, whether they will speak first, and how hard they push back when someone tries to decide for them.",
-    2: "You will see this most around food, money, possessions, and pace. Their body keeps the score, so when they feel unsafe it shows up as appetite, sleep, or grip on their stuff.",
-    3: "You will see this most in talking, school, siblings, and the constant small back-and-forth of the day. They process out loud, so silence usually means something is wrong.",
-    4: "You will see this most at home and with family. They can hold it together outside the house and then fall apart the moment they walk in, because home is where the real feelings come out.",
-    5: "You will see this most in play, creativity, and what they choose for fun. They need to be allowed to enjoy what they make without it being graded or made useful.",
-    6: "You will see this most in routine, body, and daily tasks. Their nervous system reads the small stuff, so a missed meal or a chaotic morning lands harder than the big things.",
-    7: "You will see this most in one-on-one relationships. They figure themselves out by bouncing off another person, so a best friend or partner has outsized weight on their mood.",
-    8: "You will see this most around trust, privacy, and big feelings they do not show. They have an inner world they protect, and they will test you before they let you near it.",
-    9: "You will see this most in their questions, their beliefs, and their need for a bigger picture. Rules without a reason will not hold them.",
-    10: "You will see this most around achievement, being known for something, and how they handle being watched. They take public failure hard because identity is wrapped into it.",
-    11: "You will see this most around friend groups, fairness, and the future they are trying to build. Belonging matters, but they will not fake themselves to keep it.",
-    12: "You will see this most in what they do not say. They need real solitude to recover, and they process the day inwardly long before they can talk about it.",
+  // ── What the chart ruler ACTUALLY believes underneath. This is the second
+  // voice that usually arrives after the moment, the one in the "I should have said..."
+  const RULER_BELIEF: Record<string, string> = {
+    Aries: "actually believes in the clean, direct answer and resents the diplomatic version once it has been said",
+    Taurus: "actually believes the first position was right and that changing it under pressure costs something real",
+    Gemini: "actually believes more than one thing at once, and needs to talk it through after the fact to find which one is theirs",
+    Cancer: "actually believes the feeling under the words mattered more than the words, and grieves quietly when the feeling got smoothed over",
+    Leo: "actually believes their take deserved to be honored as their take, and gets quietly hurt when it was minimized to keep the peace",
+    Virgo: "actually believes the precise version was correct and gets stuck reworking the moment to fix what they let slide",
+    Libra: "actually believes there was a fairer way to say it and replays the exchange looking for the version that would have held",
+    Scorpio: "actually believes the unsaid thing was the truth and feels compromised when the surface answer covered it up",
+    Sagittarius: "actually believes in telling the truth out loud and feels off-key for hours after softening it to keep things smooth",
+    Capricorn: "actually believes they should have held the position with more authority and quietly downgrades themselves for not doing it",
+    Aquarius: "actually believes the unconventional answer was the honest one and feels itchy after defaulting to the expected response",
+    Pisces: "actually believes the gentler read was the right one, but cannot always tell whose feeling was driving it",
   };
 
-  const RULER_SIGN_NEED: Record<string, string> = {
-    Aries: "freedom to act before the moment goes cold",
-    Taurus: "proof that the body can trust the pace",
-    Gemini: "language, movement, and more than one angle",
-    Cancer: "emotional safety before action",
-    Leo: "warmth, pride, and a reason to show up wholeheartedly",
-    Virgo: "usefulness, precision, and something practical to improve",
-    Libra: "fairness, proportion, and a choice that can stand up in daylight",
-    Scorpio: "truth, privacy, and no fake answer",
-    Sagittarius: "truth, room, and a bigger reason",
-    Capricorn: "structure, competence, and respect for the long game",
-    Aquarius: "logic, distance from pressure, and permission to do it differently",
-    Pisces: "quiet, imagination, and time to separate their feeling from the atmosphere",
+  // The chart ruler's house, in plain arena language.
+  const HOUSE_LIFE_AREA: Record<number, string> = {
+    1: "their own self-direction and pace",
+    2: "money, body, and what they decide is theirs",
+    3: "everyday conversations, siblings, and the small running commentary of life",
+    4: "home and family, where the real feelings come out",
+    5: "play, creative work, romance, and their kids if they have them",
+    6: "daily routine, work, and the body",
+    7: "their closest one-on-one relationships",
+    8: "trust, shared resources, and the private layer they do not show",
+    9: "belief, travel, learning, and what they are chasing meaning-wise",
+    10: "career, reputation, and how they are seen publicly",
+    11: "friend groups and the future they are trying to build",
+    12: "solitude, the inner world, and what they process behind a curtain",
   };
 
   const MOON_NEED: Record<string, string> = {
@@ -343,57 +344,72 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Pisces: "the feeling settles with low stimulation, rest, and fewer signals coming in",
   };
 
-  const supportBySun: Record<string, string> = {
-    Libra: `Do not push ${name} to decide faster. Name the actual choices, name what would be fair, then ask which option still feels honest when ${name} is allowed to want something too.`,
-    Aries: `Do not turn every impulse into a lecture. Give ${name} a safe first move, then help ${name} look back and choose the next move with more aim.`,
-    Taurus: `Do not rush the shift. Give ${name} a concrete reason, a body anchor, and enough time for the new choice to feel safe.`,
-    Gemini: `Do not demand one final answer too early. Let ${name} talk through the options, then help ${name} pick the one that still makes sense after the talking is done.`,
-    Cancer: `Do not dismiss the feeling as too much. Name the emotional stake first, then help ${name} choose without carrying everyone else's mood.`,
-    Leo: `Do not shame the need to be seen. Give warm attention first, then help ${name} choose from pride rather than performance.`,
-    Virgo: `Do not make perfection the price of moving. Name the next useful step, then let good enough become real progress.`,
-    Scorpio: `Do not force disclosure. Build trust, ask the real question quietly, and let ${name} choose what is safe to share.`,
-    Sagittarius: `Do not trap ${name} in small rules with no reason. Give the larger why, then ask what truth ${name} is willing to act on.`,
-    Capricorn: `Do not confuse caution with coldness. Give ${name} responsibility that is clear, earned, and not loaded with extra judgment.`,
-    Aquarius: `Do not use guilt to create closeness. Give ${name} space to think, then invite connection without asking them to copy the group.`,
-    Pisces: `Do not add more noise when ${name} is flooded. Lower the input, separate what belongs to ${name}, and choose after the feeling has drained.`,
+  // The pace-based fix, per Sun sign. Not "change who you are" but "buy the
+  // seconds the second voice needs to arrive on time."
+  const PACE_FIX: Record<string, string> = {
+    Aries: `The move is to slow the first sentence by one breath. "Let me think about that for a second" gives the considered answer time to load before the impulsive one wins.`,
+    Taurus: `The move is to name the stall instead of disappearing into it. "I need a minute on that" buys the body the time it actually needs without it reading as refusal.`,
+    Gemini: `The move is to pick one position out loud and label it as the working answer, so the other two get held for later instead of all three getting argued at once.`,
+    Cancer: `The move is to name the feeling first, then the position. "That landed as ___, and what I actually think is ___" stops the protective version from becoming the only version.`,
+    Leo: `The move is to ask if their take has been received before adjusting it. "Does that land?" buys a second to see if the smaller version was even needed.`,
+    Virgo: `The move is to let the imperfect first answer stand and add to it instead of fixing it. The correction can come as a second sentence, it does not need to overwrite the first.`,
+    Libra: `The move is to buy 20 to 30 seconds before answering. "Let me sit with that" or "I want to come back to that" gives the scale time to finish weighing, which is where the real answer lives.`,
+    Scorpio: `The move is to say the smaller true thing rather than the smaller safe thing. The full version can wait, but the partial version should not be a decoy.`,
+    Sagittarius: `The move is to add the context before the verdict instead of after. Leading with the reason gives the honest answer somewhere to land that is not a grenade.`,
+    Capricorn: `The move is to give the unfiltered reaction one sentence of air before the composed one takes over. The composed answer is fine, but it should not be the only one in the room.`,
+    Aquarius: `The move is to name that the unconventional take exists, even if not defending it fully in the moment. "There is a different way to look at this, I want to think it through" keeps the signal alive.`,
+    Pisces: `The move is to separate whose feeling it is before answering. One internal check, "is this mine or theirs," then respond from what is actually yours.`,
   };
 
   const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
   const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
-  const identityWork = sunSign ? SUN_CORE_MOTIVE[sunSign] : null;
-  const houseTask = sunHouse ? SUN_HOUSE_TASK[sunHouse] : null;
 
   const portraitParts: string[] = [];
-  if (identityWork) {
-    portraitParts.push(`${name} ${identityWork}. ${houseTask ?? "This is the personality you are actually parenting or partnering with, underneath whatever mood is on top that day."}`);
-  } else {
-    portraitParts.push(`${name}'s chart shows a specific inner rhythm, and the rest of this portrait explains how that rhythm becomes behavior.`);
+
+  // 1. The live mechanic. Why it feels involuntary.
+  if (sunSign && SUN_LIVE[sunSign]) {
+    portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before thinking catches up, which is why it does not feel like a choice, it feels like the only available response.`);
   }
 
-  if (p.chartRuler) {
-    const rulerNeed = RULER_SIGN_NEED[p.chartRuler.rulerSign] || RULER_TEXTURE[p.chartRuler.rulerSign] || "a very specific kind of permission";
-    const rulerArena = p.chartRuler.rulerHouse ? HOUSE_ARENA[p.chartRuler.rulerHouse] : null;
-    portraitParts.push(
-      `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} steers the system, so ${name} cannot simply perform the Sun sign on command. The deeper engine needs ${rulerNeed}` +
-        (rulerArena ? `, especially around ${rulerArena}.` : ".")
-    );
+  // 2. The dissenting voice. Chart ruler in its sign + its arena.
+  if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
+    const arena = p.chartRuler.rulerHouse ? HOUSE_LIFE_AREA[p.chartRuler.rulerHouse] : null;
+    const arenaClause = arena ? ` It runs through ${arena}, which is where this second voice has the most weight.` : "";
+    portraitParts.push(`Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, which ${RULER_BELIEF[p.chartRuler.rulerSign]}.${arenaClause}`);
   }
 
+  // 3. Name the two-pass pattern (or call out when there is no second voice).
+  if (sunSign && p.chartRuler) {
+    const sameSign = p.chartRuler.rulerSign === sunSign;
+    if (sameSign) {
+      portraitParts.push(`Because the engine and the surface are in the same sign, there is no second voice arguing with the first. That is a strength when ${name} is right, and a blind spot when ${name} is not, because no internal pushback shows up to slow the answer down.`);
+    } else {
+      portraitParts.push(`So the pattern is two-pass. The Sun answers in real time, the chart ruler arrives later with what ${name} actually thought. The gap between them is where the "I should have said" lives, and it is not a flaw in the thinking, it is a timing difference between two voices that do not run on the same clock.`);
+    }
+  }
+
+  // 4. Moon regulation layer.
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
-    portraitParts.push(`The Moon adds the regulation key: ${MOON_NEED[moonSignEarly]}. If that need is ignored, the choice may look mental, but the body is still trying to get safe.`);
+    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, both voices get louder and neither one lands cleanly.`);
   }
 
+  // 5. Live aspect, only when it sharpens the picture.
   if (liveEdge) {
     const involvesChiron = liveEdge.a === "Chiron" || liveEdge.b === "Chiron";
     const involvesSun = liveEdge.a === "Sun" || liveEdge.b === "Sun";
     if (involvesSun && involvesChiron) {
-      portraitParts.push(`The tender wire is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°): ${name} is practicing how to have a clear want without turning that want into a trial about whether it is selfish, too much, or allowed.`);
+      portraitParts.push(`The tender wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which means having a clean want still gets re-litigated internally as whether the want is even allowed.`);
     } else {
-      portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), so this pattern gets louder under stress: ${liveEdge.line}`);
+      portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
     }
   }
 
-  portraitParts.push(sunSign && supportBySun[sunSign] ? supportBySun[sunSign] : `The landing is practical: name what is happening, reduce pressure, and help ${name} choose the next honest step instead of asking for a perfect explanation.`);
+  // 6. The pace fix. Timing change, not personality change.
+  if (sunSign && PACE_FIX[sunSign]) {
+    portraitParts.push(PACE_FIX[sunSign]);
+  }
+
+  // PACE_FIX above already gives the actionable landing; no generic supportBySun fallback needed.
 
   const corePortrait = portraitParts.join(" ");
 
