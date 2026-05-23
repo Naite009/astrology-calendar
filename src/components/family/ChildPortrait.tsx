@@ -143,6 +143,16 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </div>
             )}
 
+            {/* 0. Life-stage chapter (one-sentence frame above Core Portrait) */}
+            {composed.lifeStageChapter && (
+              <section className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3">
+                <div className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-1">
+                  Life-Stage Chapter
+                </div>
+                <p className="text-sm leading-relaxed">{composed.lifeStageChapter}</p>
+              </section>
+            )}
+
             {/* 1. Core Portrait */}
             <section className="rounded-md border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-transparent p-4">
               <div className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">
