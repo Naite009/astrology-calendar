@@ -263,7 +263,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                   <div className="font-semibold text-base">How The System Works</div>
                 </div>
                 <p className="leading-relaxed text-foreground/90">{composed.systemMechanism.synthesis}</p>
-                <div className="grid sm:grid-cols-3 gap-2 pt-2">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-2">
                   <div className="rounded border border-sky-500/30 bg-background/60 p-2.5">
                     <div className="text-[10px] uppercase tracking-wider text-sky-700 dark:text-sky-300 font-semibold mb-1">Driver</div>
                     <div className="text-sm font-medium">{composed.systemMechanism.driver.label}</div>
@@ -279,7 +279,36 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <div className="text-sm font-medium">{composed.systemMechanism.trigger.label}</div>
                     <div className="text-xs text-muted-foreground mt-1">{composed.systemMechanism.trigger.detail}</div>
                   </div>
+                  <div className="rounded border border-violet-500/30 bg-background/60 p-2.5">
+                    <div className="text-[10px] uppercase tracking-wider text-violet-700 dark:text-violet-300 font-semibold mb-1">Dispositor</div>
+                    {composed.chainOfCommand?.finalDispositor ? (
+                      <>
+                        <div className="text-sm font-medium">
+                          {composed.chainOfCommand.finalDispositor.planet} in {composed.chainOfCommand.finalDispositor.sign}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">the final boss — every other planet eventually reports here</div>
+                      </>
+                    ) : composed.chainOfCommand?.mutualReception ? (
+                      <>
+                        <div className="text-sm font-medium">
+                          {composed.chainOfCommand.mutualReception.a} ↔ {composed.chainOfCommand.mutualReception.b}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">mutual reception — two co-bosses trading authority</div>
+                      </>
+                    ) : composed.chainOfCommand?.loop ? (
+                      <>
+                        <div className="text-sm font-medium">{composed.chainOfCommand.loop.join(" → ")}</div>
+                        <div className="text-xs text-muted-foreground mt-1">dispositor loop — authority circulates, no single boss</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-sm font-medium">—</div>
+                        <div className="text-xs text-muted-foreground mt-1">no final dispositor resolved</div>
+                      </>
+                    )}
+                  </div>
                 </div>
+
 
                 {/* How the Stress Trigger was derived */}
                 <details className="rounded border border-amber-500/30 bg-background/40 mt-2">
