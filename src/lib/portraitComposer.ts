@@ -745,6 +745,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
           portraitParts.push(
             `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough.${satReal} Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
           );
+        } else if (partnerName === "Jupiter") {
+          // Mercury–Jupiter mutual reception: impression vs. explanation loop.
+          // NOT discipline or correctness (that is Saturn). This is about
+          // translating a vibe, image, feeling, or private knowing into words.
+          portraitParts.push(
+            `Mercury and Jupiter are in mutual reception: Mercury in ${merc.sign} is ruled by Jupiter, and Jupiter in ${partner.sign} is ruled by Mercury. This creates a loop between impression and explanation. ${name} may know something first as a feeling, image, vibe, or private knowing, and only later find the words for it. Jupiter in ${partner.sign} keeps trying to explain, joke, teach, or name the thing, while Mercury in ${merc.sign} keeps absorbing more than can be said cleanly.`,
+          );
         } else {
           const PARTNER_VOICE: Record<string, string> = {
             Mars:   "anger and survival heat",
