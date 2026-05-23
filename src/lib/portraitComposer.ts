@@ -194,6 +194,17 @@ export interface ComposedPortrait {
     reaction: string;
     synthesis: string;
   };
+  // NEW: Real-time activation order — what actually fires when the moment hits.
+  realTimeSequence?: {
+    intro: string;
+    priorityNote: string;
+    steps: Array<{
+      cue: string;       // "In real time:" / "Then:" / "At the same time:" / etc.
+      lead: string;      // "Sun in Scorpio (1st house)"
+      action: string;    // what it does in the moment
+      rank: string;      // why this step was picked (priority rule)
+    }>;
+  };
   bridge?: {
     paragraph: string;
     placements: string[];
@@ -202,13 +213,12 @@ export interface ComposedPortrait {
   misreads: Array<{ looksLike: string; actuallyIs: string }>;
   whatHelps: string[];
   chartStory: string;
-  // NEW: Dispositor chain walked from chart ruler to its final boss.
   chainOfCommand?: {
     steps: Array<{ planet: string; sign: string; house: number | null; reason: string }>;
     finalDispositor?: { planet: string; sign: string; house: number | null };
-    loop?: string[];                  // names of planets in the cycle
+    loop?: string[];
     mutualReception?: { a: string; b: string; aSign: string; bSign: string };
-    narrative: string;                // full plain-language explanation
+    narrative: string;
   };
   themesPicked: string[];
 }
@@ -1032,7 +1042,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         };
         steps.push({
           planet: nextName, sign: nextPlanet.sign, house: nextHouse,
-          reason: `Mutual reception with ${currentName}. They host each other's sign, so they trade authority back and forth instead of one being the final boss.`,
+          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, so authority passes back and forth between them rather than landing in one place.`,
         });
         break;
       }
@@ -1064,10 +1074,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mutualReception) {
       narrative +=
         `${mutualReception.a} and ${mutualReception.b} are in mutual reception (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
-        `and ${mutualReception.b} sits in ${mutualReception.bSign}). They both host each other's sign, which means they ` +
-        `borrow each other's strength. In real life this looks like ${name} being able to switch between two different ways ` +
-        `of operating depending on the situation, without losing themselves in either. Neither one is the boss; they are ` +
-        `partners running the show together.`;
+        `and ${mutualReception.b} sits in ${mutualReception.bSign}). Each one is sitting in the other's sign, so authority ` +
+        `passes back and forth between them. In real life this looks like ${name} switching between two different operating ` +
+        `modes depending on which situation is in front of them, with neither mode fully overriding the other.`;
     } else if (loop) {
       narrative +=
         `There is no single final boss. ${loop.join(", ")} all point at each other in a loop, so authority circulates ` +
@@ -1085,6 +1094,139 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
 
     chainOfCommand = { steps, finalDispositor, loop, mutualReception, narrative };
+  }
+
+  // ── WHAT ACTUALLY RUNS THE MOMENT ──────────────────────────────────────────
+  // Ranked, sequential activation order. Priority rule:
+  //  1. Tight hard aspects under 2° (override everything)
+  //  2. Life-stage anchor planet (Chiron/Saturn/Mars/etc.)
+  //  3. Mercury (speech timing, especially 12th house)
+  //  4. Chart ruler (how the person operates)
+  //  5. Oppositions/squares (conflict patterns)
+  //  6. Mars (pressure response)
+  let realTimeSequence: ComposedPortrait["realTimeSequence"] = undefined;
+  {
+    const seqSteps: NonNullable<ComposedPortrait["realTimeSequence"]>["steps"] = [];
+
+    // Pick the tightest hard aspect under 2° (overrides everything if present).
+    const overrideAspect = tightAspects.find(
+      a => a.orb < 2 && (a.aspect === "conjunction" || a.aspect === "opposition" || a.aspect === "square"),
+    );
+
+    // Life-stage anchor planet (already computed earlier as activePhase).
+    const stagePlanet = activePhase?.planet;
+    const stagePlanetData = stagePlanet ? (chart?.planets as any)?.[stagePlanet] : undefined;
+    const stagePlanetSign = stagePlanetData?.sign as string | undefined;
+    const stagePlanetHouse = calcHouse(stagePlanetData?.sign, stagePlanetData?.degree, stagePlanetData?.minutes);
+
+    // STEP 1 — TURNS ON FIRST
+    // Tight hard aspect overrides; else life-stage planet; else Sun's live reflex.
+    if (overrideAspect) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `${overrideAspect.a} ${overrideAspect.aspect} ${overrideAspect.b} (${overrideAspect.orb.toFixed(1)}°)`,
+        action: `fires first because it is the tightest hard aspect in the chart, so it is already on before anything else can boot up. ${overrideAspect.line || `the friction between ${overrideAspect.a} and ${overrideAspect.b} is the first thing the system has to deal with`}.`,
+        rank: "Priority 1: tight hard aspect under 2° (overrides everything).",
+      });
+    } else if (stagePlanet && stagePlanetSign && stagePlanetHouse) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `${stagePlanetSign} ${stagePlanet} (${ord(stagePlanetHouse)} house)`,
+        action: `turns on first because ${name} is in the ${activePhase!.label} right now, so this planet is already carrying load before the moment starts.`,
+        rank: "Priority 2: life-stage anchor planet for this chapter.",
+      });
+    } else if (sunSign && SUN_LIVE[sunSign]) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `${sunSign} Sun${sunHouse ? ` (${ord(sunHouse)} house)` : ""}`,
+        action: `turns on first and ${SUN_LIVE[sunSign]}. This happens before thinking catches up.`,
+        rank: "Priority fallback: Sun's reflex mechanic.",
+      });
+    }
+
+    // STEP 2 — IMMEDIATELY INTERFERES (Mercury check)
+    if (mercurySign && mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse]) {
+      const merc = `${mercurySign} Mercury (${ord(mercuryHouse)} house)`;
+      seqSteps.push({
+        cue: "Then:",
+        lead: merc,
+        action: `checks whether the words are ready. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there while the language is not.`,
+        rank: mercuryHouse === 12
+          ? "Priority 3: Mercury in the 12th — speech timing lags behind comprehension."
+          : "Priority 3: Mercury check on speech timing.",
+      });
+    } else if (mercurySign) {
+      seqSteps.push({
+        cue: "Then:",
+        lead: `${mercurySign} Mercury`,
+        action: `checks how the answer wants to come out — the words have to clear this filter before they leave the mouth.`,
+        rank: "Priority 3: Mercury check on speech timing.",
+      });
+    }
+
+    // STEP 3 — DELAYS OR DISTORTS (chart ruler or 2nd-tightest hard aspect)
+    if (p.chartRuler) {
+      const rulerLabel = `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}` +
+        (p.chartRuler.rulerHouse ? ` (${ord(p.chartRuler.rulerHouse)} house)` : "");
+      const belief = RULER_BELIEF[p.chartRuler.rulerSign];
+      seqSteps.push({
+        cue: "At the same time:",
+        lead: rulerLabel,
+        action: belief
+          ? `is running underneath and ${belief}. That second voice causes the in-the-moment answer to come out partly edited — what reaches the room is not the whole truth, and the unsaid part keeps running in the background.`
+          : `is running underneath, which causes the in-the-moment answer to come out partly edited.`,
+        rank: "Priority 4: chart ruler — how this person actually operates underneath.",
+      });
+    }
+
+    // STEP 4 — ADDS PRESSURE (oppositions/squares involving the ruler, or Mars sign)
+    if (rulerHardCheck && rulerCheckOther && RULER_CHECK_PLAIN[rulerCheckOther]) {
+      seqSteps.push({
+        cue: "If the moment matters:",
+        lead: `${rulerName} ${rulerHardCheck.aspect} ${rulerCheckOther} (${rulerHardCheck.orb.toFixed(1)}°)`,
+        action: `increases the load — ${RULER_CHECK_PLAIN[rulerCheckOther]}. The honest answer has to clear that gate first, which costs seconds the moment may not give.`,
+        rank: "Priority 5: opposition/square from the chart ruler to a heavy planet.",
+      });
+    } else if (marsSign && MARS_PRESSURE[marsSign]) {
+      seqSteps.push({
+        cue: "If the moment matters:",
+        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
+        action: `increases the pressure response — ${MARS_PRESSURE[marsSign]}. So the more it matters, the harder it gets to land lightly.`,
+        rank: "Priority 6: Mars pressure response when stakes go up.",
+      });
+    }
+
+    // STEP 5 — RESULT (what actually comes out)
+    if (sunSign) {
+      const sunLive = SUN_LIVE[sunSign];
+      const translator = `${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)} house` : ""}`;
+      seqSteps.push({
+        cue: "Result:",
+        lead: translator,
+        action: sunLive
+          ? `delivers the version that makes it out — ${name} ${sunLive}. That is what the room actually gets to see in the moment, even though it is not the whole signal.`
+          : `delivers the version that makes it out — partial, edited for the room, and not the whole signal.`,
+        rank: "What the room gets: the Sun's translated output, not the underlying engine.",
+      });
+    }
+
+    // STEP 6 — AFTER THE MOMENT (the "I should have said" voice)
+    if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
+      seqSteps.push({
+        cue: "After the moment:",
+        lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
+        action: `the second voice arrives late — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the "I should have said..." replay, and it is not regret, it is the chart ruler finishing the sentence offline.`,
+        rank: "Closing: chart ruler's real position, which usually arrives after the moment is over.",
+      });
+    }
+
+    if (seqSteps.length >= 2) {
+      realTimeSequence = {
+        intro: `When everything in ${name}'s chart fires at once, the planets do not all hit at the same volume. They activate in a specific order, and the order is what makes the moment feel the way it does.`,
+        priorityNote: `Ranked by: (1) tight hard aspects under 2°, (2) life-stage anchor, (3) Mercury speech timing, (4) chart ruler, (5) oppositions/squares, (6) Mars pressure response.`,
+        steps: seqSteps,
+      };
+    }
   }
 
   // Themes picked (for transparency)
@@ -1106,6 +1248,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     lifeStageChapter,
     corePortrait,
     systemMechanism,
+    realTimeSequence,
     bridge,
     stageAsk,
     misreads: misreads.slice(0, 3),

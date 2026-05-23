@@ -166,6 +166,38 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               )}
             </section>
 
+            {/* ── NEW · WHAT ACTUALLY RUNS THE MOMENT ── ranked real-time activation */}
+            {composed.realTimeSequence && composed.realTimeSequence.steps.length > 0 && (
+              <section className="rounded-lg border-2 border-rose-500/50 bg-rose-50/60 dark:bg-rose-950/20 p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500" aria-hidden />
+                  <div className="text-[10px] uppercase tracking-widest text-rose-700 dark:text-rose-300 font-bold">
+                    What Actually Runs The Moment
+                  </div>
+                </div>
+                <p className="text-sm leading-relaxed text-foreground/90">
+                  {composed.realTimeSequence.intro}
+                </p>
+                <ol className="space-y-3">
+                  {composed.realTimeSequence.steps.map((s, i) => (
+                    <li key={i} className="rounded-md border border-rose-500/30 bg-background/60 p-3">
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="text-[10px] uppercase tracking-wider text-rose-700 dark:text-rose-300 font-bold">
+                          {s.cue}
+                        </span>
+                        <span className="font-semibold text-sm">{s.lead}</span>
+                      </div>
+                      <p className="text-sm leading-relaxed mt-1.5">{s.action}</p>
+                      <div className="text-[10px] text-muted-foreground/70 italic mt-1.5">{s.rank}</div>
+                    </li>
+                  ))}
+                </ol>
+                <div className="rounded border border-rose-500/20 bg-background/40 p-2.5 text-[11px] text-muted-foreground leading-relaxed">
+                  <span className="font-semibold text-foreground">Priority used:</span> {composed.realTimeSequence.priorityNote}
+                </div>
+              </section>
+            )}
+
             {/* ── BOX 1 · REAL LIFE (green) ── what to do, no astrology language */}
             <section className="rounded-lg border-2 border-emerald-500/50 bg-emerald-50/60 dark:bg-emerald-950/20 p-4 space-y-5">
               <div className="flex items-center gap-2">
@@ -293,7 +325,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <div className="text-sm font-medium">
                           {composed.chainOfCommand.mutualReception.a} ↔ {composed.chainOfCommand.mutualReception.b}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">mutual reception — two co-bosses trading authority</div>
+                        <div className="text-xs text-muted-foreground mt-1">mutual reception — authority passes back and forth between them</div>
                       </>
                     ) : composed.chainOfCommand?.loop ? (
                       <>
@@ -388,9 +420,6 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <div className="font-semibold text-base">The Chart Story Behind It</div>
                   </div>
                   <p className="leading-relaxed text-foreground/90">{composed.chartStory}</p>
-                  <div className="text-[10px] text-muted-foreground/70 italic">
-                    Themes selected: {composed.themesPicked.join(" · ")}
-                  </div>
                 </div>
               )}
             </section>
