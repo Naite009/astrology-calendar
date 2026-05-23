@@ -1128,8 +1128,18 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const stagePlanetHouse = calcHouse(stagePlanetData?.sign, stagePlanetData?.degree, stagePlanetData?.minutes);
 
     // STEP 1 — TURNS ON FIRST
-    // Tight hard aspect overrides; else life-stage planet; else Sun's live reflex.
-    if (overrideAspect) {
+    // Sun–Chiron tight (orb < 2.5°) is treated as the PERMISSION GATE — every
+    // signal in the system has to pass an "is this allowed?" check before it
+    // can fully boot. This overrides other tight aspects because it gates them.
+    const permissionGate = sunChiron && sunChiron.orb < 2.5 ? sunChiron : undefined;
+    if (permissionGate) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `Sun ${permissionGate.aspect} Chiron (${permissionGate.orb.toFixed(1)}°)`,
+        action: `runs first as the permission gate. Before anything else can boot — before the body reacts, before words form, before the ruler weighs in — the system checks "is this allowed to be said or done?" That check sits underneath every other planet. It is not one factor among many; it is the gate everything else has to pass through.`,
+        rank: "Priority 1: Sun–Chiron permission gate. Everything else routes through this check first.",
+      });
+    } else if (overrideAspect) {
       seqSteps.push({
         cue: "In real time:",
         lead: `${overrideAspect.a} ${overrideAspect.aspect} ${overrideAspect.b} (${overrideAspect.orb.toFixed(1)}°)`,
@@ -1152,27 +1162,50 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       });
     }
 
-    // STEP 2 — IMMEDIATELY INTERFERES (Mercury check)
+    // STEP 1b — BODY REACTION (Mars). When Mars is fast/in 1st house, the body
+    // reacts BEFORE the words are ready, regardless of Mercury's processing speed.
+    if (marsSign && (marsHouse === 1 || ["Aries","Leo","Sagittarius","Scorpio","Gemini"].includes(marsSign))) {
+      seqSteps.push({
+        cue: "Then immediately:",
+        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
+        action: `the body reacts before any sentence forms — intensity rises in the chest, tone shifts, posture changes. This is not slow; it is fast and contained. Mars activates BEFORE Mercury has the words ready.`,
+        rank: "Priority 2: Mars body-reaction, which fires ahead of language when stakes register.",
+      });
+    }
+
+    // STEP 2 — MERCURY (processing speed vs delivery lag)
     if (mercurySign && mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse]) {
       const merc = `${mercurySign} Mercury (${ord(mercuryHouse)} house)`;
       seqSteps.push({
         cue: "Then:",
         lead: merc,
-        action: `checks whether the words are ready. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there while the language is not.`,
+        action: `attempts the words. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there in real time while the language is not. What exits at this stage is often partial, edited, or delayed — not wrong, just incomplete.`,
         rank: mercuryHouse === 12
-          ? "Priority 3: Mercury in the 12th — speech timing lags behind comprehension."
-          : "Priority 3: Mercury check on speech timing.",
+          ? "Priority 3: Mercury in the 12th — output is partial/delayed because expression lags behind comprehension."
+          : "Priority 3: Mercury attempts the output; house gates how complete it is.",
       });
     } else if (mercurySign) {
       seqSteps.push({
         cue: "Then:",
         lead: `${mercurySign} Mercury`,
-        action: `checks how the answer wants to come out — the words have to clear this filter before they leave the mouth.`,
-        rank: "Priority 3: Mercury check on speech timing.",
+        action: `attempts the words — these are the actual output of the system, and they have to clear the value/safety filters next before they exit cleanly.`,
+        rank: "Priority 3: Mercury attempts the output.",
       });
     }
 
-    // STEP 3 — DELAYS OR DISTORTS (chart ruler or 2nd-tightest hard aspect)
+    // STEP 3 — VALUE / SAFETY FILTERS (Venus = truth/honesty, Jupiter = safety/meaning)
+    const venusPlanet = (chart?.planets as any)?.Venus;
+    const jupiterPlanet = (chart?.planets as any)?.Jupiter;
+    if (venusPlanet?.sign && jupiterPlanet?.sign) {
+      seqSteps.push({
+        cue: "Filtered through:",
+        lead: `Venus in ${venusPlanet.sign} and Jupiter in ${jupiterPlanet.sign}`,
+        action: `Venus runs the truth/honesty filter; Jupiter runs the safety/meaning filter. Mercury's words get shaped by both before they exit, which is why the in-the-moment answer is calibrated for the room — not edited to please, but weighted between honesty and safety.`,
+        rank: "Priority 4: value filters (Venus = truth, Jupiter = safety/meaning) that shape Mercury's output.",
+      });
+    }
+
+    // STEP 4 — CHART RULER (operating-system gate)
     if (p.chartRuler) {
       const rulerLabel = `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}` +
         (p.chartRuler.rulerHouse ? ` (${ord(p.chartRuler.rulerHouse)} house)` : "");
@@ -1181,50 +1214,42 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         cue: "At the same time:",
         lead: rulerLabel,
         action: belief
-          ? `is running underneath and ${belief}. That second voice causes the in-the-moment answer to come out partly edited — what reaches the room is not the whole truth, and the unsaid part keeps running in the background.`
-          : `is running underneath, which causes the in-the-moment answer to come out partly edited.`,
-        rank: "Priority 4: chart ruler — how this person actually operates underneath.",
+          ? `runs underneath as the operating system and ${belief}. That second voice keeps editing the in-the-moment answer, so what reaches the room is not the whole truth, and the unsaid part keeps running in the background.`
+          : `runs underneath as the operating system, which keeps editing the in-the-moment answer.`,
+        rank: "Priority 5: chart ruler — the operating system gate.",
       });
     }
 
-    // STEP 4 — ADDS PRESSURE (oppositions/squares involving the ruler, or Mars sign)
-    if (rulerHardCheck && rulerCheckOther && RULER_CHECK_PLAIN[rulerCheckOther]) {
-      seqSteps.push({
-        cue: "If the moment matters:",
-        lead: `${rulerName} ${rulerHardCheck.aspect} ${rulerCheckOther} (${rulerHardCheck.orb.toFixed(1)}°)`,
-        action: `increases the load — ${RULER_CHECK_PLAIN[rulerCheckOther]}. The honest answer has to clear that gate first, which costs seconds the moment may not give.`,
-        rank: "Priority 5: opposition/square from the chart ruler to a heavy planet.",
-      });
-    } else if (marsSign && MARS_PRESSURE[marsSign]) {
-      seqSteps.push({
-        cue: "If the moment matters:",
-        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
-        action: `increases the pressure response — ${MARS_PRESSURE[marsSign]}. So the more it matters, the harder it gets to land lightly.`,
-        rank: "Priority 6: Mars pressure response when stakes go up.",
-      });
-    }
-
-    // STEP 5 — RESULT (what actually comes out)
+    // STEP 5 — IDENTITY FILTER (Sun) — NOT the deliverer. The Sun shapes what
+    // the system is even WILLING to claim out loud, but the words themselves
+    // come from Mercury.
     if (sunSign) {
       const sunLive = SUN_LIVE[sunSign];
-      const translator = `${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)} house` : ""}`;
       seqSteps.push({
-        cue: "Result:",
-        lead: translator,
+        cue: "Identity filter:",
+        lead: `${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)} house` : ""}`,
         action: sunLive
-          ? `delivers the version that makes it out — ${name} ${sunLive}. That is what the room actually gets to see in the moment, even though it is not the whole signal.`
-          : `delivers the version that makes it out — partial, edited for the room, and not the whole signal.`,
-        rank: "What the room gets: the Sun's translated output, not the underlying engine.",
+          ? `does not deliver the words — Mercury does that. The Sun decides what is allowed to be claimed as "me" in the answer. ${name} ${sunLive}, and whatever does not fit that gets quietly cut from the version that exits.`
+          : `does not deliver the words. It filters what the system is willing to claim as "me" before Mercury releases the sentence.`,
+        rank: "Identity filter: what the system is willing to claim, applied to Mercury's output.",
       });
     }
 
-    // STEP 6 — AFTER THE MOMENT (the "I should have said" voice)
+    // STEP 6 — RESULT (partial / incomplete output)
+    seqSteps.push({
+      cue: "Result:",
+      lead: `Mercury delivers, filtered`,
+      action: `what reaches the room is Mercury's words after passing through the value filters, the ruler's gate, and the identity filter. It is not wrong — it is incomplete. The full version arrives later, after pressure drops.`,
+      rank: "What the room gets: a filtered Mercury output, not the full underlying signal.",
+    });
+
+    // STEP 7 — AFTER THE MOMENT (chart ruler finishes offline)
     if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
       seqSteps.push({
         cue: "After the moment:",
         lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
-        action: `the second voice arrives late — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the "I should have said..." replay, and it is not regret, it is the chart ruler finishing the sentence offline.`,
-        rank: "Closing: chart ruler's real position, which usually arrives after the moment is over.",
+        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. Final authority on the outcome sits with Mercury's timing and the Chiron permission check, not with Mars or with what got said.`,
+        rank: "Closing: chart ruler finishes offline. Final authority = Mercury timing + Chiron permission.",
       });
     }
 
