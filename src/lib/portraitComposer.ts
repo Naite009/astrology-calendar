@@ -728,10 +728,31 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
   }
 
+  // 6d-ii. VALUE-LOOP RECEPTION — Venus and Jupiter in each other's signs.
+  // Venus = truth/honesty/worth. Jupiter = safety/meaning/stability.
+  // When they host each other, the value system has no final authority and
+  // decisions oscillate between honesty and safety instead of landing.
+  {
+    const v = (chart?.planets as any)?.Venus;
+    const j = (chart?.planets as any)?.Jupiter;
+    if (v?.sign && j?.sign && RULER_OF[v.sign] === "Jupiter" && RULER_OF[j.sign] === "Venus") {
+      portraitParts.push(
+        `Venus and Jupiter are in mutual reception (Venus in ${v.sign}, Jupiter in ${j.sign}). Venus runs truth, honesty, and worth; Jupiter runs safety, meaning, and stability. With them hosting each other, the value system has no final authority — decisions oscillate between "what is honest" and "what is safe" instead of landing cleanly. That is why ${name} can revisit the same call repeatedly: the loop has no endpoint built in.`,
+      );
+    }
+  }
+
+
+
 
   // 7. Moon regulation layer (after the mechanism, before the fix).
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
-    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    const mHouse = calcHouse((chart?.planets as any)?.Moon?.sign, (chart?.planets as any)?.Moon?.degree, (chart?.planets as any)?.Moon?.minutes);
+    const privacyNote =
+      mHouse === 12 || mHouse === 8 || mHouse === 4
+        ? ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`
+        : "";
+    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
   }
 
   // 8. The pace fix. Timing change, not personality change.
@@ -768,19 +789,45 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     : { label: "their outward style", detail: "the way the engine reaches other people" };
 
   // Pick trigger
+  // Ranking rule (corrected): tight aspects under 2° outrank pressure
+  // signatures. Sun–Chiron tight contact is treated specifically as the
+  // permission gate the whole system runs through, so it goes first.
   const tightHard = tightAspects.find(a => a.quality === "hard");
   const tightMoonHard = moonAspectsHard[0];
+  const tightSunChiron = sunChiron && sunChiron.orb < 2 ? sunChiron : undefined;
   let trigger: { label: string; detail: string; derivation: string };
   let reaction: string;
   let bridgeWhy: string; // why this trigger relates to THIS engine
-  if (p.pressureSignature) {
+  if (tightSunChiron) {
+    trigger = {
+      label: `Sun ${tightSunChiron.aspect} Chiron (${tightSunChiron.orb.toFixed(1)}°)`,
+      detail: `the permission gate every other planet has to pass through`,
+      derivation:
+        `Picked because Sun–Chiron is tight (orb ${tightSunChiron.orb.toFixed(1)}°, under 2°), which makes it the ` +
+        `permission gate of the chart. It is not "one factor among many" — it is the check ("is this allowed?") ` +
+        `that runs underneath Mercury, Mars, Venus, and the ruler. It outranks Mars pressure and Venus filters here.`,
+    };
+    reaction = `the system runs the "is this allowed?" check before anything else can fully land, so the in-the-moment answer comes out partial or held back`;
+    bridgeWhy = `the engine has to clear that permission gate every time it tries to express, which is why the same situation can stall in the same place repeatedly`;
+  } else if (tightHard) {
+    trigger = {
+      label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
+      detail: `two internal voices that pull against each other in real time`,
+      derivation:
+        `Picked because this is the tightest hard aspect in the chart (orb ${tightHard.orb.toFixed(1)}°, under 2.5°). ` +
+        `Tight hard aspects outrank pressure signatures because they are loud and active in daily life; they show up ` +
+        `as internal arguments that do not resolve.`,
+    };
+    reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
+    bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
+  } else if (p.pressureSignature) {
     trigger = {
       label: `${p.pressureSignature.body} sitting in the ${p.pressureSignature.trigger}`,
       detail: p.pressureSignature.need,
       derivation:
-        `Picked because ${p.pressureSignature.body} (one of the engine planets) is sitting in ${p.pressureSignature.trigger}, ` +
-        `which is the strongest pressure pattern in the chart. Pressure signatures override aspects and Saturn here ` +
-        `because they describe where the engine itself is under containment, not just where it meets resistance.`,
+        `Picked because there is no tight hard aspect or Sun–Chiron contact to outrank it, and ${p.pressureSignature.body} ` +
+        `is sitting in ${p.pressureSignature.trigger} — a pressure pattern where the engine itself is under containment, ` +
+        `not just meeting resistance. This is the strongest pattern AVAILABLE here, not the strongest in the chart overall.`,
     };
     reaction = p.pressureSignature.consequence;
     bridgeWhy =
@@ -789,17 +836,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         : p.pressureSignature.trigger === "Scorpio"
         ? `the same engine runs deep and won't let things stay surface, which means small pressures stack up internally`
         : `the same engine is wired straight into Pluto, so ordinary friction lands with extra weight`;
-  } else if (tightHard) {
-    trigger = {
-      label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
-      detail: `two internal voices that pull against each other in real time`,
-      derivation:
-        `Picked because this is the tightest hard aspect in the chart (orb ${tightHard.orb.toFixed(1)}°, under 2.5°), ` +
-        `which means it's loud and active in daily life. Tight squares, oppositions, and conjunctions are felt as ` +
-        `internal arguments that don't resolve, so they show up as repeated friction points.`,
-    };
-    reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
-    bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
+  
   } else if (tightMoonHard) {
     trigger = {
       label: `Moon hard-angled to ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
@@ -1050,7 +1087,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         };
         steps.push({
           planet: nextName, sign: nextPlanet.sign, house: nextHouse,
-          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, so authority passes back and forth between them rather than landing in one place.`,
+          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, which creates a loop with no final authority — decisions do not land cleanly, they oscillate between the two.`,
         });
         break;
       }
@@ -1082,9 +1119,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mutualReception) {
       narrative +=
         `${mutualReception.a} and ${mutualReception.b} are in mutual reception (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
-        `and ${mutualReception.b} sits in ${mutualReception.bSign}). Each one is sitting in the other's sign, so authority ` +
-        `passes back and forth between them. In real life this looks like ${name} switching between two different operating ` +
-        `modes depending on which situation is in front of them, with neither mode fully overriding the other.`;
+        `and ${mutualReception.b} sits in ${mutualReception.bSign}). This creates a loop with no final authority — ` +
+        `decisions involving these two do not land cleanly, they oscillate. In daily life, ${name} can swing between the ` +
+        `two modes depending on which one got activated first, with neither fully overriding the other.`;
     } else if (loop) {
       narrative +=
         `There is no single final boss. ${loop.join(", ")} all point at each other in a loop, so authority circulates ` +
@@ -1128,8 +1165,18 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const stagePlanetHouse = calcHouse(stagePlanetData?.sign, stagePlanetData?.degree, stagePlanetData?.minutes);
 
     // STEP 1 — TURNS ON FIRST
-    // Tight hard aspect overrides; else life-stage planet; else Sun's live reflex.
-    if (overrideAspect) {
+    // Sun–Chiron tight (orb < 2.5°) is treated as the PERMISSION GATE — every
+    // signal in the system has to pass an "is this allowed?" check before it
+    // can fully boot. This overrides other tight aspects because it gates them.
+    const permissionGate = sunChiron && sunChiron.orb < 2.5 ? sunChiron : undefined;
+    if (permissionGate) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `Sun ${permissionGate.aspect} Chiron (${permissionGate.orb.toFixed(1)}°)`,
+        action: `runs first as the permission gate. Before anything else can boot — before the body reacts, before words form, before the ruler weighs in — the system checks "is this allowed to be said or done?" That check sits underneath every other planet. It is not one factor among many; it is the gate everything else has to pass through.`,
+        rank: "Priority 1: Sun–Chiron permission gate. Everything else routes through this check first.",
+      });
+    } else if (overrideAspect) {
       seqSteps.push({
         cue: "In real time:",
         lead: `${overrideAspect.a} ${overrideAspect.aspect} ${overrideAspect.b} (${overrideAspect.orb.toFixed(1)}°)`,
@@ -1152,27 +1199,50 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       });
     }
 
-    // STEP 2 — IMMEDIATELY INTERFERES (Mercury check)
+    // STEP 1b — BODY REACTION (Mars). When Mars is fast/in 1st house, the body
+    // reacts BEFORE the words are ready, regardless of Mercury's processing speed.
+    if (marsSign && (marsHouse === 1 || ["Aries","Leo","Sagittarius","Scorpio","Gemini"].includes(marsSign))) {
+      seqSteps.push({
+        cue: "Then immediately:",
+        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
+        action: `the body reacts before any sentence forms — intensity rises in the chest, tone shifts, posture changes. This is not slow; it is fast and contained. Mars activates BEFORE Mercury has the words ready.`,
+        rank: "Priority 2: Mars body-reaction, which fires ahead of language when stakes register.",
+      });
+    }
+
+    // STEP 2 — MERCURY (processing speed vs delivery lag)
     if (mercurySign && mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse]) {
       const merc = `${mercurySign} Mercury (${ord(mercuryHouse)} house)`;
       seqSteps.push({
         cue: "Then:",
         lead: merc,
-        action: `checks whether the words are ready. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there while the language is not.`,
+        action: `attempts the words. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there in real time while the language is not. What exits at this stage is often partial, edited, or delayed — not wrong, just incomplete.`,
         rank: mercuryHouse === 12
-          ? "Priority 3: Mercury in the 12th — speech timing lags behind comprehension."
-          : "Priority 3: Mercury check on speech timing.",
+          ? "Priority 3: Mercury in the 12th — output is partial/delayed because expression lags behind comprehension."
+          : "Priority 3: Mercury attempts the output; house gates how complete it is.",
       });
     } else if (mercurySign) {
       seqSteps.push({
         cue: "Then:",
         lead: `${mercurySign} Mercury`,
-        action: `checks how the answer wants to come out — the words have to clear this filter before they leave the mouth.`,
-        rank: "Priority 3: Mercury check on speech timing.",
+        action: `attempts the words — these are the actual output of the system, and they have to clear the value/safety filters next before they exit cleanly.`,
+        rank: "Priority 3: Mercury attempts the output.",
       });
     }
 
-    // STEP 3 — DELAYS OR DISTORTS (chart ruler or 2nd-tightest hard aspect)
+    // STEP 3 — VALUE / SAFETY FILTERS (Venus = truth/honesty, Jupiter = safety/meaning)
+    const venusPlanet = (chart?.planets as any)?.Venus;
+    const jupiterPlanet = (chart?.planets as any)?.Jupiter;
+    if (venusPlanet?.sign && jupiterPlanet?.sign) {
+      seqSteps.push({
+        cue: "Filtered through:",
+        lead: `Venus in ${venusPlanet.sign} and Jupiter in ${jupiterPlanet.sign}`,
+        action: `Venus runs the truth/honesty filter; Jupiter runs the safety/meaning filter. Mercury's words get shaped by both before they exit, which is why the in-the-moment answer is calibrated for the room — not edited to please, but weighted between honesty and safety.`,
+        rank: "Priority 4: value filters (Venus = truth, Jupiter = safety/meaning) that shape Mercury's output.",
+      });
+    }
+
+    // STEP 4 — CHART RULER (operating-system gate)
     if (p.chartRuler) {
       const rulerLabel = `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}` +
         (p.chartRuler.rulerHouse ? ` (${ord(p.chartRuler.rulerHouse)} house)` : "");
@@ -1181,57 +1251,49 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         cue: "At the same time:",
         lead: rulerLabel,
         action: belief
-          ? `is running underneath and ${belief}. That second voice causes the in-the-moment answer to come out partly edited — what reaches the room is not the whole truth, and the unsaid part keeps running in the background.`
-          : `is running underneath, which causes the in-the-moment answer to come out partly edited.`,
-        rank: "Priority 4: chart ruler — how this person actually operates underneath.",
+          ? `runs underneath as the operating system and ${belief}. That second voice keeps editing the in-the-moment answer, so what reaches the room is not the whole truth, and the unsaid part keeps running in the background.`
+          : `runs underneath as the operating system, which keeps editing the in-the-moment answer.`,
+        rank: "Priority 5: chart ruler — the operating system gate.",
       });
     }
 
-    // STEP 4 — ADDS PRESSURE (oppositions/squares involving the ruler, or Mars sign)
-    if (rulerHardCheck && rulerCheckOther && RULER_CHECK_PLAIN[rulerCheckOther]) {
-      seqSteps.push({
-        cue: "If the moment matters:",
-        lead: `${rulerName} ${rulerHardCheck.aspect} ${rulerCheckOther} (${rulerHardCheck.orb.toFixed(1)}°)`,
-        action: `increases the load — ${RULER_CHECK_PLAIN[rulerCheckOther]}. The honest answer has to clear that gate first, which costs seconds the moment may not give.`,
-        rank: "Priority 5: opposition/square from the chart ruler to a heavy planet.",
-      });
-    } else if (marsSign && MARS_PRESSURE[marsSign]) {
-      seqSteps.push({
-        cue: "If the moment matters:",
-        lead: `${marsSign} Mars${marsHouse ? ` (${ord(marsHouse)} house)` : ""}`,
-        action: `increases the pressure response — ${MARS_PRESSURE[marsSign]}. So the more it matters, the harder it gets to land lightly.`,
-        rank: "Priority 6: Mars pressure response when stakes go up.",
-      });
-    }
-
-    // STEP 5 — RESULT (what actually comes out)
+    // STEP 5 — IDENTITY FILTER (Sun) — NOT the deliverer. The Sun shapes what
+    // the system is even WILLING to claim out loud, but the words themselves
+    // come from Mercury.
     if (sunSign) {
       const sunLive = SUN_LIVE[sunSign];
-      const translator = `${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)} house` : ""}`;
       seqSteps.push({
-        cue: "Result:",
-        lead: translator,
+        cue: "Identity filter:",
+        lead: `${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)} house` : ""}`,
         action: sunLive
-          ? `delivers the version that makes it out — ${name} ${sunLive}. That is what the room actually gets to see in the moment, even though it is not the whole signal.`
-          : `delivers the version that makes it out — partial, edited for the room, and not the whole signal.`,
-        rank: "What the room gets: the Sun's translated output, not the underlying engine.",
+          ? `does not deliver the words — Mercury does that. The Sun decides what is allowed to be claimed as "me" in the answer. ${name} ${sunLive}, and whatever does not fit that gets quietly cut from the version that exits.`
+          : `does not deliver the words. It filters what the system is willing to claim as "me" before Mercury releases the sentence.`,
+        rank: "Identity filter: what the system is willing to claim, applied to Mercury's output.",
       });
     }
 
-    // STEP 6 — AFTER THE MOMENT (the "I should have said" voice)
+    // STEP 6 — RESULT (partial / incomplete output)
+    seqSteps.push({
+      cue: "Result:",
+      lead: `Mercury delivers, filtered`,
+      action: `what reaches the room is Mercury's words after passing through the value filters, the ruler's gate, and the identity filter. It is not wrong — it is incomplete. The full version arrives later, after pressure drops.`,
+      rank: "What the room gets: a filtered Mercury output, not the full underlying signal.",
+    });
+
+    // STEP 7 — AFTER THE MOMENT (chart ruler finishes offline)
     if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
       seqSteps.push({
         cue: "After the moment:",
         lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
-        action: `the second voice arrives late — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the "I should have said..." replay, and it is not regret, it is the chart ruler finishing the sentence offline.`,
-        rank: "Closing: chart ruler's real position, which usually arrives after the moment is over.",
+        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. Final authority on the outcome sits with Mercury's timing and the Chiron permission check, not with Mars or with what got said.`,
+        rank: "Closing: chart ruler finishes offline. Final authority = Mercury timing + Chiron permission.",
       });
     }
 
     if (seqSteps.length >= 2) {
       realTimeSequence = {
         intro: `When everything in ${name}'s chart fires at once, the planets do not all hit at the same volume. They activate in a specific order, and the order is what makes the moment feel the way it does.`,
-        priorityNote: `Ranked by: (1) tight hard aspects under 2°, (2) life-stage anchor, (3) Mercury speech timing, (4) chart ruler, (5) oppositions/squares, (6) Mars pressure response.`,
+        priorityNote: `Ranked by: (1) Sun–Chiron permission gate when tight, (2) tightest hard aspect or life-stage anchor, (3) Mars body-reaction (fires ahead of language), (4) Mercury attempts the words (delayed if 12th/8th/4th house), (5) Venus + Jupiter value filters, (6) chart ruler operating system, (7) Sun as identity filter. Mercury delivers the words; the Sun does not.`,
         steps: seqSteps,
       };
     }
@@ -1250,10 +1312,14 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
       Cancer: "mood-paced", Pisces: "mood-paced",
     };
+    // Mars body-reaction speed: how fast the body fires when something hits.
+    // Scorpio is FAST (immediate, intense, contained) — not slow. Slow Mars
+    // is reserved for earth signs that dig in and refuse to be moved.
     const MARS_SPEED: Record<string, Speed> = {
       Aries: "fast", Leo: "fast", Sagittarius: "fast", Gemini: "fast",
+      Scorpio: "fast",
       Libra: "balanced", Aquarius: "balanced", Virgo: "balanced",
-      Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
+      Taurus: "slow", Capricorn: "slow",
       Cancer: "mood-paced", Pisces: "mood-paced",
     };
     const MOON_RESET: Record<string, Speed> = {
@@ -1261,6 +1327,14 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       Leo: "balanced", Virgo: "balanced", Libra: "balanced", Aquarius: "balanced",
       Taurus: "slow", Capricorn: "slow",
       Cancer: "mood-paced", Scorpio: "mood-paced", Pisces: "mood-paced",
+    };
+    // Mercury EXPRESSION (not processing) lag by house. Sign sets processing
+    // speed; house sets how long delivery takes after the thought forms. The
+    // 12th, 8th, and 4th delay output even when Mercury processes quickly.
+    const MERC_EXPRESSION_LAG: Record<number, "immediate" | "balanced" | "delayed"> = {
+      1: "immediate", 3: "immediate", 5: "immediate", 10: "immediate",
+      2: "balanced", 6: "balanced", 7: "balanced", 9: "balanced", 11: "balanced",
+      4: "delayed", 8: "delayed", 12: "delayed",
     };
 
     // House-as-medium phrasing (processing condition, NOT life area).
@@ -1285,12 +1359,19 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const moonHouseHere = calcHouse(moonPlanet?.sign, moonPlanet?.degree, moonPlanet?.minutes);
 
     if (mercurySign) {
+      const expLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
+      const expNote =
+        expLag === "delayed"
+          ? ` Processing is accurate at this speed, but DELIVERY is delayed because Mercury sits in the ${ord(mercuryHouse!)} house — the words arrive later than the understanding does.`
+          : expLag === "immediate"
+          ? ` Delivery is immediate at this speed because Mercury sits in the ${ord(mercuryHouse!)} house — words exit as fast as they form.`
+          : "";
       signals.push({
         role: "Processing + language speed",
         planet: "Mercury",
         sign: mercurySign,
         house: mercuryHouse,
-        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.`,
+        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.${expNote}`,
       });
     }
     if (marsSign) {
@@ -1345,46 +1426,55 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       addMedium(p.chartRuler.rulerName, p.chartRuler.rulerHouse);
     }
 
-    // TIMING COLLISION — compare Mercury vs Mars speed, and check Moon reset.
+    // TIMING COLLISION — compare Mercury DELIVERY (sign speed + house lag) vs
+    // Mars BODY-REACTION speed. Mercury can process fast in sign and still
+    // deliver late because of house (12th/8th/4th delay expression).
     const mercSpeed: Speed = mercurySign ? (MERC_SPEED[mercurySign] ?? "balanced") : "balanced";
     const marsSpeed: Speed = marsSign ? (MARS_SPEED[marsSign] ?? "balanced") : "balanced";
     const moonSpeed: Speed = moonSignEarly ? (MOON_RESET[moonSignEarly] ?? "balanced") : "balanced";
+    const mercExpLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
 
     const speedRank: Record<Speed, number> = { fast: 3, balanced: 2, "mood-paced": 1, slow: 1 };
-    const mercFaster = speedRank[mercSpeed] > speedRank[marsSpeed];
-    const marsFaster = speedRank[marsSpeed] > speedRank[mercSpeed];
+    // Effective delivery rank: down-shift Mercury by one tier if house delays expression.
+    const mercDeliveryRank = Math.max(1, speedRank[mercSpeed] - (mercExpLag === "delayed" ? 2 : 0));
+    const marsRank = speedRank[marsSpeed];
+    const mercFaster = mercDeliveryRank > marsRank;
+    const marsFaster = marsRank > mercDeliveryRank;
 
     let comparison: string;
     let mismatch: string;
-    if (mercFaster) {
-      comparison = `Mercury in ${mercurySign} (${mercSpeed}) processes faster than Mars in ${marsSign} (${marsSpeed}) reacts.`;
-      mismatch = `The words arrive before the body is ready to back them up. That shows up as talking past a feeling, then later noticing the body never caught up. Pressure is felt in the gap between what was said and what the body actually did with it.`;
-    } else if (marsFaster) {
-      comparison = `Mars in ${marsSign} (${marsSpeed}) reacts faster than Mercury in ${mercurySign} (${mercSpeed}) can form the words.`;
-      mismatch = `The body moves first and the words show up late. That shows up as a reaction (a tightening, a leaving, a shutdown) before there is language for it, which can read to other people as out of nowhere when it is actually delayed processing.`;
+    if (marsFaster) {
+      comparison = `Mars in ${marsSign} reacts immediately in the body (${marsSpeed}), while Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words later${mercExpLag === "delayed" ? " — processing is accurate, but expression lags because of the house" : ""}.`;
+      mismatch = `The body reacts first. The words arrive after. That shows up as a tightening, a shift in tone, or going still BEFORE there is language for it. To the room it can read as out-of-nowhere when it is actually accurate processing arriving on a slower delivery clock.`;
+    } else if (mercFaster) {
+      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words faster than Mars in ${marsSign} (${marsSpeed}) gets the body to back them up.`;
+      mismatch = `The words arrive before the body is ready. That shows up as sounding articulate in the moment, then noticing later that the body never agreed. Pressure sits in the gap between what was said and what the body actually did with it.`;
     } else {
-      comparison = `Mercury in ${mercurySign} and Mars in ${marsSign} run at the same speed (${mercSpeed}).`;
-      mismatch = `Reaction and language fire together, which is efficient but leaves no buffer. There is no second voice arriving late to soften the first, so whatever comes out in the moment is the version the room gets to keep.`;
+      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} and Mars in ${marsSign} arrive at the same time.`;
+      mismatch = `Reaction and language fire together with no buffer. Whatever comes out in the moment is the version the room keeps — there is no second voice arriving late to soften it.`;
     }
-    // Moon reset note (overwhelm if reset is slow while everything else is fast/mood-paced).
-    const moonNote =
-      moonSpeed === "slow" || moonSpeed === "mood-paced"
-        ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
-        : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
-        ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up, which can look like brushing it off when actually it just got metabolized first.`
-        : "";
-    mismatch += moonNote;
+    // Moon reset note — also house-aware. Moon in 12th resets PRIVATELY, later, not in the moment.
+    const moonInPrivateHouse = moonHouseHere === 12 || moonHouseHere === 8 || moonHouseHere === 4;
+    const moonHouseNote = moonInPrivateHouse
+      ? ` And the Moon in ${moonSignEarly}${moonHouseHere ? ` (${ord(moonHouseHere)} house)` : ""} does not reset in the moment — regulation happens later, privately, away from the room that triggered it.`
+      : moonSpeed === "slow" || moonSpeed === "mood-paced"
+      ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
+      : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
+      ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up.`
+      : "";
+    mismatch += moonHouseNote;
 
-    // REAL-TIME OUTPUT
-    const fastest = mercFaster ? "Mercury" : marsFaster ? "Mars" : "Mercury and Mars together";
-    const slowest = mercFaster ? "Mars" : marsFaster ? "Mercury" : "the Moon";
+    // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
+    // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
+    const fastest = marsFaster ? "Mars (body reaction)" : mercFaster ? "Mercury (words)" : "Mercury and Mars together";
+    const slowest = marsFaster ? "Mercury (the words)" : mercFaster ? "Mars (the body)" : "the Moon";
     const realTimeOutput = {
-      comesOut: `What actually exits the body first is whatever ${fastest} produces — ${mercFaster ? "a sentence" : marsFaster ? "a physical reaction or a tone shift" : "speech and reaction at the same time"} — shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium.`,
+      comesOut: `What exits first is whatever ${fastest} produces. ${marsFaster ? `A physical reaction or shift in tone hits the room before any sentence forms.` : mercFaster ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then attempts the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium${mercExpLag === "delayed" ? " — which often means the output is partial, edited, or arrives later than the understanding" : ""}.`,
       blocked: p.chartRuler
-        ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the output before it lands, so the full version is held back until it passes that gate.`
-        : `What gets blocked is the part of the response that has not finished forming yet — the system will not release it half-formed.`,
-      late: `What shows up late is ${slowest}'s version of the answer. That is the "I should have said..." or "I should have done..." that arrives minutes or hours after the moment.`,
-      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They hear or see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
+        ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the words BEFORE they exit, so the full version is held back until it clears that gate.`
+        : `What gets blocked is the part of the response that has not finished forming — the system will not release it half-formed.`,
+      late: `What shows up late is ${slowest}'s version. That is the "I should have said..." or the body finally registering what happened — minutes or hours after the moment.`,
+      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
     };
 
     // HUMAN TRANSLATION
