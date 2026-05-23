@@ -1256,7 +1256,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (seqSteps.length >= 2) {
       realTimeSequence = {
         intro: `When everything in ${name}'s chart fires at once, the planets do not all hit at the same volume. They activate in a specific order, and the order is what makes the moment feel the way it does.`,
-        priorityNote: `Ranked by: (1) tight hard aspects under 2°, (2) life-stage anchor, (3) Mercury speech timing, (4) chart ruler, (5) oppositions/squares, (6) Mars pressure response.`,
+        priorityNote: `Ranked by: (1) Sun–Chiron permission gate when tight, (2) tightest hard aspect or life-stage anchor, (3) Mars body-reaction (fires ahead of language), (4) Mercury attempts the words (delayed if 12th/8th/4th house), (5) Venus + Jupiter value filters, (6) chart ruler operating system, (7) Sun as identity filter. Mercury delivers the words; the Sun does not.`,
         steps: seqSteps,
       };
     }
