@@ -1575,16 +1575,33 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       : ` The Moon regulates after the moment, on its own rhythm.`;
     mismatch += moonNote;
 
+    // Detect Mercury–Saturn traditional mutual reception here too, so the
+    // "late" copy can name the loop instead of pointing at the Moon.
+    const _mercP = (chart?.planets as any)?.Mercury;
+    const _satP = (chart?.planets as any)?.Saturn;
+    const mercSatReceptionLocal =
+      _mercP?.sign && _satP?.sign &&
+      RULER_OF[_mercP.sign] === "Saturn" && RULER_OF[_satP.sign] === "Mercury";
+
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
-    const lastOut = bodyFirst ? "Mercury (the words)" : wordsFirst ? "Mars (the body)" : "the Moon (regulation)";
+    const moonRegLine = moonTiming === "belonging"
+      ? `The Moon in ${moonSignEarly} in the 11th settles only when ${name} feels emotionally safe and still included.`
+      : moonTiming === "delayed" || moonTiming === "private"
+      ? `The Moon in ${moonSignEarly} resets later, privately, on its own timeline.`
+      : moonTiming === "in-the-moment"
+      ? `The Moon in ${moonSignEarly} can reset in the room itself.`
+      : `The Moon in ${moonSignEarly} resets on its own rhythm after the moment.`;
+    const lateLine = mercSatReceptionLocal
+      ? `What shows up late: The Mercury/Saturn loop keeps reviewing the answer after the moment. That is the "I should have said…" or "was that accurate enough?" replay. What regulates late: ${moonRegLine}`
+      : `What shows up late: The processing loop keeps reviewing the answer after the moment ("I should have said…" or "was that accurate enough?"). What regulates late: ${moonRegLine}`;
     const realTimeOutput = {
       comesOut: `What exits first is ${firstOut}. ${bodyFirst ? `A physical reaction or shift in tone hits the room before any sentence forms.` : wordsFirst ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then delivers the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} medium${mercTiming === "delayed" ? " (output is partial or arrives later than the understanding)" : mercTiming === "strained" ? " (output has to be worked through the body before it lands)" : ""}.`,
       blocked: p.chartRuler
         ? `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} processes the words BEFORE they exit — Mercury wants the answer to be true to ${name}'s own thinking, and the ruler checks whether it is precise enough to release. The full version is held back until it clears that check.`
         : `What gets blocked is the part of the response that has not finished forming; the system will not release it half-formed.`,
-      late: `What shows up late is ${lastOut}'s version. That is the "I should have said..." or the body finally registering what happened, minutes or hours after the moment.`,
+      late: lateLine,
       othersExperience: `What others experience is the ${firstOut} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
     };
 
