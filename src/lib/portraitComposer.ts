@@ -724,10 +724,6 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 5b. BRIDGE — "Why This Works": connect 2 real placements to a real behavior,
   // in plain language, no jargon. This is the most important section.
-  const mercurySign =
-    p.cognitiveProfile?.mercurySign ||
-    (chart?.planets?.Mercury as any)?.sign ||
-    undefined;
   const moonSign = (chart?.planets?.Moon as any)?.sign || undefined;
 
   type Anchor = { label: string; feel: string };
