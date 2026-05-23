@@ -227,50 +227,67 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   );
   const tightAspects = (p.tightestAspects ?? []).filter(a => a.orb <= 2.5);
 
-  // 1. THESIS: "At this stage, X is learning ___, but they regulate best through ___."
-  const learning =
-    (sunSign && SUN_LEARNING[sunSign]) ||
-    "what this season is actually asking of them";
-
-  // Regulation source: prefer explicit Mars house discharge, then Moon-sign safety,
-  // then 12th-house cloaking note.
-  // moon sign is read later from `chart` when computing the bridge.
-  // We derive moon-sign regulation from Moon hard aspects' presence; otherwise fall back to Mars sign.
+  // Sources for the one-sentence + bridge
   const marsSign = p.energyDischarge?.marsSign;
-  const regulationParts: string[] = [];
-  if (marsSign && MARS_RESET[marsSign]) regulationParts.push(MARS_RESET[marsSign]);
-  // Pull a moon-sign safety hint from the cognitive profile if not available; otherwise generic.
-  if (regulationParts.length === 0) regulationParts.push("steady rhythm, honest tone, and a body that has been moved");
-  const regulation = regulationParts[0];
+  const marsHouse = p.energyDischarge?.marsHouse ?? null;
+  const sunHouse = p.identityInvitation.sun?.house ?? null;
 
-  const stageWord =
-    phase === "child" ? "this stage of childhood"
-    : phase === "elder" ? "this eldering chapter"
-    : "this chapter of adulthood";
+  // ── 1. ONE-SENTENCE PORTRAIT ────────────────────────────────────────────────
+  // Concrete, behavioral, about WHO this person is. No "learning / regulates"
+  // teacher framing. No abstract verbs. If you read it out loud, it should
+  // sound like a real person you know.
+  const SUN_PERSON: Record<string, string> = {
+    Aries:       `${name} is built to move first and ask questions later. Fast starts, hot reactions, and the energy is gone almost as soon as it lands.`,
+    Taurus:      `${name} moves at their own pace and will not be rushed. Once they have planted in a thing, getting them to switch course takes time and a real reason.`,
+    Gemini:      `${name} thinks by talking and skips between angles, often before anyone realizes they have started. They need to say it out loud to know what they actually believe.`,
+    Cancer:      `${name} reads the mood of a room before anyone speaks. What they pick up usually turns out to be accurate, even when no one else sees it.`,
+    Leo:         `${name} runs on warmth. Sincere attention and they open up; a flat or dismissive response and they go quiet in a hurt way, not a calm one.`,
+    Virgo:       `${name} can see what is not working in almost any situation, and they have a hard time relaxing until the small thing actually gets fixed.`,
+    Libra:       `${name} is constantly tracking how a choice will land on every person in the room. What looks like stalling is usually that tracking happening in the background.`,
+    Scorpio:     `${name} watches a situation before they speak, gives you the edited version first, and only shows the real version once they trust the room.`,
+    Sagittarius: `${name} needs the bigger reason or the rule does not mean anything to them. They will leave a thing they don't believe in faster than they will fake interest in it.`,
+    Capricorn:   `${name} carries weight other people don't see and takes the long view by default. They would rather do something alone than watch it be done badly.`,
+    Aquarius:    `${name} questions the rule itself before they follow it. They prefer their own method, and they pull back when they feel pushed into a box that doesn't fit.`,
+    Pisces:      `${name} absorbs the feelings of a room without meaning to. They need real time alone to figure out which of those feelings are actually theirs.`,
+  };
+  const houseHints: Record<number, string> = {
+    1: "and most of this lives right on the surface, in how they show up the second they walk in",
+    2: "and a lot of it runs through what they own, what they're worth, and what feels safe in the body",
+    3: "and most of this comes out through how they talk and the small daily back-and-forth",
+    4: "and a lot of it stays in the home and inside the family, not out in public",
+    5: "and most of this comes out through play, creating, performing, or the kids and crushes in their life",
+    6: "and most of this gets worked out through daily routine, work, and the body",
+    7: "and a lot of it only shows up in close one-on-one relationships, not on their own",
+    8: "and a lot of it lives in the private, intense, sharing-with-one-person layer of life",
+    9: "and a lot of it pushes them toward travel, big ideas, and chasing what they believe in",
+    10: "and most of it shows up in their public role and what they end up being known for",
+    11: "and a lot of it lives in their friend group and the future they're trying to build",
+    12: "and a lot of it happens behind a curtain — they need time alone before it can come out",
+  };
+  const baseSentence =
+    (sunSign && SUN_PERSON[sunSign]) ||
+    `${name} is a specific person, not a chart of placements, and what follows is the shape of how they actually move.`;
+  const houseTail = sunHouse && houseHints[sunHouse] ? ` ${houseHints[sunHouse].replace(/^and /, "And ")}.` : "";
+  const oneSentence = `${baseSentence}${houseTail}`;
 
-  const oneSentence = `At ${stageWord}, ${name} is learning ${learning}, but regulates best through ${regulation}.`;
-
-  // 1b. SYSTEM MECHANISM — driver / translator / trigger / reaction.
-  // Show how placements interact, not as separate traits.
-  // Driver: chart ruler (what runs the system). Fallback: Sun.
-  // Translator: Sun-sign expression OR Rising (how it gets out into the world).
-  // Trigger: tightest hard aspect, else pressure signature, else Moon hard aspect,
-  //          else Saturn placement.
-  // Reaction: Mars-sign discharge / pressure consequence / Moon hard-aspect note.
+  // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
+  // Driver = chart ruler (engine). Translator = Sun (how it comes out).
+  // Trigger = the strongest stress signature. The synthesis MUST bridge the
+  // trigger back to the engine so it reads as one connected story, not a list.
   const driver = p.chartRuler
     ? {
         label: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}` +
           (p.chartRuler.rulerHouse ? ` (${ord(p.chartRuler.rulerHouse)} house)` : ""),
-        detail: `the chart ruler, the engine running underneath everything ${name} does`,
+        detail: `the engine running underneath everything ${name} does`,
       }
     : sunSign
-    ? { label: `${sunSign} Sun`, detail: `the core motive ${name} is here to practice` }
+    ? { label: `${sunSign} Sun`, detail: `the core thing ${name} is here to be` }
     : { label: "their core engine", detail: "the part of them that runs the show" };
 
   const translator = sunSign
     ? {
-        label: `${sunSign} Sun` + (p.identityInvitation.sun?.house ? ` in the ${ord(p.identityInvitation.sun.house)} house` : ""),
-        detail: `how that engine actually comes out in the world (${SUN_LEARNING[sunSign] ?? "their way of being seen"})`,
+        label: `${sunSign} Sun` + (sunHouse ? ` in the ${ord(sunHouse)} house` : ""),
+        detail: `how that engine actually shows up out in the world`,
       }
     : p.chartRuler
     ? {
@@ -279,60 +296,71 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       }
     : { label: "their outward style", detail: "the way the engine reaches other people" };
 
-  // Pick the strongest stress trigger
+  // Pick trigger
   const tightHard = tightAspects.find(a => a.quality === "hard");
   const tightMoonHard = moonAspectsHard[0];
   let trigger: { label: string; detail: string };
   let reaction: string;
+  let bridgeWhy: string; // why this trigger relates to THIS engine
   if (p.pressureSignature) {
     trigger = {
-      label: `${p.pressureSignature.body} under ${p.pressureSignature.trigger} pressure`,
-      detail: `the engine is in a place that needs ${p.pressureSignature.needLabel.toLowerCase()}`,
+      label: `${p.pressureSignature.body} sitting in the ${p.pressureSignature.trigger}`,
+      detail: p.pressureSignature.need,
     };
     reaction = p.pressureSignature.consequence;
+    bridgeWhy =
+      p.pressureSignature.trigger === "12th house"
+        ? `the same engine is sitting behind a curtain, so it has to be processed privately before it can come out`
+        : p.pressureSignature.trigger === "Scorpio"
+        ? `the same engine runs deep and won't let things stay surface, which means small pressures stack up internally`
+        : `the same engine is wired straight into Pluto, so ordinary friction lands with extra weight`;
   } else if (tightHard) {
     trigger = {
       label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
-      detail: `the two strongest internal voices pulling against each other`,
+      detail: `two internal voices that pull against each other in real time`,
     };
-    reaction = tightHard.line || `${name}'s system locks up or over-corrects until one side wins`;
+    reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
+    bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
   } else if (tightMoonHard) {
     trigger = {
-      label: `Moon ${tightMoonHard.aspect} ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
+      label: `Moon hard-angled to ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
       detail: `the safety system has a tender wire on it`,
     };
     reaction = marsSign && MARS_RESET[marsSign]
-      ? `the body needs to discharge before anything else lands (${MARS_RESET[marsSign]})`
-      : `the feeling goes underground until the room feels safe again`;
+      ? `the body needs to discharge first (${MARS_RESET[marsSign]}), and only then can the feeling get named`
+      : `the feeling goes underground until the room feels steady enough to set it down`;
+    bridgeWhy = `the engine can't relax while the safety system is still bracing, so regulation has to happen before anything else can land`;
   } else if (p.masterySpot.saturn) {
     trigger = {
       label: `Saturn in ${p.masterySpot.saturn.sign}` + (p.masterySpot.saturn.house ? ` (${ord(p.masterySpot.saturn.house)} house)` : ""),
-      detail: `the area where ${name} fears doing it wrong in front of someone`,
+      detail: `the area where the fear of doing it wrong is loudest`,
     };
-    reaction = `${name} either freezes, over-prepares, or quietly opts out before being judged`;
+    reaction = `${name} either freezes, over-prepares, or quietly opts out before anyone has a chance to judge it`;
+    bridgeWhy = `the engine wants to move, and Saturn is the part holding it back to make sure it gets done right`;
   } else {
     trigger = { label: "stress in their key area", detail: "what knocks the system off balance" };
     reaction = marsSign && MARS_RESET[marsSign]
-      ? `the body needs to reset (${MARS_RESET[marsSign]})`
+      ? `the body needs to reset (${MARS_RESET[marsSign]}) before anything else can be processed`
       : `the system goes quiet until it can find ground again`;
+    bridgeWhy = `the engine and the stress are wired to each other, so one always activates the other`;
   }
 
   const synthesis =
-    `${name} is driven by ${driver.label}, ` +
-    `but expresses through ${translator.label}, ` +
-    `so when ${trigger.label} shows up, the system reacts by ${reaction}.`;
+    `${name}'s engine is ${driver.label}, and it comes out into the world as ${translator.label}. ` +
+    `The pressure point is ${trigger.label} — and ${bridgeWhy}. ` +
+    `So when that pressure hits, ${reaction}.`;
 
   const systemMechanism = { driver, translator, trigger, reaction, synthesis };
 
-  // 2. STAGE ASK
+  // 2. STAGE ASK — about who this person IS in this chapter, not about adults.
   const stageAsk = {
     title: p.developmentalAnchor.stage,
     body:
       phase === "child"
-        ? `What the adults around ${name} need to understand right now: ${p.developmentalAnchor.body}`
+        ? `This is the chapter ${name} is actually in right now: ${p.developmentalAnchor.body}`
         : phase === "elder"
         ? p.developmentalAnchor.body
-        : `This is not a generic personality read. This is the developmental cycle ${name} is actually inside: ${p.developmentalAnchor.body}`,
+        : `This is the cycle ${name} is inside right now (not a generic life stage): ${p.developmentalAnchor.body}`,
   };
 
   // 3. MISREADS — pick up to 3
