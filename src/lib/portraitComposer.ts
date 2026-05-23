@@ -1250,10 +1250,14 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
       Cancer: "mood-paced", Pisces: "mood-paced",
     };
+    // Mars body-reaction speed: how fast the body fires when something hits.
+    // Scorpio is FAST (immediate, intense, contained) — not slow. Slow Mars
+    // is reserved for earth signs that dig in and refuse to be moved.
     const MARS_SPEED: Record<string, Speed> = {
       Aries: "fast", Leo: "fast", Sagittarius: "fast", Gemini: "fast",
+      Scorpio: "fast",
       Libra: "balanced", Aquarius: "balanced", Virgo: "balanced",
-      Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
+      Taurus: "slow", Capricorn: "slow",
       Cancer: "mood-paced", Pisces: "mood-paced",
     };
     const MOON_RESET: Record<string, Speed> = {
@@ -1261,6 +1265,14 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       Leo: "balanced", Virgo: "balanced", Libra: "balanced", Aquarius: "balanced",
       Taurus: "slow", Capricorn: "slow",
       Cancer: "mood-paced", Scorpio: "mood-paced", Pisces: "mood-paced",
+    };
+    // Mercury EXPRESSION (not processing) lag by house. Sign sets processing
+    // speed; house sets how long delivery takes after the thought forms. The
+    // 12th, 8th, and 4th delay output even when Mercury processes quickly.
+    const MERC_EXPRESSION_LAG: Record<number, "immediate" | "balanced" | "delayed"> = {
+      1: "immediate", 3: "immediate", 5: "immediate", 10: "immediate",
+      2: "balanced", 6: "balanced", 7: "balanced", 9: "balanced", 11: "balanced",
+      4: "delayed", 8: "delayed", 12: "delayed",
     };
 
     // House-as-medium phrasing (processing condition, NOT life area).
