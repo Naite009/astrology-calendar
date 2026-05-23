@@ -1050,7 +1050,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         };
         steps.push({
           planet: nextName, sign: nextPlanet.sign, house: nextHouse,
-          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, so authority passes back and forth between them rather than landing in one place.`,
+          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, which creates a loop with no final authority — decisions do not land cleanly, they oscillate between the two.`,
         });
         break;
       }
