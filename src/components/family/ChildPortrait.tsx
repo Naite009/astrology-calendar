@@ -418,7 +418,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                         <div className="text-sm font-medium">
                           {composed.chainOfCommand.mutualReception.a} ↔ {composed.chainOfCommand.mutualReception.b}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">mutual reception — authority passes back and forth between them</div>
+                        <div className="text-xs text-muted-foreground mt-1">traditional mutual reception — closed loop between original thinking and self-correction</div>
                       </>
                     ) : composed.chainOfCommand?.loop ? (
                       <>
