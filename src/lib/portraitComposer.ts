@@ -1300,105 +1300,154 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
 
   // ── PLANET INTERACTION SYSTEM ──────────────────────────────────────────────
-  // Signal (planet+sign as a function) → Medium (house as processing condition)
-  // → Timing Collision (compare speeds) → Real-time Output → Human Translation.
+  // Timing comes from HOUSE (and aspects), not from sign. Signs describe STYLE
+  // only. Planet functions are strict: Mercury = words/expression, Mars =
+  // body reaction (not words), Moon = regulation/reset (not speech), Sun =
+  // identity filter, chart ruler = operating system.
   let planetInteraction: ComposedPortrait["planetInteraction"] = undefined;
   {
-    // Speed classes — how fast a planet's signal forms and exits in this sign.
-    type Speed = "fast" | "balanced" | "slow" | "mood-paced";
-    const MERC_SPEED: Record<string, Speed> = {
-      Aries: "fast", Gemini: "fast", Leo: "fast", Sagittarius: "fast", Aquarius: "fast",
-      Libra: "balanced", Virgo: "balanced",
-      Taurus: "slow", Capricorn: "slow", Scorpio: "slow",
-      Cancer: "mood-paced", Pisces: "mood-paced",
+    // Mercury EXPRESSION timing by house (delivery, not understanding).
+    type MercTiming = "immediate" | "balanced" | "strained" | "delayed" | "private";
+    const MERC_HOUSE_TIMING: Record<number, MercTiming> = {
+      1: "immediate", 3: "immediate",
+      5: "balanced", 7: "balanced", 9: "balanced", 10: "balanced", 11: "balanced", 2: "balanced",
+      6: "strained",
+      4: "private", 8: "private",
+      12: "delayed",
     };
-    // Mars body-reaction speed: how fast the body fires when something hits.
-    // Scorpio is FAST (immediate, intense, contained) — not slow. Slow Mars
-    // is reserved for earth signs that dig in and refuse to be moved.
-    const MARS_SPEED: Record<string, Speed> = {
-      Aries: "fast", Leo: "fast", Sagittarius: "fast", Gemini: "fast",
-      Scorpio: "fast",
-      Libra: "balanced", Aquarius: "balanced", Virgo: "balanced",
-      Taurus: "slow", Capricorn: "slow",
-      Cancer: "mood-paced", Pisces: "mood-paced",
+    // Mars BODY-REACTION timing by house (reaction, not language).
+    type MarsTiming = "immediate" | "strained" | "compressed" | "submerged" | "balanced";
+    const MARS_HOUSE_TIMING: Record<number, MarsTiming> = {
+      1: "immediate",
+      3: "balanced", 5: "balanced", 7: "balanced", 9: "balanced", 10: "balanced", 11: "balanced", 2: "balanced",
+      6: "strained",
+      8: "compressed",
+      4: "submerged", 12: "submerged",
     };
-    const MOON_RESET: Record<string, Speed> = {
-      Aries: "fast", Gemini: "fast", Sagittarius: "fast",
-      Leo: "balanced", Virgo: "balanced", Libra: "balanced", Aquarius: "balanced",
-      Taurus: "slow", Capricorn: "slow",
-      Cancer: "mood-paced", Scorpio: "mood-paced", Pisces: "mood-paced",
-    };
-    // Mercury EXPRESSION (not processing) lag by house. Sign sets processing
-    // speed; house sets how long delivery takes after the thought forms. The
-    // 12th, 8th, and 4th delay output even when Mercury processes quickly.
-    const MERC_EXPRESSION_LAG: Record<number, "immediate" | "balanced" | "delayed"> = {
-      1: "immediate", 3: "immediate", 5: "immediate", 10: "immediate",
-      2: "balanced", 6: "balanced", 7: "balanced", 9: "balanced", 11: "balanced",
-      4: "delayed", 8: "delayed", 12: "delayed",
+    // Moon REGULATION timing by house (reset, not speech).
+    type MoonTiming = "in-the-moment" | "balanced" | "private" | "delayed";
+    const MOON_HOUSE_TIMING: Record<number, MoonTiming> = {
+      1: "in-the-moment", 7: "in-the-moment",
+      3: "balanced", 5: "balanced", 9: "balanced", 10: "balanced", 11: "balanced", 2: "balanced", 6: "balanced",
+      4: "private", 8: "private",
+      12: "delayed",
     };
 
     // House-as-medium phrasing (processing condition, NOT life area).
     const HOUSE_MEDIUM: Record<number, string> = {
-      1: "immediate, reflex, body-first — the signal hits the surface before it is screened",
-      2: "routed through what the body counts as safe — the signal stalls if safety is in question",
-      3: "direct verbal processing — the signal forms in words and exits at conversational speed",
-      4: "private inner-room processing — the signal forms underground first and surfaces only when home-base is steady",
-      5: "expressive processing — the signal has to come out as performance, play, or creation to even fully form",
-      6: "friction wiring — the signal has to be conducted through the nervous system and the body before it lands as words",
-      7: "mirror processing — the signal does not finalize until it is bounced off the person across from them",
-      8: "pressurized and guarded — the signal stays compressed until trust is proven, then arrives all at once",
-      9: "wide-frame processing — the signal reaches for the bigger context first and the small in-the-moment answer can lag",
-      10: "broadcast medium — the signal goes public before it gets edited",
-      11: "group-channel processing — the signal forms by checking it against the wider network",
-      12: "delayed and submerged, not fully conscious — the understanding is there in real time, the language is not",
+      1: "immediate, reflex, body-first: the signal hits the surface before it is screened",
+      2: "routed through what the body counts as safe: the signal stalls if safety is in question",
+      3: "direct verbal processing: the signal forms in words and exits at conversational pace",
+      4: "private inner-room processing: the signal forms underground first and surfaces only when home-base is steady",
+      5: "expressive processing: the signal has to come out as performance, play, or creation to fully form",
+      6: "friction wiring: the signal has to be conducted through the nervous system and the body before it lands as words",
+      7: "mirror processing: the signal does not finalize until it is bounced off the person across from them",
+      8: "pressurized and guarded: the signal stays compressed until trust is proven, then arrives at once",
+      9: "wide-frame processing: the signal reaches for the bigger context first and the small in-the-moment answer lags",
+      10: "broadcast medium: the signal goes public before it gets edited",
+      11: "group-channel processing: the signal forms by checking it against the wider network",
+      12: "delayed and submerged, not fully conscious: the understanding is there in real time, the language is not",
     };
 
-    // Build SIGNAL list (planet+sign as function, not trait).
+    // SIGN as STYLE only (not speed). Brief style descriptors.
+    const MERC_STYLE: Record<string, string> = {
+      Aries: "blunt, first-thought-out", Taurus: "concrete, refuses to be rushed", Gemini: "branching, multi-angle",
+      Cancer: "feeling-routed", Leo: "audience-aware", Virgo: "precise, edited for correctness",
+      Libra: "edited for fairness in real time", Scorpio: "held back until the real version is safe",
+      Sagittarius: "reaches for the honest frame", Capricorn: "will not speak until it is sound",
+      Aquarius: "non-linear, the whole answer arrives at once", Pisces: "impression first, words second",
+    };
+    const MARS_STYLE: Record<string, string> = {
+      Aries: "direct, sharp", Taurus: "digs in, will not be moved", Gemini: "scatters into words",
+      Cancer: "sideways, protective", Leo: "visible, cannot be small", Virgo: "narrows into correction",
+      Libra: "tries to stay fair, can freeze", Scorpio: "intense and contained, raises stakes",
+      Sagittarius: "wants to leave the room and reframe", Capricorn: "composed, pushes the real reaction down",
+      Aquarius: "detaches and answers from principle", Pisces: "diffuse, hard to locate",
+    };
+    const MOON_STYLE: Record<string, string> = {
+      Aries: "discharges through action", Taurus: "settles through routine and the body",
+      Gemini: "settles by talking it through", Cancer: "settles by retreat and home", Leo: "settles by being seen",
+      Virgo: "settles by ordering the next step", Libra: "settles by re-balancing the room",
+      Scorpio: "settles by going inward to process privately", Sagittarius: "settles by movement and bigger frame",
+      Capricorn: "settles by getting back to structure", Aquarius: "settles by stepping back to logic",
+      Pisces: "settles by dissolving into rest",
+    };
+
+    // Build SIGNAL list (planet+sign as function; timing from house).
     const signals: NonNullable<ComposedPortrait["planetInteraction"]>["signals"] = [];
     const moonPlanet = (chart?.planets as any)?.Moon;
     const moonHouseHere = calcHouse(moonPlanet?.sign, moonPlanet?.degree, moonPlanet?.minutes);
 
+    const mercTiming: MercTiming = mercuryHouse ? (MERC_HOUSE_TIMING[mercuryHouse] ?? "balanced") : "balanced";
+    const marsTiming: MarsTiming = marsHouse ? (MARS_HOUSE_TIMING[marsHouse] ?? "balanced") : "balanced";
+    const moonTiming: MoonTiming = moonHouseHere ? (MOON_HOUSE_TIMING[moonHouseHere] ?? "balanced") : "balanced";
+
     if (mercurySign) {
-      const expLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
-      const expNote =
-        expLag === "delayed"
-          ? ` Processing is accurate at this speed, but DELIVERY is delayed because Mercury sits in the ${ord(mercuryHouse!)} house — the words arrive later than the understanding does.`
-          : expLag === "immediate"
-          ? ` Delivery is immediate at this speed because Mercury sits in the ${ord(mercuryHouse!)} house — words exit as fast as they form.`
-          : "";
+      const style = MERC_STYLE[mercurySign] ?? "";
+      const timingPhrase = {
+        immediate: "delivery is immediate because of the house",
+        balanced: "delivery runs at conversational pace",
+        strained: "delivery is strained, has to be worked through the body before the words land",
+        private: "delivery happens privately first, then surfaces",
+        delayed: "delivery is delayed, the words arrive later than the understanding does",
+      }[mercTiming];
       signals.push({
-        role: "Processing + language speed",
+        role: "Words and expression (output)",
         planet: "Mercury",
         sign: mercurySign,
         house: mercuryHouse,
-        fn: `runs the processing and speech engine at ${MERC_SPEED[mercurySign] ?? "balanced"} speed; this is the rate at which thoughts turn into words.${expNote}`,
+        fn: `is the words. Sign sets STYLE (${style}); house sets TIMING. Here, ${timingPhrase}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""}.`,
       });
     }
     if (marsSign) {
+      const style = MARS_STYLE[marsSign] ?? "";
+      const timingPhrase = {
+        immediate: "the body reacts immediately, before any sentence forms",
+        balanced: "the body reacts at a normal pace",
+        strained: "the body reacts through friction, has to be worked out physically",
+        compressed: "the body holds the reaction compressed until trust is established, then releases at once",
+        submerged: "the body's reaction goes underground first, surfaces later",
+      }[marsTiming];
       signals.push({
-        role: "Reaction + action speed",
+        role: "Body reaction (not words)",
         planet: "Mars",
         sign: marsSign,
         house: marsHouse,
-        fn: `fires reaction and physical drive at ${MARS_SPEED[marsSign] ?? "balanced"} speed; this is how fast the body moves once something hits.`,
+        fn: `is the body's reaction, NOT the words. Sign sets STYLE (${style}); house sets TIMING. Here, ${timingPhrase}${marsHouse ? ` (${ord(marsHouse)} house)` : ""}.`,
       });
     }
     if (moonSignEarly) {
+      const style = MOON_STYLE[moonSignEarly] ?? "";
+      const timingPhrase = {
+        "in-the-moment": "regulation can happen in the room",
+        balanced: "regulation happens in ordinary daily rhythm",
+        private: "regulation happens privately, away from the room that triggered it",
+        delayed: "regulation happens later and underground, not in the moment",
+      }[moonTiming];
       signals.push({
-        role: "Regulation + reset",
+        role: "Regulation and reset (not speech)",
         planet: "Moon",
         sign: moonSignEarly,
         house: moonHouseHere,
-        fn: `runs nervous-system regulation and the reset cycle at ${MOON_RESET[moonSignEarly] ?? "balanced"} speed; this is how fast the body returns to baseline after activation.`,
+        fn: `is the reset, NOT language. Sign sets STYLE (${style}); house sets WHEN it can reset. Here, ${timingPhrase}${moonHouseHere ? ` (${ord(moonHouseHere)} house)` : ""}.`,
+      });
+    }
+    if (sunSign) {
+      signals.push({
+        role: "Identity filter (what is allowed to be 'me')",
+        planet: "Sun",
+        sign: sunSign,
+        house: sunHouse,
+        fn: `is the identity filter. It does NOT deliver words; it decides what the system is willing to claim as "me" before Mercury releases the sentence.`,
       });
     }
     if (p.chartRuler) {
       signals.push({
-        role: "Core operating system",
+        role: "Operating system (background driver)",
         planet: p.chartRuler.rulerName,
         sign: p.chartRuler.rulerSign,
         house: p.chartRuler.rulerHouse,
-        fn: `runs the operating system underneath everything else; every other planet's output eventually has to pass through this filter.`,
+        fn: `is the chart ruler — the background operating system. Every other planet's output passes through this filter.`,
       });
     }
     if (activePhase) {
@@ -1422,73 +1471,66 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     addMedium("Mercury", mercuryHouse);
     addMedium("Mars", marsHouse);
     addMedium("Moon", moonHouseHere);
-    if (p.chartRuler?.rulerName && p.chartRuler.rulerName !== "Mercury" && p.chartRuler.rulerName !== "Mars" && p.chartRuler.rulerName !== "Moon") {
+    if (p.chartRuler?.rulerName && !["Mercury","Mars","Moon"].includes(p.chartRuler.rulerName)) {
       addMedium(p.chartRuler.rulerName, p.chartRuler.rulerHouse);
     }
 
-    // TIMING COLLISION — compare Mercury DELIVERY (sign speed + house lag) vs
-    // Mars BODY-REACTION speed. Mercury can process fast in sign and still
-    // deliver late because of house (12th/8th/4th delay expression).
-    const mercSpeed: Speed = mercurySign ? (MERC_SPEED[mercurySign] ?? "balanced") : "balanced";
-    const marsSpeed: Speed = marsSign ? (MARS_SPEED[marsSign] ?? "balanced") : "balanced";
-    const moonSpeed: Speed = moonSignEarly ? (MOON_RESET[moonSignEarly] ?? "balanced") : "balanced";
-    const mercExpLag = mercuryHouse ? MERC_EXPRESSION_LAG[mercuryHouse] : "balanced";
-
-    const speedRank: Record<Speed, number> = { fast: 3, balanced: 2, "mood-paced": 1, slow: 1 };
-    // Effective delivery rank: down-shift Mercury by one tier if house delays expression.
-    const mercDeliveryRank = Math.max(1, speedRank[mercSpeed] - (mercExpLag === "delayed" ? 2 : 0));
-    const marsRank = speedRank[marsSpeed];
-    const mercFaster = mercDeliveryRank > marsRank;
-    const marsFaster = marsRank > mercDeliveryRank;
+    // TIMING COLLISION — compare Mars body-reaction timing vs Mercury delivery
+    // timing. Both derive from HOUSE, not sign.
+    const timingOrder: Record<string, number> = {
+      "immediate": 4, "balanced": 3, "strained": 2, "compressed": 2, "private": 1, "submerged": 1, "delayed": 0,
+    };
+    const marsRank = timingOrder[marsTiming];
+    const mercRank = timingOrder[mercTiming];
+    const bodyFirst = marsRank > mercRank;
+    const wordsFirst = mercRank > marsRank;
 
     let comparison: string;
     let mismatch: string;
-    if (marsFaster) {
-      comparison = `Mars in ${marsSign} reacts immediately in the body (${marsSpeed}), while Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words later${mercExpLag === "delayed" ? " — processing is accurate, but expression lags because of the house" : ""}.`;
-      mismatch = `The body reacts first. The words arrive after. That shows up as a tightening, a shift in tone, or going still BEFORE there is language for it. To the room it can read as out-of-nowhere when it is actually accurate processing arriving on a slower delivery clock.`;
-    } else if (mercFaster) {
-      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} delivers the words faster than Mars in ${marsSign} (${marsSpeed}) gets the body to back them up.`;
+    if (bodyFirst) {
+      comparison = `Mars in the ${marsHouse ? ord(marsHouse) : "?"} house gives the body a ${marsTiming} reaction, while Mercury in the ${mercuryHouse ? ord(mercuryHouse) : "?"} house has a ${mercTiming} delivery for the words.`;
+      mismatch = `The body reacts first. The words arrive after. Understanding can be fully present in real time while expression lags. To the room, the reaction can read as out of nowhere when it is actually accurate processing arriving on a slower delivery clock.`;
+    } else if (wordsFirst) {
+      comparison = `Mercury in the ${mercuryHouse ? ord(mercuryHouse) : "?"} house delivers the words ${mercTiming}, while Mars in the ${marsHouse ? ord(marsHouse) : "?"} house gives the body a ${marsTiming} reaction.`;
       mismatch = `The words arrive before the body is ready. That shows up as sounding articulate in the moment, then noticing later that the body never agreed. Pressure sits in the gap between what was said and what the body actually did with it.`;
     } else {
-      comparison = `Mercury in ${mercurySign}${mercuryHouse ? ` (${ord(mercuryHouse)} house)` : ""} and Mars in ${marsSign} arrive at the same time.`;
-      mismatch = `Reaction and language fire together with no buffer. Whatever comes out in the moment is the version the room keeps — there is no second voice arriving late to soften it.`;
+      comparison = `Mercury (${mercTiming} delivery) and Mars (${marsTiming} reaction) sit at similar timing here.`;
+      mismatch = `Reaction and expression arrive close together with little buffer. Whatever surfaces in the moment is the version the room keeps; the second voice arrives later, if at all.`;
     }
-    // Moon reset note — also house-aware. Moon in 12th resets PRIVATELY, later, not in the moment.
-    const moonInPrivateHouse = moonHouseHere === 12 || moonHouseHere === 8 || moonHouseHere === 4;
-    const moonHouseNote = moonInPrivateHouse
-      ? ` And the Moon in ${moonSignEarly}${moonHouseHere ? ` (${ord(moonHouseHere)} house)` : ""} does not reset in the moment — regulation happens later, privately, away from the room that triggered it.`
-      : moonSpeed === "slow" || moonSpeed === "mood-paced"
-      ? ` And the Moon in ${moonSignEarly} resets slowly, so once the system is activated it stays activated longer than the conversation does. That is overwhelm: the moment is over, the nervous system is not.`
-      : moonSpeed === "fast" && (mercSpeed === "slow" || marsSpeed === "slow")
-      ? ` The Moon in ${moonSignEarly} resets fast, so the feeling clears before the words or the body have caught up.`
-      : "";
-    mismatch += moonHouseNote;
+    // Moon regulation note — AFTER the moment, not during.
+    const moonNote = moonTiming === "delayed" || moonTiming === "private"
+      ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house does not regulate in the room; reset happens later, privately, on its own timeline.`
+      : moonTiming === "in-the-moment"
+      ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house can regulate in the room itself, which closes the loop faster than the words or the body can.`
+      : ` The Moon regulates after the moment, on ordinary daily rhythm.`;
+    mismatch += moonNote;
 
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
-    const fastest = marsFaster ? "Mars (body reaction)" : mercFaster ? "Mercury (words)" : "Mercury and Mars together";
-    const slowest = marsFaster ? "Mercury (the words)" : mercFaster ? "Mars (the body)" : "the Moon";
+    const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
+    const lastOut = bodyFirst ? "Mercury (the words)" : wordsFirst ? "Mars (the body)" : "the Moon (regulation)";
     const realTimeOutput = {
-      comesOut: `What exits first is whatever ${fastest} produces. ${marsFaster ? `A physical reaction or shift in tone hits the room before any sentence forms.` : mercFaster ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then attempts the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} processing medium${mercExpLag === "delayed" ? " — which often means the output is partial, edited, or arrives later than the understanding" : ""}.`,
+      comesOut: `What exits first is ${firstOut}. ${bodyFirst ? `A physical reaction or shift in tone hits the room before any sentence forms.` : wordsFirst ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then delivers the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} medium${mercTiming === "delayed" ? " (output is partial or arrives later than the understanding)" : mercTiming === "strained" ? " (output has to be worked through the body before it lands)" : ""}.`,
       blocked: p.chartRuler
         ? `What gets blocked is whatever ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} does not approve of. The operating system filters the words BEFORE they exit, so the full version is held back until it clears that gate.`
-        : `What gets blocked is the part of the response that has not finished forming — the system will not release it half-formed.`,
-      late: `What shows up late is ${slowest}'s version. That is the "I should have said..." or the body finally registering what happened — minutes or hours after the moment.`,
-      othersExperience: `What others experience is the ${fastest} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
+        : `What gets blocked is the part of the response that has not finished forming; the system will not release it half-formed.`,
+      late: `What shows up late is ${lastOut}'s version. That is the "I should have said..." or the body finally registering what happened, minutes or hours after the moment.`,
+      othersExperience: `What others experience is the ${firstOut} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
     };
 
-    // HUMAN TRANSLATION
+    // HUMAN TRANSLATION — kept consistent: understanding ≠ expression ≠
+    // reaction ≠ regulation. Each described as its own job.
     const isParenting = phase === "child";
     const humanTranslation = {
-      looksLike: mercFaster
+      looksLike: bodyFirst
+        ? `${name} can react physically (walking out, going silent, snapping, a posture shift) before they can explain why. The explanation only arrives later.`
+        : wordsFirst
         ? `${name} can sound articulate and "fine" in the moment and then have a delayed body reaction (tiredness, irritability, going quiet) hours later.`
-        : marsFaster
-        ? `${name} can react physically (walking out, going silent, snapping) before they can explain why, and the explanation only arrives later.`
-        : `${name} can say and do the right thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
-      actuallyIs: `The mismatch is not a behavior problem. It is two different planets running on two different clocks: ${mercFaster ? `Mercury (${mercSpeed}) gets there first, Mars (${marsSpeed}) shows up after.` : marsFaster ? `Mars (${marsSpeed}) gets there first, Mercury (${mercSpeed}) shows up after.` : `Mercury and Mars fire together with no buffer.`} The Moon in ${moonSignEarly ?? "the chart"} sets how long it takes the system to fully reset after.`,
+        : `${name} can say and do the appropriate thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
+      actuallyIs: `Understanding, expression, reaction, and regulation are four different jobs on four different clocks. ${bodyFirst ? `Here, Mars (body) arrives before Mercury (words).` : wordsFirst ? `Here, Mercury (words) arrives before Mars (body).` : `Here, Mercury and Mars arrive together.`} ${moonTiming === "delayed" || moonTiming === "private" ? `The Moon does not regulate in the room; reset is a separate, later step.` : `The Moon regulates after, not during.`}`,
       whatHelps: isParenting
-        ? `${marsFaster ? `Give ${name} the body-reset first (movement, water, low stimulation), then ask for the words. Asking for the explanation before the body is reset will stall.` : mercFaster ? `Do not assume ${name}'s articulate in-the-moment answer is the whole story. Check back in once the body has had time to catch up — that is when the real version arrives.` : `Build in a pause on purpose. Without one, the only version that exists is the in-the-moment one, and it will not have the depth ${name} is actually capable of.`} Reset time is set by the Moon, not by the conversation — honor it.`
-        : `${marsFaster ? `Reset the body before retrying the words. The explanation will not form while the body is still activated.` : mercFaster ? `Treat the first articulate answer as a draft, not the final. Check back with the body an hour or a day later — that is where the rest of the signal lives.` : `Build a pause in on purpose. The whole signal needs more than the moment is giving it.`} Reset time is set by the Moon, not by the room.`,
+        ? `${bodyFirst ? `Let ${name} have the body-reset first (movement, water, low stimulation), then ask for the words. Asking for the explanation before the body is reset will stall.` : wordsFirst ? `Do not assume ${name}'s articulate in-the-moment answer is the whole story. Check back in once the body has had time to catch up; that is when the real version arrives.` : `Build in a pause on purpose. Without one, the only version that exists is the in-the-moment one, and it will not have the depth ${name} is actually capable of.`} Regulation timing is set by the Moon, not by the conversation; honor it.`
+        : `${bodyFirst ? `Reset the body before retrying the words. The explanation will not form while the body is still activated.` : wordsFirst ? `Treat the first articulate answer as a draft, not the final. Check back with the body an hour or a day later; that is where the rest of the signal lives.` : `Build a pause in on purpose. The whole signal needs more than the moment is giving it.`} Regulation timing is set by the Moon, not by the room.`,
     };
 
     if (signals.length >= 2 && mediums.length >= 1) {
