@@ -595,7 +595,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   function describeCollision(v: VoltageClass, d: Density, planet: string): string | null {
     if (d === "wireless") {
-      return `With ${planet} on a wireless medium, thought and speech arrive together, so this part of the system does not have a translation lag.`;
+      return `With ${planet} on a wireless medium, thought and speech arrive together — what ${name} understands and what ${name} can say tend to land at the same time.`;
     }
     const key = `${v}|${d}`;
     switch (key) {
