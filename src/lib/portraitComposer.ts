@@ -1427,6 +1427,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     corePortrait,
     systemMechanism,
     realTimeSequence,
+    planetInteraction,
     bridge,
     stageAsk,
     misreads: misreads.slice(0, 3),
