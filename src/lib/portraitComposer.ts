@@ -17,7 +17,7 @@ const SUN_FEELS: Record<string, string> = {
   Aries: "they need to move first and be the one who starts things",
   Taurus: "they need things to feel steady and physically safe before they commit",
   Gemini: "they need to talk, ask questions, and try a few angles before settling",
-  Cancer: "they feel the emotional weather of a room before anything else",
+  Cancer: "they notice emotional shifts quickly and try to protect the bond",
   Leo: "they need to be seen as themselves, not as a role they're playing",
   Virgo: "they need things to actually work, and they'll notice what's off",
   Libra: "they need the choice to be fair and still honestly theirs",
@@ -50,7 +50,7 @@ const MOON_FEELS: Record<string, string> = {
   Cancer: "settles by closeness and knowing the plan ahead of time",
   Leo: "settles by warm, sincere attention from someone they trust",
   Virgo: "settles by completing a small, competent task",
-  Libra: "settles in a calm room where fairness has been named out loud",
+  Libra: "settles when the terms are clear, calm, and fair",
   Scorpio: "settles in privacy and one-on-one trust, never in a crowd",
   Sagittarius: "settles when given honesty and room to move",
   Capricorn: "settles when there's clear structure and they have one piece of control",
@@ -91,7 +91,7 @@ const MOON_SAFETY: Record<string, string> = {
 
 const MARS_RESET: Record<string, string> = {
   Aries: "discharge first (run, jump, hit something safe), talk second",
-  Taurus: "a physical anchor, food, blanket, ground — pace down",
+  Taurus: "a physical anchor, food, blanket, ground, pace down",
   Gemini: "let them talk it out fast, give words to the feeling",
   Cancer: "co-regulate with closeness or water before discussing",
   Leo: "warmth and acknowledgment first, never shame in front of others",
@@ -132,7 +132,7 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
   },
   Gemini: {
     looksLike: "interrupting, jumping topics, asking the same question three different ways",
-    actuallyIs: "they think by talking, so the conversation is the thinking — not a report on it",
+    actuallyIs: "they think by talking, so the conversation is the thinking, not a report on it",
   },
   Cancer: {
     looksLike: "going quiet after something small, or reacting big to a tone shift you didn't notice",
