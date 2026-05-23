@@ -1697,7 +1697,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
     const moonRegLine = moonSignEarly === "Sagittarius" && moonHouseHere === 2
-      ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      ? `His reset comes through the Moon: body steadiness first, then humor, movement, honesty, and a wider frame.`
       : moonHouseHere === 2
       ? `The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
       : moonTiming === "belonging"
