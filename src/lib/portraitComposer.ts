@@ -242,43 +242,112 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const marsHouse = p.energyDischarge?.marsHouse ?? null;
   const sunHouse = p.identityInvitation.sun?.house ?? null;
 
-  // ── 1. ONE-SENTENCE PORTRAIT ────────────────────────────────────────────────
-  // Concrete, behavioral, about WHO this person is. No "learning / regulates"
-  // teacher framing. No abstract verbs. If you read it out loud, it should
-  // sound like a real person you know.
-  const SUN_PERSON: Record<string, string> = {
-    Aries:       `${name} is built to move first and ask questions later. Fast starts, hot reactions, and the energy is gone almost as soon as it lands.`,
-    Taurus:      `${name} moves at their own pace and will not be rushed. Once they have planted in a thing, getting them to switch course takes time and a real reason.`,
-    Gemini:      `${name} thinks by talking and skips between angles, often before anyone realizes they have started. They need to say it out loud to know what they actually believe.`,
-    Cancer:      `${name} reads the mood of a room before anyone speaks. What they pick up usually turns out to be accurate, even when no one else sees it.`,
-    Leo:         `${name} runs on warmth. Sincere attention and they open up; a flat or dismissive response and they go quiet in a hurt way, not a calm one.`,
-    Virgo:       `${name} can see what is not working in almost any situation, and they have a hard time relaxing until the small thing actually gets fixed.`,
-    Libra:       `${name} is constantly tracking how a choice will land on every person in the room. What looks like stalling is usually that tracking happening in the background.`,
-    Scorpio:     `${name} watches a situation before they speak, gives you the edited version first, and only shows the real version once they trust the room.`,
-    Sagittarius: `${name} needs the bigger reason or the rule does not mean anything to them. They will leave a thing they don't believe in faster than they will fake interest in it.`,
-    Capricorn:   `${name} carries weight other people don't see and takes the long view by default. They would rather do something alone than watch it be done badly.`,
-    Aquarius:    `${name} questions the rule itself before they follow it. They prefer their own method, and they pull back when they feel pushed into a box that doesn't fit.`,
-    Pisces:      `${name} absorbs the feelings of a room without meaning to. They need real time alone to figure out which of those feelings are actually theirs.`,
+  // ── 1. PORTRAIT PARAGRAPH ──────────────────────────────────────────────────
+  // Not a stitched-together Sun + house template. A short paragraph that
+  // interlocks Sun, Sun house, chart ruler (sign + house), Moon, and the
+  // tightest live aspect — so the result reads as a specific recognizable
+  // person, and changes meaningfully when any of those factors change.
+
+  // Concrete real-life arena per house (what this part of life actually IS,
+  // in plain English).
+  const HOUSE_ARENA: Record<number, string> = {
+    1: "how they walk into a room and the first impression their body gives off",
+    2: "what they own, what they're worth, and what their body counts as safe",
+    3: "the small daily back-and-forth, talking, texting, siblings, school, errands",
+    4: "home, family, and the private inner life nobody at work sees",
+    5: "play, creating, performing, romance, and (for parents) their kids",
+    6: "daily routine, work, the body, and the small stuff that has to function",
+    7: "close one-on-one relationships, partners, best friends, the person across from them",
+    8: "the private, intense layer: money shared with someone, sex, grief, what's hidden",
+    9: "travel, big ideas, belief, teaching, and what they're chasing meaning-wise",
+    10: "their public role, career, and what they end up being known for",
+    11: "their friend group, the wider community, and the future they're trying to build",
+    12: "what happens behind a curtain, alone, in dreams, in the parts no one sees",
   };
-  const houseHints: Record<number, string> = {
-    1: "and most of this lives right on the surface, in how they show up the second they walk in",
-    2: "and a lot of it runs through what they own, what they're worth, and what feels safe in the body",
-    3: "and most of this comes out through how they talk and the small daily back-and-forth",
-    4: "and a lot of it stays in the home and inside the family, not out in public",
-    5: "and most of this comes out through play, creating, performing, or the kids and crushes in their life",
-    6: "and most of this gets worked out through daily routine, work, and the body",
-    7: "and a lot of it only shows up in close one-on-one relationships, not on their own",
-    8: "and a lot of it lives in the private, intense, sharing-with-one-person layer of life",
-    9: "and a lot of it pushes them toward travel, big ideas, and chasing what they believe in",
-    10: "and most of it shows up in their public role and what they end up being known for",
-    11: "and a lot of it lives in their friend group and the future they're trying to build",
-    12: "and a lot of it happens behind a curtain — they need time alone before it can come out",
+
+  // What the chart-ruler sign does in motion (engine texture).
+  const RULER_TEXTURE: Record<string, string> = {
+    Aries: "drives fast and gets impatient when blocked",
+    Taurus: "holds ground and won't be hurried",
+    Gemini: "darts between options and needs to talk it out",
+    Cancer: "moves through feeling and protects sideways",
+    Leo: "runs on being seen and needs warmth back",
+    Virgo: "tunes by fixing what's off",
+    Libra: "weighs every angle before committing",
+    Scorpio: "goes deep, private, and all-or-nothing",
+    Sagittarius: "needs the bigger why and room to move",
+    Capricorn: "builds slowly and won't be managed",
+    Aquarius: "tests the rule before following it",
+    Pisces: "absorbs everything and needs to drain it out",
   };
-  const baseSentence =
-    (sunSign && SUN_PERSON[sunSign]) ||
-    `${name} is a specific person, not a chart of placements, and what follows is the shape of how they actually move.`;
-  const houseTail = sunHouse && houseHints[sunHouse] ? ` ${houseHints[sunHouse].replace(/^and /, "And ")}.` : "";
-  const oneSentence = `${baseSentence}${houseTail}`;
+
+  // Surface read per Sun sign (the part you see first).
+  const SUN_SURFACE: Record<string, string> = {
+    Aries: "moves first, asks later, and burns fast",
+    Taurus: "steady, slow to switch, and hard to push",
+    Gemini: "talks to think, skips angles, asks questions",
+    Cancer: "reads the mood before anyone speaks",
+    Leo: "wants to be met as themselves, not as a role",
+    Virgo: "sees the small thing that's off and can't relax until it's fixed",
+    Libra: "tracks how a choice will land on every person in the room",
+    Scorpio: "watches first, edits what they show, and only goes real one-on-one",
+    Sagittarius: "needs the bigger reason or the thing means nothing",
+    Capricorn: "carries weight other people don't see and takes the long view",
+    Aquarius: "questions the rule itself and prefers their own method",
+    Pisces: "absorbs the feelings of a room without meaning to",
+  };
+
+  // Build sentence 1: surface portrait — Sun + the actual arena it plays in.
+  // Use Sun house as the LIFE DOMAIN where the Sun's behavior actually shows up.
+  const surface = sunSign ? SUN_SURFACE[sunSign] : null;
+  const arena = sunHouse ? HOUSE_ARENA[sunHouse] : null;
+  let sentence1: string;
+  if (surface && arena) {
+    sentence1 = `${name} ${surface}, and the place this lives in their life is ${arena}.`;
+  } else if (surface) {
+    sentence1 = `${name} ${surface}.`;
+  } else {
+    sentence1 = `${name} runs on a specific rhythm that the rest of this reading is going to walk through.`;
+  }
+
+  // Sentence 2: the chart ruler — what's actually underneath the surface,
+  // named with its sign texture AND its house arena (so two people with the
+  // same Sun read differently).
+  let sentence2 = "";
+  if (p.chartRuler) {
+    const rText = RULER_TEXTURE[p.chartRuler.rulerSign] || "runs its own way";
+    const rArena = p.chartRuler.rulerHouse ? HOUSE_ARENA[p.chartRuler.rulerHouse] : null;
+    if (rArena) {
+      sentence2 =
+        ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} ` +
+        `sitting in ${rArena}, so the engine ${rText}, and it spends most of its time in that part of life.`;
+    } else {
+      sentence2 =
+        ` Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, ` +
+        `which ${rText}.`;
+    }
+  }
+
+  // Sentence 3: the inside / Moon contradiction — what they need to feel
+  // settled, said in a way that contrasts with the surface.
+  const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
+  let sentence3 = "";
+  if (moonSignEarly && MOON_SAFETY[moonSignEarly]) {
+    sentence3 =
+      ` Privately though, ${name} doesn't actually settle through any of that. They settle through ${MOON_SAFETY[moonSignEarly]}. ` +
+      `So the outside picture and the inside need aren't the same thing, and the system stays on edge until both get met.`;
+  }
+
+  // Sentence 4: the live edge — only if there's a tight (<2°) hard aspect,
+  // so it earns its spot. Use the aspect's own plain-language line.
+  let sentence4 = "";
+  const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
+  if (liveEdge && liveEdge.line) {
+    sentence4 = ` The loudest live wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b}, which shows up as ${liveEdge.line}`;
+    if (!/[.!?]$/.test(sentence4)) sentence4 += ".";
+  }
+
+  const oneSentence = `${sentence1}${sentence2}${sentence3}${sentence4}`.trim();
 
   // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
   // Driver = chart ruler (engine). Translator = Sun (how it comes out).
