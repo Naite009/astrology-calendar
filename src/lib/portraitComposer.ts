@@ -60,7 +60,7 @@ const MOON_FEELS: Record<string, string> = {
 };
 
 const MARS_FEELS: Record<string, string> = {
-  Aries: "discharges fast and physical, so the energy needs an outlet before talking",
+  Aries: "acts fast and physical, so the energy needs an outlet before talking",
   Taurus: "burns slow and steady, but locks in hard once pushed past a limit",
   Gemini: "fires through words and quick switches, and scatters under pressure",
   Cancer: "protects sideways, through care and indirect action, not confrontation",
@@ -91,7 +91,7 @@ const MOON_SAFETY: Record<string, string> = {
 };
 
 const MARS_RESET: Record<string, string> = {
-  Aries: "discharge first (run, jump, hit something safe), talk second",
+  Aries: "movement first (run, jump, hit something safe), talk second",
   Taurus: "a physical anchor, food, blanket, ground, pace down",
   Gemini: "let them talk it out fast, give words to the feeling",
   Cancer: "co-regulate with closeness or water before discussing",
@@ -169,7 +169,7 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
   },
   Pisces: {
     looksLike: "drifting off mid-conversation, getting flooded by a loud room, or saying 'I don't know'",
-    actuallyIs: "they're taking in more signal than the room is showing, and it's hard to sort it in the moment",
+    actuallyIs: "they're taking in more feeling than the room is saying out loud, and it's hard to sort it in the moment",
   },
 };
 
@@ -362,7 +362,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     2: "money, body, and what they decide is theirs",
     3: "everyday conversations, siblings, and the small running commentary of life",
     4: "home and family, where the real feelings come out",
-    5: "play, creative work, romance, and their kids if they have them",
+    5: "play, creativity, performance, humor, risk-taking, and being seen",
     6: "daily routine, work, and the body",
     7: "their closest one-on-one relationships",
     8: "trust, shared resources, and the private layer they do not show",
@@ -390,7 +390,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   // The pace-based fix, per Sun sign. Not "change who you are" but "buy the
   // seconds the second voice needs to arrive on time."
   const PACE_FIX: Record<string, string> = {
-    Aries: `The move is to slow the first sentence by one breath. "Let me think about that for a second" gives the considered answer time to load before the impulsive one wins.`,
+    Aries: `Adults should not demand the explanation while the Mars reaction is still hot. Let ${name} move, reset, or get out of the spotlight first. Then ask for the words.`,
     Taurus: `The move is to name the stall instead of disappearing into it. "I need a minute on that" buys the body the time it actually needs without it reading as refusal.`,
     Gemini: `The move is to pick one position out loud and label it as the working answer, so the other two get held for later instead of all three getting argued at once.`,
     Cancer: `The move is to name the feeling first, then the position. "That landed as ___, and what I actually think is ___" stops the protective version from becoming the only version.`,
