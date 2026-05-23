@@ -836,12 +836,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         : p.pressureSignature.trigger === "Scorpio"
         ? `the same engine runs deep and won't let things stay surface, which means small pressures stack up internally`
         : `the same engine is wired straight into Pluto, so ordinary friction lands with extra weight`;
-  } else if (tightHard) {
-    // (already handled above as the second-priority branch; keep this as a no-op
-    // so the structure below stays intact for downstream branches)
-    trigger = trigger!;
-    reaction = reaction!;
-    bridgeWhy = bridgeWhy!;
+  
   } else if (tightMoonHard) {
     trigger = {
       label: `Moon hard-angled to ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
