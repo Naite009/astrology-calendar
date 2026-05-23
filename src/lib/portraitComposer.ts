@@ -789,19 +789,45 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     : { label: "their outward style", detail: "the way the engine reaches other people" };
 
   // Pick trigger
+  // Ranking rule (corrected): tight aspects under 2° outrank pressure
+  // signatures. Sun–Chiron tight contact is treated specifically as the
+  // permission gate the whole system runs through, so it goes first.
   const tightHard = tightAspects.find(a => a.quality === "hard");
   const tightMoonHard = moonAspectsHard[0];
+  const tightSunChiron = sunChiron && sunChiron.orb < 2 ? sunChiron : undefined;
   let trigger: { label: string; detail: string; derivation: string };
   let reaction: string;
   let bridgeWhy: string; // why this trigger relates to THIS engine
-  if (p.pressureSignature) {
+  if (tightSunChiron) {
+    trigger = {
+      label: `Sun ${tightSunChiron.aspect} Chiron (${tightSunChiron.orb.toFixed(1)}°)`,
+      detail: `the permission gate every other planet has to pass through`,
+      derivation:
+        `Picked because Sun–Chiron is tight (orb ${tightSunChiron.orb.toFixed(1)}°, under 2°), which makes it the ` +
+        `permission gate of the chart. It is not "one factor among many" — it is the check ("is this allowed?") ` +
+        `that runs underneath Mercury, Mars, Venus, and the ruler. It outranks Mars pressure and Venus filters here.`,
+    };
+    reaction = `the system runs the "is this allowed?" check before anything else can fully land, so the in-the-moment answer comes out partial or held back`;
+    bridgeWhy = `the engine has to clear that permission gate every time it tries to express, which is why the same situation can stall in the same place repeatedly`;
+  } else if (tightHard) {
+    trigger = {
+      label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
+      detail: `two internal voices that pull against each other in real time`,
+      derivation:
+        `Picked because this is the tightest hard aspect in the chart (orb ${tightHard.orb.toFixed(1)}°, under 2.5°). ` +
+        `Tight hard aspects outrank pressure signatures because they are loud and active in daily life; they show up ` +
+        `as internal arguments that do not resolve.`,
+    };
+    reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
+    bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
+  } else if (p.pressureSignature) {
     trigger = {
       label: `${p.pressureSignature.body} sitting in the ${p.pressureSignature.trigger}`,
       detail: p.pressureSignature.need,
       derivation:
-        `Picked because ${p.pressureSignature.body} (one of the engine planets) is sitting in ${p.pressureSignature.trigger}, ` +
-        `which is the strongest pressure pattern in the chart. Pressure signatures override aspects and Saturn here ` +
-        `because they describe where the engine itself is under containment, not just where it meets resistance.`,
+        `Picked because there is no tight hard aspect or Sun–Chiron contact to outrank it, and ${p.pressureSignature.body} ` +
+        `is sitting in ${p.pressureSignature.trigger} — a pressure pattern where the engine itself is under containment, ` +
+        `not just meeting resistance. This is the strongest pattern AVAILABLE here, not the strongest in the chart overall.`,
     };
     reaction = p.pressureSignature.consequence;
     bridgeWhy =
