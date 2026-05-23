@@ -494,7 +494,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 1. The live mechanic. Why it feels involuntary.
   if (sunSign && SUN_LIVE[sunSign]) {
-    portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
+    if (sunSign === "Pisces") {
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside him before his own answer has fully stepped forward.`);
+    } else {
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
+    }
   }
 
   // 2. The dissenting voice. Chart ruler in its sign + its arena.
