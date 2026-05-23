@@ -1173,14 +1173,14 @@ const SATURN_REAL_REASON: Record<string, string> = {
 
 // ── Output type ──────────────────────────────────────────────────────────────
 export type DevelopmentalStage =
-  | "Lunar Phase (0-7)"
-  | "Mercury Phase (8-12)"
-  | "Mars / Identity Phase (13-21)"
-  | "Saturn Return: Building the Foundation (22-35)"
-  | "Uranus Opposition: Mid-Life Awakening (36-45)"
-  | "Chiron Return: The Wound Becomes Expertise (46-55)"
-  | "Second Saturn Return: Mentorship and Legacy (56-70)"
-  | "Eldering Threshold: Integration of the Soul Story (70+)";
+  | "Lunar Phase (ages 0-7)"
+  | "Mercury Phase (ages 8-12)"
+  | "Mars / Identity Phase (ages 13-21)"
+  | "Saturn Return: Building the Foundation (ages 22-35)"
+  | "Uranus Opposition: Mid-Life Awakening (ages 36-45)"
+  | "Chiron Return: The Wound Becomes Expertise (ages 46-55)"
+  | "Second Saturn Return: Mentorship and Legacy (ages 56-70)"
+  | "Eldering Threshold: Integration of the Soul Story (ages 70+)";
 
 export type LifePhaseGroup = "child" | "adult" | "elder";
 
@@ -1435,7 +1435,7 @@ function buildAdultAnchor(
 
   if (age <= 35) {
     return {
-      stage: "Saturn Return: Building the Foundation (22-35)",
+      stage: "Saturn Return: Building the Foundation (ages 22-35)",
       focus: `${sunFocus} · Saturn ${saturnSign ? `in ${saturnSign}` : ""}`.trim(),
       body: `This is the Saturn Return decade: the soul's first real "is this actually mine?" audit, peaking around 29-30. ${name} is being asked to claim authority over their own life, sign on (or off) to the structures built in their twenties, and stop performing a borrowed version of adulthood. The struggle is ${sat}. What is truly theirs gets real; what was never theirs gets heavy.`,
       extraHolding: satHouse ? `Where to protect them this season: ${satHouse}.` : undefined,
@@ -1443,7 +1443,7 @@ function buildAdultAnchor(
   }
   if (age <= 45) {
     return {
-      stage: "Uranus Opposition: Mid-Life Awakening (36-45)",
+      stage: "Uranus Opposition: Mid-Life Awakening (ages 36-45)",
       focus: `${sunFocus} · Uranus opposing natal Uranus`,
       body: `Around 41-42, Uranus opposes itself. ${name} is feeling the "is this the only life I get?" question in the body, and the Sun's old definition of self is being re-evaluated for truth. The work is not to blow up the structure but to let the parts that are genuinely false fall off. Practicing ${sunLine} is the antidote to acting out the awakening sideways.`,
     };
@@ -1465,7 +1465,7 @@ function buildAdultAnchor(
       : "";
     const stageSentence = `Put together, this is the Chiron Return decade (around ages 49-50): the wound stops being a thing ${name} hides and turns into the exact thing other people start asking them for help with. Jupiter${jupiterSign ? ` in ${jupiterSign}` : ""} gives them the plain words to teach it.`;
     return {
-      stage: "Chiron Return: The Wound Becomes Expertise (46-55)",
+      stage: "Chiron Return: The Wound Becomes Expertise (ages 46-55)",
       focus: `${sunFocus} · Chiron ${chironSign ? `in ${chironSign}` : ""} · Jupiter ${jupiterSign ? `in ${jupiterSign}` : ""}`.trim(),
       body: [sunSentence, chironSentence, jupiterSentence, stageSentence].filter(Boolean).join(" "),
     };
@@ -1473,7 +1473,7 @@ function buildAdultAnchor(
   if (age <= 70) {
     const tenth = tenthCuspSign ? ` The 10th-house cusp in ${tenthCuspSign} colors what legacy looks like for them.` : "";
     return {
-      stage: "Second Saturn Return: Mentorship and Legacy (56-70)",
+      stage: "Second Saturn Return: Mentorship and Legacy (ages 56-70)",
       focus: `${sunFocus} · second Saturn Return · 10th house ${tenthCuspSign ?? ""}`.trim(),
       body: `The second Saturn Return (~58-60) is the transition to mentorship. ${name} is being asked: what is yours to keep carrying, what gets handed down, and what gets put down for good?${tenth} Legacy questions get loud. The honest answer becomes the next chapter, and the role shifts from doer to elder-in-training.`,
       extraHolding: satHouse ? `Tender area to honor: ${satHouse}.` : undefined,
@@ -1482,7 +1482,7 @@ function buildAdultAnchor(
   const ninth = ninthCuspSign ? `The 9th-house cusp in ${ninthCuspSign} colors the philosophy they're now living from.` : "The 9th-house themes of meaning, philosophy, and spirit move to the foreground.";
   const nep = neptuneSign ? ` Neptune ${neptuneSign ? `in ${neptuneSign}` : ""} is the dissolver of small identity, opening room for the larger story.` : "";
   return {
-    stage: "Eldering Threshold: Integration of the Soul Story (70+)",
+    stage: "Eldering Threshold: Integration of the Soul Story (ages 70+)",
     focus: `${sunFocus} · 9th house ${ninthCuspSign ?? ""} · Neptune ${neptuneSign ?? ""}`.trim(),
     body: `${name} is in the integration phase: the lifetime is becoming one story, not a list of events. ${ninth}${nep} The work is the peace of perspective: what is loved gets named out loud, what is forgiven gets released, and presence becomes the gift in the room.`,
   };
@@ -1551,13 +1551,13 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
   sunAspects.sort((a, b) => a.orb - b.orb);
   hardToMoon.sort((a, b) => a.orb - b.orb);
 
-  let stage: DevelopmentalStage = "Lunar Phase (0-7)";
+  let stage: DevelopmentalStage = "Lunar Phase (ages 0-7)";
   let focus = "";
   let body = "";
   let extraHolding: string | undefined;
 
   if (age != null && age <= 7) {
-    stage = "Lunar Phase (0-7)";
+    stage = "Lunar Phase (ages 0-7)";
     focus = moonSign && moonHouse
       ? `${moonSign} Moon in the ${ordinal(moonHouse)} house`
       : moonSign
@@ -1571,7 +1571,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
       extraHolding = MOON_HARD_ASPECT_NOTE[top.to];
     }
   } else if (age != null && age <= 12) {
-    stage = "Mercury Phase (8-12)";
+    stage = "Mercury Phase (ages 8-12)";
     const merc = mercurySign && mercuryHouse
       ? `${mercurySign} Mercury in the ${ordinal(mercuryHouse)} house`
       : mercurySign
@@ -1584,7 +1584,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
     focus = merc + (thirdCuspSign ? ` · 3rd-house cusp in ${thirdCuspSign}` : "");
     body = `This is the operating-system phase. ${chart.name} is building how they think, take in information, and talk to themselves. They learn best ${learn}.${rulerLine}`;
   } else if (age != null && age <= 21) {
-    stage = "Mars / Identity Phase (13-21)";
+    stage = "Mars / Identity Phase (ages 13-21)";
     const mars = marsSign && marsHouse
       ? `${marsSign} Mars in the ${ordinal(marsHouse)} house`
       : marsSign
