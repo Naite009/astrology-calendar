@@ -1580,7 +1580,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         ? `regulation depends on body safety, steadiness, food, water, and enough physical calm for the feeling to come down`
         : ({
         "in-the-moment": "regulation can happen in the room",
-        balanced: "regulation happens in ordinary daily rhythm",
+        balanced: "regulation happens after the moment through ordinary settling cues",
         private: "regulation happens privately, away from the room that triggered it",
         delayed: "regulation happens later and underground, not in the moment",
         belonging: `regulation depends on trusted belonging — ${name} resets only when ${name} feels included, accepted, and still part of the group, not just because the conversation is over`,
