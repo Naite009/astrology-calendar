@@ -409,7 +409,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     portraitParts.push(PACE_FIX[sunSign]);
   }
 
-  portraitParts.push(sunSign && supportBySun[sunSign] ? supportBySun[sunSign] : `The landing is practical: name what is happening, reduce pressure, and help ${name} choose the next honest step instead of asking for a perfect explanation.`);
+  // PACE_FIX above already gives the actionable landing; no generic supportBySun fallback needed.
 
   const corePortrait = portraitParts.join(" ");
 
