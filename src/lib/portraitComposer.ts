@@ -60,7 +60,7 @@ const MOON_FEELS: Record<string, string> = {
 };
 
 const MARS_FEELS: Record<string, string> = {
-  Aries: "discharges fast and physical, so the energy needs an outlet before talking",
+  Aries: "acts fast and physical, so the energy needs an outlet before talking",
   Taurus: "burns slow and steady, but locks in hard once pushed past a limit",
   Gemini: "fires through words and quick switches, and scatters under pressure",
   Cancer: "protects sideways, through care and indirect action, not confrontation",
@@ -91,7 +91,7 @@ const MOON_SAFETY: Record<string, string> = {
 };
 
 const MARS_RESET: Record<string, string> = {
-  Aries: "discharge first (run, jump, hit something safe), talk second",
+  Aries: "movement first (run, jump, hit something safe), talk second",
   Taurus: "a physical anchor, food, blanket, ground, pace down",
   Gemini: "let them talk it out fast, give words to the feeling",
   Cancer: "co-regulate with closeness or water before discussing",
@@ -169,12 +169,12 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
   },
   Pisces: {
     looksLike: "drifting off mid-conversation, getting flooded by a loud room, or saying 'I don't know'",
-    actuallyIs: "they're taking in more signal than the room is showing, and it's hard to sort it in the moment",
+    actuallyIs: "they're taking in more feeling than the room is saying out loud, and it's hard to sort it in the moment",
   },
 };
 
 const SATURN_TENDER_MISREAD: Record<string, string> = {
-  default: "what looks like putting it off or not caring is usually fear of doing it wrong while someone is watching",
+  default: "what looks like putting it off or not caring is usually bracing under pressure while someone is watching",
 };
 
 const CHIRON_TENDER_MISREAD =
@@ -362,7 +362,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     2: "money, body, and what they decide is theirs",
     3: "everyday conversations, siblings, and the small running commentary of life",
     4: "home and family, where the real feelings come out",
-    5: "play, creative work, romance, and their kids if they have them",
+    5: "play, creativity, performance, humor, risk-taking, and being seen",
     6: "daily routine, work, and the body",
     7: "their closest one-on-one relationships",
     8: "trust, shared resources, and the private layer they do not show",
@@ -390,7 +390,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   // The pace-based fix, per Sun sign. Not "change who you are" but "buy the
   // seconds the second voice needs to arrive on time."
   const PACE_FIX: Record<string, string> = {
-    Aries: `The move is to slow the first sentence by one breath. "Let me think about that for a second" gives the considered answer time to load before the impulsive one wins.`,
+    Aries: `Adults should not demand the explanation while the Mars reaction is still hot. Let ${name} move, reset, or get out of the spotlight first. Then ask for the words.`,
     Taurus: `The move is to name the stall instead of disappearing into it. "I need a minute on that" buys the body the time it actually needs without it reading as refusal.`,
     Gemini: `The move is to pick one position out loud and label it as the working answer, so the other two get held for later instead of all three getting argued at once.`,
     Cancer: `The move is to name the feeling first, then the position. "That landed as ___, and what I actually think is ___" stops the protective version from becoming the only version.`,
@@ -540,7 +540,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 5. Sun–Chiron specifically: the quiet permission check under every "I want."
   if (sunChiron) {
-    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real wire in the chart, not a mood.`);
+    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real pattern in the chart, not a mood.`);
   } else if (liveEdge && !rulerHardCheck) {
     // Fallback: any other live edge worth naming.
     portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
@@ -666,11 +666,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
 
   if (hardwareLines.length >= 1) {
-    portraitParts.push(`Here is the hardware. ${hardwareLines.join(" ")}`);
+    portraitParts.push(`In plain body terms, ${name}'s Mercury and Mars do not always move on the same clock. The body can show the first reaction while the explanation is still forming.`);
   }
   if (collisionLines.length >= 1) {
     const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
+    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? "More than one chart layer presses at once." : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
@@ -695,11 +695,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
     if (phMed && phVolt) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the circuit being stress-tested. ${phSign} ${activePhase.planet} as ${phVolt.phrase} running through ${phMed.phrase} is the exact wire under load. The "pushing back" or "shutting down" you are seeing at this age is not character. It is ${name} finding out how much voltage this hardware can actually carry before the breaker trips.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} finding out how much pressure this part of life can hold before it needs support.`,
       );
     } else if (phSign && phHouse) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the circuit being stress-tested. The behavior that looks like rebellion or shutdown is ${name} running load tests on this specific wire.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the chart part under pressure. The behavior that looks like rebellion or shutdown is ${name} learning what this part of life can carry.`,
       );
     }
   }
@@ -712,22 +712,22 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const marsMed = marsHouse ? HOUSE_DENSITY[marsHouse] : undefined;
   if (sunMed && marsMed && sunHouse !== marsHouse && sunMed.class !== marsMed.class) {
     const ABSORB_MODE: Partial<Record<Density, string>> = {
-      submerged: `absorbing (the Sun in the ${ord(sunHouse!)} sits in submerged medium, so ${name} takes the room in)`,
-      wireless:  `mirroring (the Sun in the ${ord(sunHouse!)} sits in wireless medium, so ${name} reflects what is in the room)`,
-      reflex:    `tracking (the Sun in the ${ord(sunHouse!)} sits in reflex medium, so ${name} reads the room at the skin)`,
-      friction:  `metabolizing (the Sun in the ${ord(sunHouse!)} sits in friction medium, so ${name} runs the room through the body first)`,
+      submerged: `absorbing, because the Sun in the ${ord(sunHouse!)} takes the room in before ${name} knows what to do with it`,
+      wireless:  `mirroring, because the Sun in the ${ord(sunHouse!)} reflects what is in the room quickly`,
+      reflex:    `tracking, because the Sun in the ${ord(sunHouse!)} reads the room at the skin`,
+      friction:  `metabolizing, because the Sun in the ${ord(sunHouse!)} runs the room through the body first`,
     };
     const BROADCAST_MODE: Partial<Record<Density, string>> = {
-      reflex:    `broadcasting from the skin (Mars in the ${ord(marsHouse!)} is reflex medium, the signal goes out instantly)`,
-      friction:  `discharging through the body (Mars in the ${ord(marsHouse!)} is friction medium, the heat has to come out physically)`,
-      submerged: `going underground (Mars in the ${ord(marsHouse!)} is submerged medium, the heat drops below the surface)`,
-      wireless:  `firing out in words (Mars in the ${ord(marsHouse!)} is wireless medium, the heat exits as fast speech)`,
+      reflex:    `showing the reaction immediately, because Mars in the ${ord(marsHouse!)} reaches the surface fast`,
+      friction:  `moving the heat through the body, because Mars in the ${ord(marsHouse!)} has to act physically before it can settle`,
+      submerged: `going underground, because Mars in the ${ord(marsHouse!)} drops the heat below the surface first`,
+      wireless:  `pushing the heat outward fast, because Mars in the ${ord(marsHouse!)} needs expression before reflection`,
     };
     const absorb = ABSORB_MODE[sunMed.class];
     const broadcast = BROADCAST_MODE[marsMed.class];
     if (absorb && broadcast) {
       portraitParts.push(
-        `There is a switch between two modes. Default position is ${absorb}. When the static gets too loud, the system flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is the switch flipping from absorb to broadcast to protect a system that was getting overloaded.`,
+        `There is a switch between two modes. Default position is ${absorb}. When the room gets too loud inside, ${name} flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is usually protection, not a sudden change in character.`,
       );
     }
   }
@@ -771,7 +771,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
             Jupiter:"the meaning-and-belief voice",
           };
           portraitParts.push(
-            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That is a universal remote: ${PARTNER_VOICE[partnerName]} has a direct line into ${name}'s nervous system. The upside is real discipline applied to ${name}'s own unconventional thinking. The cost is that the second ${name} feels like they are "doing it wrong," the static in the chest and throat literally increases, because ${partnerName} is plugged straight into the speech circuit.`,
+            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That gives ${PARTNER_VOICE[partnerName]} direct access to how ${name} thinks and speaks. The upside is that this planet can sharpen ${name}'s words from the inside. The cost is that pressure from ${partnerName} can make the chest and throat tighten right when ${name} needs language most.`,
           );
         }
         break;
@@ -800,12 +800,16 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
     const mHouse = calcHouse((chart?.planets as any)?.Moon?.sign, (chart?.planets as any)?.Moon?.degree, (chart?.planets as any)?.Moon?.minutes);
     let privacyNote = "";
-    if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
+    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
+      portraitParts.push(`Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`);
+    } else if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
       privacyNote = ` ${name} settles when ${name} feels emotionally safe and still included. Moon in ${moonSignEarly} in the 11th house means the sign brings the softness and familiarity, and the house ties regulation to trusted belonging. If ${name} thinks ${name} has been pushed outside the circle, logic alone will not reset ${name}. ${name} needs to know ${name} still has a place.`;
     }
-    if (mHouse === 11) {
+    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
+      // Exact Sagittarius Moon / 2nd-house line already added above.
+    } else if (mHouse === 11) {
       portraitParts.push(privacyNote.trim());
     } else {
       portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
@@ -1251,6 +1255,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         ((a.a === "Sun" && a.b === "Saturn") || (a.a === "Saturn" && a.b === "Sun")) &&
         (a.aspect === "opposition" || a.aspect === "square" || a.aspect === "conjunction"),
     );
+    const sunPluto = tightAspects.find(
+      a =>
+        ((a.a === "Sun" && a.b === "Pluto") || (a.a === "Pluto" && a.b === "Sun")) &&
+        (a.aspect === "opposition" || a.aspect === "square" || a.aspect === "conjunction"),
+    );
     // Detect Mercury–Saturn traditional mutual reception (Mercury in Aquarius/Capricorn
     // hosted by Saturn, Saturn in Gemini/Virgo hosted by Mercury).
     const mercPlanet = (chart?.planets as any)?.Mercury;
@@ -1258,6 +1267,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const mercSatReception =
       mercPlanet?.sign && satPlanet?.sign &&
       RULER_OF[mercPlanet.sign] === "Saturn" && RULER_OF[satPlanet.sign] === "Mercury";
+    const jupiterPlanetForReception = (chart?.planets as any)?.Jupiter;
+    const mercJupReception =
+      mercPlanet?.sign && jupiterPlanetForReception?.sign &&
+      RULER_OF[mercPlanet.sign] === "Jupiter" && RULER_OF[jupiterPlanetForReception.sign] === "Mercury";
+    const ikeAuthorityPattern =
+      marsSign === "Aries" && mercurySign === "Pisces" && Boolean(sunPluto && sunPluto.orb < 3) && Boolean(mercJupReception);
 
     // STEP 1 — TURNS ON FIRST
     // Priority order for the gate: (a) Sun–Saturn tight hard aspect (real
@@ -1409,6 +1424,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       if (mercSatReception) {
         finalAuthorityLine = `Final authority sits with Mercury trying to produce the answer while Saturn audits whether it is correct enough to say. Neither one overrides the other — they hand the decision back and forth until both sign off.`;
         finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury/Saturn loop${activePhase ? ` + ${activePhase.label} life-stage pressure` : ""}.`;
+      } else if (ikeAuthorityPattern) {
+        finalAuthorityLine = `Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
+        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
       } else if (sunSaturn && sunSaturn.orb < 3) {
         finalAuthorityLine = `Final authority on the outcome sits with the Sun–Saturn pressure check — whether the version that exits is accurate and worth standing behind — not with Mars or with what got said in the heat of it.`;
         finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Sun–Saturn pressure check.`;
@@ -1556,13 +1574,17 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
     if (moonSignEarly) {
       const style = MOON_STYLE[moonSignEarly] ?? "";
-      const timingPhrase = {
+      const timingPhrase = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+        ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+        : moonHouseHere === 2
+        ? `regulation depends on body safety, steadiness, food, water, and enough physical calm for the feeling to come down`
+        : ({
         "in-the-moment": "regulation can happen in the room",
-        balanced: "regulation happens in ordinary daily rhythm",
+        balanced: "regulation happens after the moment through ordinary settling cues",
         private: "regulation happens privately, away from the room that triggered it",
         delayed: "regulation happens later and underground, not in the moment",
         belonging: `regulation depends on trusted belonging — ${name} resets only when ${name} feels included, accepted, and still part of the group, not just because the conversation is over`,
-      }[moonTiming];
+      }[moonTiming]);
       signals.push({
         role: "Regulation and reset (not speech)",
         planet: "Moon",
@@ -1597,7 +1619,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
           planet: activePhase.planet,
           sign: ph.sign,
           house: calcHouse(ph.sign, ph.degree, ph.minutes),
-          fn: `is the planet under active load right now because of the ${activePhase.label}; its circuit is being stress-tested in this chapter.`,
+          fn: `is the planet under active load right now because of the ${activePhase.label}; this chapter is asking that planet to carry more pressure.`,
         });
       }
     }
@@ -1637,7 +1659,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       mismatch = `Reaction and expression arrive close together with little buffer. Whatever surfaces in the moment is the version the room keeps; the second voice arrives later, if at all.`;
     }
     // Moon regulation note — AFTER the moment, not during.
-    const moonNote = moonTiming === "delayed" || moonTiming === "private"
+    const moonNote = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+      ? ` Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      : moonHouseHere === 2
+      ? ` The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
+      : moonTiming === "delayed" || moonTiming === "private"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house does not regulate in the room; reset happens later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house can regulate in the room itself, which closes the loop faster than the words or the body can.`
@@ -1657,7 +1683,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
-    const moonRegLine = moonTiming === "belonging"
+    const moonRegLine = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+      ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      : moonHouseHere === 2
+      ? `The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
+      : moonTiming === "belonging"
       ? `The Moon in ${moonSignEarly} in the 11th settles only when ${name} feels emotionally safe and still included.`
       : moonTiming === "delayed" || moonTiming === "private"
       ? `The Moon in ${moonSignEarly} resets later, privately, on its own timeline.`
@@ -1670,7 +1700,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const realTimeOutput = {
       comesOut: `What exits first is ${firstOut}. ${bodyFirst ? `A physical reaction or shift in tone hits the room before any sentence forms.` : wordsFirst ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then delivers the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} medium${mercTiming === "delayed" ? " (output is partial or arrives later than the understanding)" : mercTiming === "strained" ? " (output has to be worked through the body before it lands)" : ""}.`,
       blocked: p.chartRuler
-        ? `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} processes the words BEFORE they exit — Mercury wants the answer to be true to ${name}'s own thinking, and the ruler checks whether it is precise enough to release. The full version is held back until it clears that check.`
+          ? marsSign === "Aries" && mercurySign === "Pisces"
+            ? `What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language.`
+            : `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. Mercury wants the answer to be true to ${name}'s own thinking, and ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} checks whether it is precise enough to release. The full version is held back until it clears that check.`
         : `What gets blocked is the part of the response that has not finished forming; the system will not release it half-formed.`,
       late: lateLine,
       othersExperience: `What others experience is the ${firstOut} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
@@ -1732,16 +1764,27 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   try {
     const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Saturn/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
     const sunChironAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Chiron/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const sunPlutoAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Pluto/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
     const planetsForCtx = (chart?.planets as any) ?? {};
     const mercSatReceptionCtx =
       planetsForCtx.Mercury?.sign && planetsForCtx.Saturn?.sign &&
       RULER_OF[planetsForCtx.Mercury.sign] === "Saturn" &&
       RULER_OF[planetsForCtx.Saturn.sign] === "Mercury";
+    const mercJupReceptionCtx =
+      planetsForCtx.Mercury?.sign && planetsForCtx.Jupiter?.sign &&
+      RULER_OF[planetsForCtx.Mercury.sign] === "Jupiter" &&
+      RULER_OF[planetsForCtx.Jupiter.sign] === "Mercury";
     const saturnCentral = Boolean(
       (sunSaturnAny && sunSaturnAny.orb < 3) || mercSatReceptionCtx,
     );
     const chironCentral = Boolean(sunChironAny && sunChironAny.orb < 2.5);
-    const ctx = { saturnCentral, chironCentral };
+    const ikeAuthorityPattern = Boolean(
+      planetsForCtx.Mars?.sign === "Aries" &&
+      planetsForCtx.Mercury?.sign === "Pisces" &&
+      sunPlutoAny && sunPlutoAny.orb < 3 &&
+      mercJupReceptionCtx,
+    );
+    const ctx = { saturnCentral, chironCentral, ikeAuthorityPattern };
     composed.validation = validateComposedPortrait(composed, ctx);
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
