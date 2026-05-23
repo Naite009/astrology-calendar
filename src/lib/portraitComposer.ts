@@ -494,7 +494,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 1. The live mechanic. Why it feels involuntary.
   if (sunSign && SUN_LIVE[sunSign]) {
-    if (sunSign === "Pisces") {
+    const marsSignEarly = (chart?.planets as any)?.Mars?.sign;
+    const marsHouseEarly = calcHouse((chart?.planets as any)?.Mars?.sign, (chart?.planets as any)?.Mars?.degree, (chart?.planets as any)?.Mars?.minutes);
+    if (marsSignEarly === "Aries" && marsHouseEarly === 5) {
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. Aries Mars in the 5th reads hesitation as losing the spark. His body wants to act, answer, move, or express before the private Mercury-in-Pisces part has finished finding the words.`);
+    } else if (sunSign === "Pisces") {
       portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside him before his own answer has fully stepped forward.`);
     } else {
       portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
@@ -740,6 +744,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
             : "";
           portraitParts.push(
             `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough.${satReal} Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
+          );
+        } else if (partnerName === "Jupiter") {
+          // Mercury–Jupiter mutual reception: impression vs. explanation loop.
+          // NOT discipline or correctness (that is Saturn). This is about
+          // translating a vibe, image, feeling, or private knowing into words.
+          portraitParts.push(
+            `Mercury and Jupiter are in mutual reception: Mercury in ${merc.sign} is ruled by Jupiter, and Jupiter in ${partner.sign} is ruled by Mercury. This creates a loop between impression and explanation. ${name} may know something first as a feeling, image, vibe, or private knowing, and only later find the words for it. Jupiter in ${partner.sign} keeps trying to explain, joke, teach, or name the thing, while Mercury in ${merc.sign} keeps absorbing more than can be said cleanly.`,
           );
         } else {
           const PARTNER_VOICE: Record<string, string> = {
@@ -1301,7 +1312,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       seqSteps.push({
         cue: "Then immediately:",
         lead: `Mars in ${marsSign} (${ord(marsHouse)} house)`,
-        action: `${marsHouseLine[marsHouse] ?? "the body reacts on its own clock"}. This is the BODY responding, not the words. Mars may activate before Mercury has the language ready.`,
+        action: `${marsHouseLine[marsHouse] ?? "the body reacts on its own clock"}. This is the BODY responding, not the words. ${marsSign === "Aries" && mercurySign === "Pisces" ? `What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language.` : `Mars may activate before Mercury has the language ready.`}`,
         rank: "Priority 2: Mars body-reaction (timing from house). Reaction is not language.",
       });
     }
