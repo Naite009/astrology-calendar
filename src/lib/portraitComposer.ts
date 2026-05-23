@@ -760,7 +760,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
-      privacyNote = ` In the 11th house, the Moon regulates through emotional safety inside a trusted group. ${name} settles when ${name} feels still inside the circle — still has a place, still belongs, is not being pushed out. When the group bond feels shaky, no other regulation strategy fully lands.`;
+      privacyNote = ` Moon in ${moonSignEarly} in the 11th house is the reset, not language. The sign shows that ${name} regulates through ${moonSignEarly === "Cancer" ? "emotional safety, softness, and familiarity" : MOON_NEED[moonSignEarly]?.replace(/^.*?(by |through )/, "") || "their natural settling style"}. The 11th house shows that regulation depends on trusted belonging: feeling included, accepted, and still part of the group. ${name} does not fully reset just because the conversation is over; ${name} resets when ${name}'s place in the circle feels secure again.`;
     }
     portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
   }
