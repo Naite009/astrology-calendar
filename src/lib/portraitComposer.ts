@@ -1654,7 +1654,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     p.masterySpot.chiron ? "chiron pattern" : null,
   ].filter(Boolean) as string[];
 
-  return {
+  const composed: ComposedPortrait = {
     lifeStageChapter,
     corePortrait,
     systemMechanism,
@@ -1668,4 +1668,19 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     chainOfCommand,
     themesPicked,
   };
+
+  // GLOBAL VALIDATION LAYER — A–H check before display.
+  // Runs lazily so a bundle that doesn't import the validator stays small.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { validateComposedPortrait } = require("./portraitValidator") as typeof import("./portraitValidator");
+    composed.validation = validateComposedPortrait(composed);
+    if (typeof console !== "undefined" && !composed.validation.ok) {
+      console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
+    }
+  } catch (_e) {
+    // Validator is best-effort; never block the portrait on it.
+  }
+
+  return composed;
 }
