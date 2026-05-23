@@ -1153,15 +1153,27 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const chainLine = steps.map(s => `${s.planet} in ${s.sign}`).join(" -> ");
     let narrative = `Walk the chain of command from the top down: ${chainLine}. `;
     if (mutualReception) {
-      narrative +=
-        `${mutualReception.a} and ${mutualReception.b} are in mutual reception (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
-        `and ${mutualReception.b} sits in ${mutualReception.bSign}). This creates a loop with no final authority — ` +
-        `decisions involving these two do not land cleanly, they oscillate. In daily life, ${name} can swing between the ` +
-        `two modes depending on which one got activated first, with neither fully overriding the other.`;
+      const pair = new Set([mutualReception.a, mutualReception.b]);
+      const isMercSat = pair.has("Mercury") && pair.has("Saturn");
+      if (isMercSat) {
+        const mercSign = mutualReception.a === "Mercury" ? mutualReception.aSign : mutualReception.bSign;
+        const satSign = mutualReception.a === "Saturn" ? mutualReception.aSign : mutualReception.bSign;
+        narrative +=
+          `Mercury and Saturn are in traditional mutual reception: Mercury is in ${mercSign}, ruled by Saturn traditionally, ` +
+          `and Saturn is in ${satSign}, ruled by Mercury. This creates a closed loop between independent thinking and ` +
+          `self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, accurate, and ` +
+          `good enough to stand behind. Decisions involving these two do not land cleanly — they oscillate until both sign off.`;
+      } else {
+        narrative +=
+          `${mutualReception.a} and ${mutualReception.b} are in traditional mutual reception — a closed loop between ` +
+          `${mutualReception.a}'s job and ${mutualReception.b}'s job (${mutualReception.a} sits in ${mutualReception.aSign}, ` +
+          `and ${mutualReception.b} sits in ${mutualReception.bSign}). Decisions involving these two do not land cleanly; ` +
+          `they oscillate until both sign off, with neither fully overriding the other.`;
+      }
     } else if (loop) {
       narrative +=
-        `There is no single final boss. ${loop.join(", ")} all point at each other in a loop, so authority circulates ` +
-        `between them. In daily life, this means ${name} doesn't have one fixed "true north" inside; the same situation ` +
+        `There is no single final boss. ${loop.join(", ")} all point at each other in a closed loop between their ` +
+        `separate jobs. In daily life, this means ${name} doesn't have one fixed "true north" inside; the same situation ` +
         `can be run by a different planet each time, depending on which one got activated first. It can feel like ` +
         `running on a wheel that keeps handing off the steering, which is why ${name} sometimes ends up back where they started.`;
     } else if (finalDispositor) {
