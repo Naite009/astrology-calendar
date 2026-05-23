@@ -316,6 +316,10 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     trigger = {
       label: `${p.pressureSignature.body} sitting in the ${p.pressureSignature.trigger}`,
       detail: p.pressureSignature.need,
+      derivation:
+        `Picked because ${p.pressureSignature.body} (one of the engine planets) is sitting in ${p.pressureSignature.trigger}, ` +
+        `which is the strongest pressure pattern in the chart. Pressure signatures override aspects and Saturn here ` +
+        `because they describe where the engine itself is under containment, not just where it meets resistance.`,
     };
     reaction = p.pressureSignature.consequence;
     bridgeWhy =
@@ -328,6 +332,10 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     trigger = {
       label: `${tightHard.a} ${tightHard.aspect} ${tightHard.b} (${tightHard.orb.toFixed(1)}°)`,
       detail: `two internal voices that pull against each other in real time`,
+      derivation:
+        `Picked because this is the tightest hard aspect in the chart (orb ${tightHard.orb.toFixed(1)}°, under 2.5°), ` +
+        `which means it's loud and active in daily life. Tight squares, oppositions, and conjunctions are felt as ` +
+        `internal arguments that don't resolve, so they show up as repeated friction points.`,
     };
     reaction = tightHard.line || `${name} locks up or over-corrects until one side wins`;
     bridgeWhy = `one of those two voices is the engine itself, so the tug shows up every time ${name} tries to move`;
@@ -335,6 +343,10 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     trigger = {
       label: `Moon hard-angled to ${tightMoonHard.to} (${tightMoonHard.orb.toFixed(1)}°)`,
       detail: `the safety system has a tender wire on it`,
+      derivation:
+        `Picked because no pressure signature or tight planet-to-planet hard aspect was found, but the Moon (the ` +
+        `safety system) is taking a hard hit from ${tightMoonHard.to} at ${tightMoonHard.orb.toFixed(1)}° orb. ` +
+        `Moon hard aspects show up as the nervous system being slow to settle, even when nothing on the surface looks wrong.`,
     };
     reaction = marsSign && MARS_RESET[marsSign]
       ? `the body needs to discharge first (${MARS_RESET[marsSign]}), and only then can the feeling get named`
@@ -344,11 +356,19 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     trigger = {
       label: `Saturn in ${p.masterySpot.saturn.sign}` + (p.masterySpot.saturn.house ? ` (${ord(p.masterySpot.saturn.house)} house)` : ""),
       detail: `the area where the fear of doing it wrong is loudest`,
+      derivation:
+        `Picked because the chart has no acute pressure signature and no tight hard aspect, so the structural ` +
+        `pressure falls back to Saturn's house. Saturn shows where the inner judge is loudest, and that's the ` +
+        `area where ${name} most often slows themselves down before someone else can.`,
     };
     reaction = `${name} either freezes, over-prepares, or quietly opts out before anyone has a chance to judge it`;
     bridgeWhy = `the engine wants to move, and Saturn is the part holding it back to make sure it gets done right`;
   } else {
-    trigger = { label: "stress in their key area", detail: "what knocks the system off balance" };
+    trigger = {
+      label: "stress in their key area",
+      detail: "what knocks the system off balance",
+      derivation: `No specific structural trigger was found (no pressure signature, tight hard aspect, Moon hard aspect, or Saturn placement strong enough to flag). Stress here is general rather than chart-specific.`,
+    };
     reaction = marsSign && MARS_RESET[marsSign]
       ? `the body needs to reset (${MARS_RESET[marsSign]}) before anything else can be processed`
       : `the system goes quiet until it can find ground again`;
@@ -357,7 +377,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   const synthesis =
     `${name}'s engine is ${driver.label}, and it comes out into the world as ${translator.label}. ` +
-    `The pressure point is ${trigger.label} — and ${bridgeWhy}. ` +
+    `The pressure point is ${trigger.label}, and ${bridgeWhy}. ` +
     `So when that pressure hits, ${reaction}.`;
 
   const systemMechanism = { driver, translator, trigger, reaction, synthesis };
