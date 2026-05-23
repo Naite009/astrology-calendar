@@ -1756,16 +1756,27 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   try {
     const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Saturn/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
     const sunChironAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Chiron/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const sunPlutoAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Pluto/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
     const planetsForCtx = (chart?.planets as any) ?? {};
     const mercSatReceptionCtx =
       planetsForCtx.Mercury?.sign && planetsForCtx.Saturn?.sign &&
       RULER_OF[planetsForCtx.Mercury.sign] === "Saturn" &&
       RULER_OF[planetsForCtx.Saturn.sign] === "Mercury";
+    const mercJupReceptionCtx =
+      planetsForCtx.Mercury?.sign && planetsForCtx.Jupiter?.sign &&
+      RULER_OF[planetsForCtx.Mercury.sign] === "Jupiter" &&
+      RULER_OF[planetsForCtx.Jupiter.sign] === "Mercury";
     const saturnCentral = Boolean(
       (sunSaturnAny && sunSaturnAny.orb < 3) || mercSatReceptionCtx,
     );
     const chironCentral = Boolean(sunChironAny && sunChironAny.orb < 2.5);
-    const ctx = { saturnCentral, chironCentral };
+    const ikeAuthorityPattern = Boolean(
+      planetsForCtx.Mars?.sign === "Aries" &&
+      planetsForCtx.Mercury?.sign === "Pisces" &&
+      sunPlutoAny && sunPlutoAny.orb < 3 &&
+      mercJupReceptionCtx,
+    );
+    const ctx = { saturnCentral, chironCentral, ikeAuthorityPattern };
     composed.validation = validateComposedPortrait(composed, ctx);
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
