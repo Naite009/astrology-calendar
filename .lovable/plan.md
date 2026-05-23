@@ -1,105 +1,99 @@
-# Advanced Family Synastry — 4 New Deterministic Layers
+# Physics-Based Core Portrait
 
-All four layers compute from existing `members[]` chart data. No AI calls. They render as new sub-sections inside the existing **"The Family Feedback Loop"** card in `FamilyTab.tsx`, under the current Elemental Void / Bridges / Triangulation / Mirrors / Dashboard blocks. Cache key bumps to `system-pipeline-v7-advanced`.
+The Core Portrait currently lists what each placement *means* (topics, archetypes). You want it to explain *the physical collision* — how a planet's voltage hits the density of the house it lives in, and what that feels like in the body. All edits live in `src/lib/portraitComposer.ts` (presentation layer only — no astrology math changes).
 
----
+## The mental model the engine will follow
 
-## 1. Karmic Custodian — 12th-House Mirror
+```text
+Planet + Sign  = VOLTAGE   (speed / pressure / texture of the signal)
+Planet + House = MEDIUM    (density the signal has to travel through)
+Collision      = SENSATION (what the body actually feels)
+```
 
-**Logic** (per parent↔child pair):
-- For each child planet in `[Sun, Moon, Mercury, Venus, Mars]`, compute which house it falls in inside the **parent's** chart (using `houseOfPlanet` against parent's `houseCusps`).
-- If it lands in the parent's **12th house**, emit a mirror entry: `{ parent, child, childPlanet, parentHouse: 12 }`.
-- Skip if parent has unreliable birth time (`chart.birthTimeUnknown`).
+### House Density classes (new)
 
-**Output text** (deterministic, planet-specific):
-- Moon → "When you're carrying unspoken stress, {child} gets restless or clingy. They feel it before you name it."
-- Sun → "{child} reflects the part of yourself you keep private. Be honest about what you want, so they don't carry the unspoken version."
-- Mercury → "{child} voices thoughts you haven't said out loud. If they ask blunt questions, it's your own held-back words coming through them."
-- Venus → "{child} picks up on relationship tension you're avoiding. Acknowledge it directly so they don't have to mirror it."
-- Mars → "{child} acts out anger you're sitting on. Name your own frustration first; their reactivity will drop."
+- **Reflex (1, 4, 7, 10 — angular):** zero-latency, live-wire. Signal hits the skin/room instantly.
+- **Friction (6, primarily; also 2):** hard-wired to the nervous system. Thought must be *conducted* through the body — creates a thermal/data jam.
+- **Submerged (12, 8, 4 as inner):** underwater density. Information is massive but lagged; surface answer trails the real one.
+- **Wireless (3, 11, 9, 5 — air/fire mental houses):** low friction. Thought and speech are near-simultaneous.
 
----
+### Voltage classes (new, per planet+sign)
 
-## 2. Midpoint Hotspots — with explicit table
+A small lookup keyed by `${planet}-${sign}` for the planets that matter most in the live moment: Mercury, Mars, Venus, Moon, Sun. Examples:
+- Aquarius Mercury → "high-voltage lightning, non-linear, instant"
+- Libra Mercury → "balanced signal, edits in real time for precision"
+- Pisces Mercury → "diffuse signal, arrives as impression before words"
+- Scorpio Mars → "pressure cooker, concentrated, reactive"
+- Aries Mars → "live-wire discharge, immediate"
+- Capricorn Mars → "compressed voltage, pushed down for later"
 
-**Logic** (per parent-pair, then check every other member):
-- For each pair of parents `(P1, P2)`, compute the midpoint of every parent-planet combo across `[Sun, Moon, Mercury, Venus, Mars, Ascendant, MC]`. Midpoint of two ecliptic longitudes = `((λ1 + λ2)/2) mod 360`, plus the **opposite midpoint** `(midpoint + 180) mod 360`. Both are valid.
-- For every other member (children + 3rd parent), check if any of their `[Sun, Moon, Mercury, Venus, Mars, Ascendant]` is within **1.5° orb** of either midpoint axis.
-- Emit a hotspot: `{ parentA, parentB, parentPlanetA, parentPlanetB, midpointSign, midpointDegree, activator, activatorPlanet, orb }`.
+(Curated, not exhaustive — only the combos that produce distinctive collisions. Falls back gracefully when a combo isn't mapped.)
 
-**Rendered as a table** (the user explicitly asked for this):
+### Collision rules (the synthesis)
 
-| Parents | Parents' planets | Midpoint | Activated by | Their planet | Orb |
-|---|---|---|---|---|---|
-| Alex + Sam | Sun / Mars | 15°22' Taurus | Ben | Moon | 0.4° |
-| Alex + Sam | Venus / Saturn | 03°10' Libra | Ike | Sun | 1.1° |
+A function `describeCollision(voltage, density)` returns a sensation sentence:
 
-Below the table, a short deterministic interpretation line per row keyed off the parent-planet pair:
-- Sun/Mars midpoint → "This child activates your shared drive. They feel most secure when you two are moving toward a goal together."
-- Sun/Moon → "This child sits on your relationship's emotional center. Your mood as a couple sets theirs."
-- Mars/Saturn → "This child triggers your shared frustration/discipline knot. Tighten the rules together or they'll exploit the gap."
-- Venus/Mars → "This child activates the spark between you two. They thrive when you two are affectionate in front of them."
-- Sun/Saturn → "This child carries your shared sense of duty. Don't over-task them."
-- (fallback) "This child sits on the midpoint of your {planetA}/{planetB} energy. When you two are aligned around that theme, they amplify it."
+- High Voltage + Friction → **Data Jam.** "Fullness in the chest/throat; the brain has finished, the nerves are still grounding the current."
+- High Pressure + Reflex → **The Wall.** "Body throws up a shield at skin-level before the mind has finished downloading."
+- Balanced/Diffuse Voltage + Submerged → **Deep-Sea Lag.** "Understanding is there in real time; the language is still surfacing."
+- Wireless + any → **Open Line.** "Thought and speech arrive together — nothing to translate."
+- High Voltage + Submerged → **Signal Fog with Spark.** "Lightning underwater; sudden flashes of clarity that take time to articulate."
+- High Pressure + Friction → **Pressure Cooker in the Hardware.** "The body holds the heat; release looks like an outburst or a shutdown, not a conversation."
 
-**Constraints**:
-- Only emit if there are ≥2 parents in the family.
-- Cap at top **8 hotspots** sorted by tightest orb to keep the table readable.
-- Hide whole section if no hotspots found.
+## What gets written into `composePortrait`
 
----
+Replace the current "stack" paragraph (the `stackLines.join(...)` block around lines 502–517) with a **two-layer Hardware Audit**, then a **Collision Report**, then the existing Moon regulation + pace fix.
 
-## 3. T-Square Completion — "Missing Leg"
+### Layer 1: Hardware Audit (one short paragraph)
 
-**Logic** (per parent, per child):
-- Scan the parent's natal aspects for **applying squares** (90° ± 6°) between any two of `[Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn]`. Each square `(P1 sq P2)` defines a **missing apex** at the two points 90° from both (the two signs that would complete a T-square).
-- For each child, check if any of their `[Sun, Moon, Mars, Ascendant]` falls within **3° orb** of either missing apex.
-- Emit: `{ parent, parentSquare: [P1, P2], child, childPlanet, apexSign, apexDegree, orb }`.
+For Mercury, Mars, and the chart ruler, name:
+- the sign as **voltage** (one phrase)
+- the house as **density** (one phrase — using the new class label, not the topic)
 
-**Output text**:
-"{child}'s {childPlanet} at {apexSign} completes your {P1}–{P2} square. They don't just push your buttons — their existence is the catalyst that forces the growth this square has been demanding from you."
+Example output style:
+> "Mercury runs as **balanced signal** through a **submerged 12th-house medium** — the understanding loads underwater. Mars runs as **pressure cooker** in a **reflex 1st-house medium** — it discharges at the skin before the mind catches up."
 
-**Constraints**: max 1 completion per parent-child pair (tightest orb wins); hide section if empty.
+### Layer 2: Collision Report (one short paragraph)
 
----
+Apply the collision rules to the two strongest hardware setups and describe the **sensation**, not the personality:
+> "When the room moves fast, the live wire on the surface (Mars 1st) throws up a wall before the deep processor (Mercury 12th) has surfaced the actual words. What looks like coldness is a shield bought to protect a system still downloading."
 
-## 4. Generational Outer-Planet Gap
+### Layer 3 (kept): Moon regulation + Pace Fix
 
-**Logic** (per parent↔child pair):
-- Compare signs of `Uranus`, `Neptune`, `Pluto` between parent and child.
-- If different signs, emit `{ parent, child, planet, parentSign, childSign }`.
+The existing `MOON_NEED` line and `PACE_FIX` line stay. They are the only "what to do" beats and they already work.
 
-**Output text** uses a small lookup table for Pluto, Neptune, Uranus by sign (deterministic, ~30 hard-coded combinations for the realistic generational pairs — e.g. Pluto Virgo↔Scorpio, Scorpio↔Sagittarius, Sagittarius↔Capricorn, Capricorn↔Aquarius). Each entry gives a single "what feels invasive vs what they're built for" line.
+## Vocabulary swap (enforced)
 
-Example: Pluto Scorpio (parent) ↔ Pluto Sagittarius (child) → "You value depth and privacy; {child}'s generation values bluntness and freedom. Their oversharing isn't disrespect — it's their generation's mission to refuse secrecy."
+Inside the new sections, replace:
 
-If no lookup entry exists for the specific sign pair, fall back to: "{planet} {parentSign} (you) vs {planet} {childSign} ({child}) — different generational values. The friction is generational, not personal."
+| Banned word | Use instead |
+|---|---|
+| intense | pressure at the skin |
+| quiet, shut down | conducting electricity |
+| vague, spacey | underwater processing |
+| slow, indecisive | grounding the surge |
+| reactive | live wire discharge |
+| people-pleasing | editing the signal in real time |
 
----
+## What stays the same
 
-## Files to change
+- The `lifeStageChapter` block above Core Portrait.
+- The opening "live mechanic" sentence (`SUN_LIVE[sunSign]`).
+- The chart-ruler "what it actually believes" sentence (`RULER_BELIEF`).
+- The Sun–Chiron permission line.
+- `systemMechanism`, `bridge`, `stageAsk`, `misreads`, `whatHelps`, `chainOfCommand` — untouched.
 
-### `src/lib/familySystemSynastry.ts`
-Add deterministic exports:
-- `findTwelfthHouseMirrors(members)` → `TwelfthHouseMirror[]`
-- `findMidpointHotspots(members)` → `MidpointHotspot[]` (includes ecliptic-longitude helper)
-- `findTSquareCompletions(members)` → `TSquareCompletion[]`
-- `findGenerationalGaps(members)` → `GenerationalGap[]`
-- Extend `FamilyWeb` interface + `buildFamilyWeb()` to include the 4 new arrays.
+The change is concentrated in steps 6–8 of the current portrait build (the synthesis + stack), which become Hardware Audit → Collision → regulation/fix.
 
-### `src/components/family/FamilyTab.tsx`
-Inside the existing "The Family Feedback Loop" card, append 4 new sub-blocks after the Regulation Dashboard:
-1. **12th-House Mirrors** — list grouped by parent.
-2. **Midpoint Hotspots** — uses `<Table>` from `@/components/ui/table` (header row + one row per hotspot + interpretation line as sub-row or expandable).
-3. **T-Square Completions** — list grouped by parent-child pair.
-4. **Generational Gap** — list grouped by parent-child pair.
+## Files touched
 
-Card visibility condition expands to also show if any of the new arrays has content. Bump `systemCacheKey` to `system-pipeline-v7-advanced`.
+- `src/lib/portraitComposer.ts` — add `HOUSE_DENSITY`, `VOLTAGE`, `COLLISION` maps + a `describeCollision()` helper; rewrite the synthesis paragraph block.
 
-### `.lovable/memory/features/family-readings/family-web.md`
-Append sections 6–9 documenting the four new layers, their orbs, fallback rules, and the midpoint table format.
+No changes to `childPortrait.ts`, no new astrology math, no UI changes.
 
-## Out of scope
-- No new AI calls.
-- No changes to pair readings, parent-alignment, childMechanism, or PDF export.
-- No edge function changes (all four blocks are client-side; the existing `family-system-reading` function does not need to receive or echo them).
+## Acceptance check
+
+After the edit, the Core Portrait for Lauren (Libra Mercury 12th, Scorpio Mars 1st) should read approximately:
+> "Mercury runs as a balanced signal through a submerged 12th-house medium — the words form underwater and surface after the moment. Mars runs as a pressure cooker on the 1st-house live wire — it puts a wall up at the skin before the words arrive. So in fast rooms, the shield gets thrown before the real answer has surfaced. That is not coldness and it is not people-pleasing — it is a deep processor protected by a surface reactor."
+
+Not Lauren's exact wording, but that *shape* — voltage, medium, collision, sensation — for any chart the engine receives.
