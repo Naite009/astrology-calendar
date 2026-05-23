@@ -205,6 +205,14 @@ export interface ComposedPortrait {
       rank: string;      // why this step was picked (priority rule)
     }>;
   };
+  // NEW: Planet Interaction System — Signal → Medium → Collision → Output → Translation.
+  planetInteraction?: {
+    signals: Array<{ role: string; planet: string; sign: string; house: number | null; fn: string }>;
+    mediums: Array<{ planet: string; house: number; medium: string }>;
+    timingCollision: { comparison: string; mismatch: string };
+    realTimeOutput: { comesOut: string; blocked: string; late: string; othersExperience: string };
+    humanTranslation: { looksLike: string; actuallyIs: string; whatHelps: string };
+  };
   bridge?: {
     paragraph: string;
     placements: string[];
