@@ -388,9 +388,6 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     <div className="font-semibold text-base">The Chart Story Behind It</div>
                   </div>
                   <p className="leading-relaxed text-foreground/90">{composed.chartStory}</p>
-                  <div className="text-[10px] text-muted-foreground/70 italic">
-                    Themes selected: {composed.themesPicked.join(" · ")}
-                  </div>
                 </div>
               )}
             </section>
