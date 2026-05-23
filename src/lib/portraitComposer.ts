@@ -1174,12 +1174,33 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const stagePlanetSign = stagePlanetData?.sign as string | undefined;
     const stagePlanetHouse = calcHouse(stagePlanetData?.sign, stagePlanetData?.degree, stagePlanetData?.minutes);
 
+    // Detect Sun–Saturn hard aspect as an alternative pressure gate.
+    const sunSaturn = tightAspects.find(
+      a =>
+        ((a.a === "Sun" && a.b === "Saturn") || (a.a === "Saturn" && a.b === "Sun")) &&
+        (a.aspect === "opposition" || a.aspect === "square" || a.aspect === "conjunction"),
+    );
+    // Detect Mercury–Saturn traditional mutual reception (Mercury in Aquarius/Capricorn
+    // hosted by Saturn, Saturn in Gemini/Virgo hosted by Mercury).
+    const mercPlanet = (chart?.planets as any)?.Mercury;
+    const satPlanet = (chart?.planets as any)?.Saturn;
+    const mercSatReception =
+      mercPlanet?.sign && satPlanet?.sign &&
+      RULER_OF[mercPlanet.sign] === "Saturn" && RULER_OF[satPlanet.sign] === "Mercury";
+
     // STEP 1 — TURNS ON FIRST
-    // Sun–Chiron tight (orb < 2.5°) is treated as the PERMISSION GATE — every
-    // signal in the system has to pass an "is this allowed?" check before it
-    // can fully boot. This overrides other tight aspects because it gates them.
+    // Priority order for the gate: (a) Sun–Saturn tight hard aspect (real
+    // pressure point) > (b) Sun–Chiron tight (permission check) > (c) any
+    // other tight hard aspect > (d) life-stage anchor.
     const permissionGate = sunChiron && sunChiron.orb < 2.5 ? sunChiron : undefined;
-    if (permissionGate) {
+    if (sunSaturn && sunSaturn.orb < 3) {
+      seqSteps.push({
+        cue: "In real time:",
+        lead: `Sun ${sunSaturn.aspect} Saturn (${sunSaturn.orb.toFixed(1)}°)`,
+        action: `runs first as the pressure gate. Before anything else can land, the system runs a "is this correct enough, accurate enough, worth saying" check. That audit sits under every other planet — it is not one factor among many, it is the check the rest of the chart has to pass through.`,
+        rank: "Priority 1: Sun–Saturn pressure gate. Everything else routes through this audit first.",
+      });
+    } else if (permissionGate) {
       seqSteps.push({
         cue: "In real time:",
         lead: `Sun ${permissionGate.aspect} Chiron (${permissionGate.orb.toFixed(1)}°)`,
