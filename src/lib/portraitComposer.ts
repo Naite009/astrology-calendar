@@ -326,7 +326,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Sagittarius: "blurts the honest version before the social filter arrives, and then has to manage the room they just disturbed",
     Capricorn: "freezes the face, gives a measured answer, and processes the actual reaction privately later",
     Aquarius: "detaches a half-step, observes the conversation from outside it, and answers from logic rather than from the heat",
-    Pisces: "absorbs the mood of whoever is speaking and starts feeling what they feel, which blurs where their own position even was",
+    Pisces: "can absorb the emotional tone of whoever is speaking, especially when the relationship matters, and may know the other person's mood before they have fully separated out their own position",
   };
 
   // ── What the chart ruler ACTUALLY believes underneath. This is the second
@@ -391,7 +391,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Sagittarius: `The move is to add the context before the verdict instead of after. Leading with the reason gives the honest answer somewhere to land that is not a grenade.`,
     Capricorn: `The move is to give the unfiltered reaction one sentence of air before the composed one takes over. The composed answer is fine, but it should not be the only one in the room.`,
     Aquarius: `The move is to name that the unconventional take exists, even if not defending it fully in the moment. "There is a different way to look at this, I want to think it through" keeps the signal alive.`,
-    Pisces: `The move is to separate whose feeling it is before answering. One internal check, "is this mine or theirs," then respond from what is actually yours.`,
+    Pisces: `Adults can help by slowing the emotional room down before asking for an answer. Give ${"them"} a chance to sort what belongs to them from what they picked up from someone else. The useful question is not "Why did you say that?" It is: "What part of that was yours, and what part were you reacting to in the room?"`,
   };
 
   const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
@@ -494,7 +494,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 1. The live mechanic. Why it feels involuntary.
   if (sunSign && SUN_LIVE[sunSign]) {
-    portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
+    if (sunSign === "Pisces") {
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside him before his own answer has fully stepped forward.`);
+    } else {
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
+    }
   }
 
   // 2. The dissenting voice. Chart ruler in its sign + its arena.
@@ -730,8 +734,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         if (partnerName === "Saturn") {
           // Traditional rulership reception: Mercury rules Virgo, Saturn rules Aquarius.
           // Describe as a closed loop between independent thinking and self-correction.
+          const satHouse = calcHouse(partner.sign, partner.degree, partner.minutes);
+          const satReal = (partner.sign === "Virgo" && satHouse === 1)
+            ? ` Saturn in Virgo in the 1st can make ${name} feel like the answer has to be correct before ${name} is allowed to stand behind it. So even when Mercury in ${merc.sign} knows what ${name} thinks, Saturn may still check: "Is that accurate enough? Did I do that right? Will this make me look wrong?"`
+            : "";
           portraitParts.push(
-            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough. Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
+            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough.${satReal} Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
           );
         } else {
           const PARTNER_VOICE: Record<string, string> = {
@@ -774,9 +782,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
-      privacyNote = ` Moon in ${moonSignEarly} in the 11th house is the reset, not language. The sign shows that ${name} regulates through ${moonSignEarly === "Cancer" ? "emotional safety, softness, and familiarity" : MOON_NEED[moonSignEarly]?.replace(/^.*?(by |through )/, "") || "their natural settling style"}. The 11th house shows that regulation depends on trusted belonging: feeling included, accepted, and still part of the group. ${name} does not fully reset just because the conversation is over; ${name} resets when ${name}'s place in the circle feels secure again.`;
+      privacyNote = ` ${name} settles when ${name} feels emotionally safe and still included. Moon in ${moonSignEarly} in the 11th house means the sign brings the softness and familiarity, and the house ties regulation to trusted belonging. If ${name} thinks ${name} has been pushed outside the circle, logic alone will not reset ${name}. ${name} needs to know ${name} still has a place.`;
     }
-    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    if (mHouse === 11) {
+      portraitParts.push(privacyNote.trim());
+    } else {
+      portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    }
   }
 
   // 8. The pace fix. Timing change, not personality change.
