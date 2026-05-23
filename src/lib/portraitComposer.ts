@@ -670,7 +670,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
   if (collisionLines.length >= 1) {
     const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? "More than one chart layer presses at once." : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
+    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? `When several things hit at once, ${name} may look like ${name} is reacting too fast, but inside ${name} is trying to move, be seen, protect ${name}'s own power, and find words all at the same time.` : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
