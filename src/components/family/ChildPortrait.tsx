@@ -311,14 +311,14 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
 
                 {/* How the Stress Trigger was derived */}
-                <details className="rounded border border-amber-500/30 bg-background/40 mt-2">
-                  <summary className="cursor-pointer p-2.5 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-muted/40 rounded">
+                <div className="rounded border border-amber-500/30 bg-background/40 mt-2 p-3">
+                  <div className="font-bold text-xs text-amber-700 dark:text-amber-300 mb-1.5">
                     How was the stress trigger picked?
-                  </summary>
-                  <div className="px-3 pb-3 pt-1 text-xs text-muted-foreground leading-relaxed">
+                  </div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">
                     {composed.systemMechanism.trigger.derivation}
                   </div>
-                </details>
+                </div>
               </div>
 
               {/* Chain of Command (Dispositor walk) */}
