@@ -595,7 +595,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   function describeCollision(v: VoltageClass, d: Density, planet: string): string | null {
     if (d === "wireless") {
-      return `With ${planet} on a wireless medium, thought and speech arrive together, so this part of the system does not have a translation lag.`;
+      return `With ${planet} on a wireless medium, thought and speech arrive together — what ${name} understands and what ${name} can say tend to land at the same time.`;
     }
     const key = `${v}|${d}`;
     switch (key) {
@@ -670,7 +670,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
   if (collisionLines.length >= 1) {
     const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? "More than one chart layer presses at once." : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
+    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? `When several things hit at once, ${name} may look like ${name} is reacting too fast, but inside ${name} is trying to move, be seen, protect ${name}'s own power, and find words all at the same time.` : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
@@ -695,7 +695,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
     if (phMed && phVolt) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} finding out how much pressure this part of life can hold before it needs support.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} meeting more weight in this part of life than the body has carried before, and learning how much it can take before it needs support.`,
       );
     } else if (phSign && phHouse) {
       portraitParts.push(
@@ -1363,9 +1363,20 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
 
     // STEP 3 — VALUE / SAFETY FILTERS (Venus = truth/honesty, Jupiter = safety/meaning)
+    // For Ike pattern (Mercury Pisces + Jupiter Gemini in mutual reception), the
+    // main loop is Mercury/Jupiter translation, not Venus/Jupiter value filtering.
     const venusPlanet = (chart?.planets as any)?.Venus;
     const jupiterPlanet = (chart?.planets as any)?.Jupiter;
-    if (venusPlanet?.sign && jupiterPlanet?.sign) {
+    const mercJupTranslationLoop =
+      mercurySign === "Pisces" && jupiterPlanet?.sign === "Gemini";
+    if (mercJupTranslationLoop) {
+      seqSteps.push({
+        cue: "Filtered through:",
+        lead: `Mercury in Pisces and Jupiter in Gemini`,
+        action: `Mercury carries the impression, feeling, or private knowing. Jupiter in Gemini tries to name it, explain it, joke with it, or turn it into a thought someone else can understand. The words are not just delayed; they are being translated from feeling into language.`,
+        rank: "Priority 4: Mercury/Jupiter translation loop — feeling being rendered into language, not a value filter.",
+      });
+    } else if (venusPlanet?.sign && jupiterPlanet?.sign) {
       seqSteps.push({
         cue: "Filtered through:",
         lead: `Venus in ${venusPlanet.sign} and Jupiter in ${jupiterPlanet.sign}`,
@@ -1439,8 +1450,10 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       }
       seqSteps.push({
         cue: "After the moment:",
-        lead: `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
-        action: `the operating system finishes the sentence offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
+        lead: ikeAuthorityPattern ? `Mercury in Pisces` : `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
+        action: ikeAuthorityPattern
+          ? `Mercury in Pisces tries to put words around what Mars already did. The action may have spoken first, and the explanation may arrive later, once the pressure has dropped and the private inner-room processing has caught up. ${finalAuthorityLine}`
+          : `the operating system catches up offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
         rank: finalAuthorityRank,
       });
     }
@@ -1660,7 +1673,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
     // Moon regulation note — AFTER the moment, not during.
     const moonNote = moonSignEarly === "Sagittarius" && moonHouseHere === 2
-      ? ` Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      ? ` His reset comes through the Moon: body steadiness first, then humor, movement, honesty, and a wider frame.`
       : moonHouseHere === 2
       ? ` The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
       : moonTiming === "delayed" || moonTiming === "private"
@@ -1684,7 +1697,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
     const moonRegLine = moonSignEarly === "Sagittarius" && moonHouseHere === 2
-      ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+      ? `His reset comes through the Moon: body steadiness first, then humor, movement, honesty, and a wider frame.`
       : moonHouseHere === 2
       ? `The Moon in the 2nd house regulates through body safety: steadiness, food, water, and enough physical calm for the feeling to come down.`
       : moonTiming === "belonging"
