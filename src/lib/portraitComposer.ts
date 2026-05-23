@@ -1574,13 +1574,15 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
     if (moonSignEarly) {
       const style = MOON_STYLE[moonSignEarly] ?? "";
-      const timingPhrase = {
+      const timingPhrase = moonSignEarly === "Sagittarius" && moonHouseHere === 2
+        ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
+        : ({
         "in-the-moment": "regulation can happen in the room",
         balanced: "regulation happens in ordinary daily rhythm",
         private: "regulation happens privately, away from the room that triggered it",
         delayed: "regulation happens later and underground, not in the moment",
         belonging: `regulation depends on trusted belonging — ${name} resets only when ${name} feels included, accepted, and still part of the group, not just because the conversation is over`,
-      }[moonTiming];
+      }[moonTiming]);
       signals.push({
         role: "Regulation and reset (not speech)",
         planet: "Moon",
