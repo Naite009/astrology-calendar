@@ -901,6 +901,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   ].filter(Boolean) as string[];
 
   return {
+    lifeStageChapter,
     corePortrait,
     systemMechanism,
     bridge,
