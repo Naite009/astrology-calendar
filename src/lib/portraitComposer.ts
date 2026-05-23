@@ -418,11 +418,71 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
   const chartStory = storyParts.join(" ");
 
+  // 5b. BRIDGE — "Why This Works": connect 2 real placements to a real behavior,
+  // in plain language, no jargon. This is the most important section.
+  const mercurySign =
+    p.cognitiveProfile?.mercurySign ||
+    (chart?.planets?.Mercury as any)?.sign ||
+    undefined;
+  const moonSign = (chart?.planets?.Moon as any)?.sign || undefined;
+
+  type Anchor = { label: string; feel: string };
+  const anchors: Record<string, Anchor> = {};
+  if (sunSign && SUN_FEELS[sunSign]) {
+    anchors.Sun = { label: `Sun in ${sunSign}`, feel: SUN_FEELS[sunSign] };
+  }
+  if (mercurySign && MERCURY_FEELS[mercurySign]) {
+    anchors.Mercury = { label: `Mercury in ${mercurySign}`, feel: MERCURY_FEELS[mercurySign] };
+  }
+  if (moonSign && MOON_FEELS[moonSign]) {
+    anchors.Moon = { label: `Moon in ${moonSign}`, feel: MOON_FEELS[moonSign] };
+  }
+  if (marsSign && MARS_FEELS[marsSign]) {
+    anchors.Mars = { label: `Mars in ${marsSign}`, feel: MARS_FEELS[marsSign] };
+  }
+
+  // Priority pairings: pick the first pair where both anchors exist.
+  const pairings: Array<[string, string]> = [
+    ["Sun", "Mercury"],
+    ["Sun", "Moon"],
+    ["Moon", "Mercury"],
+    ["Sun", "Mars"],
+    ["Moon", "Mars"],
+    ["Mercury", "Mars"],
+  ];
+
+  let bridge: ComposedPortrait["bridge"] = undefined;
+  const pair = pairings.find(([x, y]) => anchors[x] && anchors[y]);
+  if (pair) {
+    const [aKey, bKey] = pair;
+    const a = anchors[aKey];
+    const b = anchors[bKey];
+
+    // Behavior + "what helps" tail tuned to which pair we picked.
+    const behaviorByPair: Record<string, string> = {
+      "Sun|Mercury": `when you ask ${name} a direct question in the moment, the answer may not show up right away — not because ${name} is avoiding it, but because the part that feels and the part that thinks need a beat to catch up to each other. Giving ${name} a little space works because it lets those two parts meet.`,
+      "Sun|Moon": `when something hard happens, what ${name} needs to feel safe is not always the same as what ${name} is trying to be in the world. Both have to be honored, or the system stays on edge. Naming the difference out loud is what brings it down.`,
+      "Moon|Mercury": `${name} can talk about a feeling clearly and still not feel settled, because thinking it through and actually calming down are two different jobs. Help with both, in that order, and the system lands.`,
+      "Sun|Mars": `${name} can know what they want and still get stuck on how to push for it, because the wanting and the doing run on different fuel. Giving the body its outlet first usually unlocks the rest.`,
+      "Moon|Mars": `when ${name} is upset, the body needs to move before the heart can talk. If you try to discuss the feeling first, it will stall. Discharge first, talk second.`,
+      "Mercury|Mars": `${name}'s thinking and ${name}'s drive can pull in different directions, so the words and the action don't always line up. Slowing down one and letting the other catch up is what makes both make sense.`,
+    };
+    const tail = behaviorByPair[`${aKey}|${bKey}`] ?? `the two parts have to be allowed to do their separate jobs before they line up.`;
+
+    const paragraph =
+      `${name}'s ${a.label}, which means ${a.feel}. ` +
+      `But ${name}'s ${b.label}, which ${b.feel}. ` +
+      `So ${tail}`;
+
+    bridge = { paragraph, placements: [a.label, b.label] };
+  }
+
   // Themes picked (for transparency)
   const themesPicked = [
     "developmental anchor",
     p.chartRuler ? "chart ruler" : null,
     sunSign ? "sun core" : null,
+    bridge ? `bridge: ${bridge.placements.join(" + ")}` : null,
     tightAspects.length ? `${tightAspects.length} tight aspect(s)` : null,
     p.cloakingNote ? "12th-house cloaking" : null,
     p.masterySpot.saturn ? "saturn pattern" : null,
@@ -432,6 +492,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   return {
     oneSentence,
     systemMechanism,
+    bridge,
     stageAsk,
     misreads: misreads.slice(0, 3),
     whatHelps,
