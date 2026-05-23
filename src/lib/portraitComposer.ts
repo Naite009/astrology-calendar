@@ -666,11 +666,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   }
 
   if (hardwareLines.length >= 1) {
-    portraitParts.push(`Here is the hardware. ${hardwareLines.join(" ")}`);
+    portraitParts.push(`In plain body terms, ${name}'s Mercury and Mars do not always move on the same clock. The body can show the first reaction while the explanation is still forming.`);
   }
   if (collisionLines.length >= 1) {
     const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.join(" ")} That is not a personality problem and it is not "people pleasing" or "stalling." It is voltage meeting density, and the body is doing exactly what the wiring says it has to do.`);
+    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? "More than one chart layer presses at once." : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
@@ -800,12 +800,16 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
     const mHouse = calcHouse((chart?.planets as any)?.Moon?.sign, (chart?.planets as any)?.Moon?.degree, (chart?.planets as any)?.Moon?.minutes);
     let privacyNote = "";
-    if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
+    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
+      portraitParts.push(`Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`);
+    } else if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
       privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
     } else if (mHouse === 11) {
       privacyNote = ` ${name} settles when ${name} feels emotionally safe and still included. Moon in ${moonSignEarly} in the 11th house means the sign brings the softness and familiarity, and the house ties regulation to trusted belonging. If ${name} thinks ${name} has been pushed outside the circle, logic alone will not reset ${name}. ${name} needs to know ${name} still has a place.`;
     }
-    if (mHouse === 11) {
+    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
+      // Exact Sagittarius Moon / 2nd-house line already added above.
+    } else if (mHouse === 11) {
       portraitParts.push(privacyNote.trim());
     } else {
       portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
