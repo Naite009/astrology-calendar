@@ -194,6 +194,17 @@ export interface ComposedPortrait {
     reaction: string;
     synthesis: string;
   };
+  // NEW: Real-time activation order — what actually fires when the moment hits.
+  realTimeSequence?: {
+    intro: string;
+    priorityNote: string;
+    steps: Array<{
+      cue: string;       // "In real time:" / "Then:" / "At the same time:" / etc.
+      lead: string;      // "Sun in Scorpio (1st house)"
+      action: string;    // what it does in the moment
+      rank: string;      // why this step was picked (priority rule)
+    }>;
+  };
   bridge?: {
     paragraph: string;
     placements: string[];
@@ -202,13 +213,12 @@ export interface ComposedPortrait {
   misreads: Array<{ looksLike: string; actuallyIs: string }>;
   whatHelps: string[];
   chartStory: string;
-  // NEW: Dispositor chain walked from chart ruler to its final boss.
   chainOfCommand?: {
     steps: Array<{ planet: string; sign: string; house: number | null; reason: string }>;
     finalDispositor?: { planet: string; sign: string; house: number | null };
-    loop?: string[];                  // names of planets in the cycle
+    loop?: string[];
     mutualReception?: { a: string; b: string; aSign: string; bSign: string };
-    narrative: string;                // full plain-language explanation
+    narrative: string;
   };
   themesPicked: string[];
 }
