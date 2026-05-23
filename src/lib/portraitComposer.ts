@@ -1677,6 +1677,8 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
     const moonRegLine = moonTiming === "belonging"
       ? `The Moon in ${moonSignEarly} in the 11th settles only when ${name} feels emotionally safe and still included.`
+        : moonSignEarly === "Sagittarius" && moonHouseHere === 2
+        ? `Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`
       : moonTiming === "delayed" || moonTiming === "private"
       ? `The Moon in ${moonSignEarly} resets later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
@@ -1688,7 +1690,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const realTimeOutput = {
       comesOut: `What exits first is ${firstOut}. ${bodyFirst ? `A physical reaction or shift in tone hits the room before any sentence forms.` : wordsFirst ? `A sentence reaches the room before the body has caught up to it.` : `Speech and reaction arrive together.`} Mercury then delivers the words, shaped by the ${mercuryHouse ? `${ord(mercuryHouse)}-house` : "Mercury"} medium${mercTiming === "delayed" ? " (output is partial or arrives later than the understanding)" : mercTiming === "strained" ? " (output has to be worked through the body before it lands)" : ""}.`,
       blocked: p.chartRuler
-        ? `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} processes the words BEFORE they exit — Mercury wants the answer to be true to ${name}'s own thinking, and the ruler checks whether it is precise enough to release. The full version is held back until it clears that check.`
+          ? marsSign === "Aries" && mercurySign === "Pisces"
+            ? `What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language.`
+            : `What gets blocked is the answer that feels too expected, too emotionally blurred, or not accurate enough to stand behind. Mercury wants the answer to be true to ${name}'s own thinking, and ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} checks whether it is precise enough to release. The full version is held back until it clears that check.`
         : `What gets blocked is the part of the response that has not finished forming; the system will not release it half-formed.`,
       late: lateLine,
       othersExperience: `What others experience is the ${firstOut} version, not the whole signal. They see the first layer and do not see the second voice arriving offline, which is why their read of the moment can be very different from ${name}'s.`,
