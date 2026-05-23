@@ -1718,7 +1718,7 @@ export function buildChildPortrait(chart: NatalChart, viewerAge?: number | null)
         `${chart.name} is practicing ${practice}${sunHouse ? ` inside ${HOUSE_THEME[sunHouse]}` : ""} (${sunSign} Sun${sunHouse ? `, ${ordinal(sunHouse)} house` : ""}). ` +
         `This is what they are growing into, not what they already are.` +
         firstHouseOverlay + ` ` +
-        `For the adult in the room: reflect back the moments you actually see them do it. That is what locks it in.`;
+        `Support that works: reflect back the moments you actually see them do it. That is what locks it in.`;
     }
   }
 
