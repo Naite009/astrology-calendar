@@ -1741,10 +1741,16 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       (sunSaturnAny && sunSaturnAny.orb < 3) || mercSatReceptionCtx,
     );
     const chironCentral = Boolean(sunChironAny && sunChironAny.orb < 2.5);
-    composed.validation = validateComposedPortrait(composed, { saturnCentral, chironCentral });
+    const ctx = { saturnCentral, chironCentral };
+    composed.validation = validateComposedPortrait(composed, ctx);
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
     }
+    // FINAL QA PASS — sentence-level sanitizer. Drops/rewrites only the
+    // sentences that fail Checks 1–7; preserves sections, depth, structure.
+    const sanitized = sanitizeComposedPortrait(composed, ctx);
+    sanitized.validation = composed.validation;
+    return sanitized;
   } catch (_e) {
     // Validator is best-effort; never block the portrait on it.
   }
