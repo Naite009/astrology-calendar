@@ -17,7 +17,17 @@
 import type { ComposedPortrait } from "./portraitComposer";
 
 export type ValidationViolation = {
-  rule: "planet-job" | "house-meaning" | "mutual-reception" | "final-authority" | "sign-speed" | "life-stage-erasure";
+  rule:
+    | "planet-job"
+    | "house-meaning"
+    | "mutual-reception"
+    | "final-authority"
+    | "sign-speed"
+    | "life-stage-erasure"
+    | "saturn-leak"
+    | "chiron-leak"
+    | "mechanical-voice"
+    | "parenting-burden";
   location: string;
   found: string;
   expected: string;
