@@ -1617,7 +1617,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
           planet: activePhase.planet,
           sign: ph.sign,
           house: calcHouse(ph.sign, ph.degree, ph.minutes),
-          fn: `is the planet under active load right now because of the ${activePhase.label}; its circuit is being stress-tested in this chapter.`,
+          fn: `is the planet under active load right now because of the ${activePhase.label}; this chapter is asking that planet to carry more pressure.`,
         });
       }
     }
