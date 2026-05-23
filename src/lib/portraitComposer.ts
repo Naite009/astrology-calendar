@@ -1042,7 +1042,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         };
         steps.push({
           planet: nextName, sign: nextPlanet.sign, house: nextHouse,
-          reason: `Mutual reception with ${currentName}. They host each other's sign, so they trade authority back and forth instead of one being the final boss.`,
+          reason: `Mutual reception with ${currentName}. Each one is sitting in the other's sign, so authority passes back and forth between them rather than landing in one place.`,
         });
         break;
       }
