@@ -364,11 +364,104 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
   const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
 
+  // ── Compute Mercury house from chart cusps (mirrors buildChartContext.calcHouse).
+  const ZODIAC = [
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+  ];
+  const houseCusps = (chart?.houseCusps ?? {}) as any;
+  const cuspLongitudes: number[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const cusp = houseCusps[`house${i}`];
+    if (cusp && typeof cusp === "object" && "sign" in cusp) {
+      cuspLongitudes.push(ZODIAC.indexOf(cusp.sign) * 30 + (cusp.degree ?? 0) + ((cusp.minutes ?? 0) / 60));
+    }
+  }
+  const calcHouse = (sign?: string, degree?: number, minutes?: number): number | null => {
+    if (!sign || cuspLongitudes.length !== 12) return null;
+    const absDeg = ZODIAC.indexOf(sign) * 30 + (degree ?? 0) + ((minutes ?? 0) / 60);
+    for (let i = 0; i < 12; i++) {
+      const nextI = (i + 1) % 12;
+      let start = cuspLongitudes[i];
+      let end = cuspLongitudes[nextI];
+      if (end < start) end += 360;
+      let d = absDeg;
+      if (d < start) d += 360;
+      if (d >= start && d < end) return i + 1;
+    }
+    return null;
+  };
+
+  const Mercury = (chart?.planets as any)?.Mercury;
+  const mercurySign: string | undefined =
+    p.cognitiveProfile?.mercurySign || Mercury?.sign;
+  const mercuryHouse = calcHouse(Mercury?.sign, Mercury?.degree, Mercury?.minutes);
+
+  // ── Mercury HOUSE delay/texture: how words form vs. how fast the moment moves.
+  const MERCURY_HOUSE_DELAY: Record<number, string> = {
+    1: "Mercury sits on the Ascendant, so the words come out fast and visible — sometimes before the thought is finished forming",
+    4: "Mercury runs in the 4th, so the words form first in the private inner room before they are willing to come out loud",
+    6: "Mercury runs in the 6th, so the words come out as the body is actually doing something — talking through the task, not before it",
+    8: "Mercury runs in the 8th, so the words form privately and only come out once it feels safe enough to put the real version on the table — the surface version is a placeholder",
+    9: "Mercury runs in the 9th, so the words reach for the bigger frame first and the small in-the-moment answer can lag",
+    12: "Mercury runs in the 12th, so the words form underneath the surface first — the understanding is there in real time, but the language is not always ready at the same speed as the conversation",
+  };
+
+  // ── Mars SIGN as pressure-response amplifier (when something matters).
+  const MARS_PRESSURE: Record<string, string> = {
+    Aries: "Mars in Aries means pressure makes the response come out faster and sharper, not slower",
+    Taurus: "Mars in Taurus means pressure makes the body dig in and refuse to be moved off the position",
+    Gemini: "Mars in Gemini means pressure makes the words scatter and multiply instead of consolidating",
+    Cancer: "Mars in Cancer means pressure pulls the response sideways into protection rather than direct confrontation",
+    Leo: "Mars in Leo means pressure raises the visibility of the response — it cannot be small",
+    Virgo: "Mars in Virgo means pressure narrows the response into precision-correction, which can read as criticism",
+    Libra: "Mars in Libra means pressure makes the response try to stay fair to both sides, which can read as freezing",
+    Scorpio: "Mars in Scorpio means when something matters, the pressure goes up, not down — and that makes it harder to get the words out lightly in the moment, not easier",
+    Sagittarius: "Mars in Sagittarius means pressure makes the response want to leave the room and reframe from outside it",
+    Capricorn: "Mars in Capricorn means pressure tightens the response into composure and quietly pushes the real reaction down for later",
+    Aquarius: "Mars in Aquarius means pressure makes the response detach a step further out, answering from principle rather than from the heat",
+    Pisces: "Mars in Pisces means pressure makes the response diffuse and harder to locate, which can look like withdrawal",
+  };
+
+  // ── Detect Sun–Chiron tight contact and chart-ruler oppositions/squares to outer/heavy planets.
+  const sunChiron = tightAspects.find(
+    a => (a.a === "Sun" && a.b === "Chiron") || (a.a === "Chiron" && a.b === "Sun"),
+  );
+  const rulerName = p.chartRuler?.rulerName;
+  const rulerHardCheck = rulerName
+    ? tightAspects.find(
+        a =>
+          (a.a === rulerName || a.b === rulerName) &&
+          (a.aspect === "opposition" || a.aspect === "square") &&
+          ["Jupiter", "Saturn", "Pluto", "Neptune", "Uranus"].some(
+            n => a.a === n || a.b === n,
+          ),
+      )
+    : undefined;
+  const rulerCheckOther = rulerHardCheck
+    ? rulerHardCheck.a === rulerName
+      ? rulerHardCheck.b
+      : rulerHardCheck.a
+    : undefined;
+  const RULER_CHECK_PLAIN: Record<string, string> = {
+    Jupiter: "the truth impulse has to pass through a body-and-safety check — will saying this disturb peace, money, comfort, or the room",
+    Saturn: "the impulse has to pass through a consequences-and-authority check — is this worth what it will cost",
+    Pluto: "the impulse has to pass through a power-and-trust check — who controls the room if I say this",
+    Neptune: "the impulse has to pass through a what-is-even-real check, which softens the edge of the answer",
+    Uranus: "the impulse has to pass through a will-this-blow-something-up check, which can flip the answer at the last second",
+  };
+
+  // ── Life-stage anchor: name the chapter that frames the whole portrait.
+  const lifeStageOpener = p.developmentalAnchor?.stage
+    ? `The life-stage chapter ${name} is actually inside right now is ${p.developmentalAnchor.stage.toLowerCase()}, and the whole chart bends around that chapter.`
+    : "";
+
   const portraitParts: string[] = [];
+  if (lifeStageOpener) portraitParts.push(lifeStageOpener);
 
   // 1. The live mechanic. Why it feels involuntary.
   if (sunSign && SUN_LIVE[sunSign]) {
-    portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before thinking catches up, which is why it does not feel like a choice, it feels like the only available response.`);
+    portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before thinking catches up, which is why it does not feel like a choice — it feels like the only available response.`);
   }
 
   // 2. The dissenting voice. Chart ruler in its sign + its arena.
@@ -378,38 +471,59 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     portraitParts.push(`Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, which ${RULER_BELIEF[p.chartRuler.rulerSign]}.${arenaClause}`);
   }
 
-  // 3. Name the two-pass pattern (or call out when there is no second voice).
-  if (sunSign && p.chartRuler) {
-    const sameSign = p.chartRuler.rulerSign === sunSign;
-    if (sameSign) {
-      portraitParts.push(`Because the engine and the surface are in the same sign, there is no second voice arguing with the first. That is a strength when ${name} is right, and a blind spot when ${name} is not, because no internal pushback shows up to slow the answer down.`);
-    } else {
-      portraitParts.push(`So the pattern is two-pass. The Sun answers in real time, the chart ruler arrives later with what ${name} actually thought. The gap between them is where the "I should have said" lives, and it is not a flaw in the thinking, it is a timing difference between two voices that do not run on the same clock.`);
-    }
+  // 2b. Chart ruler hard-aspected to a heavy: the cost-check the ruler has to pass.
+  if (rulerHardCheck && rulerCheckOther && RULER_CHECK_PLAIN[rulerCheckOther]) {
+    portraitParts.push(`But the ruler does not get to act alone. ${rulerName} is ${rulerHardCheck.aspect} ${rulerCheckOther} (${rulerHardCheck.orb.toFixed(1)}°), so ${RULER_CHECK_PLAIN[rulerCheckOther]}. The honest answer has to clear that gate before it is allowed out.`);
   }
 
-  // 4. Moon regulation layer.
+  // 3. Mercury house: where the words actually form and at what speed.
+  if (mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse]) {
+    const merc = mercurySign ? `${mercurySign} Mercury` : "Mercury";
+    portraitParts.push(`Then ${merc} changes the speech timing. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there in real time and the language still not be ready — and if the moment moves faster than the words form, someone else can take the space before the thought finishes.`);
+  }
+
+  // 4. Mars sign as pressure amplifier on top of the speech delay.
+  if (marsSign && MARS_PRESSURE[marsSign]) {
+    portraitParts.push(`${MARS_PRESSURE[marsSign]}.`);
+  }
+
+  // 5. Sun–Chiron specifically: the quiet permission check under every "I want."
+  if (sunChiron) {
+    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real wire in the chart, not a mood.`);
+  } else if (liveEdge && !rulerHardCheck) {
+    // Fallback: any other live edge worth naming.
+    portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
+  }
+
+  // 6. SYNTHESIS — the "what is actually happening" stack, in one tight beat.
+  // This is the part the user asked for: a compressed list of every active wire,
+  // in plain language, so the whole mechanism is visible at once.
+  const stackLines: string[] = [];
+  if (sunSign) stackLines.push(`${sunSign} Sun${sunHouse ? ` in the ${ord(sunHouse)}` : ""} is tracking the room and ${name} at the same time.`);
+  if (p.chartRuler) stackLines.push(`${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} wants the clean, true version of the answer.`);
+  if (rulerHardCheck && rulerCheckOther) stackLines.push(`${rulerCheckOther} hard-angles the ruler, so the answer has to clear a cost check first.`);
+  if (mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse] && [4,6,8,9,12].includes(mercuryHouse)) {
+    stackLines.push(`${mercurySign ? `${mercurySign} ` : ""}Mercury in the ${ord(mercuryHouse)} delays the words — they form underneath first.`);
+  }
+  if (marsSign && (marsSign === "Scorpio" || marsSign === "Capricorn" || marsSign === "Aries" || marsSign === "Libra")) {
+    stackLines.push(`Mars in ${marsSign} raises the pressure when it matters, instead of dropping it.`);
+  }
+  if (sunChiron) stackLines.push(`Sun ${sunChiron.aspect} Chiron asks whether the want is even allowed.`);
+  if (stackLines.length >= 3) {
+    portraitParts.push(
+      `So the actual pattern in real life is not "people pleasing" or "stalling." It is this: ${stackLines.join(" ")} That is too many chart functions trying to speak through one moment — which is why the right words usually arrive after the conversation is over, not during it. The frustration is not lack of thought. It is a processing-timing issue.`,
+    );
+  }
+
+  // 7. Moon regulation layer (after the mechanism, before the fix).
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
-    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, both voices get louder and neither one lands cleanly.`);
+    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, every layer above gets louder and none of them land cleanly.`);
   }
 
-  // 5. Live aspect, only when it sharpens the picture.
-  if (liveEdge) {
-    const involvesChiron = liveEdge.a === "Chiron" || liveEdge.b === "Chiron";
-    const involvesSun = liveEdge.a === "Sun" || liveEdge.b === "Sun";
-    if (involvesSun && involvesChiron) {
-      portraitParts.push(`The tender wire right now is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which means having a clean want still gets re-litigated internally as whether the want is even allowed.`);
-    } else {
-      portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
-    }
-  }
-
-  // 6. The pace fix. Timing change, not personality change.
+  // 8. The pace fix. Timing change, not personality change.
   if (sunSign && PACE_FIX[sunSign]) {
     portraitParts.push(PACE_FIX[sunSign]);
   }
-
-  // PACE_FIX above already gives the actionable landing; no generic supportBySun fallback needed.
 
   const corePortrait = portraitParts.join(" ");
 
