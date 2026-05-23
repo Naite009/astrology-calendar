@@ -1670,10 +1670,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   };
 
   // GLOBAL VALIDATION LAYER — A–H check before display.
-  // Runs lazily so a bundle that doesn't import the validator stays small.
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { validateComposedPortrait } = require("./portraitValidator") as typeof import("./portraitValidator");
     composed.validation = validateComposedPortrait(composed);
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
