@@ -1312,7 +1312,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       seqSteps.push({
         cue: "Then immediately:",
         lead: `Mars in ${marsSign} (${ord(marsHouse)} house)`,
-        action: `${marsHouseLine[marsHouse] ?? "the body reacts on its own clock"}. This is the BODY responding, not the words. Mars may activate before Mercury has the language ready.`,
+        action: `${marsHouseLine[marsHouse] ?? "the body reacts on its own clock"}. This is the BODY responding, not the words. ${marsSign === "Aries" && mercurySign === "Pisces" ? `What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language.` : `Mars may activate before Mercury has the language ready.`}`,
         rank: "Priority 2: Mars body-reaction (timing from house). Reaction is not language.",
       });
     }
