@@ -123,65 +123,64 @@ const SUN_LEARNING: Record<string, string> = {
 // dominant placement. Each entry is { looksLike, actuallyIs }.
 const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }> = {
   Aries: {
-    looksLike: "defiance, impatience, or being rude",
-    actuallyIs: "a need to move first and not feel controlled",
+    looksLike: "moving before you finish talking, cutting in, or walking off mid-sentence",
+    actuallyIs: "their body already knows what it wants to do, and waiting feels physically wrong",
   },
   Taurus: {
-    looksLike: "stubbornness or being slow",
-    actuallyIs: "a need to feel safe in the body before changing course",
+    looksLike: "not answering right away, refusing to switch tasks, taking the long way",
+    actuallyIs: "they're checking the new thing against the body's sense of safe before they move",
   },
   Gemini: {
-    looksLike: "not listening, talking too much, or being scattered",
-    actuallyIs: "a brain that processes by talking out loud and sampling everything",
+    looksLike: "interrupting, jumping topics, asking the same question three different ways",
+    actuallyIs: "they think by talking, so the conversation is the thinking — not a report on it",
   },
   Cancer: {
-    looksLike: "moodiness or being too sensitive",
-    actuallyIs: "an accurate read on the emotional weather in the room",
+    looksLike: "going quiet after something small, or reacting big to a tone shift you didn't notice",
+    actuallyIs: "they already picked up the change in the room before anyone named it",
   },
   Leo: {
-    looksLike: "showing off or needing attention",
-    actuallyIs: "checking that they are still loved when they take up space",
+    looksLike: "performing, taking over the room, or getting hurt when someone looks away",
+    actuallyIs: "they're checking that being seen still gets a warm response back, not a flat one",
   },
   Virgo: {
-    looksLike: "criticism, fussiness, or anxiety",
-    actuallyIs: "trying to make the situation actually work",
+    looksLike: "pointing out what's wrong, redoing what's already done, getting stuck on a small detail",
+    actuallyIs: "they're trying to make the thing actually work, and they can see the gap nobody else can",
   },
   Libra: {
-    looksLike: "people-pleasing or being indecisive",
-    actuallyIs: "tracking fairness and trying not to break the connection",
+    looksLike: "changing their answer based on who's in the room, or stalling on a decision",
+    actuallyIs: "they're tracking how the choice will land on every person before they commit to one",
   },
   Scorpio: {
-    looksLike: "shutting down, being secretive, or intense",
-    actuallyIs: "checking whether it's safe to show the real thing",
+    looksLike: "going silent, watching from the corner, or telling you only part of the story",
+    actuallyIs: "they're deciding whether the full version is safe to put in your hands",
   },
   Sagittarius: {
-    looksLike: "being blunt, restless, or not taking it seriously",
-    actuallyIs: "needing the bigger why before they'll commit",
+    looksLike: "joking through a serious moment, leaving early, or pushing back on the rule itself",
+    actuallyIs: "they're checking whether the reason for the rule actually holds up",
   },
   Capricorn: {
-    looksLike: "being cold, controlling, or too serious",
-    actuallyIs: "trying to make the plan real and not waste effort",
+    looksLike: "going quiet under pressure, taking over the plan, refusing help",
+    actuallyIs: "they're trying to make sure the thing gets done right, and they don't yet trust the room to carry it",
   },
   Aquarius: {
-    looksLike: "being detached, contrarian, or weird",
-    actuallyIs: "needing to be met as their own person, not a role",
+    looksLike: "asking 'why do we do it that way,' going off on their own, or not joining in",
+    actuallyIs: "they're testing whether the rule still makes sense to them, not refusing to belong",
   },
   Pisces: {
-    looksLike: "spacing out, being overwhelmed, or avoiding",
-    actuallyIs: "absorbing more input than the room can see",
+    looksLike: "drifting off mid-conversation, getting flooded by a loud room, or saying 'I don't know'",
+    actuallyIs: "they're taking in more signal than the room is showing, and it's hard to sort it in the moment",
   },
 };
 
 const SATURN_TENDER_MISREAD: Record<string, string> = {
-  // When Saturn is a dominant theme, the "lazy / not trying" misread is common.
-  default: "what looks like avoidance or not trying is often fear of doing it wrong in front of someone",
+  default: "what looks like putting it off or not caring is usually fear of doing it wrong while someone is watching",
 };
 
 const CHIRON_TENDER_MISREAD =
-  "what looks like over-reaction to a small thing is usually an old wound getting touched, not the current moment";
+  "what looks like a big reaction to a small thing is usually an older sore spot getting touched, not the moment itself";
 
 const MOON12_MISREAD =
-  "what looks like 'I'm fine' is often the feeling going underground because the room didn't feel safe to show it";
+  "what looks like 'I'm fine' is the feeling going underground because the room didn't feel safe enough to put it down";
 
 // ── Composer types ───────────────────────────────────────────────────────────
 
