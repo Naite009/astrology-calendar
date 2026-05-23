@@ -747,7 +747,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   // 7. Moon regulation layer (after the mechanism, before the fix).
   if (moonSignEarly && MOON_NEED[moonSignEarly]) {
-    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}. When that need is missing, every layer above gets louder and none of them land cleanly.`);
+    const mHouse = calcHouse((chart?.planets as any)?.Moon?.sign, (chart?.planets as any)?.Moon?.degree, (chart?.planets as any)?.Moon?.minutes);
+    const privacyNote =
+      mHouse === 12 || mHouse === 8 || mHouse === 4
+        ? ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`
+        : "";
+    portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
   }
 
   // 8. The pace fix. Timing change, not personality change.
