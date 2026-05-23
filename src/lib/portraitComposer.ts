@@ -734,8 +734,12 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
         if (partnerName === "Saturn") {
           // Traditional rulership reception: Mercury rules Virgo, Saturn rules Aquarius.
           // Describe as a closed loop between independent thinking and self-correction.
+          const satHouse = calcHouse(partner.sign, partner.degree, partner.minutes);
+          const satReal = (partner.sign === "Virgo" && satHouse === 1)
+            ? ` Saturn in Virgo in the 1st can make ${name} feel like the answer has to be correct before ${name} is allowed to stand behind it. So even when Mercury in ${merc.sign} knows what ${name} thinks, Saturn may still check: "Is that accurate enough? Did I do that right? Will this make me look wrong?"`
+            : "";
           portraitParts.push(
-            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough. Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
+            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough.${satReal} Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
           );
         } else {
           const PARTNER_VOICE: Record<string, string> = {
