@@ -103,6 +103,42 @@ const HOUSE_MEANING_BANS: Array<{
     rule: "house-meaning",
     expected: "12th house = hidden/submerged/delayed. Public visibility is the 10th house.",
   },
+  // 2nd house ≠ daily rhythm / groups.
+  {
+    re: /2nd house[^.]{0,80}(daily rhythm|group|belonging|public)/i,
+    rule: "house-meaning",
+    expected: "2nd house = body safety, worth, resources, sustainability. Not daily rhythm (6th), not groups (11th).",
+  },
+  // 4th house ≠ public expression.
+  {
+    re: /4th house[^.]{0,80}(public|visible|on display|broadcast|performance)/i,
+    rule: "house-meaning",
+    expected: "4th house = private inner room, family imprint, emotional root. Public/visible is the 10th house.",
+  },
+  // 7th-house "other person's mood" language outside the 7th.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|8th|9th|10th|11th|12th) house[^.]{0,120}other person'?s mood/i,
+    rule: "house-meaning",
+    expected: "'Other person's mood' is 7th-house framing. Do not apply to non-7th-house placements.",
+  },
+  // Group/belonging language attached to non-11th placements.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|12th) house[^.]{0,120}(group belonging|trusted circle|peer field|still part of the group)/i,
+    rule: "house-meaning",
+    expected: "Group belonging language belongs to the 11th house only.",
+  },
+  // Body-safety language attached to non-2nd placements.
+  {
+    re: /(?:in the )?(?:1st|3rd|4th|5th|6th|7th|8th|9th|10th|11th|12th) house[^.]{0,120}(body safety|sustainability|what feels sustainable)/i,
+    rule: "house-meaning",
+    expected: "Body-safety / sustainability language belongs to the 2nd house only.",
+  },
+  // Nervous-system friction language attached to non-6th placements.
+  {
+    re: /(?:in the )?(?:1st|2nd|3rd|4th|5th|7th|8th|9th|10th|11th|12th) house[^.]{0,120}(nervous system friction|routed through the nervous system|body strain)/i,
+    rule: "house-meaning",
+    expected: "Nervous-system friction belongs to the 6th house only.",
+  },
 ];
 
 // SIGN-as-SPEED bans: sign names paired with speed adjectives.
