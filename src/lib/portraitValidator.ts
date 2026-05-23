@@ -443,8 +443,18 @@ const SENTENCE_RULES: SentenceRule[] = [
 ];
 
 // Split on sentence boundaries while preserving the trailing punctuation.
+// IMPORTANT: if a string has no sentence terminator (e.g. a short label like
+// "In real time:" or a lead like "Mars in Aries (5th house)"), we must
+// return the WHOLE string as a single "sentence" — otherwise we silently
+// drop everything before the last non-whitespace token.
 function splitSentences(text: string): string[] {
-  return text.match(/[^.!?]+[.!?]+|\S+$/g) ?? [text];
+  const matches = text.match(/[^.!?]+[.!?]+/g);
+  if (!matches || matches.length === 0) return [text];
+  // Capture any trailing fragment after the last terminator.
+  const joined = matches.join("");
+  const tail = text.slice(joined.length);
+  if (tail.trim().length > 0) matches.push(tail);
+  return matches;
 }
 
 function sanitizeString(value: string, loc: string, ctx: ChartValidationContext | undefined): string {
