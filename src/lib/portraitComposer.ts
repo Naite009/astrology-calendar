@@ -1363,9 +1363,20 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     }
 
     // STEP 3 — VALUE / SAFETY FILTERS (Venus = truth/honesty, Jupiter = safety/meaning)
+    // For Ike pattern (Mercury Pisces + Jupiter Gemini in mutual reception), the
+    // main loop is Mercury/Jupiter translation, not Venus/Jupiter value filtering.
     const venusPlanet = (chart?.planets as any)?.Venus;
     const jupiterPlanet = (chart?.planets as any)?.Jupiter;
-    if (venusPlanet?.sign && jupiterPlanet?.sign) {
+    const mercJupTranslationLoop =
+      mercurySign === "Pisces" && jupiterPlanet?.sign === "Gemini";
+    if (mercJupTranslationLoop) {
+      seqSteps.push({
+        cue: "Filtered through:",
+        lead: `Mercury in Pisces and Jupiter in Gemini`,
+        action: `Mercury carries the impression, feeling, or private knowing. Jupiter in Gemini tries to name it, explain it, joke with it, or turn it into a thought someone else can understand. The words are not just delayed; they are being translated from feeling into language.`,
+        rank: "Priority 4: Mercury/Jupiter translation loop — feeling being rendered into language, not a value filter.",
+      });
+    } else if (venusPlanet?.sign && jupiterPlanet?.sign) {
       seqSteps.push({
         cue: "Filtered through:",
         lead: `Venus in ${venusPlanet.sign} and Jupiter in ${jupiterPlanet.sign}`,
