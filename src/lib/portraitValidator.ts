@@ -232,6 +232,7 @@ function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
 export type ChartValidationContext = {
   saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
   chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
+  ikeAuthorityPattern?: boolean; // Mars Aries + Sun/Pluto pressure + Mercury/Jupiter loop
 };
 
 const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
@@ -395,11 +396,11 @@ const SENTENCE_RULES: SentenceRule[] = [
   (s) => /Mars in Aries processes the words BEFORE they exit/i.test(s)
     ? { kind: "replace", with: "What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language." }
     : null,
-  (s) => /Final authority\s*=\s*Mercury timing\.?/i.test(s)
+  (s, _loc, ctx) => ctx?.ikeAuthorityPattern === true && /Final authority\s*=\s*Mercury timing\.?/i.test(s)
     ? { kind: "replace", with: "Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first." }
     : null,
   (s) => /Moon in Sagittarius[^.]{0,80}regulation happens in ordinary daily rhythm/i.test(s) || /regulation happens in ordinary daily rhythm[^.]*\(2nd house\)/i.test(s)
-    ? { kind: "replace", with: "Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. Ike settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself." }
+    ? { kind: "drop" }
     : null,
 
   // CHECK 2 — planet roles
