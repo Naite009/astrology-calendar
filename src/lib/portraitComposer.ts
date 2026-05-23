@@ -174,7 +174,7 @@ const MISREAD_BY_SIGN: Record<string, { looksLike: string; actuallyIs: string }>
 };
 
 const SATURN_TENDER_MISREAD: Record<string, string> = {
-  default: "what looks like putting it off or not caring is usually fear of doing it wrong while someone is watching",
+  default: "what looks like putting it off or not caring is usually bracing under pressure while someone is watching",
 };
 
 const CHIRON_TENDER_MISREAD =
