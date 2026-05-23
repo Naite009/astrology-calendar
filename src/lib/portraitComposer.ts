@@ -770,7 +770,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   ].filter(Boolean) as string[];
 
   return {
-    oneSentence,
+    corePortrait,
     systemMechanism,
     bridge,
     stageAsk,

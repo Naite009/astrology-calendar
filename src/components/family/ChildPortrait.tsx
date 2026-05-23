@@ -143,12 +143,12 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               </div>
             )}
 
-            {/* 1. One-Sentence Portrait */}
+            {/* 1. Core Portrait */}
             <section className="rounded-md border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-transparent p-4">
               <div className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">
-                One-Sentence Portrait
+                Core Portrait
               </div>
-              <p className="text-base font-medium leading-relaxed">{composed.oneSentence}</p>
+              <p className="text-base font-medium leading-relaxed">{composed.corePortrait}</p>
               {portrait.age != null && (
                 <div className="text-xs text-muted-foreground mt-2">
                   {portrait.name} · age {portrait.age} · {portrait.lifePhase}
