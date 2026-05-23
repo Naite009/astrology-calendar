@@ -1388,7 +1388,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     };
 
     // HUMAN TRANSLATION
-    const isParenting = phase === "child" || phase === "teen";
+    const isParenting = phase === "child";
     const humanTranslation = {
       looksLike: mercFaster
         ? `${name} can sound articulate and "fine" in the moment and then have a delayed body reaction (tiredness, irritability, going quiet) hours later.`
