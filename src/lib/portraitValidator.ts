@@ -226,7 +226,21 @@ function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
   }
 }
 
-export function validateComposedPortrait(portrait: ComposedPortrait): ValidationResult {
+// Optional chart context for chart-aware leak detection. When provided, we
+// flag Saturn audit language / Chiron permission language that appears in
+// charts where those planets are NOT actually central.
+export type ChartValidationContext = {
+  saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
+  chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
+};
+
+const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
+const CHIRON_LEAK_RE = /\b(permission wound|allowed to be said|Chiron permission|permission check)\b/i;
+
+export function validateComposedPortrait(
+  portrait: ComposedPortrait,
+  ctx?: ChartValidationContext,
+): ValidationResult {
   const violations: ValidationViolation[] = [];
   for (const [loc, value] of walkStrings(portrait)) {
     for (const ban of ALL_BANS) {
@@ -238,6 +252,45 @@ export function validateComposedPortrait(portrait: ComposedPortrait): Validation
           found: m[0].slice(0, 160),
           expected: ban.expected,
         });
+      }
+    }
+    // Mechanical-voice only flagged in main/parent-facing fields.
+    if (MECHANICAL_PROTECTED_PATHS.test(loc)) {
+      const m = MECHANICAL_BAN.re.exec(value);
+      if (m) {
+        violations.push({
+          rule: MECHANICAL_BAN.rule,
+          location: loc,
+          found: m[0].slice(0, 160),
+          expected: MECHANICAL_BAN.expected,
+        });
+      }
+    }
+    // Chart-aware Saturn / Chiron leak detection.
+    if (ctx) {
+      if (ctx.saturnCentral === false) {
+        const m = SATURN_LEAK_RE.exec(value);
+        if (m) {
+          violations.push({
+            rule: "saturn-leak",
+            location: loc,
+            found: m[0].slice(0, 160),
+            expected:
+              "Saturn-flavored audit/correctness language is only allowed when Saturn is actually central (tight Sun–Saturn, Merc–Sat reception, or angular Saturn). Replace with the chart's actual pressure gate.",
+          });
+        }
+      }
+      if (ctx.chironCentral === false) {
+        const m = CHIRON_LEAK_RE.exec(value);
+        if (m) {
+          violations.push({
+            rule: "chiron-leak",
+            location: loc,
+            found: m[0].slice(0, 160),
+            expected:
+              "Chiron permission-wound language is only allowed when Chiron is actually central. Replace with the chart's actual permission/authority source.",
+          });
+        }
       }
     }
   }
