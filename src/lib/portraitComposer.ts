@@ -229,7 +229,20 @@ export interface ComposedPortrait {
     narrative: string;
   };
   themesPicked: string[];
+  // Global validation result (A–H check). `ok: false` means at least one
+  // section violated planet-job / house-meaning / mutual-reception /
+  // final-authority / sign-speed rules. Surfaced for dev review.
+  validation?: {
+    ok: boolean;
+    violations: Array<{
+      rule: "planet-job" | "house-meaning" | "mutual-reception" | "final-authority" | "sign-speed" | "life-stage-erasure";
+      location: string;
+      found: string;
+      expected: string;
+    }>;
+  };
 }
+
 
 // Traditional rulerships (matches childPortrait.ts).
 const RULER_OF: Record<string, string> = {
