@@ -217,7 +217,7 @@ function ord(n: number): string {
 }
 
 // ── Composer ─────────────────────────────────────────────────────────────────
-export function composePortrait(p: ChildPortrait): ComposedPortrait {
+export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedPortrait {
   const name = p.name;
   const phase = p.lifePhase;
   const age = p.age;
