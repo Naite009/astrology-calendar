@@ -1730,8 +1730,8 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   // GLOBAL VALIDATION LAYER — A–K check before display.
   // Pass chart context so Saturn/Chiron leak detection is chart-aware.
   try {
-    const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.bodyA + a.bodyB) && /Saturn/.test(a.bodyA + a.bodyB) && /^(square|opposition|conjunction)$/i.test(a.aspect));
-    const sunChironAny = tightAspects.find(a => /Sun/.test(a.bodyA + a.bodyB) && /Chiron/.test(a.bodyA + a.bodyB) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Saturn/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const sunChironAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Chiron/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
     const planetsForCtx = (chart?.planets as any) ?? {};
     const mercSatReceptionCtx =
       planetsForCtx.Mercury?.sign && planetsForCtx.Saturn?.sign &&
