@@ -1570,7 +1570,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house does not regulate in the room; reset happens later, privately, on its own timeline.`
       : moonTiming === "in-the-moment"
       ? ` The Moon in the ${moonHouseHere ? ord(moonHouseHere) : "?"} house can regulate in the room itself, which closes the loop faster than the words or the body can.`
-      : ` The Moon regulates after the moment, on ordinary daily rhythm.`;
+      : moonTiming === "belonging"
+      ? ` The Moon in the 11th house resets through trusted belonging — ${name} settles when ${name} feels still included and accepted by the group, not just because the moment has ended.`
+      : ` The Moon regulates after the moment, on its own rhythm.`;
     mismatch += moonNote;
 
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
