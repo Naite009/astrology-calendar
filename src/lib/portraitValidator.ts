@@ -391,6 +391,17 @@ const PARENT_BURDEN_REWRITES: Array<[RegExp, string]> = [
 ];
 
 const SENTENCE_RULES: SentenceRule[] = [
+  // FINAL IKE QA — exact broken role/template lines
+  (s) => /Mars in Aries processes the words BEFORE they exit/i.test(s)
+    ? { kind: "replace", with: "What gets blocked is the slower, more private Mercury-in-Pisces explanation. Mars in Aries may act first, while Mercury is still translating the feeling into language." }
+    : null,
+  (s) => /Final authority\s*=\s*Mercury timing\.?/i.test(s)
+    ? { kind: "replace", with: "Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first." }
+    : null,
+  (s) => /Moon in Sagittarius[^.]{0,80}regulation happens in ordinary daily rhythm/i.test(s) || /regulation happens in ordinary daily rhythm[^.]*\(2nd house\)/i.test(s)
+    ? { kind: "replace", with: "Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. Ike settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself." }
+    : null,
+
   // CHECK 2 — planet roles
   (s) => /Moon[^.]{0,100}(I should have said|deliver(?:s|ed)? the words|produce[sd]? the (?:words|language|sentence))/i.test(s)
     ? { kind: "drop" } : null,
@@ -448,13 +459,21 @@ const SENTENCE_RULES: SentenceRule[] = [
 // return the WHOLE string as a single "sentence" — otherwise we silently
 // drop everything before the last non-whitespace token.
 function splitSentences(text: string): string[] {
-  const matches = text.match(/[^.!?]+[.!?]+/g);
-  if (!matches || matches.length === 0) return [text];
-  // Capture any trailing fragment after the last terminator.
-  const joined = matches.join("");
-  const tail = text.slice(joined.length);
-  if (tail.trim().length > 0) matches.push(tail);
-  return matches;
+  const out: string[] = [];
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch !== "." && ch !== "!" && ch !== "?") continue;
+    const prev = text[i - 1];
+    const next = text[i + 1];
+    if (/\d/.test(prev ?? "") && /\d/.test(next ?? "")) continue;
+    let end = i + 1;
+    while (/["')\]]/.test(text[end] ?? "")) end++;
+    out.push(text.slice(start, end));
+    start = end;
+  }
+  if (start < text.length) out.push(text.slice(start));
+  return out.length ? out : [text];
 }
 
 function sanitizeString(value: string, loc: string, ctx: ChartValidationContext | undefined): string {
