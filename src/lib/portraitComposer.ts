@@ -695,7 +695,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
     if (phMed && phVolt) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} finding out how much pressure this part of life can hold before it needs support.`,
+        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} meeting more weight in this part of life than the body has carried before, and learning how much it can take before it needs support.`,
       );
     } else if (phSign && phHouse) {
       portraitParts.push(
