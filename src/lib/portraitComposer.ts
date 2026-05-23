@@ -771,7 +771,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
             Jupiter:"the meaning-and-belief voice",
           };
           portraitParts.push(
-            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That is a universal remote: ${PARTNER_VOICE[partnerName]} has a direct line into ${name}'s nervous system. The upside is real discipline applied to ${name}'s own unconventional thinking. The cost is that the second ${name} feels like they are "doing it wrong," the static in the chest and throat literally increases, because ${partnerName} is plugged straight into the speech circuit.`,
+            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That gives ${PARTNER_VOICE[partnerName]} direct access to how ${name} thinks and speaks. The upside is that this planet can sharpen ${name}'s words from the inside. The cost is that pressure from ${partnerName} can make the chest and throat tighten right when ${name} needs language most.`,
           );
         }
         break;
