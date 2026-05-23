@@ -210,7 +210,7 @@ const SUN_PLAIN_BY_SIGN: Record<string, string> = {
 // Describes WHERE this core wiring shows up in real life. Each line must
 // stand alone in plain English with no astrology jargon and no vague pronouns.
 const SUN_HOUSE_PLAIN: Record<number, string> = {
-  1: "Other people pick this up in the first 30 seconds of meeting them. It is in their face, their body language, the way they enter a room, and the impression they leave.",
+  1: "This wiring sits close to identity and self-direction. It shows up in how they start things, choose for themselves, use their body, set their pace, and decide whether to step forward or hold back.",
   2: "This wiring runs their relationship with money, their body, food, and what they consider valuable. You see who they are by watching what they spend on, what they refuse to spend on, and what they treat as worth keeping.",
   3: "This wiring shows up in how they talk, text, learn, and move through an ordinary day. Siblings, neighbors, short trips, and the way they explain things are where it lives.",
   4: "This wiring is most itself at home and with family. The public version can look different. The real version comes out behind closed doors, with the people they live with, and in the place they call home.",
