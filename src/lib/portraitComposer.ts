@@ -451,13 +451,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     Uranus: "the impulse has to pass through a will-this-blow-something-up check, which can flip the answer at the last second",
   };
 
-  // ── Life-stage anchor: name the chapter that frames the whole portrait.
-  const lifeStageOpener = p.developmentalAnchor?.stage
-    ? `The life-stage chapter ${name} is actually inside right now is ${p.developmentalAnchor.stage.toLowerCase()}, and the whole chart bends around that chapter.`
+  // ── Life-stage chapter: rendered as its own one-sentence block ABOVE the
+  // Core Portrait by the UI. Not concatenated into the portrait paragraph.
+  const lifeStageChapter = p.developmentalAnchor?.stage
+    ? `Life-stage chapter ${name} is in right now: ${p.developmentalAnchor.stage}. The whole chart bends around this chapter.`
     : "";
 
   const portraitParts: string[] = [];
-  if (lifeStageOpener) portraitParts.push(lifeStageOpener);
 
   // 1. The live mechanic. Why it feels involuntary.
   if (sunSign && SUN_LIVE[sunSign]) {
