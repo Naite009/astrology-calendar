@@ -712,17 +712,24 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
       const mercRuler = RULER_OF[merc.sign];
       const partnerRuler = RULER_OF[partner.sign];
       if (mercRuler === partnerName && partnerRuler === "Mercury") {
-        const PARTNER_VOICE: Record<string, string> = {
-          Saturn: "the inner critic and structure",
-          Mars:   "anger and survival heat",
-          Venus:  "the love-and-worth voice",
-          Sun:    "the core identity voice",
-          Moon:   "the emotional regulator",
-          Jupiter:"the meaning-and-belief voice",
-        };
-        portraitParts.push(
-          `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That is a universal remote: ${PARTNER_VOICE[partnerName]} has a direct line into ${name}'s nervous system. The upside is real discipline applied to ${name}'s own unconventional thinking. The cost is that the second ${name} feels like they are "doing it wrong," the static in the chest and throat literally increases, because ${partnerName} is plugged straight into the speech circuit.`,
-        );
+        if (partnerName === "Saturn") {
+          // Traditional rulership reception: Mercury rules Virgo, Saturn rules Aquarius.
+          // Describe as a closed loop between independent thinking and self-correction.
+          portraitParts.push(
+            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough. Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
+          );
+        } else {
+          const PARTNER_VOICE: Record<string, string> = {
+            Mars:   "anger and survival heat",
+            Venus:  "the love-and-worth voice",
+            Sun:    "the core identity voice",
+            Moon:   "the emotional regulator",
+            Jupiter:"the meaning-and-belief voice",
+          };
+          portraitParts.push(
+            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That is a universal remote: ${PARTNER_VOICE[partnerName]} has a direct line into ${name}'s nervous system. The upside is real discipline applied to ${name}'s own unconventional thinking. The cost is that the second ${name} feels like they are "doing it wrong," the static in the chest and throat literally increases, because ${partnerName} is plugged straight into the speech circuit.`,
+          );
+        }
         break;
       }
     }
