@@ -251,7 +251,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
   // Concrete real-life arena per house (what this part of life actually IS,
   // in plain English).
   const HOUSE_ARENA: Record<number, string> = {
-    1: "how they walk into a room and the first impression their body gives off",
+    1: "how they start things, choose for themselves, use their body, and decide whether to step forward or hold back",
     2: "what they own, what they're worth, and what their body counts as safe",
     3: "the small daily back-and-forth, talking, texting, siblings, school, errands",
     4: "home, family, and the private inner life nobody at work sees",
