@@ -365,7 +365,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
 
   const portraitParts: string[] = [];
   if (identityWork) {
-    portraitParts.push(`${name}'s core work is to ${identityWork}. ${houseTask ?? "This shows up through the ordinary choices where identity has to become behavior."}`);
+    portraitParts.push(`${name} ${identityWork}. ${houseTask ?? "This is the personality you are actually parenting or partnering with, underneath whatever mood is on top that day."}`);
   } else {
     portraitParts.push(`${name}'s chart shows a specific inner rhythm, and the rest of this portrait explains how that rhythm becomes behavior.`);
   }
