@@ -119,7 +119,10 @@ serve(async (req) => {
     }
 
     // Check for anaretic degrees (29° = crisis/completion energy)
-    const anareticPlanets = truePlanetPositions.filter((p: any) => p.degree === 29);
+    const anareticPlanets = truePlanetPositions.filter((p: any) => {
+      const d = typeof p.degree === 'number' ? p.degree : parseFloat(p.degree);
+      return !Number.isNaN(d) && Math.floor(d) === 29;
+    });
 
     // Build planetary positions text - this is the ground truth
     const fmtDeg = (p: any) => {
