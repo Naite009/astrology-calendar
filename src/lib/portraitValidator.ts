@@ -15,6 +15,7 @@
 //     auto-stripped when possible and otherwise flagged.
 
 import type { ComposedPortrait } from "./portraitComposer";
+import type { ChartSignature } from "./portraitSignature";
 
 export type ValidationViolation = {
   rule:
@@ -27,15 +28,26 @@ export type ValidationViolation = {
     | "saturn-leak"
     | "chiron-leak"
     | "mechanical-voice"
-    | "parenting-burden";
+    | "parenting-burden"
+    | "banned-trait-word"
+    | "missing-placement-anchor"
+    | "thin-section"
+    | "em-dash";
   location: string;
   found: string;
   expected: string;
 };
 
+export type SanitizationDiffEntry = {
+  location: string;
+  before: string;
+  after: string;
+};
+
 export type ValidationResult = {
   ok: boolean;
   violations: ValidationViolation[];
+  sanitizationDiff?: SanitizationDiffEntry[];
 };
 
 // ── Banned-phrase tables ───────────────────────────────────────────────────
@@ -170,12 +182,26 @@ const FINAL_AUTHORITY_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"
 // MECHANICAL-VOICE bans for the main Portrait text. These words may appear
 // inside the deep-dive "mechanism" layer but must not show up in core/parent
 // paragraphs. Detected via field paths; see validateComposedPortrait below.
-const MECHANICAL_WORDS = /(?:circuit|voltage|hardware|the (?:signal|output)|discharges the circuit|firing the circuit)/i;
+// Expanded list per audit #4: catches the next-synonym regressions
+// (engine, conductor, transmitter, load, current, wiring, channel, switch,
+// system, gate, medium, discharge, output, signal).
+const MECHANICAL_WORDS = /\b(?:circuit|voltage|hardware|discharges? the circuit|firing the circuit|the signal|the output|the medium|the gate|nervous system gate|operating manual|load tests?|run as (?:a )?(?:signal|circuit|voltage)|conductor|transmitter|wiring|switch (?:on|off)|current(?:s)? through|channel(?:s)? through)\b/i;
 const MECHANICAL_BAN = {
   re: MECHANICAL_WORDS,
   rule: "mechanical-voice" as const,
   expected:
     "Main Portrait must read human. Translate mechanical wording into: what it feels like, what it looks like, what helps. Reserve circuit/voltage/signal for the deep-dive layer.",
+};
+
+// FAMILY-READING banned trait words (per Dynamic Astrology memory).
+// These are vague single-trait labels that the Core memory bans across all
+// person-facing copy.
+const FAMILY_BANNED_TRAITS = /\b(people-pleasing|difficult(?:\s+child)?|dreamer|weird|scattered|moody|unusual angles?|fairness(?: of the)?|intense)\b/i;
+const FAMILY_TRAIT_BAN = {
+  re: FAMILY_BANNED_TRAITS,
+  rule: "banned-trait-word" as const,
+  expected:
+    "Replace single-trait labels (people-pleasing, dreamer, scattered, moody, weird, etc.) with behavior + what they avoid + internal contradiction.",
 };
 
 // PARENTING-BURDEN bans: child must not be told to self-regulate or
@@ -232,25 +258,34 @@ function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
 export type ChartValidationContext = {
   saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
   chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
-  ikeAuthorityPattern?: boolean; // Mars Aries + Sun/Pluto pressure + Mercury/Jupiter loop
-  // Pronoun / name normalization. When supplied, repeated full-name and
-  // self-referential constructions ("Ben Levin feels Ben Levin still has a
-  // place") get collapsed into pronoun-correct prose.
+  ikeAuthorityPattern?: boolean; // legacy back-compat flag
+  // Pronoun / name normalization. Always applied; defaults to gender-neutral
+  // they/them/their if not provided so "Name Name Name" loops still collapse.
   profile?: {
     firstName: string;
     fullName?: string;
     pronouns?: {
-      subject: string;      // he / she / they
-      object: string;       // him / her / them
-      possessive: string;   // his / her / their
-      reflexive?: string;   // himself / herself / themself
+      subject: string;
+      object: string;
+      possessive: string;
+      reflexive?: string;
     };
     isChild?: boolean;
   };
-  // The ONE actual mutual-reception pair active in this chart. Used to keep
-  // generic "closed loop" wording from drifting into the wrong pair's
-  // interpretation. Set to null when there is no mutual reception.
+  // The ONE actual mutual-reception pair active in this chart.
   mutualReceptionPair?: "merc-sat" | "merc-jup" | "venus-jup" | "mars-merc" | null;
+  // Full chart signature (audit #2). When present, takes precedence over the
+  // legacy flags above for any new rule. Composer passes it in directly.
+  signature?: ChartSignature;
+  // Placement anchors for positive assertions (audit #6).
+  placements?: {
+    mercuryHouse?: number | null;
+    marsHouse?: number | null;
+    moonHouse?: number | null;
+    mercurySign?: string | null;
+    marsSign?: string | null;
+    moonSign?: string | null;
+  };
 };
 
 // Canonical "closed loop between …" phrasing per mutual-reception pair.
@@ -265,12 +300,63 @@ const MR_LOOP_TEXT: Record<NonNullable<ChartValidationContext["mutualReceptionPa
 const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
 const CHIRON_LEAK_RE = /\b(permission wound|allowed to be said|Chiron permission|permission check)\b/i;
 
+// Positive assertions per placement (audit #6). Returns required substrings
+// for the corePortrait/systemMechanism fields based on the chart's actual
+// Mercury/Mars/Moon house. If none of the anchor phrases are present, we
+// raise a "missing-placement-anchor" violation so the next composer change
+// can't silently strip the chart-specific signal.
+function requiredAnchors(ctx: ChartValidationContext | undefined): Array<{ where: RegExp; oneOf: RegExp[]; label: string }> {
+  const out: Array<{ where: RegExp; oneOf: RegExp[]; label: string }> = [];
+  const p = ctx?.placements;
+  if (!p) return out;
+  const wherePortrait = /^(corePortrait|systemMechanism|planetInteraction|realTimeSequence)/i;
+  if (p.mercuryHouse === 12) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/underwater/i, /submerged/i, /surfaces? (?:after|later)/i, /delayed/i, /private(?:ly)?/i],
+      label: "Mercury in 12th must read as underwater/delayed/surfaces-later",
+    });
+  }
+  if (p.mercuryHouse === 6) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/nervous system/i, /strain/i, /routed through (?:the )?body/i],
+      label: "Mercury in 6th must read as nervous-system friction",
+    });
+  }
+  if (p.marsHouse === 1) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/before (?:any )?(?:words|sentence)/i, /reflex/i, /at the skin/i, /body[- ]first/i],
+      label: "Mars in 1st must read as body-first reflex",
+    });
+  }
+  if (p.moonHouse === 11) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/included/i, /belong/i, /group/i, /peer/i],
+      label: "Moon in 11th must read as belonging/included",
+    });
+  }
+  if (p.moonHouse === 2) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/body safety/i, /steadiness/i, /sustainabl/i],
+      label: "Moon in 2nd must read as body safety/steadiness",
+    });
+  }
+  return out;
+}
+
 export function validateComposedPortrait(
   portrait: ComposedPortrait,
   ctx?: ChartValidationContext,
 ): ValidationResult {
   const violations: ValidationViolation[] = [];
+  // Gather full-text by location for positive-anchor checks.
+  const fieldText = new Map<string, string>();
   for (const [loc, value] of walkStrings(portrait)) {
+    fieldText.set(loc, value);
     for (const ban of ALL_BANS) {
       const m = ban.re.exec(value);
       if (m) {
@@ -281,6 +367,25 @@ export function validateComposedPortrait(
           expected: ban.expected,
         });
       }
+    }
+    // Family-banned single-trait words (everywhere).
+    const tm = FAMILY_TRAIT_BAN.re.exec(value);
+    if (tm) {
+      violations.push({
+        rule: FAMILY_TRAIT_BAN.rule,
+        location: loc,
+        found: tm[0].slice(0, 160),
+        expected: FAMILY_TRAIT_BAN.expected,
+      });
+    }
+    // Em-dash audit (Core memory: never in user-facing copy).
+    if (value.includes("—")) {
+      violations.push({
+        rule: "em-dash",
+        location: loc,
+        found: "—",
+        expected: "Replace em-dash with comma, period, colon, or parentheses (Core memory).",
+      });
     }
     // Mechanical-voice only flagged in main/parent-facing fields.
     if (MECHANICAL_PROTECTED_PATHS.test(loc)) {
@@ -322,6 +427,40 @@ export function validateComposedPortrait(
       }
     }
   }
+
+  // Positive placement anchors (audit #6).
+  const anchors = requiredAnchors(ctx);
+  if (anchors.length) {
+    const portraitText = Array.from(fieldText.entries())
+      .filter(([loc]) => /^(corePortrait|systemMechanism|planetInteraction|realTimeSequence)/i.test(loc))
+      .map(([, v]) => v)
+      .join(" \n ");
+    for (const a of anchors) {
+      const hit = a.oneOf.some((re) => re.test(portraitText));
+      if (!hit) {
+        violations.push({
+          rule: "missing-placement-anchor",
+          location: "corePortrait+systemMechanism",
+          found: "(none of the required anchor phrases)",
+          expected: a.label,
+        });
+      }
+    }
+  }
+
+  // Thin-section floor (audit #7). The Core Portrait must carry enough
+  // signal to function as the main read. Below 200 chars we flag — the
+  // sanitizer will then top it up from a chart-specific fallback.
+  const core = (portrait as any)?.corePortrait ?? "";
+  if (typeof core === "string" && core.trim().length > 0 && core.trim().length < 200) {
+    violations.push({
+      rule: "thin-section",
+      location: "corePortrait",
+      found: `length=${core.trim().length}`,
+      expected: "Core Portrait must be ≥200 chars after sanitization. Append chart-specific fallback if shorter.",
+    });
+  }
+
   return { ok: violations.length === 0, violations };
 }
 
@@ -502,15 +641,29 @@ const SENTENCE_RULES: SentenceRule[] = [
       : null;
   },
 
-  // CHECK 1b — self-referential repeated-name constructions that the
-  // pronoun pre-pass can't always collapse cleanly. e.g. "Ben Levin feels
-  // Ben Levin still has a place." These are dropped so the surrounding
-  // paragraph re-reads naturally on the next render.
+  // CHECK 1b — self-referential repeated-name constructions. Defaults to
+  // gender-neutral they/them/their so this fires even when caller did not
+  // supply a profile (audit #1 — pronoun/name collapse must always run).
   (s, _loc, ctx) => {
     const first = ctx?.profile?.firstName;
     if (!first) return null;
     const re = new RegExp(`\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b`, "i");
     return re.test(s) ? { kind: "drop" } : null;
+  },
+
+  // CHECK 8 — em-dash strip (Core memory). Replace with comma so the
+  // surrounding clause still flows. Applied to every field.
+  (s) => {
+    if (!s.includes("—")) return null;
+    return { kind: "replace", with: s.replace(/\s*—\s*/g, ", ") };
+  },
+
+  // CHECK 9 — family-banned single-trait words (Dynamic Astrology memory).
+  // Drop the sentence rather than rewrite; surrounding paragraph keeps shape.
+  (s, loc) => {
+    // Allow these words inside dev-only `themesPicked` debug array.
+    if (/^themesPicked/i.test(loc)) return null;
+    return FAMILY_BANNED_TRAITS.test(s) ? { kind: "drop" } : null;
   },
 ];
 
@@ -602,14 +755,23 @@ function sanitizeString(value: string, loc: string, ctx: ChartValidationContext 
   return out.join(" ").replace(/\s+/g, " ").trim();
 }
 
-function sanitizeWalk(obj: unknown, ctx: ChartValidationContext | undefined, path = ""): unknown {
+function sanitizeWalk(
+  obj: unknown,
+  ctx: ChartValidationContext | undefined,
+  diff: SanitizationDiffEntry[],
+  path = "",
+): unknown {
   if (obj == null) return obj;
-  if (typeof obj === "string") return sanitizeString(obj, path, ctx);
-  if (Array.isArray(obj)) return obj.map((v, i) => sanitizeWalk(v, ctx, `${path}[${i}]`));
+  if (typeof obj === "string") {
+    const after = sanitizeString(obj, path, ctx);
+    if (after !== obj) diff.push({ location: path, before: obj, after });
+    return after;
+  }
+  if (Array.isArray(obj)) return obj.map((v, i) => sanitizeWalk(v, ctx, diff, `${path}[${i}]`));
   if (typeof obj === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-      out[k] = sanitizeWalk(v, ctx, path ? `${path}.${k}` : k);
+      out[k] = sanitizeWalk(v, ctx, diff, path ? `${path}.${k}` : k);
     }
     return out;
   }
@@ -617,17 +779,41 @@ function sanitizeWalk(obj: unknown, ctx: ChartValidationContext | undefined, pat
 }
 
 /**
- * Final QA pass. Walks every string field of the Portrait and rewrites or
- * drops ONLY sentences that fail Checks 1–7. Returns a new ComposedPortrait
- * with the same shape — sections, depth, and structure are preserved.
+ * Final QA pass. Walks every string field, rewrites or drops only sentences
+ * that fail Checks 1–9, applies a thin-section floor with a chart-specific
+ * fallback, and records a sanitization diff on `validation.sanitizationDiff`.
  */
 export function sanitizeComposedPortrait(
   portrait: ComposedPortrait,
   ctx?: ChartValidationContext,
 ): ComposedPortrait {
-  const sanitized = sanitizeWalk(portrait, ctx) as ComposedPortrait;
+  const diff: SanitizationDiffEntry[] = [];
+  const sanitized = sanitizeWalk(portrait, ctx, diff) as ComposedPortrait;
   sanitized.misreads = (sanitized.misreads ?? []).filter(
-    (m) => m.looksLike?.trim().length > 0 && m.actuallyIs?.trim().length > 0,
+    (m) => m.looksLike?.trim().length > 20 && m.actuallyIs?.trim().length > 20,
   );
+
+  // Thin-section floor (audit #7). If the Core Portrait got gutted, append
+  // a chart-specific fallback drawn from systemMechanism.synthesis or
+  // chartStory so the section still carries weight.
+  if (typeof sanitized.corePortrait === "string" && sanitized.corePortrait.trim().length < 200) {
+    const fallback =
+      sanitized.systemMechanism?.synthesis ||
+      sanitized.chartStory ||
+      sanitized.bridge?.paragraph ||
+      "";
+    if (fallback && !sanitized.corePortrait.includes(fallback.slice(0, 40))) {
+      sanitized.corePortrait = (sanitized.corePortrait.trim() + " " + fallback.trim()).trim();
+    }
+  }
+
+  // Attach diff to existing validation result so callers can inspect what
+  // got rewritten or dropped per field.
+  const existing = (sanitized.validation ?? portrait.validation);
+  if (existing) {
+    sanitized.validation = { ...existing, sanitizationDiff: diff };
+  } else {
+    sanitized.validation = { ok: true, violations: [], sanitizationDiff: diff };
+  }
   return sanitized;
 }

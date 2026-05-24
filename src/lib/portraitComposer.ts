@@ -9,6 +9,15 @@
 import type { ChildPortrait } from "./childPortrait";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { validateComposedPortrait, sanitizeComposedPortrait } from "./portraitValidator";
+import { detectChartSignature } from "./portraitSignature";
+
+// Optional profile context passed by the caller for pronoun/name handling.
+export type PortraitProfile = {
+  firstName?: string;
+  fullName?: string;
+  pronouns?: { subject: string; object: string; possessive: string; reflexive?: string };
+  isChild?: boolean;
+};
 
 // ── Plain-language "what this placement actually does in real life" ──────────
 // These are deliberately concrete and behavioral, so the bridge sentence
@@ -230,28 +239,11 @@ export interface ComposedPortrait {
     narrative: string;
   };
   themesPicked: string[];
-  // Global validation result (A–H check). `ok: false` means at least one
+  // Global validation result (A–K check). `ok: false` means at least one
   // section violated planet-job / house-meaning / mutual-reception /
-  // final-authority / sign-speed rules. Surfaced for dev review.
-  validation?: {
-    ok: boolean;
-    violations: Array<{
-      rule:
-        | "planet-job"
-        | "house-meaning"
-        | "mutual-reception"
-        | "final-authority"
-        | "sign-speed"
-        | "life-stage-erasure"
-        | "saturn-leak"
-        | "chiron-leak"
-        | "mechanical-voice"
-        | "parenting-burden";
-      location: string;
-      found: string;
-      expected: string;
-    }>;
-  };
+  // final-authority / sign-speed / banned-trait / missing-anchor / em-dash
+  // / thin-section rules. Surfaced for dev review.
+  validation?: import("./portraitValidator").ValidationResult;
 }
 
 
@@ -269,7 +261,7 @@ function ord(n: number): string {
 }
 
 // ── Composer ─────────────────────────────────────────────────────────────────
-export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedPortrait {
+export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: PortraitProfile): ComposedPortrait {
   const name = p.name;
   const phase = p.lifePhase;
   const age = p.age;
@@ -1772,43 +1764,49 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedP
     themesPicked,
   };
 
-  // GLOBAL VALIDATION LAYER — A–K check before display.
-  // Pass chart context so Saturn/Chiron leak detection is chart-aware.
+  // GLOBAL VALIDATION LAYER — runs the chart-signature detector then the
+  // full A–K check + sentence sanitizer with diff log.
   try {
-    const sunSaturnAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Saturn/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
-    const sunChironAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Chiron/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
-    const sunPlutoAny = tightAspects.find(a => /Sun/.test(a.a + a.b) && /Pluto/.test(a.a + a.b) && /^(square|opposition|conjunction)$/i.test(a.aspect));
+    const signature = detectChartSignature(chart, tightAspects as any);
     const planetsForCtx = (chart?.planets as any) ?? {};
-    const mercSatReceptionCtx =
-      planetsForCtx.Mercury?.sign && planetsForCtx.Saturn?.sign &&
-      RULER_OF[planetsForCtx.Mercury.sign] === "Saturn" &&
-      RULER_OF[planetsForCtx.Saturn.sign] === "Mercury";
-    const mercJupReceptionCtx =
-      planetsForCtx.Mercury?.sign && planetsForCtx.Jupiter?.sign &&
-      RULER_OF[planetsForCtx.Mercury.sign] === "Jupiter" &&
-      RULER_OF[planetsForCtx.Jupiter.sign] === "Mercury";
-    const saturnCentral = Boolean(
-      (sunSaturnAny && sunSaturnAny.orb < 3) || mercSatReceptionCtx,
-    );
-    const chironCentral = Boolean(sunChironAny && sunChironAny.orb < 2.5);
-    const ikeAuthorityPattern = Boolean(
-      planetsForCtx.Mars?.sign === "Aries" &&
-      planetsForCtx.Mercury?.sign === "Pisces" &&
-      sunPlutoAny && sunPlutoAny.orb < 3 &&
-      mercJupReceptionCtx,
-    );
-    const ctx = { saturnCentral, chironCentral, ikeAuthorityPattern };
+    const firstName = (profile?.firstName ?? name ?? "").trim().split(/\s+/)[0] || name;
+    const ctx = {
+      saturnCentral: signature.saturnCentral,
+      chironCentral: signature.chironCentral,
+      ikeAuthorityPattern: signature.ikeAuthorityPattern,
+      signature,
+      mutualReceptionPair: signature.mutualReceptionPair,
+      profile: firstName
+        ? {
+            firstName,
+            fullName: profile?.fullName ?? name,
+            pronouns: profile?.pronouns ?? { subject: "they", object: "them", possessive: "their", reflexive: "themself" },
+            isChild: profile?.isChild ?? (phase === "child"),
+          }
+        : undefined,
+      placements: {
+        mercuryHouse: planetsForCtx.Mercury?.house ?? null,
+        marsHouse: planetsForCtx.Mars?.house ?? marsHouse,
+        moonHouse: planetsForCtx.Moon?.house ?? null,
+        mercurySign: planetsForCtx.Mercury?.sign ?? null,
+        marsSign: planetsForCtx.Mars?.sign ?? marsSign ?? null,
+        moonSign: planetsForCtx.Moon?.sign ?? null,
+      },
+    };
     composed.validation = validateComposedPortrait(composed, ctx);
     if (typeof console !== "undefined" && !composed.validation.ok) {
       console.warn(`[portraitComposer] validation failed for ${name}:`, composed.validation.violations);
     }
-    // FINAL QA PASS — sentence-level sanitizer. Drops/rewrites only the
-    // sentences that fail Checks 1–7; preserves sections, depth, structure.
+    // FINAL QA PASS — sentence-level sanitizer with diff log.
     const sanitized = sanitizeComposedPortrait(composed, ctx);
-    sanitized.validation = composed.validation;
+    // Preserve original violations; sanitizer attaches diff log.
+    sanitized.validation = {
+      ...composed.validation,
+      sanitizationDiff: sanitized.validation?.sanitizationDiff ?? [],
+    };
     return sanitized;
-  } catch (_e) {
-    // Validator is best-effort; never block the portrait on it.
+  } catch (e) {
+    if (typeof console !== "undefined") console.warn("[portraitComposer] validator error", e);
   }
 
   return composed;
