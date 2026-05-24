@@ -571,9 +571,11 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
           const signIdx = signOrder.indexOf(pp.sign);
           const nextSign = signOrder[(signIdx + 1) % 12];
           
-          // Calculate the actual ingress time
+          // Calculate the actual ingress time only for bodies this app can time from high-frequency data.
+          // Chiron/outer slow movers use coarse monthly lookup data here, so an exact clock time would be fake precision.
           let ingressTimeStr: string | undefined;
-          const ingressDate = findPlanetIngress(pp.name, pp.sign);
+          const canTimeIngress = ['Sun', 'Mercury', 'Venus', 'Mars'].includes(pp.name);
+          const ingressDate = canTimeIngress ? findPlanetIngress(pp.name, pp.sign) : null;
           if (ingressDate) {
             ingressTimeStr = ingressDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + userTzAbbr + ', ' + ingressDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
           }
