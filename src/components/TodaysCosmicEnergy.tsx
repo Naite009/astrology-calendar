@@ -422,11 +422,21 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces'
       };
       
-      const planetPositions = Object.entries(planets).map(([name, data]) => ({
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        sign: signGlyphToName[data?.sign] || data?.signName || data?.sign || 'Unknown',
-        degree: data?.rawDegree?.toFixed(1) || data?.degree || 0
-      }));
+      const planetPositions = Object.entries(planets).map(([name, data]) => {
+        const d: any = data;
+        // Prefer rawDegree (decimal). Otherwise reconstruct from degree + minutes/60.
+        // This prevents the AI from seeing a floor()'d integer and rounding it up
+        // (e.g. Chiron at 28°55' was being reported as "29° Aries" by the AI).
+        const deg = d?.rawDegree != null
+          ? Number(d.rawDegree).toFixed(2)
+          : (d?.degree != null ? (Number(d.degree) + (Number(d.minutes ?? 0) / 60)).toFixed(2) : '0');
+        return {
+          name: name.charAt(0).toUpperCase() + name.slice(1),
+          sign: signGlyphToName[d?.sign] || d?.signName || d?.sign || 'Unknown',
+          degree: deg,
+          minutes: d?.minutes ?? 0,
+        };
+      });
 
       // Send MORE aspects with FULL data including orbs - this prevents AI hallucination
       // Use the symbol from calculateDailyAspects directly (already includes correct glyph)
