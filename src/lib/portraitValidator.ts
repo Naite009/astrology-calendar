@@ -472,14 +472,42 @@ const SENTENCE_RULES: SentenceRule[] = [
       ? { kind: "drop" } : null;
   },
 
-  // CHECK 7 — parenting burden (rewrite in place)
-  (s) => {
-    for (const [re, rep] of PARENT_BURDEN_REWRITES) {
-      if (re.test(s)) return { kind: "replace", with: s.replace(re, rep) };
-    }
-    return null;
+  // CHECK 4b — mutual-reception PAIR meaning must match this chart's pair.
+  // If a sentence describes a "closed loop between …" with the wrong pair,
+  // rewrite the trailing phrase to the canonical pair text.
+  (s, _loc, ctx) => {
+    if (!ctx?.mutualReceptionPair) return null;
+    if (!/closed loop between/i.test(s)) return null;
+    const canonical = MR_LOOP_TEXT[ctx.mutualReceptionPair];
+    const fixed = s.replace(/a closed loop between[^.]*/i, canonical);
+    return fixed === s ? null : { kind: "replace", with: fixed };
+  },
+
+  // CHECK 6b — expanded mechanical voice (main/parent-facing fields only).
+  // Adds: system, gate, medium, discharge, output, signal — these may
+  // appear in deep-dive sections, never in the main human-voice prose.
+  (s, loc) => {
+    if (!MECHANICAL_PROTECTED_PATHS.test(loc)) return null;
+    return /\b(load tests?|operating manual|nervous system gate|the medium|the gate|the system runs|run as (?:a )?(?:signal|circuit|voltage))\b/i.test(s)
+      ? { kind: "drop" }
+      : null;
+  },
+
+  // CHECK 1b — self-referential repeated-name constructions that the
+  // pronoun pre-pass can't always collapse cleanly. e.g. "Ben Levin feels
+  // Ben Levin still has a place." These are dropped so the surrounding
+  // paragraph re-reads naturally on the next render.
+  (s, _loc, ctx) => {
+    const first = ctx?.profile?.firstName;
+    if (!first) return null;
+    const re = new RegExp(`\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b`, "i");
+    return re.test(s) ? { kind: "drop" } : null;
   },
 ];
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 // Split on sentence boundaries while preserving the trailing punctuation.
 // IMPORTANT: if a string has no sentence terminator (e.g. a short label like
@@ -504,8 +532,53 @@ function splitSentences(text: string): string[] {
   return out.length ? out : [text];
 }
 
+// Pronoun / name normalization for a single string field. Applied BEFORE
+// sentence-level rules so they see clean text.
+//   1. Collapse fullName → firstName everywhere.
+//   2. Within one sentence, replace 2nd+ occurrences of firstName with the
+//      profile's subject pronoun (lower-case; sentence start stays as name).
+//   3. Collapse "<name> <verb> <name>" reflexive loops to pronoun form.
+function normalizePronouns(value: string, ctx: ChartValidationContext | undefined): string {
+  const profile = ctx?.profile;
+  if (!profile) return value;
+  const first = profile.firstName;
+  const full = profile.fullName;
+  const subj = profile.pronouns?.subject ?? "they";
+  const poss = profile.pronouns?.possessive ?? "their";
+  let out = value;
+
+  // 1. Fullname → first name.
+  if (full && full !== first) {
+    out = out.replace(new RegExp(`\\b${escapeRe(full)}\\b`, "g"), first);
+  }
+
+  // 2. Collapse "<First> ... <First>" within a sentence to "<First> ... <subj>".
+  //    Only collapse the second+ occurrence per sentence to avoid breaking
+  //    headlines or quoted speech.
+  const sentenceRe = /[^.!?]+[.!?]?/g;
+  out = out.replace(sentenceRe, (sent) => {
+    let count = 0;
+    return sent.replace(new RegExp(`\\b${escapeRe(first)}\\b('s)?`, "g"), (m, s) => {
+      count++;
+      if (count === 1) return m;
+      return s ? poss : subj;
+    });
+  });
+
+  // 3. Collapse explicit reflexive constructions left over from templating.
+  //    e.g. "may look like Ike is reacting" — already fine; but
+  //    "feels <First> still has" → "feels <subj> still has".
+  out = out.replace(
+    new RegExp(`\\b(feels|knows|thinks|believes|sees|wants|needs)\\s+${escapeRe(first)}\\b`, "gi"),
+    `$1 ${subj}`,
+  );
+
+  return out;
+}
+
 function sanitizeString(value: string, loc: string, ctx: ChartValidationContext | undefined): string {
-  const sentences = splitSentences(value);
+  const pre = normalizePronouns(value, ctx);
+  const sentences = splitSentences(pre);
   const out: string[] = [];
   for (let sentence of sentences) {
     let dropped = false;
