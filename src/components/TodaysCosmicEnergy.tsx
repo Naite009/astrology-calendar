@@ -728,6 +728,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             Sun: 100, Moon: 98, Ascendant: 95, MC: 90, IC: 85, Descendant: 80,
             Mercury: 55, Venus: 55, Mars: 55, Jupiter: 40, Saturn: 40,
             Uranus: 30, Neptune: 30, Pluto: 30,
+            Chiron: 70, NorthNode: 65, SouthNode: 60, Lilith: 35,
           };
           const topTransits = [...allTransits]
             .filter(t => parseFloat(t.orb) < 5)
@@ -745,8 +746,76 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             })
             .join('\n');
 
-          personalChartContext = `RECIPIENT: ${chartForPersonal.name}
+          // ============ MAJOR LIFE-CYCLE EVENTS (returns, oppositions, squares) ============
+          // A planetary return = transit planet conjunct natal SAME planet. Chiron return (~age 50),
+          // Saturn return (~29.5y, ~58y), Jupiter return (~12y), Uranus opposition (~42y midlife),
+          // Nodal return (~18.6y, ~37y). These must be surfaced loudly — they only happen a few
+          // times in a life. AI was missing these because they were either out of priority or
+          // weren't aspect-detected (Chiron-to-Chiron conjunction was getting filtered out).
+          const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+          const toLon = (sign: string, deg: number, min: number = 0) => {
+            const idx = SIGNS.indexOf(sign);
+            return idx < 0 ? 0 : idx * 30 + deg + (min / 60);
+          };
+          const angDiff = (a: number, b: number) => {
+            let d = Math.abs(a - b) % 360;
+            if (d > 180) d = 360 - d;
+            return d;
+          };
+          const transitMap: Record<string, any> = {
+            Saturn: planets.saturn, Jupiter: planets.jupiter, Chiron: (planets as any).chiron,
+            Uranus: planets.uranus, Neptune: planets.neptune, Pluto: planets.pluto,
+            NorthNode: (planets as any).northNode,
+          };
+          const natalP: any = correctedPlanets;
+          const lifeCycleEvents: string[] = [];
+          for (const [name, tData] of Object.entries(transitMap)) {
+            if (!tData) continue;
+            const tSign = (tData as any).signName || (tData as any).sign;
+            const tDeg = (tData as any).degree ?? 0;
+            const tLon = toLon(tSign, tDeg);
+            // Same-body natal lookup (handle Node aliases)
+            const natalKey = name === 'NorthNode' ? (natalP.NorthNode ? 'NorthNode' : 'northNode') : name;
+            const nData = natalP[natalKey];
+            if (!nData?.sign || nData.degree === undefined) continue;
+            const nLon = toLon(nData.sign, nData.degree, nData.minutes || 0);
+            const conjOrb = angDiff(tLon, nLon);
+            const oppOrb = Math.abs(angDiff(tLon, nLon) - 180) < 1 ? 1 : angDiff(tLon, (nLon + 180) % 360);
+            const sqOrb = Math.min(angDiff(tLon, (nLon + 90) % 360), angDiff(tLon, (nLon + 270) % 360));
+            const h = getNatalPlanetHouse(natalKey, chartForPersonal);
+            const hLabel = h ? ` in their ${h}${h === 1 ? 'st' : h === 2 ? 'nd' : h === 3 ? 'rd' : 'th'} house` : '';
+            const natalPos = `${nData.degree}°${nData.minutes ? String(nData.minutes).padStart(2,'0') + "'" : ''} ${nData.sign}${hLabel}`;
+            const transitPos = `${tDeg.toFixed(1)}° ${tSign}`;
+            if (conjOrb <= 3) {
+              const label = name === 'Saturn' ? 'SATURN RETURN' :
+                            name === 'Jupiter' ? 'JUPITER RETURN' :
+                            name === 'Chiron' ? 'CHIRON RETURN (once-in-a-lifetime, ~age 50)' :
+                            name === 'Uranus' ? 'URANUS RETURN (~age 84)' :
+                            name === 'Neptune' ? 'NEPTUNE RETURN (~age 165 — N/A but noting conjunction)' :
+                            name === 'Pluto' ? 'PLUTO RETURN' :
+                            name === 'NorthNode' ? 'NODAL RETURN (~every 18.6y)' : `${name} RETURN`;
+              lifeCycleEvents.push(`🔥 ${label} — transit ${name} ${transitPos} conjunct natal ${name} ${natalPos}. Orb ${conjOrb.toFixed(2)}°. THIS IS THE BIG STORY FOR THIS PERSON RIGHT NOW. Lead with it. Do not skip over it.`);
+            } else if (oppOrb <= 2 && (name === 'Uranus' || name === 'Saturn' || name === 'NorthNode')) {
+              const label = name === 'Uranus' ? 'URANUS OPPOSITION (~midlife, age 41-42)' :
+                            name === 'Saturn' ? 'SATURN OPPOSITION (mid-Saturn-cycle, ~age 14-15 or 44-45)' :
+                            'NODAL OPPOSITION (~age 9 or 28 — life reorientation)';
+              lifeCycleEvents.push(`⚡ ${label} — transit ${name} ${transitPos} opposite natal ${name} ${natalPos}. Orb ${oppOrb.toFixed(2)}°. Major life-cycle marker — name it.`);
+            } else if (sqOrb <= 2 && (name === 'Saturn' || name === 'Uranus' || name === 'NorthNode')) {
+              const label = name === 'Saturn' ? 'SATURN SQUARE (~age 7, 21, 36, 51)' :
+                            name === 'Uranus' ? 'URANUS SQUARE (~age 21 or 63)' :
+                            'NODAL SQUARE (~age 4-5, 13-14, 23, 32, 41-42)';
+              lifeCycleEvents.push(`◽ ${label} — transit ${name} ${transitPos} square natal ${name} ${natalPos}. Orb ${sqOrb.toFixed(2)}°.`);
+            } else if (conjOrb <= 8 && (name === 'Chiron' || name === 'Saturn' || name === 'NorthNode')) {
+              // Approaching return — still worth naming
+              lifeCycleEvents.push(`→ APPROACHING ${name.toUpperCase()} RETURN — transit ${name} ${transitPos}, natal ${name} ${natalPos}. Orb ${conjOrb.toFixed(2)}° (within 8°). The return window is opening.`);
+            }
+          }
+          const lifeCycleBlock = lifeCycleEvents.length
+            ? `\n\n⚠️ MAJOR LIFE-CYCLE EVENTS HAPPENING TO ${chartForPersonal.name.toUpperCase()} RIGHT NOW (lead the reading with these — they are RARE):\n${lifeCycleEvents.join('\n')}\n`
+            : '';
 
+          personalChartContext = `RECIPIENT: ${chartForPersonal.name}
+${lifeCycleBlock}
 THEIR NATAL CHART (use the [HOUSE X] tags exactly — do NOT infer house from sign):
 ${natalPlanetsWithHouses}
 
