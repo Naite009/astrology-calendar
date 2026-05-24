@@ -472,6 +472,15 @@ const SENTENCE_RULES: SentenceRule[] = [
       ? { kind: "drop" } : null;
   },
 
+  // CHECK 7 — parenting burden (rewrite in place)
+  (s) => {
+    for (const [re, rep] of PARENT_BURDEN_REWRITES) {
+      if (re.test(s)) return { kind: "replace", with: s.replace(re, rep) };
+    }
+    return null;
+  },
+
+
   // CHECK 4b — mutual-reception PAIR meaning must match this chart's pair.
   // If a sentence describes a "closed loop between …" with the wrong pair,
   // rewrite the trailing phrase to the canonical pair text.
