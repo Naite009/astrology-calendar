@@ -1227,7 +1227,7 @@ Keep the tone professional, insightful, and practically applicable.`,
       
       // Do NOT auto-generate. User must explicitly choose voice + chart, then click Generate.
       // Only load from cache if present for the current voice.
-      const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+      const cacheKey = getCosmicCacheKey();
       const cached = localStorage.getItem(cacheKey);
       if (!cosmicData && cached) {
         try {
@@ -1237,7 +1237,7 @@ Keep the tone professional, insightful, and practically applicable.`,
         } catch {}
       }
     }
-  }, [isOpen]); // Only depend on isOpen, not voiceStyle
+  }, [isOpen, activeChartId, voiceStyle, todayKey, isLoading]);
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -1562,7 +1562,11 @@ Keep the tone professional, insightful, and practically applicable.`,
                         userNatalChart={userNatalChart}
                         savedCharts={savedCharts}
                         selectedChartId={selectedChartId || 'general'}
-                        onSelect={(id) => setSelectedChartId(id === 'general' ? null : id)}
+                        onSelect={(id) => {
+                          setSelectedChartId(id === 'general' ? null : id);
+                          setCosmicData(null);
+                          setLastFetched(null);
+                        }}
                         includeGeneral={true}
                         generalLabel="None (General)"
                         className="min-w-[200px]"
