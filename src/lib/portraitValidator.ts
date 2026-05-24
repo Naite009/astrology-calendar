@@ -15,6 +15,7 @@
 //     auto-stripped when possible and otherwise flagged.
 
 import type { ComposedPortrait } from "./portraitComposer";
+import type { ChartSignature } from "./portraitSignature";
 
 export type ValidationViolation = {
   rule:
@@ -27,15 +28,26 @@ export type ValidationViolation = {
     | "saturn-leak"
     | "chiron-leak"
     | "mechanical-voice"
-    | "parenting-burden";
+    | "parenting-burden"
+    | "banned-trait-word"
+    | "missing-placement-anchor"
+    | "thin-section"
+    | "em-dash";
   location: string;
   found: string;
   expected: string;
 };
 
+export type SanitizationDiffEntry = {
+  location: string;
+  before: string;
+  after: string;
+};
+
 export type ValidationResult = {
   ok: boolean;
   violations: ValidationViolation[];
+  sanitizationDiff?: SanitizationDiffEntry[];
 };
 
 // ── Banned-phrase tables ───────────────────────────────────────────────────
