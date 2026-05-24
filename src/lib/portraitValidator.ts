@@ -182,12 +182,26 @@ const FINAL_AUTHORITY_BANS: Array<{ re: RegExp; rule: ValidationViolation["rule"
 // MECHANICAL-VOICE bans for the main Portrait text. These words may appear
 // inside the deep-dive "mechanism" layer but must not show up in core/parent
 // paragraphs. Detected via field paths; see validateComposedPortrait below.
-const MECHANICAL_WORDS = /(?:circuit|voltage|hardware|the (?:signal|output)|discharges the circuit|firing the circuit)/i;
+// Expanded list per audit #4: catches the next-synonym regressions
+// (engine, conductor, transmitter, load, current, wiring, channel, switch,
+// system, gate, medium, discharge, output, signal).
+const MECHANICAL_WORDS = /\b(?:circuit|voltage|hardware|discharges? the circuit|firing the circuit|the signal|the output|the medium|the gate|nervous system gate|operating manual|load tests?|run as (?:a )?(?:signal|circuit|voltage)|conductor|transmitter|wiring|switch (?:on|off)|current(?:s)? through|channel(?:s)? through)\b/i;
 const MECHANICAL_BAN = {
   re: MECHANICAL_WORDS,
   rule: "mechanical-voice" as const,
   expected:
     "Main Portrait must read human. Translate mechanical wording into: what it feels like, what it looks like, what helps. Reserve circuit/voltage/signal for the deep-dive layer.",
+};
+
+// FAMILY-READING banned trait words (per Dynamic Astrology memory).
+// These are vague single-trait labels that the Core memory bans across all
+// person-facing copy.
+const FAMILY_BANNED_TRAITS = /\b(people-pleasing|difficult(?:\s+child)?|dreamer|weird|scattered|moody|unusual angles?|fairness(?: of the)?|intense)\b/i;
+const FAMILY_TRAIT_BAN = {
+  re: FAMILY_BANNED_TRAITS,
+  rule: "banned-trait-word" as const,
+  expected:
+    "Replace single-trait labels (people-pleasing, dreamer, scattered, moody, weird, etc.) with behavior + what they avoid + internal contradiction.",
 };
 
 // PARENTING-BURDEN bans: child must not be told to self-regulate or
