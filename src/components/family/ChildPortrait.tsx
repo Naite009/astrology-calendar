@@ -210,7 +210,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
               <div className="text-[10px] uppercase tracking-widest text-primary font-semibold">
                 Core Portrait
               </div>
-              <p className="text-lg sm:text-xl font-semibold leading-snug text-foreground">
+              <p className="text-sm leading-relaxed text-foreground">
                 {composed.corePortrait}
               </p>
               {composed.lifeStageChapter && (
