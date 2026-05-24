@@ -300,12 +300,63 @@ const MR_LOOP_TEXT: Record<NonNullable<ChartValidationContext["mutualReceptionPa
 const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
 const CHIRON_LEAK_RE = /\b(permission wound|allowed to be said|Chiron permission|permission check)\b/i;
 
+// Positive assertions per placement (audit #6). Returns required substrings
+// for the corePortrait/systemMechanism fields based on the chart's actual
+// Mercury/Mars/Moon house. If none of the anchor phrases are present, we
+// raise a "missing-placement-anchor" violation so the next composer change
+// can't silently strip the chart-specific signal.
+function requiredAnchors(ctx: ChartValidationContext | undefined): Array<{ where: RegExp; oneOf: RegExp[]; label: string }> {
+  const out: Array<{ where: RegExp; oneOf: RegExp[]; label: string }> = [];
+  const p = ctx?.placements;
+  if (!p) return out;
+  const wherePortrait = /^(corePortrait|systemMechanism|planetInteraction|realTimeSequence)/i;
+  if (p.mercuryHouse === 12) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/underwater/i, /submerged/i, /surfaces? (?:after|later)/i, /delayed/i, /private(?:ly)?/i],
+      label: "Mercury in 12th must read as underwater/delayed/surfaces-later",
+    });
+  }
+  if (p.mercuryHouse === 6) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/nervous system/i, /strain/i, /routed through (?:the )?body/i],
+      label: "Mercury in 6th must read as nervous-system friction",
+    });
+  }
+  if (p.marsHouse === 1) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/before (?:any )?(?:words|sentence)/i, /reflex/i, /at the skin/i, /body[- ]first/i],
+      label: "Mars in 1st must read as body-first reflex",
+    });
+  }
+  if (p.moonHouse === 11) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/included/i, /belong/i, /group/i, /peer/i],
+      label: "Moon in 11th must read as belonging/included",
+    });
+  }
+  if (p.moonHouse === 2) {
+    out.push({
+      where: wherePortrait,
+      oneOf: [/body safety/i, /steadiness/i, /sustainabl/i],
+      label: "Moon in 2nd must read as body safety/steadiness",
+    });
+  }
+  return out;
+}
+
 export function validateComposedPortrait(
   portrait: ComposedPortrait,
   ctx?: ChartValidationContext,
 ): ValidationResult {
   const violations: ValidationViolation[] = [];
+  // Gather full-text by location for positive-anchor checks.
+  const fieldText = new Map<string, string>();
   for (const [loc, value] of walkStrings(portrait)) {
+    fieldText.set(loc, value);
     for (const ban of ALL_BANS) {
       const m = ban.re.exec(value);
       if (m) {
@@ -316,6 +367,25 @@ export function validateComposedPortrait(
           expected: ban.expected,
         });
       }
+    }
+    // Family-banned single-trait words (everywhere).
+    const tm = FAMILY_TRAIT_BAN.re.exec(value);
+    if (tm) {
+      violations.push({
+        rule: FAMILY_TRAIT_BAN.rule,
+        location: loc,
+        found: tm[0].slice(0, 160),
+        expected: FAMILY_TRAIT_BAN.expected,
+      });
+    }
+    // Em-dash audit (Core memory: never in user-facing copy).
+    if (value.includes("—")) {
+      violations.push({
+        rule: "em-dash",
+        location: loc,
+        found: "—",
+        expected: "Replace em-dash with comma, period, colon, or parentheses (Core memory).",
+      });
     }
     // Mechanical-voice only flagged in main/parent-facing fields.
     if (MECHANICAL_PROTECTED_PATHS.test(loc)) {
@@ -357,6 +427,40 @@ export function validateComposedPortrait(
       }
     }
   }
+
+  // Positive placement anchors (audit #6).
+  const anchors = requiredAnchors(ctx);
+  if (anchors.length) {
+    const portraitText = Array.from(fieldText.entries())
+      .filter(([loc]) => /^(corePortrait|systemMechanism|planetInteraction|realTimeSequence)/i.test(loc))
+      .map(([, v]) => v)
+      .join(" \n ");
+    for (const a of anchors) {
+      const hit = a.oneOf.some((re) => re.test(portraitText));
+      if (!hit) {
+        violations.push({
+          rule: "missing-placement-anchor",
+          location: "corePortrait+systemMechanism",
+          found: "(none of the required anchor phrases)",
+          expected: a.label,
+        });
+      }
+    }
+  }
+
+  // Thin-section floor (audit #7). The Core Portrait must carry enough
+  // signal to function as the main read. Below 200 chars we flag — the
+  // sanitizer will then top it up from a chart-specific fallback.
+  const core = (portrait as any)?.corePortrait ?? "";
+  if (typeof core === "string" && core.trim().length > 0 && core.trim().length < 200) {
+    violations.push({
+      rule: "thin-section",
+      location: "corePortrait",
+      found: `length=${core.trim().length}`,
+      expected: "Core Portrait must be ≥200 chars after sanitization. Append chart-specific fallback if shorter.",
+    });
+  }
+
   return { ok: violations.length === 0, violations };
 }
 
