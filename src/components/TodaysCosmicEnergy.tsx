@@ -329,14 +329,16 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       ? userNatalChart 
       : availableCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) 
     : null;
+  const activeChartId = selectedChartId || 'general';
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const todayKey = formatLocalDateKey(today); // YYYY-MM-DD (local) for cache key
+  const getCosmicCacheKey = (style: typeof voiceStyle = voiceStyle) => `cosmic-weather-${todayKey}-${style}-${activeChartId}`;
 
   // Load cached data when voice style changes - don't auto-fetch, just load from cache
   useEffect(() => {
-    const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+    const cacheKey = getCosmicCacheKey();
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -354,7 +356,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         setLastFetched(null);
       }
     }
-  }, [voiceStyle, todayKey, isLoading]);
+  }, [voiceStyle, todayKey, activeChartId, isLoading]);
 
   // Update all planetary positions in real-time when modal is open
   useEffect(() => {
