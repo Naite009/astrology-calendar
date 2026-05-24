@@ -2164,7 +2164,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const chartForRequest = selectedChart;
     const chartNameForRequest = chartForRequest?.name || "Unknown";
     const userEntry: ChatEntry = { role: "user", content: question };
-    const requestEntries = [...entries, userEntry];
+    // Each new ask is a fresh conversation — clear previous Q&A from the screen
+    // so the old reading doesn't visually persist, and so accumulated prior
+    // questions can't bias server-side routing (e.g. an earlier relationship
+    // ask making a new narrative ask get scored as relationship).
+    const requestEntries = [userEntry];
 
     setEntries(requestEntries);
     saveActiveChat(chartIdForRequest, requestEntries);
