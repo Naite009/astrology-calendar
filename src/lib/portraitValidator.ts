@@ -258,25 +258,34 @@ function* walkStrings(obj: unknown, path = ""): Generator<[string, string]> {
 export type ChartValidationContext = {
   saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
   chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
-  ikeAuthorityPattern?: boolean; // Mars Aries + Sun/Pluto pressure + Mercury/Jupiter loop
-  // Pronoun / name normalization. When supplied, repeated full-name and
-  // self-referential constructions ("Ben Levin feels Ben Levin still has a
-  // place") get collapsed into pronoun-correct prose.
+  ikeAuthorityPattern?: boolean; // legacy back-compat flag
+  // Pronoun / name normalization. Always applied; defaults to gender-neutral
+  // they/them/their if not provided so "Name Name Name" loops still collapse.
   profile?: {
     firstName: string;
     fullName?: string;
     pronouns?: {
-      subject: string;      // he / she / they
-      object: string;       // him / her / them
-      possessive: string;   // his / her / their
-      reflexive?: string;   // himself / herself / themself
+      subject: string;
+      object: string;
+      possessive: string;
+      reflexive?: string;
     };
     isChild?: boolean;
   };
-  // The ONE actual mutual-reception pair active in this chart. Used to keep
-  // generic "closed loop" wording from drifting into the wrong pair's
-  // interpretation. Set to null when there is no mutual reception.
+  // The ONE actual mutual-reception pair active in this chart.
   mutualReceptionPair?: "merc-sat" | "merc-jup" | "venus-jup" | "mars-merc" | null;
+  // Full chart signature (audit #2). When present, takes precedence over the
+  // legacy flags above for any new rule. Composer passes it in directly.
+  signature?: ChartSignature;
+  // Placement anchors for positive assertions (audit #6).
+  placements?: {
+    mercuryHouse?: number | null;
+    marsHouse?: number | null;
+    moonHouse?: number | null;
+    mercurySign?: string | null;
+    marsSign?: string | null;
+    moonSign?: string | null;
+  };
 };
 
 // Canonical "closed loop between …" phrasing per mutual-reception pair.
