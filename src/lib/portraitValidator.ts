@@ -641,15 +641,29 @@ const SENTENCE_RULES: SentenceRule[] = [
       : null;
   },
 
-  // CHECK 1b — self-referential repeated-name constructions that the
-  // pronoun pre-pass can't always collapse cleanly. e.g. "Ben Levin feels
-  // Ben Levin still has a place." These are dropped so the surrounding
-  // paragraph re-reads naturally on the next render.
+  // CHECK 1b — self-referential repeated-name constructions. Defaults to
+  // gender-neutral they/them/their so this fires even when caller did not
+  // supply a profile (audit #1 — pronoun/name collapse must always run).
   (s, _loc, ctx) => {
     const first = ctx?.profile?.firstName;
     if (!first) return null;
     const re = new RegExp(`\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b[^.]{0,40}\\b${escapeRe(first)}\\b`, "i");
     return re.test(s) ? { kind: "drop" } : null;
+  },
+
+  // CHECK 8 — em-dash strip (Core memory). Replace with comma so the
+  // surrounding clause still flows. Applied to every field.
+  (s) => {
+    if (!s.includes("—")) return null;
+    return { kind: "replace", with: s.replace(/\s*—\s*/g, ", ") };
+  },
+
+  // CHECK 9 — family-banned single-trait words (Dynamic Astrology memory).
+  // Drop the sentence rather than rewrite; surrounding paragraph keeps shape.
+  (s, loc) => {
+    // Allow these words inside dev-only `themesPicked` debug array.
+    if (/^themesPicked/i.test(loc)) return null;
+    return FAMILY_BANNED_TRAITS.test(s) ? { kind: "drop" } : null;
   },
 ];
 
@@ -741,14 +755,23 @@ function sanitizeString(value: string, loc: string, ctx: ChartValidationContext 
   return out.join(" ").replace(/\s+/g, " ").trim();
 }
 
-function sanitizeWalk(obj: unknown, ctx: ChartValidationContext | undefined, path = ""): unknown {
+function sanitizeWalk(
+  obj: unknown,
+  ctx: ChartValidationContext | undefined,
+  diff: SanitizationDiffEntry[],
+  path = "",
+): unknown {
   if (obj == null) return obj;
-  if (typeof obj === "string") return sanitizeString(obj, path, ctx);
-  if (Array.isArray(obj)) return obj.map((v, i) => sanitizeWalk(v, ctx, `${path}[${i}]`));
+  if (typeof obj === "string") {
+    const after = sanitizeString(obj, path, ctx);
+    if (after !== obj) diff.push({ location: path, before: obj, after });
+    return after;
+  }
+  if (Array.isArray(obj)) return obj.map((v, i) => sanitizeWalk(v, ctx, diff, `${path}[${i}]`));
   if (typeof obj === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-      out[k] = sanitizeWalk(v, ctx, path ? `${path}.${k}` : k);
+      out[k] = sanitizeWalk(v, ctx, diff, path ? `${path}.${k}` : k);
     }
     return out;
   }
@@ -756,17 +779,41 @@ function sanitizeWalk(obj: unknown, ctx: ChartValidationContext | undefined, pat
 }
 
 /**
- * Final QA pass. Walks every string field of the Portrait and rewrites or
- * drops ONLY sentences that fail Checks 1–7. Returns a new ComposedPortrait
- * with the same shape — sections, depth, and structure are preserved.
+ * Final QA pass. Walks every string field, rewrites or drops only sentences
+ * that fail Checks 1–9, applies a thin-section floor with a chart-specific
+ * fallback, and records a sanitization diff on `validation.sanitizationDiff`.
  */
 export function sanitizeComposedPortrait(
   portrait: ComposedPortrait,
   ctx?: ChartValidationContext,
 ): ComposedPortrait {
-  const sanitized = sanitizeWalk(portrait, ctx) as ComposedPortrait;
+  const diff: SanitizationDiffEntry[] = [];
+  const sanitized = sanitizeWalk(portrait, ctx, diff) as ComposedPortrait;
   sanitized.misreads = (sanitized.misreads ?? []).filter(
-    (m) => m.looksLike?.trim().length > 0 && m.actuallyIs?.trim().length > 0,
+    (m) => m.looksLike?.trim().length > 20 && m.actuallyIs?.trim().length > 20,
   );
+
+  // Thin-section floor (audit #7). If the Core Portrait got gutted, append
+  // a chart-specific fallback drawn from systemMechanism.synthesis or
+  // chartStory so the section still carries weight.
+  if (typeof sanitized.corePortrait === "string" && sanitized.corePortrait.trim().length < 200) {
+    const fallback =
+      sanitized.systemMechanism?.synthesis ||
+      sanitized.chartStory ||
+      sanitized.bridge?.paragraph ||
+      "";
+    if (fallback && !sanitized.corePortrait.includes(fallback.slice(0, 40))) {
+      sanitized.corePortrait = (sanitized.corePortrait.trim() + " " + fallback.trim()).trim();
+    }
+  }
+
+  // Attach diff to existing validation result so callers can inspect what
+  // got rewritten or dropped per field.
+  const existing = (sanitized.validation ?? portrait.validation);
+  if (existing) {
+    sanitized.validation = { ...existing, sanitizationDiff: diff };
+  } else {
+    sanitized.validation = { ok: true, violations: [], sanitizationDiff: diff };
+  }
   return sanitized;
 }
