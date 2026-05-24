@@ -1,99 +1,137 @@
-# Physics-Based Core Portrait
 
-The Core Portrait currently lists what each placement *means* (topics, archetypes). You want it to explain *the physical collision* — how a planet's voltage hits the density of the house it lives in, and what that feels like in the body. All edits live in `src/lib/portraitComposer.ts` (presentation layer only — no astrology math changes).
+# Portrait Hierarchy v3 — APPROVED (UI-only, ChildPortrait.tsx only)
 
-## The mental model the engine will follow
+## Scope lock
+- File touched: **`src/components/family/ChildPortrait.tsx` only** (plus a ~15-line local helper inside the same file).
+- Untouched: `portraitComposer.ts`, `portraitValidator.ts`, `portraitSignature.ts`, `childPortrait.ts`, both test files, every data shape, the interpretation engine.
+- No new dependencies. No `Tabs` component. No hidden content beyond the single collapsed Math Check `<details>`.
 
-```text
-Planet + Sign  = VOLTAGE   (speed / pressure / texture of the signal)
-Planet + House = MEDIUM    (density the signal has to travel through)
-Collision      = SENSATION (what the body actually feels)
+---
+
+## The 4-Tier Hierarchy
+
+```
+TIER 1  HEADLINE                gradient bg, large type, no heavy border
+   ├─ Core Portrait (life-stage chapter folded in as italic subtitle)
+   └─ Operating System line — Chart Ruler as a full sentence
+       "Operating system: {ruler} in {sign}{ in the Nth house} — {behavioral read}."
+
+TIER 2  THE LIVED EXPERIENCE    two equal-weight saturated boxes
+   ├─ Real Life · What To Do            (emerald)   action + Looks Like / Actually Is
+   └─ In The Moment                     (rose)      ranked behavioral sequence
+
+TIER 3  HOW THE SYSTEM WORKS    one unified indigo box, sequential subsections (no tabs)
+   ├─ Bridge intro (2 sentences)
+   ├─ Main Pressure Point callout   (single bordered row; sources composed.systemMechanism.trigger
+   │                                  + tightest hard aspect to Sun/Moon from portrait.mathCheck)
+   ├─ Signal → Medium → Collision → Output
+   ├─ Chain of Command (dispositor walk, mutual reception, final boss, badge row)
+   └─ Chart Story (narrative prose)
+
+TIER 4  TENDER PLACES & THE PATH   quiet by default, ADAPTIVE promotion for Saturn/Chiron/Nodes
+   ├─ Saturn / Chiron / Nodes        (promotion rule below)
+   ├─ Moon Phase
+   ├─ Chart Ruler dashed sub-card    (full card retained for completeness)
+   ├─ Extreme degrees (0° / 29° angles)
+   └─ Math Check (collapsed <details>)
 ```
 
-### House Density classes (new)
+---
 
-- **Reflex (1, 4, 7, 10 — angular):** zero-latency, live-wire. Signal hits the skin/room instantly.
-- **Friction (6, primarily; also 2):** hard-wired to the nervous system. Thought must be *conducted* through the body — creates a thermal/data jam.
-- **Submerged (12, 8, 4 as inner):** underwater density. Information is massive but lagged; surface answer trails the real one.
-- **Wireless (3, 11, 9, 5 — air/fire mental houses):** low friction. Thought and speech are near-simultaneous.
+## Required behaviors
 
-### Voltage classes (new, per planet+sign)
+**Tier 3 confirmed sequential subsections.** One indigo box, internal `<h4>`-style headings, top-to-bottom render, prints and PDF-exports cleanly. No `Tabs`, no `<details>` inside Tier 3.
 
-A small lookup keyed by `${planet}-${sign}` for the planets that matter most in the live moment: Mercury, Mars, Venus, Moon, Sun. Examples:
-- Aquarius Mercury → "high-voltage lightning, non-linear, instant"
-- Libra Mercury → "balanced signal, edits in real time for precision"
-- Pisces Mercury → "diffuse signal, arrives as impression before words"
-- Scorpio Mars → "pressure cooker, concentrated, reactive"
-- Aries Mars → "live-wire discharge, immediate"
-- Capricorn Mars → "compressed voltage, pushed down for later"
+**Main Pressure Point lives in Tier 3.** Pluto/Uranus/Neptune/Mars-led pressure is *driver* energy, not tender-place energy. Rendered as a single bordered row directly after the Bridge intro, inside the indigo box. Format: `Main pressure point: {body} {aspect} {body} (orb {n}°) — {one-line behavioral read}.` This guarantees the engine of the chart is always visible at the top of the mechanism, regardless of which body it is.
 
-(Curated, not exhaustive — only the combos that produce distinctive collisions. Falls back gracefully when a combo isn't mapped.)
+**Tier 4 adaptive promotion (Saturn / Chiron / Nodes only).** A sub-card promotes when ANY of:
+1. It is the chart ruler.
+2. It is the final dispositor in `composed.chainOfCommand.finalDispositor`, or one side of `composed.chainOfCommand.mutualReception`.
+3. It anchors the life-stage chapter (`composed.lifeStageChapter` matches /Saturn|Chiron|Node|Nodal/i).
+4. It is the stress trigger (`composed.systemMechanism.trigger.label` references the body).
+5. It carries the tightest hard aspect to Sun or Moon in `portrait.mathCheck` (orb ≤ 2°, aspect ∈ {conjunction, square, opposition}).
 
-### Collision rules (the synthesis)
+Promotion effect: card moves to top of Tier 4, container becomes `border-2 border-violet-500/60`, body text drops `text-muted-foreground`, small `Badge` reads `Central to this chart · {reason}` where reason names whichever rule fired.
 
-A function `describeCollision(voltage, density)` returns a sensation sentence:
+**Color encodes role; weight encodes importance.**
+- Tier 1: no outer border, gradient bg, largest type.
+- Tier 2: `border-2`, saturated bg (emerald, rose).
+- Tier 3: `border-2` indigo, calmer bg; internal subsections carry structure.
+- Tier 4: `border` (1px) violet, dashed sub-cards, muted body — *unless* the promotion rule fires.
 
-- High Voltage + Friction → **Data Jam.** "Fullness in the chest/throat; the brain has finished, the nerves are still grounding the current."
-- High Pressure + Reflex → **The Wall.** "Body throws up a shield at skin-level before the mind has finished downloading."
-- Balanced/Diffuse Voltage + Submerged → **Deep-Sea Lag.** "Understanding is there in real time; the language is still surfacing."
-- Wireless + any → **Open Line.** "Thought and speech arrive together — nothing to translate."
-- High Voltage + Submerged → **Signal Fog with Spark.** "Lightning underwater; sudden flashes of clarity that take time to articulate."
-- High Pressure + Friction → **Pressure Cooker in the Hardware.** "The body holds the heat; release looks like an outburst or a shutdown, not a conversation."
+**No em dashes in any new copy.** Use commas, colons, periods, parentheses (per project core rule).
 
-## What gets written into `composePortrait`
+---
 
-Replace the current "stack" paragraph (the `stackLines.join(...)` block around lines 502–517) with a **two-layer Hardware Audit**, then a **Collision Report**, then the existing Moon regulation + pace fix.
+## Concrete section order per person (caption corrected)
 
-### Layer 1: Hardware Audit (one short paragraph)
+```
+LAUREN (adult, Chiron-anchored)
+  Tier 1  Core Portrait + "Operating system: {her ruler} ..."
+  Tier 2  Real Life · What To Do
+          In The Moment
+  Tier 3  How The System Works
+            Bridge intro
+            Main pressure point: Chiron Return
+            Signal/Medium/Collision/Output
+            Chain of Command
+            Chart Story
+  Tier 4  Tender Places & The Path
+            ★ Chiron  (PROMOTED, "Central · life-stage anchor")
+              Saturn  (quiet)
+              Nodes   (quiet)
+              Moon Phase, Chart Ruler card, Extreme degrees
+              Math Check (collapsed)
 
-For Mercury, Mars, and the chart ruler, name:
-- the sign as **voltage** (one phrase)
-- the house as **density** (one phrase — using the new class label, not the topic)
+BEN (teen, Saturn-pressure, Merc↔Sat reception)
+  Tier 1  Core Portrait + "Operating system: ..."
+  Tier 2  Real Life · What To Do
+          In The Moment
+  Tier 3  How The System Works
+            Bridge intro
+            Main pressure point: Saturn (mutual reception with Mercury)
+            Signal/Medium/Collision/Output
+            Chain of Command (Merc↔Sat badge visible)
+            Chart Story
+  Tier 4  Tender Places & The Path
+            ★ Saturn (PROMOTED, "Central · mutual reception")
+              Chiron  (quiet)
+              Nodes   (quiet)
+              Moon Phase, Chart Ruler card, Extreme degrees
+              Math Check (collapsed)
 
-Example output style:
-> "Mercury runs as **balanced signal** through a **submerged 12th-house medium** — the understanding loads underwater. Mars runs as **pressure cooker** in a **reflex 1st-house medium** — it discharges at the skin before the mind catches up."
+IKE (teen, Sun square Pluto, Mars-Aries dominant)
+  Tier 1  Core Portrait + "Operating system: Mars in Aries in the 5th ..."
+  Tier 2  Real Life · What To Do
+          In The Moment
+  Tier 3  How The System Works
+            Bridge intro
+            Main pressure point: Sun square Pluto (orb 1.4°)
+            Signal/Medium/Collision/Output (Pluto's role explained here)
+            Chain of Command
+            Chart Story
+  Tier 4  Tender Places & The Path
+              Saturn  (quiet, not central for Ike)
+              Chiron  (quiet, not central for Ike)
+              Nodes   (quiet)
+              Moon Phase, Chart Ruler card, Extreme degrees
+              Math Check (collapsed)
+```
 
-### Layer 2: Collision Report (one short paragraph)
+---
 
-Apply the collision rules to the two strongest hardware setups and describe the **sensation**, not the personality:
-> "When the room moves fast, the live wire on the surface (Mars 1st) throws up a wall before the deep processor (Mercury 12th) has surfaced the actual words. What looks like coldness is a shield bought to protect a system still downloading."
+## Implementation checklist (build phase)
 
-### Layer 3 (kept): Moon regulation + Pace Fix
+In `src/components/family/ChildPortrait.tsx` only:
+1. Add Tier 1 Operating System line under Core Portrait, rendering `portrait.chartRuler.rulerName/rulerSign/line` as a full sentence (not a chip).
+2. Merge current `realTimeSequence` (In The Moment) and Real Life sections into Tier 2 stack; remove duplicate Human Translation block from inside Planet Interaction.
+3. Merge Bridge + Planet Interaction System + Chart Story into one indigo Tier 3 box with sequential subsections.
+4. Insert Main Pressure Point row at top of Tier 3 (right after Bridge intro) using `composed.systemMechanism.trigger` plus tightest hard luminary aspect from `portrait.mathCheck`.
+5. Restyle Tier 4 to 1px violet border + dashed sub-cards + muted body by default.
+6. Add local `centralityFor(body)` helper (Saturn/Chiron/Nodes) returning `{ promoted: boolean, reason?: string }` based on the 5 rules; reorder Tier 4 sub-cards so promoted bodies come first with `border-2` + badge.
+7. Wrap Math Check in `<details>` collapsed by default.
+8. Fold Life-Stage Chapter into Core Portrait as an italic subtitle line; remove its standalone box.
+9. Verify no em dashes in any new strings.
+10. Run `bunx vitest run` to confirm composer/validator tests still pass (no engine touched, expected green).
 
-The existing `MOON_NEED` line and `PACE_FIX` line stay. They are the only "what to do" beats and they already work.
-
-## Vocabulary swap (enforced)
-
-Inside the new sections, replace:
-
-| Banned word | Use instead |
-|---|---|
-| intense | pressure at the skin |
-| quiet, shut down | conducting electricity |
-| vague, spacey | underwater processing |
-| slow, indecisive | grounding the surge |
-| reactive | live wire discharge |
-| people-pleasing | editing the signal in real time |
-
-## What stays the same
-
-- The `lifeStageChapter` block above Core Portrait.
-- The opening "live mechanic" sentence (`SUN_LIVE[sunSign]`).
-- The chart-ruler "what it actually believes" sentence (`RULER_BELIEF`).
-- The Sun–Chiron permission line.
-- `systemMechanism`, `bridge`, `stageAsk`, `misreads`, `whatHelps`, `chainOfCommand` — untouched.
-
-The change is concentrated in steps 6–8 of the current portrait build (the synthesis + stack), which become Hardware Audit → Collision → regulation/fix.
-
-## Files touched
-
-- `src/lib/portraitComposer.ts` — add `HOUSE_DENSITY`, `VOLTAGE`, `COLLISION` maps + a `describeCollision()` helper; rewrite the synthesis paragraph block.
-
-No changes to `childPortrait.ts`, no new astrology math, no UI changes.
-
-## Acceptance check
-
-After the edit, the Core Portrait for Lauren (Libra Mercury 12th, Scorpio Mars 1st) should read approximately:
-> "Mercury runs as a balanced signal through a submerged 12th-house medium — the words form underwater and surface after the moment. Mars runs as a pressure cooker on the 1st-house live wire — it puts a wall up at the skin before the words arrive. So in fast rooms, the shield gets thrown before the real answer has surfaced. That is not coldness and it is not people-pleasing — it is a deep processor protected by a surface reactor."
-
-Not Lauren's exact wording, but that *shape* — voltage, medium, collision, sensation — for any chart the engine receives.
+Approved. Moving to build.
