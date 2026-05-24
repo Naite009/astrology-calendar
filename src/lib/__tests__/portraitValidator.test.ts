@@ -20,7 +20,7 @@ const makePortrait = (overrides: Partial<ComposedPortrait> = {}): ComposedPortra
     translator: { label: "Mercury in Pisces (12th house)", detail: "words surface underwater, delayed" },
     trigger: { label: "Mars in Aries (1st house)", detail: "reflex at the skin", derivation: "rising ruler" },
     reaction: "body moves before words.",
-    synthesis: "Mars acts. Mercury explains later, in private, after the body has already moved.",
+    synthesis: "Mars acts first, before any sentence forms. Mercury in Pisces drafts the words underwater and surfaces them later, in private, after the body has already moved. The room sees the reflex; the explanation lands hours later.",
   },
   stageAsk: { title: "Ask", body: "Give space for the body to settle before asking what happened." },
   misreads: [
