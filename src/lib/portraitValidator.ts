@@ -233,6 +233,33 @@ export type ChartValidationContext = {
   saturnCentral?: boolean; // tight Sun–Saturn, Merc–Sat reception, or Saturn angular
   chironCentral?: boolean; // tight Sun–Chiron, Chiron angular, or Chiron on a luminary
   ikeAuthorityPattern?: boolean; // Mars Aries + Sun/Pluto pressure + Mercury/Jupiter loop
+  // Pronoun / name normalization. When supplied, repeated full-name and
+  // self-referential constructions ("Ben Levin feels Ben Levin still has a
+  // place") get collapsed into pronoun-correct prose.
+  profile?: {
+    firstName: string;
+    fullName?: string;
+    pronouns?: {
+      subject: string;      // he / she / they
+      object: string;       // him / her / them
+      possessive: string;   // his / her / their
+      reflexive?: string;   // himself / herself / themself
+    };
+    isChild?: boolean;
+  };
+  // The ONE actual mutual-reception pair active in this chart. Used to keep
+  // generic "closed loop" wording from drifting into the wrong pair's
+  // interpretation. Set to null when there is no mutual reception.
+  mutualReceptionPair?: "merc-sat" | "merc-jup" | "venus-jup" | "mars-merc" | null;
+};
+
+// Canonical "closed loop between …" phrasing per mutual-reception pair.
+// These are the only allowed completions when describing the loop.
+const MR_LOOP_TEXT: Record<NonNullable<ChartValidationContext["mutualReceptionPair"]>, string> = {
+  "merc-sat": "a closed loop between original thinking and self-correction",
+  "merc-jup": "a closed loop between impression and explanation",
+  "venus-jup": "a closed loop between truth/freedom and safety/stability",
+  "mars-merc": "a closed loop between action and language",
 };
 
 const SATURN_LEAK_RE = /\b(audit|correct enough|doing it wrong|standards check|self-correction)\b/i;
