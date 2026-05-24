@@ -329,14 +329,16 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       ? userNatalChart 
       : availableCharts.find(c => c.id === selectedChartId || c.name === selectedChartId) 
     : null;
+  const activeChartId = selectedChartId || 'general';
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const todayKey = formatLocalDateKey(today); // YYYY-MM-DD (local) for cache key
+  const getCosmicCacheKey = (style: typeof voiceStyle = voiceStyle) => `cosmic-weather-${todayKey}-${style}-${activeChartId}`;
 
   // Load cached data when voice style changes - don't auto-fetch, just load from cache
   useEffect(() => {
-    const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+    const cacheKey = getCosmicCacheKey();
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -354,7 +356,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
         setLastFetched(null);
       }
     }
-  }, [voiceStyle, todayKey, isLoading]);
+  }, [voiceStyle, todayKey, activeChartId, isLoading]);
 
   // Update all planetary positions in real-time when modal is open
   useEffect(() => {
@@ -686,7 +688,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       // Pass natal planet placements (with their actual house numbers from cusps), the
       // current Moon's house in their chart, and the top transit-to-natal contacts.
       let personalChartContext: string | undefined;
-      const chartForPersonal = selectedChart || userNatalChart || null;
+      const chartForPersonal = selectedChart;
       if (chartForPersonal) {
         try {
           // Override Ascendant from houseCusps.house1 to avoid 180° flip bug
@@ -915,7 +917,7 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
       };
       
       // Save to localStorage for the day (with voice style in key) - use effectiveVoiceStyle not state
-      localStorage.setItem(`cosmic-weather-${todayKey}-${effectiveVoiceStyle}`, JSON.stringify(newCosmicData));
+      localStorage.setItem(getCosmicCacheKey(effectiveVoiceStyle), JSON.stringify(newCosmicData));
 
       // Mirror to Supabase so the daily email function can read today's reading.
       // We build the FULL morning digest (planet grid, Moon arc, Moon hits,
@@ -925,7 +927,7 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
       try {
         const { data: authData } = await supabase.auth.getUser();
         const uid = authData?.user?.id ?? null;
-        const chartForDigest = selectedChart || userNatalChart || null;
+        const chartForDigest = selectedChart;
 
         // 1) Calculate the FULL day's transits (all transiting planets vs all
         //    natal planets) and pre-compute house/orb metadata.
@@ -1225,7 +1227,7 @@ Keep the tone professional, insightful, and practically applicable.`,
       
       // Do NOT auto-generate. User must explicitly choose voice + chart, then click Generate.
       // Only load from cache if present for the current voice.
-      const cacheKey = `cosmic-weather-${todayKey}-${voiceStyle}`;
+      const cacheKey = getCosmicCacheKey();
       const cached = localStorage.getItem(cacheKey);
       if (!cosmicData && cached) {
         try {
@@ -1235,7 +1237,7 @@ Keep the tone professional, insightful, and practically applicable.`,
         } catch {}
       }
     }
-  }, [isOpen]); // Only depend on isOpen, not voiceStyle
+  }, [isOpen, activeChartId, voiceStyle, todayKey, isLoading]);
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -1560,7 +1562,11 @@ Keep the tone professional, insightful, and practically applicable.`,
                         userNatalChart={userNatalChart}
                         savedCharts={savedCharts}
                         selectedChartId={selectedChartId || 'general'}
-                        onSelect={(id) => setSelectedChartId(id === 'general' ? null : id)}
+                        onSelect={(id) => {
+                          setSelectedChartId(id === 'general' ? null : id);
+                          setCosmicData(null);
+                          setLastFetched(null);
+                        }}
                         includeGeneral={true}
                         generalLabel="None (General)"
                         className="min-w-[200px]"
