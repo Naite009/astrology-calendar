@@ -122,14 +122,29 @@ serve(async (req) => {
     const anareticPlanets = truePlanetPositions.filter((p: any) => p.degree === 29);
 
     // Build planetary positions text - this is the ground truth
+    const fmtDeg = (p: any) => {
+      // p.degree may be decimal string like "28.92" — show as "28°55'" for AI clarity.
+      const d = typeof p.degree === 'number' ? p.degree : parseFloat(p.degree);
+      if (Number.isNaN(d)) return `${p.degree}°`;
+      const whole = Math.floor(d);
+      const min = Math.round((d - whole) * 60);
+      const isAnaretic = whole === 29;
+      return `${whole}°${String(min).padStart(2,'0')}'${isAnaretic ? ' ⚠️ ANARETIC' : ''}`;
+    };
     const planetText = planetPositions?.length > 0
       ? `Current Planetary Positions (VERIFIED ASTRONOMICAL DATA — computed from astronomy-engine ephemeris, NOT from AI training data):
 
 PLANETS (${truePlanetPositions.length} bodies):
-${truePlanetPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}${p.degree === 29 ? ' ⚠️ ANARETIC DEGREE — final degree, crisis/completion energy' : ''}`).join('\n')}
+${truePlanetPositions.map((p: any) => `- ${p.name}: ${fmtDeg(p)} ${p.sign}`).join('\n')}
 
 ASTRONOMICAL POINTS — NOT PLANETS (do NOT count these toward planet totals or stellium counts):
-${pointPositions.length > 0 ? pointPositions.map((p: any) => `- ${p.name}: ${p.degree}° ${p.sign}`).join('\n') : '(none provided)'}
+${pointPositions.length > 0 ? pointPositions.map((p: any) => `- ${p.name}: ${fmtDeg(p)} ${p.sign}`).join('\n') : '(none provided)'}
+
+⚠️ DEGREE ACCURACY RULE (NON-NEGOTIABLE):
+When you state a planet's degree, use the EXACT degree shown above (whole degrees only is fine — e.g. "28° Aries" — but NEVER round 28°55' up to 29°, and NEVER invent a degree not present in this list). If you cannot quote the exact degree, say "in [sign]" with no number.
+
+⚠️ INGRESS DATE PROHIBITION (NON-NEGOTIABLE):
+Do NOT state any planetary ingress date or clock time (e.g. "Chiron enters Taurus on June 26 at 12:00 AM") unless that exact date/time appears verbatim in the IMMINENT SIGN CHANGES or UPCOMING EVENTS data passed to you. You do NOT have an ephemeris table for ingress times. If no ingress date is provided in the data, say only "Chiron is near the end of Aries" or "Chiron is about to change signs" — never a specific date or time. This applies to ALL planets, especially slow-movers (Chiron, Saturn, Jupiter, Uranus, Neptune, Pluto, Nodes).
 
 ⚠️ PLANET-SIGN ACCURACY RULE (NON-NEGOTIABLE):
 You MUST use ONLY these sign placements — computed from high-precision ephemeris, NOT from training data.
