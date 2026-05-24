@@ -9,6 +9,15 @@
 import type { ChildPortrait } from "./childPortrait";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { validateComposedPortrait, sanitizeComposedPortrait } from "./portraitValidator";
+import { detectChartSignature } from "./portraitSignature";
+
+// Optional profile context passed by the caller for pronoun/name handling.
+export type PortraitProfile = {
+  firstName?: string;
+  fullName?: string;
+  pronouns?: { subject: string; object: string; possessive: string; reflexive?: string };
+  isChild?: boolean;
+};
 
 // ── Plain-language "what this placement actually does in real life" ──────────
 // These are deliberately concrete and behavioral, so the bridge sentence
@@ -252,7 +261,7 @@ function ord(n: number): string {
 }
 
 // ── Composer ─────────────────────────────────────────────────────────────────
-export function composePortrait(p: ChildPortrait, chart?: NatalChart): ComposedPortrait {
+export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: PortraitProfile): ComposedPortrait {
   const name = p.name;
   const phase = p.lifePhase;
   const age = p.age;
