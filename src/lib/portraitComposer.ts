@@ -230,28 +230,11 @@ export interface ComposedPortrait {
     narrative: string;
   };
   themesPicked: string[];
-  // Global validation result (A–H check). `ok: false` means at least one
+  // Global validation result (A–K check). `ok: false` means at least one
   // section violated planet-job / house-meaning / mutual-reception /
-  // final-authority / sign-speed rules. Surfaced for dev review.
-  validation?: {
-    ok: boolean;
-    violations: Array<{
-      rule:
-        | "planet-job"
-        | "house-meaning"
-        | "mutual-reception"
-        | "final-authority"
-        | "sign-speed"
-        | "life-stage-erasure"
-        | "saturn-leak"
-        | "chiron-leak"
-        | "mechanical-voice"
-        | "parenting-burden";
-      location: string;
-      found: string;
-      expected: string;
-    }>;
-  };
+  // final-authority / sign-speed / banned-trait / missing-anchor / em-dash
+  // / thin-section rules. Surfaced for dev review.
+  validation?: import("./portraitValidator").ValidationResult;
 }
 
 
