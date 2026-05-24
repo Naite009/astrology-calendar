@@ -688,7 +688,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
       // Pass natal planet placements (with their actual house numbers from cusps), the
       // current Moon's house in their chart, and the top transit-to-natal contacts.
       let personalChartContext: string | undefined;
-      const chartForPersonal = selectedChart || userNatalChart || null;
+      const chartForPersonal = selectedChart;
       if (chartForPersonal) {
         try {
           // Override Ascendant from houseCusps.house1 to avoid 180° flip bug
@@ -917,7 +917,7 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
       };
       
       // Save to localStorage for the day (with voice style in key) - use effectiveVoiceStyle not state
-      localStorage.setItem(`cosmic-weather-${todayKey}-${effectiveVoiceStyle}`, JSON.stringify(newCosmicData));
+      localStorage.setItem(getCosmicCacheKey(effectiveVoiceStyle), JSON.stringify(newCosmicData));
 
       // Mirror to Supabase so the daily email function can read today's reading.
       // We build the FULL morning digest (planet grid, Moon arc, Moon hits,
@@ -927,7 +927,7 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
       try {
         const { data: authData } = await supabase.auth.getUser();
         const uid = authData?.user?.id ?? null;
-        const chartForDigest = selectedChart || userNatalChart || null;
+        const chartForDigest = selectedChart;
 
         // 1) Calculate the FULL day's transits (all transiting planets vs all
         //    natal planets) and pre-compute house/orb metadata.
