@@ -445,22 +445,11 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     Pisces: "the feeling settles with low stimulation, rest, and fewer signals coming in",
   };
 
-  // The pace-based fix, per Sun sign. Not "change who you are" but "buy the
-  // seconds the second voice needs to arrive on time."
-  const PACE_FIX: Record<string, string> = {
-    Aries: `Adults should not demand the explanation while the Mars reaction is still hot. Let ${name} move, reset, or get out of the spotlight first. Then ask for the words.`,
-    Taurus: `The move is to name the stall instead of disappearing into it. "I need a minute on that" buys the body the time it actually needs without it reading as refusal.`,
-    Gemini: `The move is to pick one position out loud and label it as the working answer, so the other two get held for later instead of all three getting argued at once.`,
-    Cancer: `The move is to name the feeling first, then the position. "That landed as ___, and what I actually think is ___" stops the protective version from becoming the only version.`,
-    Leo: `The move is to ask if their take has been received before adjusting it. "Does that land?" buys a second to see if the smaller version was even needed.`,
-    Virgo: `The move is to let the imperfect first answer stand and add to it instead of fixing it. The correction can come as a second sentence, it does not need to overwrite the first.`,
-    Libra: `The move is to buy 20 to 30 seconds before answering. "Let me sit with that" or "I want to come back to that" gives the scale time to finish weighing, which is where the real answer lives.`,
-    Scorpio: `The move is to say the smaller true thing rather than the smaller safe thing. The full version can wait, but the partial version should not be a decoy.`,
-    Sagittarius: `The move is to add the context before the verdict instead of after. Leading with the reason gives the honest answer somewhere to land that is not a grenade.`,
-    Capricorn: `The move is to give the unfiltered reaction one sentence of air before the composed one takes over. The composed answer is fine, but it should not be the only one in the room.`,
-    Aquarius: `The move is to name that the unconventional take exists, even if not defending it fully in the moment. "There is a different way to look at this, I want to think it through" keeps the signal alive.`,
-    Pisces: `Adults can help by slowing the emotional room down before asking for an answer. Give ${"them"} a chance to sort what belongs to them from what they picked up from someone else. The useful question is not "Why did you say that?" It is: "What part of that was yours, and what part were you reacting to in the room?"`,
-  };
+  // NOTE: A previous PACE_FIX table emitted a universal coaching "move" per
+  // Sun sign in Section 8. That violated the app's direction (support must
+  // come from the actual chart stack, life stage, Mercury/Mars/Moon, and the
+  // person's real pressure point — not a generic Sun-sign prescription).
+  // The table and its emission have been removed.
 
   const moonSignEarly = (chart?.planets?.Moon as any)?.sign as string | undefined;
   const liveEdge = tightAspects.find(a => a.quality === "hard" && a.orb <= 2.0);
