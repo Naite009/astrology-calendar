@@ -1515,7 +1515,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   // ── PLANET INTERACTION SYSTEM ──────────────────────────────────────────────
   // Timing comes from HOUSE (and aspects), not from sign. Signs describe STYLE
   // only. Planet functions are strict: Mercury = words/expression, Mars =
-  // body reaction (not words), Moon = regulation/reset (not speech), Sun =
+  // the physical response (not words), Moon = regulation/reset (not speech), Sun =
   // identity filter, chart ruler = operating system.
   let planetInteraction: ComposedPortrait["planetInteraction"] = undefined;
   {
