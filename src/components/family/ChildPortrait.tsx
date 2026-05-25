@@ -94,7 +94,18 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
 
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
-  const composed = portrait && selected ? composePortrait(portrait, selected.chart) : null;
+  // Build a PortraitProfile from the chart so pronouns (when stored on the
+  // chart) flow into composePortrait. When pronouns are absent, the composer
+  // falls back to name-safe singular phrasing.
+  const portraitProfile = selected
+    ? {
+        firstName: (selected.chart.name ?? "").trim().split(/\s+/)[0] || selected.chart.name,
+        fullName: selected.chart.name,
+        pronouns: selected.chart.pronouns,
+        isChild: typeof viewerAge === "number" ? viewerAge < 18 : undefined,
+      }
+    : undefined;
+  const composed = portrait && selected ? composePortrait(portrait, selected.chart, portraitProfile) : null;
   const validation = selected ? validateChart(selected.chart) : null;
 
   // Compute Tier 4 promotion once per render
