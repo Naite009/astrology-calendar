@@ -917,7 +917,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     // 9d. 6th-house bottleneck — only if no other 6th-house mention has already
     // landed in the portrait so far.
     if ((merc6 || sun6) && !portraitParts.join(" ").includes("6th house")) {
-      portraitParts.push(`The 6th house is the bottleneck of workability. The mind may see the pattern quickly, but the 6th house asks: can this fit into the day, the body, the schedule, the task, the nervous system, and the person's real capacity? So the delay is not emptiness — it is the point where insight has to become livable.`);
+      portraitParts.push(`The 6th house is the bottleneck of workability. The mind may see the pattern quickly, but the 6th house asks: can this fit into the day, the body, the schedule, the task, the nervous system, and the person's real capacity? So the delay is not emptiness. It is the point where insight has to become livable.`);
     }
 
     // 9e. Nodes — lived pattern, not vague destiny. Only if the chart carries
