@@ -129,7 +129,29 @@ STRUCTURAL OUTPUT: Return one narrative_section per SECTION above (titles: "Who 
     label: "📖 Narrative",
     icon: <Sparkles className="h-4 w-4" />,
     prompt: (name, date, time, loc) =>
-      `Generate a NARRATIVE PORTRAIT for ${name}, born ${date} at ${time} in ${loc}. Today is ${today()}. The "question_type" in your JSON output MUST be exactly "narrative".`,
+      `Using ONLY the full natal chart for ${name}, born ${date} at ${time} in ${loc}, write a NARRATIVE PORTRAIT. Today's date is ${today()} but this reading is NOT about today's sky. Do NOT cite transits, fixed stars active today, void-of-course Moon, current Moon phase, or any "Today's Sky" placements. This is a natal-only synthesis written as flowing prose, not a checklist. The "question_type" in your JSON output MUST be exactly "narrative".
+
+VOICE RULES (NON-NEGOTIABLE):
+- Second person ("you", "your"), conversational, plain English.
+- Synthesis over enumeration. Weave Sun + Moon + Rising + chart ruler + Mercury + Venus + Mars into one coherent voice. Do NOT march planet by planet.
+- Every claim must point to a specific natal placement, then translate it into a real-life behavior the reader will recognize.
+- Apply the Hybrid Clarity Rule: situation, feeling, why. No single-trait labels (no "people-pleasing", "dreamer", "scattered", "moody", "weird", "intense", "fairness").
+- FORBIDDEN words: "wound", "metabolized", "archetypal", "portal", "liminal", "activation", "calling" as noun, "energy" as a catch-all, "journey".
+- No em dashes. Use commas, periods, colons, or parentheses.
+- Each narrative_section: 180-350 words. Never exceed 450.
+
+STRUCTURE, return exactly these in this order:
+
+1. placement_table titled "Natal Key Placements" with rows for Sun, Moon, Rising, Mercury, Venus, Mars, Jupiter, Saturn, Chiron, North Node (sign, house, degree, retrograde if applicable). NO transiting bodies. NO "Today's Sky" row.
+2. narrative_section titled "How You Move Through a Day" synthesizing Sun + Moon + Rising + chart ruler into one paragraph describing how this person actually shows up in a normal week.
+3. narrative_section titled "How You Think and Speak" using Mercury sign, house, and its relationship to the Sun. One concrete example of how a conversation or decision plays out.
+4. narrative_section titled "What You Want and How You Love" using Venus sign, house, aspects. What this person actually values and what they avoid. Name the internal contradiction.
+5. narrative_section titled "How You Push, Protect, and Fight" using Mars sign, house, aspects. Drive style and conflict pattern.
+6. narrative_section titled "Where You Grow and Where You Are Tested" using Jupiter and Saturn together. What expands easily, what only opens with discipline.
+7. narrative_section titled "The Recurring Pattern" using Chiron and South Node as the comfort default and its felt cost. Describe as a real-life loop, not symbolism.
+8. narrative_section titled "Where You Are Going" using North Node sign and house as a concrete behavior to lean toward. One scenario in the next month where leaning that way would feel uncomfortable but right.
+9. narrative_section titled "The Overarching Message" with 3-5 sentences. The single most honest thing the chart says about how to live this incarnation. Specific to this chart.
+10. summary_box titled "Narrative Bottom Line" with items: "Core Voice", "Default Comfort", "Growth Edge", "One Move This Month".`,
   },
   {
     id: "sacred_directive",
