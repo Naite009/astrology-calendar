@@ -1479,26 +1479,26 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
       let finalAuthorityRank: string;
       if (mercSatReception) {
         finalAuthorityLine = `Final authority sits with Mercury trying to produce the answer while Saturn audits whether it is correct enough to say. Neither one overrides the other — they hand the decision back and forth until both sign off.`;
-        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury/Saturn loop${activePhase ? ` + ${activePhase.label} life-stage pressure` : ""}.`;
+        finalAuthorityRank = `Closing: the deeper read arrives later, privately. Final authority = Mercury/Saturn loop${activePhase ? ` + ${activePhase.label} life-stage pressure` : ""}.`;
       } else if (ikeAuthorityPattern) {
         finalAuthorityLine = `Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
-        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
+        finalAuthorityRank = `Closing: the deeper read arrives later, privately. Final authority = Mars in Aries + Sun/Pluto pressure + Mercury/Jupiter translation loop. Mercury explains later; Mars moves first.`;
       } else if (sunSaturn && sunSaturn.orb < 3) {
         finalAuthorityLine = `Final authority on the outcome sits with the Sun–Saturn pressure check — whether the version that exits is accurate and worth standing behind — not with Mars or with what got said in the heat of it.`;
-        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Sun–Saturn pressure check.`;
+        finalAuthorityRank = `Closing: the deeper read arrives later, privately. Final authority = Sun–Saturn pressure check.`;
       } else if (permissionGate) {
         finalAuthorityLine = `Final authority on the outcome sits with Mercury's timing and the Sun–Chiron permission check, not with Mars or with what got said.`;
-        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury timing + Sun–Chiron permission.`;
+        finalAuthorityRank = `Closing: the deeper read arrives later, privately. Final authority = Mercury timing + Sun–Chiron permission.`;
       } else {
         finalAuthorityLine = `Final authority on the outcome sits with Mercury's timing — the full version arrives once the words finish forming — not with Mars or with what got said in the moment.`;
-        finalAuthorityRank = `Closing: chart ruler finishes offline. Final authority = Mercury timing.`;
+        finalAuthorityRank = `Closing: the deeper read arrives later, privately. Final authority = Mercury timing.`;
       }
       seqSteps.push({
         cue: "After the moment:",
         lead: ikeAuthorityPattern ? `Mercury in Pisces` : `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
         action: ikeAuthorityPattern
           ? `Mercury in Pisces tries to put words around what Mars already did. The action may have spoken first, and the explanation may arrive later, once the pressure has dropped and the private inner-room processing has caught up. ${finalAuthorityLine}`
-          : `the operating system catches up offline — it ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is the chart ruler arriving with the full version once the pressure has dropped. ${finalAuthorityLine}`,
+          : `the deeper read arrives later, privately — ${RULER_BELIEF[p.chartRuler.rulerSign]}. This is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign} surfacing the full version once the pressure has dropped. ${finalAuthorityLine}`,
         rank: finalAuthorityRank,
       });
     }
