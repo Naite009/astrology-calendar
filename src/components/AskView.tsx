@@ -2112,6 +2112,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     | 'spiritual'
     | 'general' => {
     if (isNatalReadingPrompt(question)) return 'natal';
+    if (isNarrativeReadingPrompt(question)) return 'natal';
     if (isSolarReturnReadingPrompt(question)) return 'solar_return';
     return detectReadingType(question);
   };
