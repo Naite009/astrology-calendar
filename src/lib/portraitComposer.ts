@@ -1465,7 +1465,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
       cue: "Result:",
       lead: `Mercury delivers, filtered`,
       action: `what reaches the room is Mercury's words after passing through the value filters, the ruler's gate, and the identity filter. It is not wrong — it is incomplete. The full version arrives later, after pressure drops.`,
-      rank: "What the room gets: a filtered Mercury output, not the full underlying signal.",
+      rank: "What the room gets: a partial answer, not the full underlying signal.",
     });
 
     // STEP 7 — AFTER THE MOMENT (chart ruler finishes offline).
