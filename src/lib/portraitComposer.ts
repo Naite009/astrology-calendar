@@ -556,7 +556,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     } else if (sunSign === "Pisces") {
       portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside him before his own answer has fully stepped forward.`);
     } else {
-      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before his position has fully separated from the other person's mood, so it does not feel like a clear choice yet — it feels like the only available response in the room.`);
+      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before ${G.pposs} position has fully separated from the other person's mood, so it does not feel like a clear choice yet, it feels like the only available response in the room.`);
     }
   }
 
