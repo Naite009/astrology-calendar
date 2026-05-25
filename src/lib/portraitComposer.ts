@@ -906,15 +906,21 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     const sun6 = sunHouse === 6;
     const nodes = (p as any)?.nodes ?? (p as any)?.northNode ?? null;
 
-    // 9a. Power + restraint. Only when the chart actually shows both raw
-    // presence AND a public-visibility brake.
+    // 9a. Power + restraint. Ordered: Scorpio 1st (raw presence) → Saturn Leo
+    // 10 (visibility brake, the most important weight when present) →
+    // Libra identity (relational tax on delivery) → Mercury 12 (private
+    // word-formation). Saturn in Leo in the 10th is named first inside the
+    // brake clauses because it carries the most weight on why power feels
+    // serious, earned, and carefully presented.
     if (scorpio1st && (saturnLeo10 || libraIdentity || merc12)) {
       const pieces: string[] = [];
       pieces.push(`Scorpio at the 1st house gives ${name} force, depth, instinct, and a presence people can feel before ${G.subj} ${G.v("explain")} ${G.refl}.`);
-      if (saturnLeo10) pieces.push(`Saturn in Leo in the 10th makes public power feel like something that has to be earned, proven, or presented correctly.`);
-      if (libraIdentity) pieces.push(`${(p as any)?.ascendant?.sign === "Libra" ? "Libra Rising" : "Libra Sun"} wants the delivery to be graceful, fair, and socially intelligent, not raw.`);
-      if (merc12) pieces.push(`Mercury in the 12th may hold the words back until they feel safe, precise, and ready to survive the room.`);
-      portraitParts.push(`${name} ${G.is} significantly more powerful than ${G.subj} ${G.v("let")} on, and the chart explains why. ${pieces.join(" ")} So the power is real, but it often comes through controlled presentation instead of open force.`);
+      if (saturnLeo10) {
+        pieces.push(`Saturn in Leo in the 10th is the main reason that power does not come out raw. Visibility, public role, and creative authority feel serious to ${name} — like something that has to be earned over time, presented carefully, and held to a higher internal standard than other people seem to use. That is why ${G.subj} ${G.does} not lead with the full force; ${G.subj} ${G.v("present")} a measured version first.`);
+      }
+      if (libraIdentity) pieces.push(`${(p as any)?.ascendant?.sign === "Libra" ? "Libra Rising" : "Libra Sun"} adds a second filter: the delivery should be graceful, fair, and socially intelligent, not blunt.`);
+      if (merc12) pieces.push(`Mercury in the 12th holds the words back until they feel safe, precise, and ready to survive the room.`);
+      portraitParts.push(`${name} ${G.is} significantly more powerful than ${G.subj} ${G.v("let")} on, and the chart explains why. ${pieces.join(" ")} So the power is real, but it reaches the room through controlled presentation rather than open force.`);
     }
 
     // 9b. Saturn in Leo in the 10th — visibility-as-work claim. Only emit if
@@ -924,13 +930,39 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     }
 
     // 9c. Venus/Jupiter or 2nd/8th loop — consequence-awareness, NOT confusion.
+    // House-aware: Venus in the 2nd ties truth to self-worth, money, and what
+    // ${name} owns; Venus in Sagittarius in the 2nd specifically wants
+    // freedom-of-honesty without surrendering personal resources. Jupiter in
+    // the 8th ties trust to shared resources, intimacy, and what happens after
+    // disclosure; Jupiter in Taurus in the 8th specifically tracks whether
+    // honesty will destabilize a slow-built shared foundation.
     if (venusJupReception || jup8 || venus8) {
       const v = _p.Venus, j = _p.Jupiter;
-      const vClause = v?.sign ? `Venus in ${v.sign} wants the clean, honest answer and the freedom not to betray ${G.refl}.` : "";
-      const jClause = j?.sign && j?.house
-        ? `Jupiter in ${j.sign} in the ${ord(j.house)} ${G.is === "are" ? "tracks" : "tracks"} trust, loyalty, money, shared resources, and what happens after the truth is spoken.`
-        : "";
-      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling the truth will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClause} ${jClause} So the hesitation is not confusion. It is consequence-awareness.`);
+      const vClauses: string[] = [];
+      if (v?.sign && v?.house) {
+        if (v.sign === "Sagittarius" && v.house === 2) {
+          vClauses.push(`Venus in Sagittarius in the 2nd wants the honest answer AND the freedom not to be financially or personally cornered by it. Truth and self-worth are wired together — saying the false-comfortable thing costs ${name} ${G.pposs} own resource base.`);
+        } else if (v.house === 2) {
+          vClauses.push(`Venus in ${v.sign} in the 2nd ties honesty to self-worth and personal resources — telling the smaller-true thing costs ${name} something ${G.subj} actually ${G.v("own")}.`);
+        } else if (v.house === 8) {
+          vClauses.push(`Venus in ${v.sign} in the 8th ties honesty to shared resources, intimacy, and what gets exposed when the truth lands.`);
+        } else {
+          vClauses.push(`Venus in ${v.sign} wants the clean, honest answer and the freedom not to betray ${G.refl}.`);
+        }
+      }
+      const jClauses: string[] = [];
+      if (j?.sign && j?.house) {
+        if (j.sign === "Taurus" && j.house === 8) {
+          jClauses.push(`Jupiter in Taurus in the 8th tracks whether the truth will destabilize what has been built slowly with another person — money, trust, the body, the shared foundation. ${name} ${G.is} not avoiding honesty; ${G.subj} ${G.is} measuring whether the relationship can carry it without breaking.`);
+        } else if (j.house === 8) {
+          jClauses.push(`Jupiter in ${j.sign} in the 8th tracks trust, shared resources, and what happens after the truth is spoken inside an intimate or financial bond.`);
+        } else if (j.house === 2) {
+          jClauses.push(`Jupiter in ${j.sign} in the 2nd tracks whether honesty grows or threatens ${G.pposs} own stability.`);
+        } else {
+          jClauses.push(`Jupiter in ${j.sign} in the ${ord(j.house)} tracks the meaning, loyalty, and aftermath of what gets said.`);
+        }
+      }
+      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling it will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClauses.join(" ")} ${jClauses.join(" ")} So the hesitation is not confusion. It is consequence-awareness — ${G.subj} ${G.is} reading the bill before ${G.subj} ${G.v("speak")}.`);
     }
 
     // 9d. 6th-house bottleneck — only if no other 6th-house mention has already
