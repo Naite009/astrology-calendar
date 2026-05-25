@@ -851,7 +851,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   {
     const v = (chart?.planets as any)?.Venus;
     const j = (chart?.planets as any)?.Jupiter;
-    if (v?.sign && j?.sign && RULER_OF[v.sign] === "Jupiter" && RULER_OF[j.sign] === "Venus") {
+    if (!will9cFire && v?.sign && j?.sign && RULER_OF[v.sign] === "Jupiter" && RULER_OF[j.sign] === "Venus") {
       portraitParts.push(
         `Venus and Jupiter are in mutual reception (Venus in ${v.sign}, Jupiter in ${j.sign}). Venus runs truth, honesty, and worth; Jupiter runs safety, meaning, and stability. With them hosting each other, the value system has no final authority — decisions oscillate between "what is honest" and "what is safe" instead of landing cleanly. That is why ${name} can revisit the same call repeatedly: the loop has no endpoint built in.`,
       );
