@@ -102,7 +102,7 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                        #{idx + 1} · score {Math.round(ra.score)}
+                        #{idx + 1}
                       </div>
                       <div className="font-serif text-base text-foreground leading-snug">
                         {copy.headline}
