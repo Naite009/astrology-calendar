@@ -1175,7 +1175,6 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     } catch {}
     } // end if (!suppressTransits)
 
-    } catch {}
 
     context += buildAskValidationFactsBlock(chart);
 
