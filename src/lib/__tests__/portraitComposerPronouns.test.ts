@@ -198,3 +198,68 @@ describe("composePortrait — explicit pronoun rendering", () => {
     expect(text.toLowerCase()).not.toMatch(/\bthey knows\b/);
   });
 });
+
+// ── Name-specific pronoun rendering (Lauren / Ben / Ike) ─────────────────
+// Verifies the validator's legacy-plural rewriter converts hardcoded
+// they/them/their copy into the configured singular pronouns alongside
+// the grammar helper.
+describe("composePortrait — named profiles render correct pronouns", () => {
+  it("Lauren (she/her): no 'they' subjects, uses she/her/herself", () => {
+    const result = composePortrait(makePortrait("Lauren Newman"), makeChart(), {
+      firstName: "Lauren",
+      fullName: "Lauren Newman",
+      pronouns: { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    });
+    const text = collect(result);
+    const lower = text.toLowerCase();
+    expect(lower).not.toMatch(/\bthey (is|are|has|have|knows|feels|does|do|lets)\b/);
+    expect(lower).not.toMatch(/\bthemselves?\b/);
+    // wrong-gender pronouns must not leak
+    expect(lower).not.toMatch(/\bhimself\b/);
+    expect(lower).not.toMatch(/\bhe (is|knows|feels|lets|has|does)\b/);
+    // correct pronouns present
+    expect(lower).toMatch(/\bshe (is|knows|feels|has|does|lets|speaks)\b/);
+    expect(text).toMatch(/Lauren/);
+  });
+
+  it("Ben (he/him): no 'they' subjects, uses he/his/himself", () => {
+    const result = composePortrait(makePortrait("Ben Levin"), makeChart(), {
+      firstName: "Ben",
+      fullName: "Ben Levin",
+      pronouns: { subject: "he", object: "him", possessive: "his", reflexive: "himself" },
+    });
+    const text = collect(result);
+    const lower = text.toLowerCase();
+    expect(lower).not.toMatch(/\bthey (is|are|has|have|knows|feels|does|do|lets)\b/);
+    expect(lower).not.toMatch(/\bthemselves?\b/);
+    expect(lower).not.toMatch(/\bherself\b/);
+    expect(lower).not.toMatch(/\bshe (is|knows|feels|lets|has|does)\b/);
+    expect(lower).toMatch(/\bhe (is|knows|feels|has|does|lets|speaks)\b/);
+    expect(text).toMatch(/Ben/);
+  });
+
+  it("Ike (he/him): no 'they' subjects, uses he/his/himself", () => {
+    const result = composePortrait(makePortrait("Ike Levin"), makeChart(), {
+      firstName: "Ike",
+      fullName: "Ike Levin",
+      pronouns: { subject: "he", object: "him", possessive: "his", reflexive: "himself" },
+    });
+    const text = collect(result);
+    const lower = text.toLowerCase();
+    expect(lower).not.toMatch(/\bthey (is|are|has|have|knows|feels|does|do|lets)\b/);
+    expect(lower).not.toMatch(/\bthemselves?\b/);
+    expect(lower).not.toMatch(/\bherself\b/);
+    expect(lower).toMatch(/\bhe (is|knows|feels|has|does|lets|speaks)\b/);
+    expect(text).toMatch(/Ike/);
+  });
+
+  it("Missing pronouns: full name preserved, no plural-on-singular agreement", () => {
+    const result = composePortrait(makePortrait("Lauren Newman"), makeChart());
+    const text = collect(result);
+    expect(text).toMatch(/Lauren Newman/);
+    const lower = text.toLowerCase();
+    expect(lower).not.toMatch(/\bthey is\b/);
+    expect(lower).not.toMatch(/\bthey has\b/);
+    expect(lower).not.toMatch(/\bthey knows\b/);
+  });
+});

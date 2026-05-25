@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud, LogIn, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitChart, ProgressedPosition } from '@/hooks/useNatalChart';
+import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitChart, ProgressedPosition, ProfilePronouns } from '@/hooks/useNatalChart';
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { NatalChartNarrative } from './NatalChartNarrative';
@@ -270,6 +270,7 @@ interface ChartFormData {
   timezoneOffset: number;
   detectedTimezone?: string;
   chartImageBase64?: string;
+  pronouns?: ProfilePronouns;
   planets: Record<string, NatalPlanetPosition>;
   houseCusps: Record<string, HouseCusp>;
   interceptedSigns: string[];
@@ -277,6 +278,23 @@ interface ChartFormData {
   transits?: TransitChart;
   progressionDate?: string;
 }
+
+// Preset pronoun sets surfaced in the chart edit form. Custom sets can
+// still be authored by editing chart.pronouns directly.
+type PronounPresetKey = "unspecified" | "she" | "he" | "they";
+const PRONOUN_PRESETS: Record<PronounPresetKey, { label: string; value?: ProfilePronouns }> = {
+  unspecified: { label: "Not specified", value: undefined },
+  she: { label: "she / her", value: { subject: "she", object: "her", possessive: "her", reflexive: "herself" } },
+  he:  { label: "he / him",  value: { subject: "he",  object: "him", possessive: "his", reflexive: "himself" } },
+  they:{ label: "they / them",value:{ subject: "they",object: "them",possessive: "their",reflexive: "themself"} },
+};
+const pronounKeyFor = (p?: ProfilePronouns): PronounPresetKey => {
+  if (!p?.subject) return "unspecified";
+  const s = p.subject.toLowerCase();
+  if (s === "she") return "she";
+  if (s === "he")  return "he";
+  return "they";
+};
 
 const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
   const planets: Record<string, NatalPlanetPosition> = {};
@@ -446,6 +464,7 @@ export const ChartLibrary = ({
         birthLocation: userNatalChart.birthLocation,
         timezoneOffset: userNatalChart.timezoneOffset ?? -5,
         chartImageBase64: userNatalChart.chartImageBase64,
+        pronouns: userNatalChart.pronouns,
         planets: { ...emptyPlanets(), ...(userNatalChart.planets as Record<string, NatalPlanetPosition>) },
         houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: userNatalChart.interceptedSigns || [],
@@ -462,6 +481,7 @@ export const ChartLibrary = ({
         birthLocation: chart.birthLocation,
         timezoneOffset: chart.timezoneOffset ?? -5,
         chartImageBase64: chart.chartImageBase64,
+        pronouns: chart.pronouns,
         planets: { ...emptyPlanets(), ...(chart.planets as Record<string, NatalPlanetPosition>) },
         houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
         interceptedSigns: chart.interceptedSigns || [],
@@ -1391,6 +1411,21 @@ export const ChartLibrary = ({
                     onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
                     className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Pronouns</label>
+                  <select
+                    value={pronounKeyFor(formData.pronouns)}
+                    onChange={e => {
+                      const key = e.target.value as PronounPresetKey;
+                      setFormData({ ...formData, pronouns: PRONOUN_PRESETS[key].value });
+                    }}
+                    className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  >
+                    {(Object.keys(PRONOUN_PRESETS) as PronounPresetKey[]).map(k => (
+                      <option key={k} value={k}>{PRONOUN_PRESETS[k].label}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Time</label>
