@@ -1172,6 +1172,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
             }
           }
         }
+      } catch {}
     } catch {}
     } // end if (!suppressTransits)
 
