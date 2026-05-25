@@ -1021,6 +1021,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // Points`, putting Juno and Lilith outside the parsed positions block
     // and silently dropping them from every downstream consumer.
 
+    if (!suppressTransits) {
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
     const PLANET_BODIES: Record<string, any> = {
       mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
