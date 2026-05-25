@@ -877,7 +877,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     } else if (mHouse === 11) {
       portraitParts.push(privacyNote.trim());
     } else {
-      portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote} When that need is missing, every layer above gets louder and none of them land cleanly.`);
+      portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote}`);
     }
   }
 
