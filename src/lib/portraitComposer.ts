@@ -1694,8 +1694,8 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
       addMedium(p.chartRuler.rulerName, p.chartRuler.rulerHouse);
     }
 
-    // TIMING COLLISION — compare Mars body-reaction timing vs Mercury delivery
-    // timing. Both derive from HOUSE, not sign.
+    // TIMING COLLISION — compare Mars physical-response timing vs Mercury
+    // delivery timing. Both derive from HOUSE, not sign.
     const timingOrder: Record<string, number> = {
       "immediate": 4, "balanced": 3, "strained": 2, "compressed": 2, "private": 1, "submerged": 1, "delayed": 0,
     };
