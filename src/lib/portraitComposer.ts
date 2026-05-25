@@ -1740,7 +1740,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
 
     // REAL-TIME OUTPUT — Mercury delivers WORDS. Sun is identity filter, not
     // the deliverer. Venus/Jupiter shape value/safety filtering. Ruler gates.
-    const firstOut = bodyFirst ? "Mars (a body reaction)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
+    const firstOut = bodyFirst ? "Mars (a physical response)" : wordsFirst ? "Mercury (the words)" : "Mercury and Mars together";
     const moonRegLine = moonSignEarly === "Sagittarius" && moonHouseHere === 2
       ? `His reset comes through the Moon: body steadiness first, then humor, movement, honesty, and a wider frame.`
       : moonHouseHere === 2
