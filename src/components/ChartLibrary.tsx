@@ -270,6 +270,7 @@ interface ChartFormData {
   timezoneOffset: number;
   detectedTimezone?: string;
   chartImageBase64?: string;
+  pronouns?: ProfilePronouns;
   planets: Record<string, NatalPlanetPosition>;
   houseCusps: Record<string, HouseCusp>;
   interceptedSigns: string[];
@@ -277,6 +278,23 @@ interface ChartFormData {
   transits?: TransitChart;
   progressionDate?: string;
 }
+
+// Preset pronoun sets surfaced in the chart edit form. Custom sets can
+// still be authored by editing chart.pronouns directly.
+type PronounPresetKey = "unspecified" | "she" | "he" | "they";
+const PRONOUN_PRESETS: Record<PronounPresetKey, { label: string; value?: ProfilePronouns }> = {
+  unspecified: { label: "Not specified", value: undefined },
+  she: { label: "she / her", value: { subject: "she", object: "her", possessive: "her", reflexive: "herself" } },
+  he:  { label: "he / him",  value: { subject: "he",  object: "him", possessive: "his", reflexive: "himself" } },
+  they:{ label: "they / them",value:{ subject: "they",object: "them",possessive: "their",reflexive: "themself"} },
+};
+const pronounKeyFor = (p?: ProfilePronouns): PronounPresetKey => {
+  if (!p?.subject) return "unspecified";
+  const s = p.subject.toLowerCase();
+  if (s === "she") return "she";
+  if (s === "he")  return "he";
+  return "they";
+};
 
 const emptyPlanets = (): Record<string, NatalPlanetPosition> => {
   const planets: Record<string, NatalPlanetPosition> = {};
