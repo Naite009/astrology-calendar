@@ -1688,7 +1688,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
         submerged: "the body's reaction goes underground first, surfaces later",
       }[marsTiming];
       signals.push({
-        role: "Body reaction (not words)",
+        role: "Physical response, not words",
         planet: "Mars",
         sign: marsSign,
         house: marsHouse,
