@@ -706,7 +706,10 @@ function normalizePronouns(value: string, ctx: ChartValidationContext | undefine
   const first = profile.firstName;
   const full = profile.fullName;
   const subj = profile.pronouns?.subject ?? "they";
+  const obj  = profile.pronouns?.object ?? "them";
   const poss = profile.pronouns?.possessive ?? "their";
+  const refl = profile.pronouns?.reflexive
+    ?? (subj === "she" ? "herself" : subj === "he" ? "himself" : "themself");
   let out = value;
 
   // 1. Fullname → first name.
@@ -728,15 +731,108 @@ function normalizePronouns(value: string, ctx: ChartValidationContext | undefine
   });
 
   // 3. Collapse explicit reflexive constructions left over from templating.
-  //    e.g. "may look like Ike is reacting" — already fine; but
-  //    "feels <First> still has" → "feels <subj> still has".
   out = out.replace(
     new RegExp(`\\b(feels|knows|thinks|believes|sees|wants|needs)\\s+${escapeRe(first)}\\b`, "gi"),
     `$1 ${subj}`,
   );
 
+  // 4. Legacy template rewrite: when a non-plural pronoun set is configured
+  //    (she/her or he/him), rewrite generic "they / them / their / themselves"
+  //    tokens that come from older templates so they read with the correct
+  //    pronoun and singular verb agreement. Skip when subject is "they".
+  if (subj !== "they") {
+    out = rewriteLegacyPlural(out, { subj, obj, poss, refl });
+  }
+
   return out;
 }
+
+// Plural-to-singular verb fix-ups for legacy template copy. Only triggered
+// when explicit she/he pronouns are configured.
+const AUX_FIX: Record<string, string> = {
+  are: "is", "aren't": "isn't",
+  have: "has", "haven't": "hasn't",
+  were: "was", "weren't": "wasn't",
+  do: "does", "don't": "doesn't",
+};
+
+// Curated verb whitelist. Only verbs in this list get a third-person -s when
+// they appear right after "they". Adverbs and unknown words are left alone
+// so we never produce mangled output like "she reallys feel it".
+const VERB_FIX: Record<string, string> = (() => {
+  const verbs = [
+    "feel","know","think","see","want","need","let","hold","lack","own","become","present",
+    "settle","reset","act","speak","explain","read","edit","watch","push","pull",
+    "go","come","take","give","make","find","look","run","move","drop","stay","sit","stand","walk",
+    "pick","choose","keep","leave","bring","carry","decide","accept","reject","listen","wait",
+    "show","tell","say","ask","answer","start","stop","begin","end","try","work","play","live",
+    "love","like","hate","fear","trust","doubt","wonder","notice","remember","forget","change",
+    "react","respond","handle","manage","prefer","avoid","seek","build","break","fix",
+    "open","close","get","put","set","write","speak","speak","sense","hear",
+  ];
+  const map: Record<string, string> = {};
+  const inflect = (base: string) => {
+    if (/(?:s|x|z|ch|sh|o)$/.test(base)) return base + "es";
+    if (/[^aeiou]y$/.test(base)) return base.slice(0, -1) + "ies";
+    return base + "s";
+  };
+  for (const v of verbs) map[v] = inflect(v);
+  return map;
+})();
+
+function matchCase(template: string, replacement: string): string {
+  if (!template) return replacement;
+  if (template[0] === template[0].toUpperCase()) {
+    return replacement[0].toUpperCase() + replacement.slice(1);
+  }
+  return replacement;
+}
+
+function rewriteLegacyPlural(
+  text: string,
+  p: { subj: string; obj: string; poss: string; refl: string },
+): string {
+  let out = text;
+
+  // "they're / they've / they'd / they'll" → contracted forms.
+  out = out.replace(/\bthey're\b/gi, (m) => matchCase(m, p.subj === "she" ? "she's" : "he's"));
+  out = out.replace(/\bthey've\b/gi, (m) => matchCase(m, p.subj === "she" ? "she's" : "he's"));
+  out = out.replace(/\bthey'd\b/gi,  (m) => matchCase(m, p.subj === "she" ? "she'd" : "he'd"));
+  out = out.replace(/\bthey'll\b/gi, (m) => matchCase(m, p.subj === "she" ? "she'll" : "he'll"));
+
+  // "they <aux>" → "<subj> <singular-aux>".
+  const auxKeys = Object.keys(AUX_FIX).join("|").replace(/\+/g, "\\+");
+  out = out.replace(
+    new RegExp(`\\bthey\\s+(${auxKeys})\\b`, "gi"),
+    (m, aux) => {
+      const fixed = AUX_FIX[aux.toLowerCase()] ?? aux;
+      return matchCase(m, `${p.subj} ${fixed}`);
+    },
+  );
+
+  // "they <whitelisted bare verb>" → "<subj> <verbS>".
+  const verbKeys = Object.keys(VERB_FIX).join("|");
+  out = out.replace(
+    new RegExp(`\\bthey\\s+(${verbKeys})\\b`, "gi"),
+    (m, verb) => {
+      const fixed = VERB_FIX[verb.toLowerCase()] ?? verb;
+      return matchCase(m, `${p.subj} ${fixed}`);
+    },
+  );
+
+  // Pronoun objects / possessives / reflexives.
+  out = out.replace(/\bthemselves\b/gi, (m) => matchCase(m, p.refl));
+  out = out.replace(/\bthemself\b/gi,   (m) => matchCase(m, p.refl));
+  out = out.replace(/\btheirs\b/gi,     (m) => matchCase(m, p.subj === "she" ? "hers" : "his"));
+  out = out.replace(/\btheir\b/gi,      (m) => matchCase(m, p.poss));
+  out = out.replace(/\bthem\b/gi,       (m) => matchCase(m, p.obj));
+
+  // Bare "they" subject (capture sentence-start capitalization).
+  out = out.replace(/\bthey\b/gi, (m) => matchCase(m, p.subj));
+
+  return out;
+}
+
 
 function sanitizeString(value: string, loc: string, ctx: ChartValidationContext | undefined): string {
   const pre = normalizePronouns(value, ctx);
