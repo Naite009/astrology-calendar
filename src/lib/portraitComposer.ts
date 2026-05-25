@@ -550,15 +550,33 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   const portraitParts: string[] = [];
 
   // 1. The live mechanic. Why it feels involuntary.
+  // Opener is house-specific so it lands as "this is the exact situation I live in,"
+  // not a generic "in live moments" frame. Each opener names the felt context where
+  // the Sun actually fires for that person.
+  const SUN_HOUSE_OPENER: Record<number, string> = {
+    1:  `The second ${name} walks into a room,`,
+    2:  `When something ${name} values is on the line,`,
+    3:  `When ${name} has to say it out loud,`,
+    4:  `When the house gets quiet and it is just ${name},`,
+    5:  `When the spotlight turns toward ${name},`,
+    6:  `In the middle of the daily grind,`,
+    7:  `When someone else is across from ${name},`,
+    8:  `When something real is on the line for ${name},`,
+    9:  `When the conversation gets bigger than the room,`,
+    10: `When people are watching ${name} for the answer,`,
+    11: `When the group is forming around ${name},`,
+    12: `When no one else is watching,`,
+  };
   if (sunSign && SUN_LIVE[sunSign]) {
+    const opener = (sunHouse && SUN_HOUSE_OPENER[sunHouse]) || `The way ${name} actually fires,`;
     const marsSignEarly = (chart?.planets as any)?.Mars?.sign;
     const marsHouseEarly = calcHouse((chart?.planets as any)?.Mars?.sign, (chart?.planets as any)?.Mars?.degree, (chart?.planets as any)?.Mars?.minutes);
     if (marsSignEarly === "Aries" && marsHouseEarly === 5) {
-      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. Aries Mars in the 5th reads hesitation as losing the spark. His body wants to act, answer, move, or express before the private Mercury-in-Pisces part has finished finding the words.`);
+      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. Aries Mars in the 5th reads hesitation as losing the spark. ${G.pposs[0].toUpperCase() + G.pposs.slice(1)} body wants to act, answer, move, or express before the private Mercury-in-Pisces part has finished finding the words.`);
     } else if (sunSign === "Pisces") {
-      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside him before his own answer has fully stepped forward.`);
+      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside ${G.obj} before ${G.pposs} own answer has fully stepped forward.`);
     } else {
-      portraitParts.push(`In live moments, ${name} ${SUN_LIVE[sunSign]}. That happens before ${G.pposs} position has fully separated from the other person's mood, so it does not feel like a clear choice yet, it feels like the only available response in the room.`);
+      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. That happens before ${G.pposs} position has fully separated from the other person's mood, so it does not feel like a clear choice yet, it feels like the only available response in the room.`);
     }
   }
 
