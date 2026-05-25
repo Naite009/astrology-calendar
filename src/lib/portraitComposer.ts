@@ -288,11 +288,24 @@ function buildGrammar(rawName: string | undefined, profile?: PortraitProfile): P
   if (!cleaned || PRONOUN_WORDS.has(cleaned.toLowerCase())) {
     cleaned = "this person";
   }
-  const subj = (profile?.pronouns?.subject ?? "they").toLowerCase();
-  const obj  = (profile?.pronouns?.object  ?? "them").toLowerCase();
-  const pposs = (profile?.pronouns?.possessive ?? "their").toLowerCase();
-  const isPlural = subj === "they";
-  const refl = profile?.pronouns?.reflexive ?? (isPlural ? "themself" : subj === "she" ? "herself" : subj === "he" ? "himself" : "themself");
+
+  // Name-safe singular fallback: when the profile does NOT provide pronouns,
+  // we refuse to assume they/them. We use the person's name in subject slots,
+  // singular verb agreement, and neutral possessive/reflexive forms. This
+  // prevents "they is", "they has", and wrong-pronoun output until the
+  // profile schema carries a real pronoun field.
+  const hasPronouns = !!profile?.pronouns?.subject;
+  const subj = hasPronouns ? profile!.pronouns!.subject!.toLowerCase() : cleaned;
+  const obj  = hasPronouns ? (profile!.pronouns!.object ?? "them").toLowerCase() : cleaned;
+  const pposs = hasPronouns
+    ? (profile!.pronouns!.possessive ?? "their").toLowerCase()
+    : (cleaned === "this person" ? "this person's" : `${cleaned}'s`);
+  // Plural verb agreement only when explicit "they" pronouns were provided.
+  const isPlural = hasPronouns && subj === "they";
+  const refl = profile?.pronouns?.reflexive
+    ?? (hasPronouns
+      ? (isPlural ? "themself" : subj === "she" ? "herself" : subj === "he" ? "himself" : "themself")
+      : "themselves");
   const v = (base: string) => {
     if (isPlural) return base;
     if (/(?:s|x|z|ch|sh|o)$/.test(base)) return base + "es";
