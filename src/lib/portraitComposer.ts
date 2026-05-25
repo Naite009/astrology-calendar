@@ -1773,7 +1773,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
       looksLike: bodyFirst
         ? `${name} can react physically (walking out, going silent, snapping, a posture shift) before they can explain why. The explanation only arrives later.`
         : wordsFirst
-        ? `${name} can sound articulate and "fine" in the moment and then have a delayed body reaction (tiredness, irritability, going quiet) hours later.`
+        ? `${name} can sound articulate and "fine" in the moment and then notice a physical drop (tiredness, irritability, going quiet) hours later, when the body finally registers what was said.`
         : `${name} can say and do the appropriate thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
       actuallyIs: `Understanding, expression, reaction, and regulation are four different jobs on four different clocks. ${bodyFirst ? `Here, Mars (body) arrives before Mercury (words).` : wordsFirst ? `Here, Mercury (words) arrives before Mars (body).` : `Here, Mercury and Mars arrive together.`} ${moonTiming === "delayed" || moonTiming === "private" ? `The Moon does not regulate in the room; reset is a separate, later step.` : `The Moon regulates after, not during.`}`,
       whatHelps: isParenting
