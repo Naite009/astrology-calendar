@@ -1775,6 +1775,16 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
   };
 
+  const isNarrativeReadingPrompt = (question: string): boolean => {
+    if (!question) return false;
+    const q = question.toLowerCase();
+    return (
+      q.includes('"question_type" in your json output must be exactly "narrative"') ||
+      q.includes("write a narrative portrait") ||
+      q.includes("narrative portrait for")
+    );
+  };
+
   const buildNatalPortraitBlock = (
     chart: NatalChart | null,
     readingType:
