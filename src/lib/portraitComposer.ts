@@ -1771,7 +1771,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     const isParenting = phase === "child";
     const humanTranslation = {
       looksLike: bodyFirst
-        ? `${name} can react physically (walking out, going silent, snapping, a posture shift) before ${G.subj} ${G.v("explain")} why. The explanation only arrives later.`
+        ? `${name} can react physically (walking out, going silent, snapping, a posture shift) before ${G.subj} can explain why. The explanation only arrives later.`
         : wordsFirst
         ? `${name} can sound articulate and "fine" in the moment and then notice a physical drop (tiredness, irritability, going quiet) hours later, when the body finally registers what was said.`
         : `${name} can say and do the appropriate thing in the moment and still be carrying the unprocessed version of it well after the moment is over.`,
