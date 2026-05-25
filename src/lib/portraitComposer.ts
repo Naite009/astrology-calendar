@@ -866,6 +866,71 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     portraitParts.push(PACE_FIX[sunSign]);
   }
 
+  // ── 9. EDITORIAL LAYER — major-claim 3-layer paragraphs ─────────────────────
+  // Each block runs ONLY when its chart signature is present, so the Core
+  // Portrait never repeats the same mechanism twice. Pattern per block:
+  // human truth → astrology underneath → lived behavior.
+  {
+    const _p = (chart?.planets ?? {}) as any;
+    const scorpio1st = _p.Sun?.sign === "Scorpio" && sunHouse === 1
+      || _p.Mars?.sign === "Scorpio" && marsHouse === 1
+      || _p.Pluto?.house === 1
+      || (p as any)?.ascendant?.sign === "Scorpio";
+    const saturnLeo10 = _p.Saturn?.sign === "Leo" && _p.Saturn?.house === 10;
+    const libraIdentity = _p.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
+    const merc12 = mercuryHouse === 12;
+    const venusJupReception = _p.Venus?.sign && _p.Jupiter?.sign
+      && RULER_OF[_p.Venus.sign] === "Jupiter" && RULER_OF[_p.Jupiter.sign] === "Venus";
+    const jup8 = _p.Jupiter?.house === 8;
+    const venus8 = _p.Venus?.house === 8;
+    const merc6 = mercuryHouse === 6;
+    const sun6 = sunHouse === 6;
+    const nodes = (p as any)?.nodes ?? (p as any)?.northNode ?? null;
+
+    // 9a. Power + restraint. Only when the chart actually shows both raw
+    // presence AND a public-visibility brake.
+    if (scorpio1st && (saturnLeo10 || libraIdentity || merc12)) {
+      const pieces: string[] = [];
+      pieces.push(`Scorpio at the 1st house gives ${name} force, depth, instinct, and a presence people can feel before ${G.subj} explain ${G.refl}.`);
+      if (saturnLeo10) pieces.push(`Saturn in Leo in the 10th makes public power feel like something that has to be earned, proven, or presented correctly.`);
+      if (libraIdentity) pieces.push(`${(p as any)?.ascendant?.sign === "Libra" ? "Libra Rising" : "Libra Sun"} wants the delivery to be graceful, fair, and socially intelligent — not raw.`);
+      if (merc12) pieces.push(`Mercury in the 12th may hold the words back until they feel safe, precise, and ready to survive the room.`);
+      portraitParts.push(`${name} ${G.is} significantly more powerful than ${G.subj} ${G.v("let")} on, and the chart explains why. ${pieces.join(" ")} So the power is real, but it often comes through controlled presentation instead of open force.`);
+    }
+
+    // 9b. Saturn in Leo in the 10th — visibility-as-work claim. Only emit if
+    // 9a did NOT already name it.
+    if (saturnLeo10 && !(scorpio1st && (saturnLeo10 || libraIdentity || merc12))) {
+      portraitParts.push(`Saturn in Leo in the 10th makes visibility serious. ${name} may have real creative authority, but ${G.subj} ${G.does} not experience being seen casually. Public recognition, leadership, and creative confidence can feel like things that must be earned, justified, or done correctly. So when ${G.subj} ${G.v("hold")} back, it is not because ${G.subj} ${G.v("lack")} presence — it is because being visible comes with an internal standard.`);
+    }
+
+    // 9c. Venus/Jupiter or 2nd/8th loop — consequence-awareness, NOT confusion.
+    if (venusJupReception || jup8 || venus8) {
+      const v = _p.Venus, j = _p.Jupiter;
+      const vClause = v?.sign ? `Venus in ${v.sign} wants the clean, honest answer and the freedom not to betray ${G.refl}.` : "";
+      const jClause = j?.sign && j?.house
+        ? `Jupiter in ${j.sign} in the ${ord(j.house)} ${G.is === "are" ? "tracks" : "tracks"} trust, loyalty, money, shared resources, and what happens after the truth is spoken.`
+        : "";
+      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling the truth will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClause} ${jClause} So the hesitation is not confusion. It is consequence-awareness.`);
+    }
+
+    // 9d. 6th-house bottleneck — only if no other 6th-house mention has already
+    // landed in the portrait so far.
+    if ((merc6 || sun6) && !portraitParts.join(" ").includes("6th house")) {
+      portraitParts.push(`The 6th house is the bottleneck of workability. The mind may see the pattern quickly, but the 6th house asks: can this fit into the day, the body, the schedule, the task, the nervous system, and the person's real capacity? So the delay is not emptiness — it is the point where insight has to become livable.`);
+    }
+
+    // 9e. Nodes — lived pattern, not vague destiny. Only if the chart carries
+    // recognizable Node house data.
+    if (nodes && typeof nodes === "object") {
+      const nHouse = (nodes as any)?.north?.house ?? (nodes as any)?.northHouse;
+      const sHouse = (nodes as any)?.south?.house ?? (nodes as any)?.southHouse;
+      if (nHouse && sHouse) {
+        portraitParts.push(`The South Node in the ${ord(sHouse)} house describes the familiar comfort pattern ${name} keeps returning to under stress. The North Node in the ${ord(nHouse)} house is the growth edge — the part of life that feels less practiced but is where ${G.subj} ${G.v("become")} more of ${G.refl}. The nodes are not destiny; they are the lived tension between what is easy and what is being asked.`);
+      }
+    }
+  }
+
   const corePortrait = portraitParts.join(" ");
 
   // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
