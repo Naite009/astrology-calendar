@@ -1938,18 +1938,27 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   try {
     const signature = detectChartSignature(chart, tightAspects as any);
     const planetsForCtx = (chart?.planets as any) ?? {};
-    const firstName = (profile?.firstName ?? name ?? "").trim().split(/\s+/)[0] || name;
+    // Name-safe singular fallback: if the caller did NOT pass an explicit
+    // profile with pronouns, we deliberately omit `profile` from the validator
+    // context. This prevents the sanitizer from collapsing 2nd+ name mentions
+    // into "they/them/their" (which produces "they is", "they does", etc.).
+    // When pronouns ARE supplied, we honor them and pass the full first name
+    // (and full name for fullName→firstName collapse).
+    const hasRealProfile = !!profile?.pronouns?.subject;
+    const firstName = hasRealProfile
+      ? ((profile!.firstName ?? name ?? "").trim().split(/\s+/)[0] || name)
+      : undefined;
     const ctx = {
       saturnCentral: signature.saturnCentral,
       chironCentral: signature.chironCentral,
       ikeAuthorityPattern: signature.ikeAuthorityPattern,
       signature,
       mutualReceptionPair: signature.mutualReceptionPair,
-      profile: firstName
+      profile: hasRealProfile && firstName
         ? {
             firstName,
             fullName: profile?.fullName ?? name,
-            pronouns: profile?.pronouns ?? { subject: "they", object: "them", possessive: "their", reflexive: "themself" },
+            pronouns: profile!.pronouns!,
             isChild: profile?.isChild ?? (phase === "child"),
           }
         : undefined,
