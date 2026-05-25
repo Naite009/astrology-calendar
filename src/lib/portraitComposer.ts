@@ -260,9 +260,62 @@ function ord(n: number): string {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+// ── Pronoun-aware grammar helper ────────────────────────────────────────────
+// Prevents "they is / they has / they feels" and other agreement bugs when
+// pronouns are they/them, and guarantees the subject slot is never a bare
+// pronoun fallback like "they" or "it".
+export interface PortraitGrammar {
+  name: string;             // safe display name, never a bare pronoun
+  poss: string;             // possessive form of the display name ("Lauren's")
+  subj: string;             // subject pronoun ("she" / "he" / "they")
+  obj: string;              // object pronoun ("her" / "him" / "them")
+  pposs: string;            // possessive pronoun ("her" / "his" / "their")
+  refl: string;             // reflexive ("herself" / "himself" / "themself")
+  isPlural: boolean;        // true for they/them
+  is: string;               // "is" / "are"
+  has: string;              // "has" / "have"
+  was: string;              // "was" / "were"
+  does: string;             // "does" / "do"
+  doesnt: string;           // "doesn't" / "don't"
+  // Adds third-person singular -s to a base verb when not plural.
+  // e.g. v("feel") => "feels" / "feel"; v("watch") => "watches" / "watch".
+  v: (base: string) => string;
+}
+
+function buildGrammar(rawName: string | undefined, profile?: PortraitProfile): PortraitGrammar {
+  const PRONOUN_WORDS = new Set(["they", "she", "he", "them", "her", "him", "it"]);
+  let cleaned = (profile?.firstName ?? rawName ?? "").trim();
+  if (!cleaned || PRONOUN_WORDS.has(cleaned.toLowerCase())) {
+    cleaned = "this person";
+  }
+  const subj = (profile?.pronouns?.subject ?? "they").toLowerCase();
+  const obj  = (profile?.pronouns?.object  ?? "them").toLowerCase();
+  const pposs = (profile?.pronouns?.possessive ?? "their").toLowerCase();
+  const isPlural = subj === "they";
+  const refl = profile?.pronouns?.reflexive ?? (isPlural ? "themself" : subj === "she" ? "herself" : subj === "he" ? "himself" : "themself");
+  const v = (base: string) => {
+    if (isPlural) return base;
+    if (/(?:s|x|z|ch|sh|o)$/.test(base)) return base + "es";
+    if (/[^aeiou]y$/.test(base)) return base.slice(0, -1) + "ies";
+    return base + "s";
+  };
+  const possName = cleaned === "this person" ? "this person's" : `${cleaned}'s`;
+  return {
+    name: cleaned, poss: possName,
+    subj, obj, pposs, refl, isPlural,
+    is: isPlural ? "are" : "is",
+    has: isPlural ? "have" : "has",
+    was: isPlural ? "were" : "was",
+    does: isPlural ? "do" : "does",
+    doesnt: isPlural ? "don't" : "doesn't",
+    v,
+  };
+}
+
 // ── Composer ─────────────────────────────────────────────────────────────────
 export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: PortraitProfile): ComposedPortrait {
-  const name = p.name;
+  const G = buildGrammar(p.name, profile);
+  const name = G.name;
   const phase = p.lifePhase;
   const age = p.age;
 
