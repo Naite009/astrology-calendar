@@ -863,10 +863,9 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     }
   }
 
-  // 8. The pace fix. Timing change, not personality change.
-  if (sunSign && PACE_FIX[sunSign]) {
-    portraitParts.push(PACE_FIX[sunSign]);
-  }
+  // 8. (REMOVED) The Sun-sign PACE_FIX coaching push has been deleted from
+  // Core Portrait. Support copy must come from the actual chart stack, life
+  // stage, and pressure point — not a Sun-sign prescription.
 
   // ── 9. EDITORIAL LAYER — major-claim 3-layer paragraphs ─────────────────────
   // Each block runs ONLY when its chart signature is present, so the Core
