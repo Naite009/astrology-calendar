@@ -56,6 +56,15 @@ export interface TransitChart {
   Chiron?: ProgressedPosition;
 }
 
+// Optional pronoun set for a profile. When present, the Portrait composer
+// will use these instead of the name-safe singular fallback.
+export interface ProfilePronouns {
+  subject: string;     // she / he / they
+  object: string;      // her / him / them
+  possessive: string;  // her / his / their
+  reflexive?: string;  // herself / himself / themself
+}
+
 export interface NatalChart {
   id: string;
   name: string;
@@ -64,6 +73,9 @@ export interface NatalChart {
   birthLocation: string;
   timezoneOffset?: number; // hours offset from UTC (e.g., -5 for EST)
   chartImageBase64?: string; // Original uploaded chart image
+  // Optional pronouns for the person this chart describes. When omitted,
+  // downstream copy falls back to name-safe singular phrasing.
+  pronouns?: ProfilePronouns;
   planets: {
     Sun?: NatalPlanetPosition;
     Moon?: NatalPlanetPosition;
