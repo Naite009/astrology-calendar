@@ -27,6 +27,7 @@ Updated: now
 - After any fix: ONE confirmation generation on the failing chart. Pass = confirmed. Fail = stop and read code. Never run repeated generations hoping for a clean pass.
 
 ## Memories
+- [Editorial Synthesis Standard](mem://style/editorial-synthesis-standard) — 3-layer pattern (human truth → astrology underneath → lived behavior) for MAJOR claims only; each section adds a new layer; per-surface scoping for ask-astrology, family-pair, family-system.
 - [Operating Rules 4–10](mem://architecture/ask-astrology/operating-rules-4-through-10) — Cloud-wins, labeled placement blocks, ephemeris-override ban, base-prompt inheritance, full regression-failure list, gate-404 handling, one-confirmation discipline
 - [Gate Retrograde Contract](mem://architecture/ask-astrology/gate-retrograde-contract) — Replit gate treats RETROGRADE_STATE_MISMATCH and RETROGRADE_OMISSION as symmetric 422 regen triggers; no silent patches on either side
 - [Never Sign Out](mem://preferences/never-sign-out) — No auto-logout, idle timeout, or forced session expiry; sessions persist indefinitely

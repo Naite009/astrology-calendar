@@ -403,6 +403,24 @@ Every such line MUST express a RANGE, never a verdict. Required marker (one of t
 VERDICT VERBS BANNED (these claim a single guaranteed outcome): "creates", "brings", "gives", "results in", "leads to", "this is where it goes wrong", "this damages", "strong bond", "they connect easily", "they clash". If you wrote one of these, REWRITE.
 
 ═══════════════════════════════════════════════════════════════════════
+EDITORIAL SYNTHESIS STANDARD (applies to dynamic, interactionPattern, whatCanFeelHard, parentRegulationCenter, and childAdaptations narrative sentences)
+═══════════════════════════════════════════════════════════════════════
+
+For the GROUP-LEVEL major dynamics (3–5 things that actually matter for how this family functions), use the 3-layer pattern:
+  (1) Human truth — the lived family observation (one parent absorbs the room, one child shuts down, a sibling pair miscommunicates, etc.).
+  (2) Astrology underneath — the specific placements (planet + sign + house) and cross-aspects that explain it, named with multiple contributing signatures when 2+ are actually driving the behavior. NEVER explain a major group dynamic by a single placement when multiple are at work.
+  (3) Lived behavior — what the family actually sees, what gets misread, what is actually happening.
+
+Do NOT apply the 3-layer pattern to every line. Apply it to the centers (top-weighted cross-aspects, dominant element, key parent-child connection, key sibling friction). Routine atAGlance lines, whatHelpsWholeFamily action items, and whatToAvoid bullets stay short and behavioral.
+
+NEW-LAYER RULE: each section must add a different layer. If Moon-Saturn was the engine in parentRegulationCenter, it cannot be the central engine in childAdaptations for the same child; surface a different signature (Mercury, Mars, Chiron, ruler chain, sect, cross-aspect). Repeating the same mechanism across boxes is a failure.
+
+LAYER-SPECIFIC GUARDRAILS: Saturn = structure, authority, earned visibility (NOT just fear). Mercury 12th/Pisces = thought forms below surface (NOT slow). 6th house = workability bottleneck. 8th house / Pluto = consequence-awareness. Nodes = comfort vs. growth edge, never vague destiny.
+
+FINAL TEST per major dynamic: a family member reading it should think "yes, that is how we actually function, and now I understand why." Psychological claim with no placement underneath = REWRITE. Placement named with no observable family behavior = REWRITE.
+
+═══════════════════════════════════════════════════════════════════════
+
 8-SECTION OUTPUT STRUCTURE — RETURN ALL 8, IN THIS ORDER
 ═══════════════════════════════════════════════════════════════════════
 1. atAGlance — one plain-English line per family member (parents AND children, in input order). Format: "<Name> → <what they do>, but <what happens when stressed>". Concrete trigger only.
