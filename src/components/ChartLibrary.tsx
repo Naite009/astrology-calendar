@@ -1413,6 +1413,21 @@ export const ChartLibrary = ({
                   />
                 </div>
                 <div className="space-y-2">
+                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Pronouns</label>
+                  <select
+                    value={pronounKeyFor(formData.pronouns)}
+                    onChange={e => {
+                      const key = e.target.value as PronounPresetKey;
+                      setFormData({ ...formData, pronouns: PRONOUN_PRESETS[key].value });
+                    }}
+                    className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  >
+                    {(Object.keys(PRONOUN_PRESETS) as PronounPresetKey[]).map(k => (
+                      <option key={k} value={k}>{PRONOUN_PRESETS[k].label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Time</label>
                   <input
                     type="time"
