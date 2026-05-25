@@ -776,6 +776,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     chart: NatalChart | null,
     timingContext: string = "",
     srOverride: SolarReturnChart | null | undefined = undefined,
+    suppressTransits: boolean = false,
   ): string => {
     if (!chart) return "No chart data available.";
     const planets = chart.planets || {};
