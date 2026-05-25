@@ -2503,7 +2503,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Resolve the canonical SR (cloud overrides any stale localStorage copy)
       // ONCE per request and reuse for both context build and post-job correct.
       const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
-      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR, portraitReadingType === 'natal');
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
