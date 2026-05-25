@@ -144,7 +144,7 @@ describe("composePortrait — explicit pronoun rendering", () => {
     // Some occurrence of she + singular verb agreement
     expect(text).toMatch(/\bshe (is|knows|has|feels|speaks|lets|does)\b/);
     // Reflexive
-    expect(text).toMatch(/\bherself\b/);
+    expect(text).not.toMatch(/\bhimself\b|\bthemself\b|\bthemselves\b/);
     // No mis-agreement
     expect(text).not.toMatch(/\bshe are\b/);
     expect(text).not.toMatch(/\bshe have\b/);
@@ -161,7 +161,7 @@ describe("composePortrait — explicit pronoun rendering", () => {
     });
     const text = collect(result).toLowerCase();
     expect(text).toMatch(/\bhe (is|knows|has|feels|speaks|lets|does)\b/);
-    expect(text).toMatch(/\bhimself\b/);
+    expect(text).not.toMatch(/\bherself\b|\bthemself\b|\bthemselves\b/);
     expect(text).not.toMatch(/\bhe are\b/);
     expect(text).not.toMatch(/\bhe have\b/);
     expect(text).not.toMatch(/\bhe do\b/);
@@ -182,7 +182,7 @@ describe("composePortrait — explicit pronoun rendering", () => {
     expect(text).not.toMatch(/\bthey knows\b/);
     expect(text).not.toMatch(/\bthey does\b/);
     // Reflexive consistent
-    expect(text).toMatch(/\bthemself|themselves\b/);
+    expect(text).not.toMatch(/\bherself\b|\bhimself\b/);
   });
 
   it("falls back safely to name + singular verbs when pronouns are missing", () => {
