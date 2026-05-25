@@ -712,12 +712,30 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     auditPlanet(p.chartRuler.rulerName, p.chartRuler.rulerSign, p.chartRuler.rulerHouse ?? null);
   }
 
-  if (hardwareLines.length >= 1) {
-    portraitParts.push(`In plain body terms, ${name}'s Mercury and Mars do not always move on the same clock. The body can show the first reaction while the explanation is still forming.`);
-  }
-  if (collisionLines.length >= 1) {
+  // Precompute editorial-layer (Section 9) flags so older Section 6 blocks
+  // can be suppressed when 9a / 9c will fire and say the same thing better.
+  const _p9 = (chart?.planets ?? {}) as any;
+  const _scorpio1st_pre = (_p9.Sun?.sign === "Scorpio" && sunHouse === 1)
+    || (_p9.Mars?.sign === "Scorpio" && marsHouse === 1)
+    || _p9.Pluto?.house === 1
+    || (p as any)?.ascendant?.sign === "Scorpio";
+  const _saturnLeo10_pre = _p9.Saturn?.sign === "Leo" && _p9.Saturn?.house === 10;
+  const _libraIdentity_pre = _p9.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
+  const _merc12_pre = mercuryHouse === 12;
+  const _venusJupReception_pre = _p9.Venus?.sign && _p9.Jupiter?.sign
+    && RULER_OF[_p9.Venus.sign] === "Jupiter" && RULER_OF[_p9.Jupiter.sign] === "Venus";
+  const _jup8_pre = _p9.Jupiter?.house === 8;
+  const _venus8_pre = _p9.Venus?.house === 8;
+  const will9aFire = _scorpio1st_pre && (_saturnLeo10_pre || _libraIdentity_pre || _merc12_pre);
+  const will9cFire = !!(_venusJupReception_pre || _jup8_pre || _venus8_pre);
+
+  // Section 6 collision block — suppress when 9a will fire (9a explains the
+  // same power/restraint dynamic with proper chart weight). Also strip the
+  // mechanism teaser line; that sequencing now lives in In The Moment / How
+  // The System Works, not in the Core Portrait.
+  if (!will9aFire && collisionLines.length >= 1) {
     const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`And here is what that actually feels like in the body. ${uniqueCollisions.length > 1 ? `When several things hit at once, ${name} may look like ${name} is reacting too fast, but inside ${name} is trying to move, be seen, protect ${name}'s own power, and find words all at the same time.` : "One chart layer presses first."} That is not a personality problem and it is not "people pleasing" or "stalling." It is pressure reaching the body before language has fully caught up.`);
+    portraitParts.push(`In the body, ${uniqueCollisions.join(" ")} That is pressure reaching the body before language has fully caught up — not a personality problem.`);
   }
 
   // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
