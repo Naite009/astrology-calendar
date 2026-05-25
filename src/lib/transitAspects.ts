@@ -101,16 +101,44 @@ export function describeDailyMotion(planet: string): { speed: string; pace: stri
   const dpd = DAILY_SPEED[key] ?? DAILY_SPEED[planet];
   if (dpd == null) return null;
   const speed = dpd >= 1 ? `~${dpd.toFixed(1)}°/day` : `~${dpd.toFixed(3)}°/day`;
+
+  // Compute dwell time per sign directly from speed so each body gets the
+  // correct duration (Sun ~30 days, Mars ~57 days, Jupiter ~13 months,
+  // Saturn ~2.5 years, Uranus ~7 years, Neptune ~14 years, Pluto ~20+ years).
+  const daysPerSign = 30 / dpd;
+  const yearsPerSign = daysPerSign / 365.25;
+
   let pace = '';
-  let note = '';
-  if (dpd >= 10) { pace = 'very fast'; note = 'changes signs every ~2.5 days, sets the daily mood.'; }
-  else if (dpd >= 1) { pace = 'fast'; note = 'moves through a sign in a few weeks, week-to-week themes.'; }
-  else if (dpd >= 0.3) { pace = 'moderate'; note = 'spends ~6–8 weeks per sign, month-long chapters.'; }
-  else if (dpd >= 0.08) { pace = 'slow'; note = 'sits in a sign for many months, multi-month story arcs.'; }
-  else if (dpd >= 0.02) { pace = 'very slow'; note = 'stays in a sign for 2–3 years, life-chapter pressure.'; }
-  else { pace = 'generational'; note = 'creeps less than a degree a year, defines an entire era.'; }
-  return { speed, pace, note };
+  let dwell = '';
+  if (daysPerSign < 4) {
+    pace = 'very fast';
+    dwell = `changes signs every ~${daysPerSign.toFixed(1)} days`;
+  } else if (daysPerSign < 35) {
+    pace = 'fast';
+    const weeks = Math.round(daysPerSign / 7);
+    dwell = `spends ~${weeks} week${weeks === 1 ? '' : 's'} per sign (~${Math.round(daysPerSign)} days)`;
+  } else if (daysPerSign < 120) {
+    pace = 'moderate';
+    const weeks = Math.round(daysPerSign / 7);
+    dwell = `spends ~${weeks} weeks per sign (~${Math.round(daysPerSign)} days)`;
+  } else if (yearsPerSign < 1.5) {
+    pace = 'slow';
+    const months = Math.round(daysPerSign / 30);
+    dwell = `sits in a sign for ~${months} months`;
+  } else if (yearsPerSign < 4) {
+    pace = 'very slow';
+    dwell = `stays in a sign for ~${yearsPerSign.toFixed(1)} years`;
+  } else if (yearsPerSign < 12) {
+    pace = 'generational';
+    dwell = `stays in a sign for ~${Math.round(yearsPerSign)} years`;
+  } else {
+    pace = 'generational';
+    dwell = `defines an era, ~${Math.round(yearsPerSign)} years per sign`;
+  }
+
+  return { speed, pace, note: `${dwell}.` };
 }
+
 
 // Friendly duration phrasing
 function describeDuration(days: number): string {

@@ -776,6 +776,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     chart: NatalChart | null,
     timingContext: string = "",
     srOverride: SolarReturnChart | null | undefined = undefined,
+    suppressTransits: boolean = false,
   ): string => {
     if (!chart) return "No chart data available.";
     const planets = chart.planets || {};
@@ -1020,6 +1021,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // Points`, putting Juno and Lilith outside the parsed positions block
     // and silently dropping them from every downstream consumer.
 
+    if (!suppressTransits) {
     context += "\n--- CURRENT TRANSITS (today's sky) ---\n";
     const PLANET_BODIES: Record<string, any> = {
       mercury: Astronomy.Body.Mercury, venus: Astronomy.Body.Venus, mars: Astronomy.Body.Mars,
@@ -1172,6 +1174,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         }
       } catch {}
     } catch {}
+    } // end if (!suppressTransits)
+
 
     context += buildAskValidationFactsBlock(chart);
 
@@ -1775,6 +1779,16 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     );
   };
 
+  const isNarrativeReadingPrompt = (question: string): boolean => {
+    if (!question) return false;
+    const q = question.toLowerCase();
+    return (
+      q.includes('"question_type" in your json output must be exactly "narrative"') ||
+      q.includes("write a narrative portrait") ||
+      q.includes("narrative portrait for")
+    );
+  };
+
   const buildNatalPortraitBlock = (
     chart: NatalChart | null,
     readingType:
@@ -2102,6 +2116,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     | 'spiritual'
     | 'general' => {
     if (isNatalReadingPrompt(question)) return 'natal';
+    if (isNarrativeReadingPrompt(question)) return 'natal';
     if (isSolarReturnReadingPrompt(question)) return 'solar_return';
     return detectReadingType(question);
   };
@@ -2194,7 +2209,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Resolve the canonical SR (cloud overrides any stale localStorage copy)
       // ONCE per request and reuse for both context build and post-job correct.
       const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
-      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR, portraitReadingType === 'natal');
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
@@ -2488,7 +2503,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Resolve the canonical SR (cloud overrides any stale localStorage copy)
       // ONCE per request and reuse for both context build and post-job correct.
       const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
-      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR);
+      let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR, portraitReadingType === 'natal');
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
