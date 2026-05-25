@@ -118,3 +118,83 @@ describe("composePortrait — name-safe singular pronoun fallback", () => {
     expect(result.corePortrait).toMatch(/Lauren Newman is/);
   });
 });
+
+// ── Real pronoun support ─────────────────────────────────────────────────
+// When a PortraitProfile carries explicit pronouns, the grammar helper
+// should use them with correct singular / plural verb agreement and
+// reflexives, while the name-safe singular fallback continues to work
+// when pronouns are missing.
+
+const collect = (result: any): string =>
+  [
+    result.corePortrait,
+    result.systemMechanism?.synthesis ?? "",
+    result.chartStory ?? "",
+    result.stageAsk?.body ?? "",
+  ].join("\n");
+
+describe("composePortrait — explicit pronoun rendering", () => {
+  it("renders she / her / herself with singular agreement", () => {
+    const result = composePortrait(makePortrait("Lauren Newman"), makeChart(), {
+      firstName: "Lauren",
+      fullName: "Lauren Newman",
+      pronouns: { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    });
+    const text = collect(result).toLowerCase();
+    // Some occurrence of she + singular verb agreement
+    expect(text).toMatch(/\bshe (is|knows|has|feels|speaks|lets|does)\b/);
+    // Reflexive
+    expect(text).toMatch(/\bherself\b/);
+    // No mis-agreement
+    expect(text).not.toMatch(/\bshe are\b/);
+    expect(text).not.toMatch(/\bshe have\b/);
+    expect(text).not.toMatch(/\bshe do\b/);
+    // No leaked default "they"
+    expect(text).not.toMatch(/\bthey is\b/);
+  });
+
+  it("renders he / him / himself with singular agreement", () => {
+    const result = composePortrait(makePortrait("Ben Levin"), makeChart(), {
+      firstName: "Ben",
+      fullName: "Ben Levin",
+      pronouns: { subject: "he", object: "him", possessive: "his", reflexive: "himself" },
+    });
+    const text = collect(result).toLowerCase();
+    expect(text).toMatch(/\bhe (is|knows|has|feels|speaks|lets|does)\b/);
+    expect(text).toMatch(/\bhimself\b/);
+    expect(text).not.toMatch(/\bhe are\b/);
+    expect(text).not.toMatch(/\bhe have\b/);
+    expect(text).not.toMatch(/\bhe do\b/);
+  });
+
+  it("renders they / them / themself with plural agreement", () => {
+    const result = composePortrait(makePortrait("Sam Rivera"), makeChart(), {
+      firstName: "Sam",
+      fullName: "Sam Rivera",
+      pronouns: { subject: "they", object: "them", possessive: "their", reflexive: "themself" },
+    });
+    const text = collect(result).toLowerCase();
+    // Plural agreement present
+    expect(text).toMatch(/\bthey (are|have|know|feel|speak|let|do)\b/);
+    // No singular-on-they leakage
+    expect(text).not.toMatch(/\bthey is\b/);
+    expect(text).not.toMatch(/\bthey has\b/);
+    expect(text).not.toMatch(/\bthey knows\b/);
+    expect(text).not.toMatch(/\bthey does\b/);
+    // Reflexive consistent
+    expect(text).toMatch(/\bthemself|themselves\b/);
+  });
+
+  it("falls back safely to name + singular verbs when pronouns are missing", () => {
+    const result = composePortrait(makePortrait("Lauren Newman"), makeChart(), {
+      firstName: "Lauren",
+      fullName: "Lauren Newman",
+      // no pronouns
+    });
+    const text = collect(result);
+    expect(text).toMatch(/Lauren/);
+    expect(text.toLowerCase()).not.toMatch(/\bthey is\b/);
+    expect(text.toLowerCase()).not.toMatch(/\bthey has\b/);
+    expect(text.toLowerCase()).not.toMatch(/\bthey knows\b/);
+  });
+});
