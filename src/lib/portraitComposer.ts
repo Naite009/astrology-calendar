@@ -901,7 +901,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     // 9b. Saturn in Leo in the 10th — visibility-as-work claim. Only emit if
     // 9a did NOT already name it.
     if (saturnLeo10 && !(scorpio1st && (saturnLeo10 || libraIdentity || merc12))) {
-      portraitParts.push(`Saturn in Leo in the 10th makes visibility serious. ${name} may have real creative authority, but ${G.subj} ${G.does} not experience being seen casually. Public recognition, leadership, and creative confidence can feel like things that must be earned, justified, or done correctly. So when ${G.subj} ${G.v("hold")} back, it is not because ${G.subj} ${G.v("lack")} presence — it is because being visible comes with an internal standard.`);
+      portraitParts.push(`Saturn in Leo in the 10th makes visibility serious. ${name} may have real creative authority, but ${G.subj} ${G.does} not experience being seen casually. Public recognition, leadership, and creative confidence can feel like things that must be earned, justified, or done correctly. So when ${G.subj} ${G.v("hold")} back, it is not because ${G.subj} ${G.v("lack")} presence. It is because being visible comes with an internal standard.`);
     }
 
     // 9c. Venus/Jupiter or 2nd/8th loop — consequence-awareness, NOT confusion.
