@@ -926,7 +926,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
       const nHouse = (nodes as any)?.north?.house ?? (nodes as any)?.northHouse;
       const sHouse = (nodes as any)?.south?.house ?? (nodes as any)?.southHouse;
       if (nHouse && sHouse) {
-        portraitParts.push(`The South Node in the ${ord(sHouse)} house describes the familiar comfort pattern ${name} keeps returning to under stress. The North Node in the ${ord(nHouse)} house is the growth edge — the part of life that feels less practiced but is where ${G.subj} ${G.v("become")} more of ${G.refl}. The nodes are not destiny; they are the lived tension between what is easy and what is being asked.`);
+        portraitParts.push(`The South Node in the ${ord(sHouse)} house describes the familiar comfort pattern ${name} keeps returning to under stress. The North Node in the ${ord(nHouse)} house is the growth edge, the part of life that feels less practiced but is where ${G.subj} ${G.v("become")} more of ${G.refl}. The nodes are not destiny; they are the lived tension between what is easy and what is being asked.`);
       }
     }
   }
