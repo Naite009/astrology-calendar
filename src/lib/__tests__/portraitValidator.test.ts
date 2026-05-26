@@ -14,6 +14,7 @@ const baseLong =
 
 const makePortrait = (overrides: Partial<ComposedPortrait> = {}): ComposedPortrait => ({
   lifeStageChapter: "Early childhood",
+  coreChartLogic: [],
   corePortrait: baseLong,
   systemMechanism: {
     driver: { label: "Sun in Scorpio (1st house)", detail: "needs to know what is really going on" },
