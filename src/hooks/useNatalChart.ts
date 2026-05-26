@@ -342,14 +342,35 @@ const readSavedChartsWithRecovery = (): NatalChart[] => {
   return [];
 };
 
+// ── Pronoun auto-seed by first name ──────────────────────────────────────────
+// One-time backfill so the Family Portrait can render "she/her" / "he/him"
+// for the user's known profiles without manual selection. Only applies when
+// the chart has NO pronouns yet, so user edits via Chart Library always win.
+const PRONOUN_SEED: Record<string, ProfilePronouns> = (() => {
+  const she: ProfilePronouns = { subject: "she", object: "her", possessive: "her", reflexive: "herself" };
+  const he:  ProfilePronouns = { subject: "he",  object: "him", possessive: "his", reflexive: "himself" };
+  const map: Record<string, ProfilePronouns> = {};
+  ["lauren", "erica", "hannah", "margie", "nicki", "shannon"].forEach(n => (map[n] = she));
+  ["ben", "max", "ike", "nate"].forEach(n => (map[n] = he));
+  return map;
+})();
+const applyAutoSeededPronouns = <T extends NatalChart | null>(chart: T): T => {
+  if (!chart || chart.pronouns?.subject) return chart;
+  const first = (chart.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+  const seeded = first ? PRONOUN_SEED[first] : undefined;
+  return seeded ? ({ ...chart, pronouns: seeded } as T) : chart;
+};
+
 export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     const c = readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
-    return normalizeAscendantFromHouse1(c);
+    return applyAutoSeededPronouns(normalizeAscendantFromHouse1(c));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
-    const raw = readSavedChartsWithRecovery().map(normalizeAscendantFromHouse1);
+    const raw = readSavedChartsWithRecovery()
+      .map(normalizeAscendantFromHouse1)
+      .map(applyAutoSeededPronouns);
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
@@ -382,6 +403,31 @@ export const useNatalChart = () => {
     const storedUserChart = safeParseJSON<NatalChart | null>('userNatalChart', null);
     return storedUserChart ? 'user' : 'general';
   });
+
+  // Persist auto-seeded pronouns back to storage so the backfill is durable.
+  useEffect(() => {
+    if (userNatalChart && PRONOUN_SEED[(userNatalChart.name ?? "").trim().split(/\s+/)[0]?.toLowerCase()]) {
+      const stored = safeParseJSON<NatalChart | null>('userNatalChart', null);
+      if (stored && !stored.pronouns?.subject) {
+        saveWithRollingBackups('userNatalChart', userNatalChart);
+      }
+    }
+  }, [userNatalChart]);
+
+  useEffect(() => {
+    const needsPersist = savedCharts.some(c => {
+      const first = (c.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+      return first && PRONOUN_SEED[first] && c.pronouns?.subject;
+    });
+    if (!needsPersist) return;
+    const stored = safeParseJSON<NatalChart[]>('savedCharts', []);
+    const anyMissingInStorage = stored.some(c => {
+      const first = (c.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+      return first && PRONOUN_SEED[first] && !c.pronouns?.subject;
+    });
+    if (anyMissingInStorage) saveWithRollingBackups('savedCharts', savedCharts);
+  }, [savedCharts]);
+
 
   // Normalize invalid selections (e.g. deleted saved chart id)
   useEffect(() => {
