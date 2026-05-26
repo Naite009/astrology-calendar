@@ -919,7 +919,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
           jClauses.push(`Jupiter in ${j.sign} in the ${ord(j.house)} tracks the meaning, loyalty, and aftermath of what gets said.`);
         }
       }
-      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling it will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClauses.join(" ")} ${jClauses.join(" ")} So the hesitation is not confusion. It is consequence-awareness — ${G.subj} ${G.is} reading the bill before ${G.subj} ${G.v("speak")}.`);
+      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling it will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClauses.join(" ")} ${jClauses.join(" ")} So the hesitation is not confusion. It is ${G.subj} weighing what the truth will change before ${G.subj} ${G.v("say")} it.`);
     }
 
     // 9d. 6th-house bottleneck — only if no other 6th-house mention has already
