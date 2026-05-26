@@ -1877,6 +1877,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
 
   const composed: ComposedPortrait = {
     lifeStageChapter,
+    coreChartLogic,
     corePortrait,
     systemMechanism,
     realTimeSequence,
