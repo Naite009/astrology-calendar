@@ -756,7 +756,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
 
   // 6d. MUTUAL RECEPTION — Universal Remote. When Mercury and another personal
   // planet host each other's sign, the inner critic / structure / heat has a
-  // direct line into the nervous system, so "doing it wrong" raises the static.
+  // direct line into the nervous system, so "doing it wrong" raises self-doubt.
   const planetsAny = (chart?.planets ?? {}) as any;
   const merc = planetsAny.Mercury;
   if (merc?.sign) {
