@@ -342,11 +342,30 @@ const readSavedChartsWithRecovery = (): NatalChart[] => {
   return [];
 };
 
+// ── Pronoun auto-seed by first name ──────────────────────────────────────────
+// One-time backfill so the Family Portrait can render "she/her" / "he/him"
+// for the user's known profiles without manual selection. Only applies when
+// the chart has NO pronouns yet, so user edits via Chart Library always win.
+const PRONOUN_SEED: Record<string, ProfilePronouns> = (() => {
+  const she: ProfilePronouns = { subject: "she", object: "her", possessive: "her", reflexive: "herself" };
+  const he:  ProfilePronouns = { subject: "he",  object: "him", possessive: "his", reflexive: "himself" };
+  const map: Record<string, ProfilePronouns> = {};
+  ["lauren", "erica", "hannah", "margie", "nicki", "shannon"].forEach(n => (map[n] = she));
+  ["ben", "max", "ike", "nate"].forEach(n => (map[n] = he));
+  return map;
+})();
+const applyAutoSeededPronouns = <T extends NatalChart | null>(chart: T): T => {
+  if (!chart || chart.pronouns?.subject) return chart;
+  const first = (chart.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+  const seeded = first ? PRONOUN_SEED[first] : undefined;
+  return seeded ? ({ ...chart, pronouns: seeded } as T) : chart;
+};
+
 export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     const c = readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
-    return normalizeAscendantFromHouse1(c);
+    return applyAutoSeededPronouns(normalizeAscendantFromHouse1(c));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
     const raw = readSavedChartsWithRecovery().map(normalizeAscendantFromHouse1);
