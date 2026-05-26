@@ -684,262 +684,211 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     }
   }
 
-  const portraitParts: string[] = [];
+  // ── LIVED TRANSLATION PARAGRAPH ─────────────────────────────────────────────
+  // ONE integrated paragraph that uses ONLY the placements already named in
+  // the chart-logic box above. No mechanism vocabulary. No stacked sub-blocks.
+  // Flow: behavioral truth (Sun) → how the room is read (Sun) + how words form
+  // (Mercury house) → how force shows up (Mars sign+house) → values vs. stakes
+  // (Venus + Jupiter) → seriousness of being seen (Saturn if angular) →
+  // consequence-awareness close.
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const subjCap = cap(G.subj);
+  const possCap = cap(G.pposs);
 
-  // ── LIVED TRANSLATION LEAD ──────────────────────────────────────────────────
-  // 2–3 sentences in human language. Names the behavioral truth first, then
-  // lets one or two placements from the box carry the why. No mechanism words.
-  if (sunSign && p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
-    const truthBySun: Record<string, string> = {
-      Libra: `${name} ${G.does} not hesitate because ${G.subj} ${G.v("lack")} a response. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("hesitate")} because ${G.subj} ${G.v("know")} a real response can change the room.`,
-      Pisces: `${name} ${G.does} not go quiet because ${G.subj} ${G.v("have")} nothing to say. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("go")} quiet because ${G.subj} ${G.v("absorb")} more of the room than the room is showing, and sorting whose feeling is whose takes a beat.`,
-      Scorpio: `${name} ${G.does} not hold back because ${G.subj} ${G.v("lack")} force. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("hold")} back because ${G.subj} ${G.v("know")} the full version of what ${G.subj} ${G.v("feel")} would change the room if ${G.subj} let it out raw.`,
-      Cancer: `${name} ${G.does} not react small because ${G.subj} ${G.v("feel")} small. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("react")} the way ${G.subj} ${G.does} because ${G.subj} already ${G.v("pick")} up what shifted in the room before anyone named it.`,
-      Aries: `${name} ${G.does} not move first because ${G.subj} ${G.v("ignore")} the room. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("move")} first because waiting feels physically wrong to ${G.obj}, and the body already knows what it wants to do.`,
-      Taurus: `${name} ${G.does} not stall because ${G.subj} ${G.v("lack")} an answer. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("stall")} because the body refuses to commit until the new ground has been felt.`,
-      Gemini: `${name} ${G.does} not jump topics because ${G.subj} ${G.v("lose")} the thread. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("think")} by talking, so the conversation is the thinking, not a report on it.`,
-      Leo: `${name} ${G.does} not need attention for ego. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("need")} it to know that being fully seen still gets warmth back, not a flat response.`,
-      Virgo: `${name} ${G.does} not point out what is off to criticize. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("point")} at it because ${G.subj} can already see the gap between what is and what would actually work.`,
-      Sagittarius: `${name} ${G.does} not push back on the rule to rebel. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("push")} back because ${G.subj} ${G.v("need")} the reason for the rule to actually hold up.`,
-      Capricorn: `${name} ${G.does} not take over because ${G.subj} ${G.does} not trust people. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("take")} over because ${G.subj} ${G.does} not yet trust the room to carry the weight, and getting it right matters.`,
-      Aquarius: `${name} ${G.does} not stand apart to be difficult. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("stand")} apart because ${G.subj} ${G.is} testing whether the rule still makes sense, not refusing to belong.`,
+  // What each sign "reads" in the room before speaking (no mechanism words).
+  const SIGN_READ: Record<string, string> = {
+    Aries: "reads where the energy is moving and answers fast",
+    Taurus: "reads the pace and waits for solid ground before speaking",
+    Gemini: "reads multiple angles at once and talks to figure out which one is real",
+    Cancer: "reads how safe the room feels before speaking",
+    Leo: "reads whether the warmth is actually coming back and adjusts the voice to match",
+    Virgo: "reads what is off and starts fixing it mentally before speaking",
+    Libra: "reads tone, fairness, and timing before speaking",
+    Scorpio: "reads power, intent, and who can be trusted before speaking",
+    Sagittarius: "reads the bigger picture and reaches for the honest version first",
+    Capricorn: "reads the stakes and the consequences before committing a word",
+    Aquarius: "reads the logic of the situation from one step outside it",
+    Pisces: "reads the emotional weather of the room and absorbs more than is being said",
+  };
+
+  // Short Mercury-house clause about how words form.
+  const MERCURY_HOUSE_SHORT: Record<number, string> = {
+    1: "Mercury in the 1st means the words come out fast and visible, sometimes before the thought finishes forming",
+    3: "Mercury in the 3rd means the words come out as part of the back-and-forth, not as a finished position",
+    4: "Mercury in the 4th means the words form first in the private inner room before they come out loud",
+    6: "Mercury in the 6th means the words form while the body is already doing the task, not before it",
+    8: "Mercury in the 8th means the words form privately, and only the safe version surfaces at first",
+    9: "Mercury in the 9th means the words reach for the bigger frame first, so a quick in-the-moment answer can lag",
+    10: "Mercury in the 10th means the words form with an eye on how they will land publicly",
+    11: "Mercury in the 11th means the words form through the lens of the group and the longer plan",
+    12: "Mercury in the 12th means the words often form privately before they are ready to come out",
+  };
+
+  // Short Mars sign+house clause about how force shows up under pressure.
+  const marsForceClause = (() => {
+    if (!marsSign) return "";
+    const base = `Mars in ${marsSign}${marsHouse ? ` in the ${ord(marsHouse)}` : ""}`;
+    if (marsHouse === 1) {
+      return `${base} gives ${G.obj} more force than ${G.subj} usually ${G.v("show")}, so when something matters the room may feel ${G.pposs} intensity before ${G.subj} ${G.has} explained it`;
+    }
+    if (marsHouse === 10) {
+      return `${base} channels real force into the public role, so when something matters it lands as authority before ${G.subj} ${G.has} softened it`;
+    }
+    if (marsHouse === 7) {
+      return `${base} puts the heat into close one-on-one dynamics, so the intensity shows up where the bond is`;
+    }
+    if (marsHouse === 4) {
+      return `${base} carries the heat into home and family, where the real reaction shows up first`;
+    }
+    if (marsHouse === 8) {
+      return `${base} puts the force underneath, into trust and shared resources, so it lands in the private layer before it lands in the room`;
+    }
+    if (marsHouse === 5) {
+      return `${base} sends the force into creative work, performance, and being seen, so the intensity has to come out somewhere visible`;
+    }
+    if (marsHouse === 12) {
+      return `${base} keeps the force behind a curtain, so the intensity is real but rarely shows up unfiltered in real time`;
+    }
+    return `${base} shapes how the pressure response actually fires when something matters`;
+  })();
+
+  // Venus + Jupiter contrast: what is wanted vs. what the stakes are.
+  const _planets2 = (chart?.planets ?? {}) as any;
+  const v = _planets2.Venus;
+  const j = _planets2.Jupiter;
+  const vHouse = v?.sign ? calcHouse(v.sign, v.degree, v.minutes) : null;
+  const jHouse = j?.sign ? (j.house ?? calcHouse(j.sign, j.degree, j.minutes)) : null;
+
+  const venusWantClause = (() => {
+    if (!v?.sign) return "";
+    const VENUS_WANT: Record<string, string> = {
+      Aries: "wants the direct, unfiltered answer",
+      Taurus: "wants ease, beauty, and steadiness in what gets said",
+      Gemini: "wants the conversation itself to feel alive",
+      Cancer: "wants the answer to come with care",
+      Leo: "wants warmth and to be met generously",
+      Virgo: "wants the precise, considered version",
+      Libra: "wants fairness, grace, and an answer the other person can also live with",
+      Scorpio: "wants the real, unsanitized version of the bond",
+      Sagittarius: "still wants the clean truth",
+      Capricorn: "wants the answer to be solid and worth standing behind",
+      Aquarius: "wants the honest, unsentimental version",
+      Pisces: "wants the gentler, more compassionate version",
     };
-    const opening = truthBySun[sunSign] || `${name} ${G.is} more layered in the moment than the surface suggests, and the chart explains why.`;
-    const rulerBelief = RULER_BELIEF[p.chartRuler.rulerSign];
-    const arena = p.chartRuler.rulerHouse ? HOUSE_LIFE_AREA[p.chartRuler.rulerHouse] : null;
-    const arenaClause = arena ? ` That voice has the most weight around ${arena}.` : "";
-    portraitParts.push(
-      `${opening} The part actually steering underneath is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, which ${rulerBelief}.${arenaClause}`,
-    );
+    const want = VENUS_WANT[v.sign] || "carries what they value and how they relate";
+    return `Venus in ${v.sign} ${want}`;
+  })();
+
+  const jupiterStakesClause = (() => {
+    if (!j?.sign || !jHouse) return "";
+    if (jHouse === 8) {
+      return `but Jupiter in ${j.sign} in the 8th knows the truth can change trust, loyalty, money, shared stability, and the emotional terms of a bond`;
+    }
+    if (jHouse === 2) {
+      return `but Jupiter in ${j.sign} in the 2nd knows the truth can change what ${G.subj} ${G.v("own")}, ${G.pposs} sense of worth, and ${G.pposs} own resource base`;
+    }
+    if (jHouse === 7) {
+      return `but Jupiter in ${j.sign} in the 7th knows the truth can change the shape of the closest one-on-one relationships`;
+    }
+    if (jHouse === 10) {
+      return `but Jupiter in ${j.sign} in the 10th knows the truth can change ${G.pposs} public role and how ${G.subj} ${G.is} seen`;
+    }
+    if (jHouse === 5) {
+      return `but Jupiter in ${j.sign} in the 5th knows the truth can change what ${G.subj} ${G.v("create")}, perform, or risk being seen for`;
+    }
+    return "";
+  })();
+
+  const saturnAngularClause = (() => {
+    const sat = _planets2.Saturn;
+    if (!sat?.sign) return "";
+    const sh = calcHouse(sat.sign, sat.degree, sat.minutes);
+    if (!sh || ![1, 4, 7, 10].includes(sh)) return "";
+    if (sh === 10) {
+      return `Saturn in ${sat.sign} in the 10th makes visibility serious, so being direct can feel like stepping onto a stage before the sentence is ready`;
+    }
+    if (sh === 1) {
+      return `Saturn in ${sat.sign} in the 1st makes self-presentation serious, so being direct can feel like having to stand behind every word the moment it leaves`;
+    }
+    if (sh === 7) {
+      return `Saturn in ${sat.sign} in the 7th makes close commitments serious, so being direct inside a partnership can feel weighted before the words even land`;
+    }
+    return `Saturn in ${sat.sign} in the 4th makes home and inner foundation serious, so being direct close to home can feel like changing the structure underneath ${G.obj}`;
+  })();
+
+  // Sentence 1–2: behavioral truth opening (Sun).
+  const truthBySun: Record<string, string> = {
+    Libra: `${name} ${G.does} not hesitate because ${G.subj} ${G.v("lack")} a response. ${subjCap} ${G.v("hesitate")} because ${G.subj} ${G.v("know")} a real response can change the room.`,
+    Pisces: `${name} ${G.does} not go quiet because ${G.subj} ${G.v("have")} nothing to say. ${subjCap} ${G.v("go")} quiet because ${G.subj} ${G.v("absorb")} more of the room than the room is showing.`,
+    Scorpio: `${name} ${G.does} not hold back because ${G.subj} ${G.v("lack")} force. ${subjCap} ${G.v("hold")} back because ${G.subj} ${G.v("know")} the full version of what ${G.subj} ${G.v("feel")} would change the room if it came out raw.`,
+    Cancer: `${name} ${G.does} not react small because ${G.subj} ${G.v("feel")} small. ${subjCap} ${G.v("react")} the way ${G.subj} ${G.does} because ${G.subj} already ${G.v("pick")} up what shifted in the room before anyone named it.`,
+    Aries: `${name} ${G.does} not move first because ${G.subj} ${G.v("ignore")} the room. ${subjCap} ${G.v("move")} first because waiting feels physically wrong, and the body already knows what it wants to do.`,
+    Taurus: `${name} ${G.does} not stall because ${G.subj} ${G.v("lack")} an answer. ${subjCap} ${G.v("stall")} because the body refuses to commit until the new ground has been felt.`,
+    Gemini: `${name} ${G.does} not jump topics because ${G.subj} ${G.v("lose")} the thread. ${subjCap} ${G.v("think")} by talking, so the conversation is the thinking, not a report on it.`,
+    Leo: `${name} ${G.does} not need attention for ego. ${subjCap} ${G.v("need")} it to know that being fully seen still gets warmth back, not a flat response.`,
+    Virgo: `${name} ${G.does} not point out what is off to criticize. ${subjCap} ${G.v("point")} at it because ${G.subj} can already see the gap between what is and what would actually work.`,
+    Sagittarius: `${name} ${G.does} not push back on the rule to rebel. ${subjCap} ${G.v("push")} back because ${G.subj} ${G.v("need")} the reason for the rule to actually hold up.`,
+    Capricorn: `${name} ${G.does} not take over because ${G.subj} ${G.does} not trust people. ${subjCap} ${G.v("take")} over because ${G.subj} ${G.does} not yet trust the room to carry the weight, and getting it right matters.`,
+    Aquarius: `${name} ${G.does} not stand apart to be difficult. ${subjCap} ${G.v("stand")} apart because ${G.subj} ${G.is} testing whether the rule still makes sense, not refusing to belong.`,
+  };
+  const opening = sunSign && truthBySun[sunSign]
+    ? truthBySun[sunSign]
+    : `${name} ${G.is} more layered in the moment than the surface suggests, and the chart explains why.`;
+
+  // Sentence 3: Sun reads + Mercury house (woven into one sentence).
+  const sunRead = sunSign && SIGN_READ[sunSign] ? SIGN_READ[sunSign] : "";
+  const mercuryHouseClause = (mercuryHouse && MERCURY_HOUSE_SHORT[mercuryHouse]) || "";
+  let readAndWordsSentence = "";
+  if (sunRead && mercuryHouseClause) {
+    readAndWordsSentence = `${cap(sunSign!)} ${sunRead}, while ${mercuryHouseClause}.`;
+  } else if (sunRead) {
+    readAndWordsSentence = `${cap(sunSign!)} ${sunRead}.`;
+  } else if (mercuryHouseClause) {
+    readAndWordsSentence = `${cap(mercuryHouseClause)}.`;
   }
 
-  // Phase-pressure note: plain version only, no mechanism vocabulary.
+  // Sentence 4: Mars force.
+  const marsSentence = marsForceClause ? `${cap(marsForceClause)}.` : "";
+
+  // Sentence 5: Venus want vs. Jupiter stakes (one sentence, contrastive).
+  let valueStakesSentence = "";
+  if (venusWantClause && jupiterStakesClause) {
+    valueStakesSentence = `${venusWantClause}, ${jupiterStakesClause}.`;
+  } else if (venusWantClause) {
+    valueStakesSentence = `${venusWantClause}.`;
+  } else if (jupiterStakesClause) {
+    // strip leading "but " for standalone use
+    valueStakesSentence = `${cap(jupiterStakesClause.replace(/^but /, ""))}.`;
+  }
+
+  // Sentence 6: Saturn-angular weight on being seen.
+  const saturnSentence = saturnAngularClause ? `${saturnAngularClause}.` : "";
+
+  // Sentence 7: consequence-awareness close.
+  const closeSentence = `The result is not confusion. It is consequence-awareness: ${G.subj} ${G.is} weighing what the truth will change before ${G.subj} ${G.v("say")} it.`;
+
+  const corePortrait = [
+    opening,
+    readAndWordsSentence,
+    marsSentence,
+    valueStakesSentence,
+    saturnSentence,
+    closeSentence,
+  ].filter(Boolean).join(" ");
+
+  // Life-stage anchor planet — used by downstream sections (System Mechanism,
+  // How The System Works). Not concatenated into the Core Portrait paragraph.
   const stageName = p.developmentalAnchor?.stage || "";
   const PHASE_PLANET: Array<{ match: RegExp; planet: string; label: string }> = [
-    { match: /Lunar Phase/i,        planet: "Moon",    label: "Lunar Phase" },
-    { match: /Mercury Phase/i,      planet: "Mercury", label: "Mercury Phase" },
-    { match: /Mars/i,               planet: "Mars",    label: "Mars / Identity Phase" },
+    { match: /Lunar Phase/i,             planet: "Moon",    label: "Lunar Phase" },
+    { match: /Mercury Phase/i,           planet: "Mercury", label: "Mercury Phase" },
+    { match: /Mars/i,                    planet: "Mars",    label: "Mars / Identity Phase" },
     { match: /Saturn Return: Building/i, planet: "Saturn",  label: "First Saturn Return" },
-    { match: /Uranus Opposition/i,  planet: "Uranus",  label: "Uranus Opposition" },
-    { match: /Chiron Return/i,      planet: "Chiron",  label: "Chiron Return" },
+    { match: /Uranus Opposition/i,       planet: "Uranus",  label: "Uranus Opposition" },
+    { match: /Chiron Return/i,           planet: "Chiron",  label: "Chiron Return" },
     { match: /Second Saturn Return/i,    planet: "Saturn",  label: "Second Saturn Return" },
   ];
   const activePhase = PHASE_PLANET.find(ph => ph.match.test(stageName));
-  if (activePhase) {
-    const phPlanetData = (chart?.planets as any)?.[activePhase.planet];
-    const phSign = phPlanetData?.sign as string | undefined;
-    const phHouse = calcHouse(phPlanetData?.sign, phPlanetData?.degree, phPlanetData?.minutes);
-    if (phSign && phHouse) {
-      portraitParts.push(
-        `Right now, ${name} ${G.is} in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the part of life under the most weight. What can look like pushing back or shutting down is ${name} learning what this chapter actually asks ${G.obj} to carry.`,
-      );
-    }
-  }
-
-  // Precompute editorial-layer (Section 9) flags so 9a/9c know whether to fire.
-  const _p9 = (chart?.planets ?? {}) as any;
-  const _scorpio1st_pre = (_p9.Sun?.sign === "Scorpio" && sunHouse === 1)
-    || (_p9.Mars?.sign === "Scorpio" && marsHouse === 1)
-    || _p9.Pluto?.house === 1
-    || (p as any)?.ascendant?.sign === "Scorpio";
-  const _saturnLeo10_pre = _p9.Saturn?.sign === "Leo" && _p9.Saturn?.house === 10;
-  const _libraIdentity_pre = _p9.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
-  const _merc12_pre = mercuryHouse === 12;
-  const _venusJupReception_pre = _p9.Venus?.sign && _p9.Jupiter?.sign
-    && RULER_OF[_p9.Venus.sign] === "Jupiter" && RULER_OF[_p9.Jupiter.sign] === "Venus";
-  const _jup8_pre = _p9.Jupiter?.house === 8;
-  const _venus8_pre = _p9.Venus?.house === 8;
-  const will9aFire = _scorpio1st_pre && (_saturnLeo10_pre || _libraIdentity_pre || _merc12_pre);
-  const will9cFire = !!(_venusJupReception_pre || _jup8_pre || _venus8_pre);
-
-
-
-  // 6d. MUTUAL RECEPTION — Universal Remote. When Mercury and another personal
-  // planet host each other's sign, the inner critic / structure / heat has a
-  // direct line into the nervous system, so "doing it wrong" raises self-doubt.
-  const planetsAny = (chart?.planets ?? {}) as any;
-  const merc = planetsAny.Mercury;
-  if (merc?.sign) {
-    const partners = ["Saturn", "Mars", "Venus", "Sun", "Moon", "Jupiter"];
-    for (const partnerName of partners) {
-      const partner = planetsAny[partnerName];
-      if (!partner?.sign) continue;
-      const mercRuler = RULER_OF[merc.sign];
-      const partnerRuler = RULER_OF[partner.sign];
-      if (mercRuler === partnerName && partnerRuler === "Mercury") {
-        if (partnerName === "Saturn") {
-          // Traditional rulership reception: Mercury rules Virgo, Saturn rules Aquarius.
-          // Describe as a closed loop between independent thinking and self-correction.
-          const satHouse = calcHouse(partner.sign, partner.degree, partner.minutes);
-          const satReal = (partner.sign === "Virgo" && satHouse === 1)
-            ? ` Saturn in Virgo in the 1st can make ${name} feel like the answer has to be correct before ${name} is allowed to stand behind it. So even when Mercury in ${merc.sign} knows what ${name} thinks, Saturn may still check: "Is that accurate enough? Did I do that right? Will this make me look wrong?"`
-            : "";
-          portraitParts.push(
-            `Mercury and Saturn are in traditional mutual reception (Mercury in ${merc.sign}, ruled by Saturn; Saturn in ${partner.sign}, ruled by Mercury). This creates a closed loop between independent thinking and self-correction. Mercury wants the answer to be original and true; Saturn wants it to be useful, correct, and good enough.${satReal} Nothing exits cleanly until both sign off, so the same thought can get re-checked several times before it is allowed out loud.`,
-          );
-        } else if (partnerName === "Jupiter") {
-          // Mercury–Jupiter mutual reception: impression vs. explanation loop.
-          // NOT discipline or correctness (that is Saturn). This is about
-          // translating a vibe, image, feeling, or private knowing into words.
-          portraitParts.push(
-            `Mercury and Jupiter are in mutual reception: Mercury in ${merc.sign} is ruled by Jupiter, and Jupiter in ${partner.sign} is ruled by Mercury. This creates a loop between impression and explanation. ${name} may know something first as a feeling, image, vibe, or private knowing, and only later find the words for it. Jupiter in ${partner.sign} keeps trying to explain, joke, teach, or name the thing, while Mercury in ${merc.sign} keeps absorbing more than can be said cleanly.`,
-          );
-        } else {
-          const PARTNER_VOICE: Record<string, string> = {
-            Mars:   "anger and survival heat",
-            Venus:  "the love-and-worth voice",
-            Sun:    "the core identity voice",
-            Moon:   "the emotional regulator",
-            Jupiter:"the meaning-and-belief voice",
-          };
-          portraitParts.push(
-            `Mercury and ${partnerName} are in mutual reception (Mercury in ${merc.sign}, ${partnerName} in ${partner.sign}, hosting each other's sign). That gives ${PARTNER_VOICE[partnerName]} direct access to how ${name} thinks and speaks. The upside is that this planet can sharpen ${name}'s words from the inside. The cost is that pressure from ${partnerName} can make the chest and throat tighten right when ${name} needs language most.`,
-          );
-        }
-        break;
-      }
-    }
-  }
-
-  // 6d-ii. VALUE-LOOP RECEPTION — Venus and Jupiter in each other's signs.
-  // Venus = truth/honesty/worth. Jupiter = safety/meaning/stability.
-  // When they host each other, the value system has no final authority and
-  // decisions oscillate between honesty and safety instead of landing.
-  {
-    const v = (chart?.planets as any)?.Venus;
-    const j = (chart?.planets as any)?.Jupiter;
-    if (!will9cFire && v?.sign && j?.sign && RULER_OF[v.sign] === "Jupiter" && RULER_OF[j.sign] === "Venus") {
-      portraitParts.push(
-        `Venus and Jupiter are in mutual reception (Venus in ${v.sign}, Jupiter in ${j.sign}). Venus runs truth, honesty, and worth; Jupiter runs safety, meaning, and stability. With them hosting each other, the value system has no final authority — decisions oscillate between "what is honest" and "what is safe" instead of landing cleanly. That is why ${name} can revisit the same call repeatedly: the loop has no endpoint built in.`,
-      );
-    }
-  }
-
-
-
-
-  // 7. Moon regulation layer (after the mechanism, before the fix).
-  if (moonSignEarly && MOON_NEED[moonSignEarly]) {
-    const mHouse = calcHouse((chart?.planets as any)?.Moon?.sign, (chart?.planets as any)?.Moon?.degree, (chart?.planets as any)?.Moon?.minutes);
-    let privacyNote = "";
-    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
-      portraitParts.push(`Moon in Sagittarius in the 2nd house regulates through body safety plus a bigger view. ${name} settles when his body feels steady and he is not trapped in a heavy emotional corner. Movement, food, water, humor, honesty, and a wider perspective help him come back to himself.`);
-    } else if (mHouse === 12 || mHouse === 8 || mHouse === 4) {
-      privacyNote = ` In the ${ord(mHouse!)} house, regulation does not happen in the moment — it happens later, privately, away from the room that triggered it. So the system does not reset on the conversation's timeline; it resets on its own.`;
-    } else if (mHouse === 11) {
-      privacyNote = ` ${name} settles when ${name} feels emotionally safe and still included. Moon in ${moonSignEarly} in the 11th house means the sign brings the softness and familiarity, and the house ties regulation to trusted belonging. If ${name} thinks ${name} has been pushed outside the circle, logic alone will not reset ${name}. ${name} needs to know ${name} still has a place.`;
-    }
-    if (moonSignEarly === "Sagittarius" && mHouse === 2) {
-      // Exact Sagittarius Moon / 2nd-house line already added above.
-    } else if (mHouse === 11) {
-      portraitParts.push(privacyNote.trim());
-    } else {
-      portraitParts.push(`The Moon adds the regulation piece: ${MOON_NEED[moonSignEarly]}.${privacyNote}`);
-    }
-  }
-
-  // 8. (REMOVED) The Sun-sign PACE_FIX coaching push has been deleted from
-  // Core Portrait. Support copy must come from the actual chart stack, life
-  // stage, and pressure point — not a Sun-sign prescription.
-
-  // ── 9. EDITORIAL LAYER — major-claim 3-layer paragraphs ─────────────────────
-  // Each block runs ONLY when its chart signature is present, so the Core
-  // Portrait never repeats the same mechanism twice. Pattern per block:
-  // human truth → astrology underneath → lived behavior.
-  {
-    const _p = (chart?.planets ?? {}) as any;
-    const scorpio1st = _p.Sun?.sign === "Scorpio" && sunHouse === 1
-      || _p.Mars?.sign === "Scorpio" && marsHouse === 1
-      || _p.Pluto?.house === 1
-      || (p as any)?.ascendant?.sign === "Scorpio";
-    const saturnLeo10 = _p.Saturn?.sign === "Leo" && _p.Saturn?.house === 10;
-    const libraIdentity = _p.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
-    const merc12 = mercuryHouse === 12;
-    const venusJupReception = _p.Venus?.sign && _p.Jupiter?.sign
-      && RULER_OF[_p.Venus.sign] === "Jupiter" && RULER_OF[_p.Jupiter.sign] === "Venus";
-    const jup8 = _p.Jupiter?.house === 8;
-    const venus8 = _p.Venus?.house === 8;
-    const merc6 = mercuryHouse === 6;
-    const sun6 = sunHouse === 6;
-    const nodes = (p as any)?.nodes ?? (p as any)?.northNode ?? null;
-
-    // 9a. Power + restraint. Ordered: Scorpio 1st (raw presence) → Saturn Leo
-    // 10 (visibility brake, the most important weight when present) →
-    // Libra identity (relational tax on delivery) → Mercury 12 (private
-    // word-formation). Saturn in Leo in the 10th is named first inside the
-    // brake clauses because it carries the most weight on why power feels
-    // serious, earned, and carefully presented.
-    if (scorpio1st && (saturnLeo10 || libraIdentity || merc12)) {
-      const pieces: string[] = [];
-      pieces.push(`Scorpio at the 1st house gives ${name} force, depth, instinct, and a presence people can feel before ${G.subj} ${G.v("explain")} ${G.refl}.`);
-      if (saturnLeo10) {
-        pieces.push(`Saturn in Leo in the 10th is the main reason that power does not come out raw. Visibility, public role, and creative authority feel serious to ${name} — like something that has to be earned over time, presented carefully, and held to a higher internal standard than other people seem to use. That is why ${G.subj} ${G.does} not lead with the full force; ${G.subj} ${G.v("present")} a measured version first.`);
-      }
-      if (libraIdentity) pieces.push(`${(p as any)?.ascendant?.sign === "Libra" ? "Libra Rising" : "Libra Sun"} adds a second filter: the delivery should be graceful, fair, and socially intelligent, not blunt.`);
-      if (merc12) pieces.push(`Mercury in the 12th holds the words back until they feel safe, precise, and ready to survive the room.`);
-      portraitParts.push(`${name} ${G.is} significantly more powerful than ${G.subj} ${G.v("let")} on, and the chart explains why. ${pieces.join(" ")} So the power is real, but it reaches the room through controlled presentation rather than open force.`);
-    }
-
-    // 9b. Saturn in Leo in the 10th — visibility-as-work claim. Only emit if
-    // 9a did NOT already name it.
-    if (saturnLeo10 && !(scorpio1st && (saturnLeo10 || libraIdentity || merc12))) {
-      portraitParts.push(`Saturn in Leo in the 10th makes visibility serious. ${name} may have real creative authority, but ${G.subj} ${G.does} not experience being seen casually. Public recognition, leadership, and creative confidence can feel like things that must be earned, justified, or done correctly. So when ${G.subj} ${G.v("hold")} back, it is not because ${G.subj} ${G.v("lack")} presence. It is because being visible comes with an internal standard.`);
-    }
-
-    // 9c. Venus/Jupiter or 2nd/8th loop — consequence-awareness, NOT confusion.
-    // House-aware: Venus in the 2nd ties truth to self-worth, money, and what
-    // ${name} owns; Venus in Sagittarius in the 2nd specifically wants
-    // freedom-of-honesty without surrendering personal resources. Jupiter in
-    // the 8th ties trust to shared resources, intimacy, and what happens after
-    // disclosure; Jupiter in Taurus in the 8th specifically tracks whether
-    // honesty will destabilize a slow-built shared foundation.
-    if (venusJupReception || jup8 || venus8) {
-      const v = _p.Venus, j = _p.Jupiter;
-      const vClauses: string[] = [];
-      if (v?.sign && v?.house) {
-        if (v.sign === "Sagittarius" && v.house === 2) {
-          vClauses.push(`Venus in Sagittarius in the 2nd wants the honest answer AND the freedom not to be financially or personally cornered by it. Truth and self-worth are wired together — saying the false-comfortable thing costs ${name} ${G.pposs} own resource base.`);
-        } else if (v.house === 2) {
-          vClauses.push(`Venus in ${v.sign} in the 2nd ties honesty to self-worth and personal resources — telling the smaller-true thing costs ${name} something ${G.subj} actually ${G.v("own")}.`);
-        } else if (v.house === 8) {
-          vClauses.push(`Venus in ${v.sign} in the 8th ties honesty to shared resources, intimacy, and what gets exposed when the truth lands.`);
-        } else {
-          vClauses.push(`Venus in ${v.sign} wants the clean, honest answer and the freedom not to betray ${G.refl}.`);
-        }
-      }
-      const jClauses: string[] = [];
-      if (j?.sign && j?.house) {
-        if (j.sign === "Taurus" && j.house === 8) {
-          jClauses.push(`Jupiter in Taurus in the 8th tracks whether the truth will destabilize what has been built slowly with another person — money, trust, the body, the shared foundation. ${name} ${G.is} not avoiding honesty; ${G.subj} ${G.is} measuring whether the relationship can carry it without breaking.`);
-        } else if (j.house === 8) {
-          jClauses.push(`Jupiter in ${j.sign} in the 8th tracks trust, shared resources, and what happens after the truth is spoken inside an intimate or financial bond.`);
-        } else if (j.house === 2) {
-          jClauses.push(`Jupiter in ${j.sign} in the 2nd tracks whether honesty grows or threatens ${G.pposs} own stability.`);
-        } else {
-          jClauses.push(`Jupiter in ${j.sign} in the ${ord(j.house)} tracks the meaning, loyalty, and aftermath of what gets said.`);
-        }
-      }
-      portraitParts.push(`${G.poss} conflict is not whether ${G.subj} ${G.v("know")} the truth. ${G.subj.charAt(0).toUpperCase() + G.subj.slice(1)} usually ${G.does}. The conflict is whether telling it will cost too much in the relationship, the shared stability, or the emotional economy of the room. ${vClauses.join(" ")} ${jClauses.join(" ")} So the hesitation is not confusion. It is ${G.subj} weighing what the truth will change before ${G.subj} ${G.v("say")} it.`);
-    }
-
-    // 9d. 6th-house bottleneck — only if no other 6th-house mention has already
-    // landed in the portrait so far.
-    if ((merc6 || sun6) && !portraitParts.join(" ").includes("6th house")) {
-      portraitParts.push(`The 6th house is the bottleneck of workability. The mind may see the pattern quickly, but the 6th house asks: can this fit into the day, the body, the schedule, the task, the nervous system, and the person's real capacity? So the delay is not emptiness. It is the point where insight has to become livable.`);
-    }
-
-    // 9e. Nodes — lived pattern, not vague destiny. Only if the chart carries
-    // recognizable Node house data.
-    if (nodes && typeof nodes === "object") {
-      const nHouse = (nodes as any)?.north?.house ?? (nodes as any)?.northHouse;
-      const sHouse = (nodes as any)?.south?.house ?? (nodes as any)?.southHouse;
-      if (nHouse && sHouse) {
-        portraitParts.push(`The South Node in the ${ord(sHouse)} house describes the familiar comfort pattern ${name} keeps returning to under stress. The North Node in the ${ord(nHouse)} house is the growth edge, the part of life that feels less practiced but is where ${G.subj} ${G.v("become")} more of ${G.refl}. The nodes are not destiny; they are the lived tension between what is easy and what is being asked.`);
-      }
-    }
-  }
-
-  const corePortrait = portraitParts.join(" ");
 
   // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
   // Driver = chart ruler (engine). Translator = Sun (how it comes out).
