@@ -95,13 +95,30 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
   const selected = people.find((c) => c.chart.id === selectedId) ?? null;
   const portrait = selected ? buildChildPortrait(selected.chart, viewerAge ?? null) : null;
   // Build a PortraitProfile from the chart so pronouns (when stored on the
-  // chart) flow into composePortrait. When pronouns are absent, the composer
-  // falls back to name-safe singular phrasing.
+  // chart) flow into composePortrait. When pronouns are absent, we apply a
+  // first-name fallback so the paragraph reads with real pronouns instead of
+  // repeating the person's name in every clause.
+  const PRONOUN_FALLBACK: Record<string, { subject: string; object: string; possessive: string; reflexive: string }> = {
+    lauren: { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    erica:  { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    hannah: { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    margie: { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    nicki:  { subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    shannon:{ subject: "she", object: "her", possessive: "her", reflexive: "herself" },
+    ben:    { subject: "he",  object: "him", possessive: "his", reflexive: "himself" },
+    max:    { subject: "he",  object: "him", possessive: "his", reflexive: "himself" },
+    ike:    { subject: "he",  object: "him", possessive: "his", reflexive: "himself" },
+    nate:   { subject: "he",  object: "him", possessive: "his", reflexive: "himself" },
+  };
+  const firstName = selected ? ((selected.chart.name ?? "").trim().split(/\s+/)[0] || selected.chart.name) : "";
+  const seededPronouns = selected?.chart.pronouns?.subject
+    ? selected.chart.pronouns
+    : PRONOUN_FALLBACK[(firstName || "").toLowerCase()];
   const portraitProfile = selected
     ? {
-        firstName: (selected.chart.name ?? "").trim().split(/\s+/)[0] || selected.chart.name,
+        firstName,
         fullName: selected.chart.name,
-        pronouns: selected.chart.pronouns,
+        pronouns: seededPronouns,
         isChild: typeof viewerAge === "number" ? viewerAge < 18 : undefined,
       }
     : undefined;
