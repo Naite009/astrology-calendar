@@ -553,218 +553,167 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     ? `Life-stage chapter ${name} is in right now: ${p.developmentalAnchor.stage}. The whole chart bends around this chapter.`
     : "";
 
+  // ── CORE CHART-LOGIC BOX ────────────────────────────────────────────────────
+  // Short proof box, 4–7 lines, rendered ABOVE the lived-translation paragraph.
+  // Format: "[Placement] — [role in plain English]." No mechanism vocabulary
+  // (no signal, voltage, medium, conduct, broadcast, system, hardware).
+  const coreChartLogic: Array<{ placement: string; role: string }> = [];
+  {
+    const _planets = (chart?.planets ?? {}) as any;
+    const ascSign = (p as any)?.ascendant?.sign as string | undefined;
+    const seenPlacements = new Set<string>();
+    const add = (placement: string, role: string) => {
+      const key = placement.toLowerCase();
+      if (seenPlacements.has(key)) return;
+      if (coreChartLogic.length >= 7) return;
+      seenPlacements.add(key);
+      coreChartLogic.push({ placement, role });
+    };
+
+    // 1) Sun: identity engine + arena it shows up in.
+    if (sunSign) {
+      const arena = sunHouse ? HOUSE_LIFE_AREA[sunHouse] : null;
+      const sunRole = SUN_FEELS[sunSign] || "carries the core identity drive";
+      add(
+        sunHouse ? `${sunSign} Sun in the ${ord(sunHouse)} house` : `${sunSign} Sun`,
+        arena ? `${sunRole}, lived out through ${arena}` : sunRole,
+      );
+    }
+
+    // 2) Rising: the doorway every situation enters through (only if distinct from Sun).
+    if (ascSign && ascSign !== sunSign) {
+      const ascRole = SUN_FEELS[ascSign] || "shapes how every situation is first met";
+      add(`${ascSign} Rising`, `the doorway: ${ascRole}`);
+    }
+
+    // 3) Mercury: where the words actually form.
+    if (mercurySign) {
+      const mh = mercuryHouse;
+      const houseClause = mh
+        ? mh === 12
+          ? "words form privately first and surface a beat after the moment"
+          : mh === 1
+          ? "words come out fast and visible, sometimes before the thought finishes"
+          : mh === 4
+          ? "words form in the private inner room before they come out loud"
+          : mh === 8
+          ? "words form privately and only surface once the real version feels safe"
+          : mh === 6
+          ? "words form as the body is doing the task, not before it"
+          : `words form through ${HOUSE_LIFE_AREA[mh] ?? "everyday life"}`
+        : "shapes how thinking turns into speech";
+      add(
+        mh ? `Mercury in ${mercurySign}, ${ord(mh)} house` : `Mercury in ${mercurySign}`,
+        houseClause,
+      );
+    }
+
+    // 4) Mars: how the energy actually fires when something matters.
+    if (marsSign) {
+      const marsRole = MARS_FEELS[marsSign] || "carries the action and pressure response";
+      add(
+        marsHouse ? `Mars in ${marsSign}, ${ord(marsHouse)} house` : `Mars in ${marsSign}`,
+        marsHouse && marsHouse === 1
+          ? `${marsRole}, and it shows on the body before it shows in words`
+          : marsRole,
+      );
+    }
+
+    // 5) Chart ruler (only if distinct from already-named bodies).
+    if (
+      p.chartRuler &&
+      p.chartRuler.rulerName !== "Sun" &&
+      p.chartRuler.rulerName !== "Mercury" &&
+      p.chartRuler.rulerName !== "Mars"
+    ) {
+      const rArena = p.chartRuler.rulerHouse ? HOUSE_LIFE_AREA[p.chartRuler.rulerHouse] : null;
+      const rTexture = RULER_TEXTURE[p.chartRuler.rulerSign] || "runs the chart from underneath";
+      add(
+        p.chartRuler.rulerHouse
+          ? `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, ${ord(p.chartRuler.rulerHouse)} house`
+          : `${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}`,
+        rArena ? `the engine underneath: ${rTexture}, lived through ${rArena}` : `the engine underneath: ${rTexture}`,
+      );
+    }
+
+    // 6) Saturn — only when angular (1/4/7/10), so it carries real weight.
+    const sat = _planets.Saturn;
+    if (sat?.sign) {
+      const satHouse = calcHouse(sat.sign, sat.degree, sat.minutes);
+      if (satHouse && [1, 4, 7, 10].includes(satHouse)) {
+        const satRole =
+          satHouse === 10
+            ? "makes visibility, authority, and being seen feel serious and earned"
+            : satHouse === 1
+            ? "makes self-presentation feel held to a higher internal standard"
+            : satHouse === 7
+            ? "makes close one-on-one commitments feel weighted and carefully chosen"
+            : "makes home and inner foundation feel serious to build";
+        add(`Saturn in ${sat.sign}, ${ord(satHouse)} house`, satRole);
+      }
+    }
+
+    // 7) Jupiter — only when in a personal/stakes house (2, 5, 7, 8, 10).
+    const jup = _planets.Jupiter;
+    if (jup?.sign && jup?.house && [2, 5, 7, 8, 10].includes(jup.house) && coreChartLogic.length < 7) {
+      const jupRole =
+        jup.house === 8
+          ? "tracks what the truth could change inside a bond, money, trust, or shared stability"
+          : jup.house === 2
+          ? "tracks whether honesty grows or threatens what they own"
+          : jup.house === 7
+          ? "expands the reach of close partnerships and what gets believed there"
+          : jup.house === 5
+          ? "opens up play, creative risk, and being seen with warmth"
+          : "expands the public role and how meaning is carried in it";
+      add(`Jupiter in ${jup.sign}, ${ord(jup.house)} house`, jupRole);
+    }
+
+    // 8) Venus — only when in a stakes house and we still have room.
+    const ven = _planets.Venus;
+    if (ven?.sign && ven?.house && [2, 7, 8, 10].includes(ven.house) && coreChartLogic.length < 7) {
+      const venRole =
+        ven.sign === "Sagittarius"
+          ? "wants truth, honesty, and the freedom not to betray themselves"
+          : "carries what they value, how they relate, and what feels worth keeping";
+      const ah = ven.house === 2 ? "ties it to self-worth and personal resources"
+        : ven.house === 7 ? "lives it through the closest one-on-one relationships"
+        : ven.house === 8 ? "ties it to trust, intimacy, and what gets shared"
+        : "ties it to public role and reputation";
+      add(`Venus in ${ven.sign}, ${ord(ven.house)} house`, `${venRole}; ${ah}`);
+    }
+  }
+
   const portraitParts: string[] = [];
 
-  // 1. The live mechanic. Why it feels involuntary.
-  // Opener is house-specific so it lands as "this is the exact situation I live in,"
-  // not a generic "in live moments" frame. Each opener names the felt context where
-  // the Sun actually fires for that person.
-  const SUN_HOUSE_OPENER: Record<number, string> = {
-    1:  `The second ${name} walks into a room,`,
-    2:  `When something ${name} values is on the line,`,
-    3:  `When ${name} has to say it out loud,`,
-    4:  `When the house gets quiet and it is just ${name},`,
-    5:  `When the spotlight turns toward ${name},`,
-    6:  `In the middle of the daily grind,`,
-    7:  `When someone else is across from ${name},`,
-    8:  `When something real is on the line for ${name},`,
-    9:  `When the conversation gets bigger than the room,`,
-    10: `When people are watching ${name} for the answer,`,
-    11: `When the group is forming around ${name},`,
-    12: `When no one else is watching,`,
-  };
-  if (sunSign && SUN_LIVE[sunSign]) {
-    const opener = (sunHouse && SUN_HOUSE_OPENER[sunHouse]) || `The way ${name} actually fires,`;
-    const marsSignEarly = (chart?.planets as any)?.Mars?.sign;
-    const marsHouseEarly = calcHouse((chart?.planets as any)?.Mars?.sign, (chart?.planets as any)?.Mars?.degree, (chart?.planets as any)?.Mars?.minutes);
-    if (marsSignEarly === "Aries" && marsHouseEarly === 5) {
-      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. Aries Mars in the 5th reads hesitation as losing the spark. ${G.pposs[0].toUpperCase() + G.pposs.slice(1)} body wants to act, answer, move, or express before the private Mercury-in-Pisces part has finished finding the words.`);
-    } else if (sunSign === "Pisces") {
-      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. That is the Pisces Sun in the 7th house working through relationship first. The room gets loud inside ${G.obj} before ${G.pposs} own answer has fully stepped forward.`);
-    } else {
-      portraitParts.push(`${opener} ${name} ${SUN_LIVE[sunSign]}. That happens before ${G.pposs} position has fully separated from the other person's mood, so it does not feel like a clear choice yet, it feels like the only available response in the room.`);
-    }
-  }
-
-  // 2. The dissenting voice. Chart ruler in its sign + its arena.
-  if (p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
+  // ── LIVED TRANSLATION LEAD ──────────────────────────────────────────────────
+  // 2–3 sentences in human language. Names the behavioral truth first, then
+  // lets one or two placements from the box carry the why. No mechanism words.
+  if (sunSign && p.chartRuler && RULER_BELIEF[p.chartRuler.rulerSign]) {
+    const truthBySun: Record<string, string> = {
+      Libra: `${name} ${G.does} not hesitate because ${G.subj} ${G.v("lack")} a response. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("hesitate")} because ${G.subj} ${G.v("know")} a real response can change the room.`,
+      Pisces: `${name} ${G.does} not go quiet because ${G.subj} ${G.v("have")} nothing to say. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("go")} quiet because ${G.subj} ${G.v("absorb")} more of the room than the room is showing, and sorting whose feeling is whose takes a beat.`,
+      Scorpio: `${name} ${G.does} not hold back because ${G.subj} ${G.v("lack")} force. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("hold")} back because ${G.subj} ${G.v("know")} the full version of what ${G.subj} ${G.v("feel")} would change the room if ${G.subj} let it out raw.`,
+      Cancer: `${name} ${G.does} not react small because ${G.subj} ${G.v("feel")} small. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("react")} the way ${G.subj} ${G.does} because ${G.subj} already ${G.v("pick")} up what shifted in the room before anyone named it.`,
+      Aries: `${name} ${G.does} not move first because ${G.subj} ${G.v("ignore")} the room. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("move")} first because waiting feels physically wrong to ${G.obj}, and the body already knows what it wants to do.`,
+      Taurus: `${name} ${G.does} not stall because ${G.subj} ${G.v("lack")} an answer. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("stall")} because the body refuses to commit until the new ground has been felt.`,
+      Gemini: `${name} ${G.does} not jump topics because ${G.subj} ${G.v("lose")} the thread. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("think")} by talking, so the conversation is the thinking, not a report on it.`,
+      Leo: `${name} ${G.does} not need attention for ego. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("need")} it to know that being fully seen still gets warmth back, not a flat response.`,
+      Virgo: `${name} ${G.does} not point out what is off to criticize. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("point")} at it because ${G.subj} can already see the gap between what is and what would actually work.`,
+      Sagittarius: `${name} ${G.does} not push back on the rule to rebel. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("push")} back because ${G.subj} ${G.v("need")} the reason for the rule to actually hold up.`,
+      Capricorn: `${name} ${G.does} not take over because ${G.subj} ${G.does} not trust people. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("take")} over because ${G.subj} ${G.does} not yet trust the room to carry the weight, and getting it right matters.`,
+      Aquarius: `${name} ${G.does} not stand apart to be difficult. ${G.subj[0].toUpperCase() + G.subj.slice(1)} ${G.v("stand")} apart because ${G.subj} ${G.is} testing whether the rule still makes sense, not refusing to belong.`,
+    };
+    const opening = truthBySun[sunSign] || `${name} ${G.is} more layered in the moment than the surface suggests, and the chart explains why.`;
+    const rulerBelief = RULER_BELIEF[p.chartRuler.rulerSign];
     const arena = p.chartRuler.rulerHouse ? HOUSE_LIFE_AREA[p.chartRuler.rulerHouse] : null;
-    const arenaClause = arena ? ` It runs through ${arena}, which is where this second voice has the most weight.` : "";
-    portraitParts.push(`Underneath that, the part actually steering is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, which ${RULER_BELIEF[p.chartRuler.rulerSign]}.${arenaClause}`);
+    const arenaClause = arena ? ` That voice has the most weight around ${arena}.` : "";
+    portraitParts.push(
+      `${opening} The part actually steering underneath is ${p.chartRuler.rulerName} in ${p.chartRuler.rulerSign}, which ${rulerBelief}.${arenaClause}`,
+    );
   }
 
-  // 2b. Chart ruler hard-aspected to a heavy: the cost-check the ruler has to pass.
-  if (rulerHardCheck && rulerCheckOther && RULER_CHECK_PLAIN[rulerCheckOther]) {
-    portraitParts.push(`But the ruler does not get to act alone. ${rulerName} is ${rulerHardCheck.aspect} ${rulerCheckOther} (${rulerHardCheck.orb.toFixed(1)}°), so ${RULER_CHECK_PLAIN[rulerCheckOther]}. The honest answer has to clear that gate before it is allowed out.`);
-  }
-
-  // 3. Mercury house: where the words actually form and at what speed.
-  if (mercuryHouse && MERCURY_HOUSE_DELAY[mercuryHouse]) {
-    const merc = mercurySign ? `${mercurySign} Mercury` : "Mercury";
-    portraitParts.push(`Then ${merc} changes the speech timing. ${MERCURY_HOUSE_DELAY[mercuryHouse]}. So the understanding can be fully there in real time and the language still not be ready — and if the moment moves faster than the words form, someone else can take the space before the thought finishes.`);
-  }
-
-  // 4. Mars sign as pressure amplifier on top of the speech delay.
-  if (marsSign && MARS_PRESSURE[marsSign]) {
-    portraitParts.push(`${MARS_PRESSURE[marsSign]}.`);
-  }
-
-  // 5. Sun–Chiron specifically: the quiet permission check under every "I want."
-  if (sunChiron) {
-    portraitParts.push(`And Sun ${sunChiron.aspect} Chiron (${sunChiron.orb.toFixed(1)}°) runs a quiet second-guess under all of it — "is what I am about to say even allowed?" — so the system tightens at the exact moment it would otherwise open. That is why "whether the want is even allowed" lands harder than it should: it is a real pattern in the chart, not a mood.`);
-  } else if (liveEdge && !rulerHardCheck) {
-    // Fallback: any other live edge worth naming.
-    portraitParts.push(`The tightest pressure point is ${liveEdge.a} ${liveEdge.aspect} ${liveEdge.b} (${liveEdge.orb.toFixed(1)}°), which is the version of this pattern that gets loud under stress: ${liveEdge.line}`);
-  }
-  // 6. SYNTHESIS — Physics version. Hardware Audit + Collision Report.
-  // Planet+Sign = Voltage. Planet+House = Medium (density). Collision = Sensation.
-  // No personality labels. No topics. Just what the body actually feels.
-
-  type Density = "reflex" | "friction" | "submerged" | "wireless";
-  const HOUSE_DENSITY: Record<number, { class: Density; phrase: string }> = {
-    1:  { class: "reflex",    phrase: "a reflex 1st-house medium (live wire at the skin, zero latency)" },
-    4:  { class: "submerged", phrase: "a submerged 4th-house medium (private inner room, slow to surface)" },
-    7:  { class: "reflex",    phrase: "a reflex 7th-house medium (the signal hits whoever is across from them first)" },
-    10: { class: "reflex",    phrase: "a reflex 10th-house medium (it broadcasts publicly before it is edited)" },
-    6:  { class: "friction",  phrase: "a friction 6th-house medium (hard wired to the nervous system, the body has to conduct it)" },
-    2:  { class: "friction",  phrase: "a friction 2nd-house medium (routed through the body and what it counts as safe)" },
-    8:  { class: "submerged", phrase: "a submerged 8th-house medium (the real version stays underwater until trust is proven)" },
-    12: { class: "submerged", phrase: "a submerged 12th-house medium (the information is there, but underwater, and the words surface late)" },
-    3:  { class: "wireless",  phrase: "a wireless 3rd-house medium (thought and speech move at the same speed)" },
-    5:  { class: "wireless",  phrase: "a wireless 5th-house medium (it comes out through play and expression with no translation step)" },
-    9:  { class: "wireless",  phrase: "a wireless 9th-house medium (it reaches for the big frame fast)" },
-    11: { class: "wireless",  phrase: "a wireless 11th-house medium (it broadcasts to the group with low friction)" },
-  };
-
-  type VoltageClass = "high-voltage" | "high-pressure" | "balanced" | "diffuse" | "steady" | "live-wire" | "compressed";
-  const VOLTAGE: Record<string, { class: VoltageClass; phrase: string }> = {
-    "Mercury-Aquarius":   { class: "high-voltage",  phrase: "high-voltage lightning (non-linear, the whole answer arrives at once)" },
-    "Mercury-Gemini":     { class: "high-voltage",  phrase: "high-voltage chatter (fast, branching, three angles at once)" },
-    "Mercury-Sagittarius":{ class: "high-voltage",  phrase: "high-voltage truth-pulse (the honest version fires before the filter)" },
-    "Mercury-Aries":      { class: "high-voltage",  phrase: "high-voltage spark (the first thought is the answer)" },
-    "Mercury-Libra":      { class: "balanced",      phrase: "a balanced signal (edited for fairness in real time)" },
-    "Mercury-Virgo":      { class: "balanced",      phrase: "a precise signal (sorted and corrected before it is released)" },
-    "Mercury-Pisces":     { class: "diffuse",       phrase: "a diffuse signal (arrives as impression first, words second)" },
-    "Mercury-Cancer":     { class: "diffuse",       phrase: "a feeling-routed signal (the mood gets read before the words form)" },
-    "Mercury-Scorpio":    { class: "compressed",    phrase: "a compressed signal (held back until the real version is safe to release)" },
-    "Mercury-Capricorn":  { class: "compressed",    phrase: "a structured signal (will not speak until it is sound)" },
-    "Mercury-Taurus":     { class: "steady",        phrase: "a steady signal (slow, concrete, refuses to be rushed)" },
-    "Mercury-Leo":        { class: "high-pressure", phrase: "a performance-grade signal (needs an audience to think clearly)" },
-    "Mars-Scorpio":       { class: "high-pressure", phrase: "a pressure cooker (the stakes go up when something matters, not down)" },
-    "Mars-Aries":         { class: "live-wire",     phrase: "a live-wire discharge (fires before the thought finishes)" },
-    "Mars-Capricorn":     { class: "compressed",    phrase: "compressed voltage (the heat gets pushed down to be processed later)" },
-    "Mars-Leo":           { class: "high-pressure", phrase: "high-visibility heat (the response cannot be small)" },
-    "Mars-Cancer":        { class: "diffuse",       phrase: "sideways pressure (protects by indirection, not confrontation)" },
-    "Mars-Libra":         { class: "balanced",      phrase: "fairness-routed pressure (tries to stay even with both sides, which can freeze)" },
-    "Mars-Taurus":        { class: "steady",        phrase: "slow-burn pressure (digs in, will not be moved off the position)" },
-    "Mars-Gemini":        { class: "high-voltage",  phrase: "scattered voltage (the heat multiplies into words)" },
-    "Mars-Virgo":         { class: "balanced",      phrase: "precision pressure (narrows into correction, which can read as criticism)" },
-    "Mars-Sagittarius":   { class: "high-voltage",  phrase: "fire-pulse (wants to leave the room and reframe from outside)" },
-    "Mars-Aquarius":      { class: "high-voltage",  phrase: "principled voltage (detaches a step and answers from logic)" },
-    "Mars-Pisces":        { class: "diffuse",       phrase: "diffuse pressure (hard to locate, often looks like withdrawal)" },
-  };
-
-  function describeCollision(v: VoltageClass, d: Density, planet: string): string | null {
-    if (d === "wireless") {
-      return `With ${planet} on a wireless medium, thought and speech arrive together — what ${name} understands and what ${name} can say tend to land at the same time.`;
-    }
-    const key = `${v}|${d}`;
-    switch (key) {
-      case "high-voltage|friction":
-        return `That is a data jam. The brain has finished, but the nerves are still grounding the current, so ${name} feels fullness or static in the chest or throat before any words come.`;
-      case "high-voltage|submerged":
-        return `That is signal fog with sparks. Flashes of total clarity arrive underwater, and it takes time for any one of them to surface as a sentence.`;
-      case "high-voltage|reflex":
-        return `That is a live-wire broadcast. The thought reaches the skin and the room at the same instant, with no buffer in between.`;
-      case "high-pressure|reflex":
-        return `That is the wall. The body throws up a shield at the skin level before the mind has finished downloading the actual reply.`;
-      case "high-pressure|friction":
-        return `That is a pressure cooker held inside the hardware. The heat stays in the body and releases later as an outburst or a shutdown, rarely as a real-time conversation.`;
-      case "high-pressure|submerged":
-        return `That is buried heat. The intensity is real, but it stays underwater and only the small surface version reaches the room.`;
-      case "balanced|submerged":
-        return `That is deep-sea lag. The understanding is there in real time, but the language has to travel up from underwater, so the right words arrive after the moment has moved on.`;
-      case "balanced|friction":
-        return `That is a careful current. Every word gets routed through the nervous system for a fairness check before it leaves the body, which costs seconds the room does not give back.`;
-      case "balanced|reflex":
-        return `That is a fast edit at the skin. The reply is being shaped for fairness in the same instant it is being said.`;
-      case "diffuse|submerged":
-        return `That is total absorption underwater. ${name} is taking in more signal than the room is showing, and sorting whose feeling is whose takes time the conversation does not allow.`;
-      case "diffuse|reflex":
-        return `That is an impression broadcast. Whatever the room is feeling lands on the skin and goes out again before it can be filtered.`;
-      case "diffuse|friction":
-        return `That is mood routed through the body. ${name} feels the room physically before they can name what was even off.`;
-      case "compressed|submerged":
-        return `That is double containment. The real answer is held back twice, once by the medium and once by the voltage, so almost nothing surfaces in the moment.`;
-      case "compressed|reflex":
-        return `That is composure at the skin. The face holds, the voice holds, and the actual reaction gets processed in private hours later.`;
-      case "compressed|friction":
-        return `That is held current in the hardware. The pressure is real and the body knows it, but the release waits for a private moment.`;
-      case "steady|friction":
-        return `That is grounded current. Slow, physical, conducted through the body at the body's pace, not the conversation's.`;
-      case "steady|submerged":
-        return `That is anchored depth. Things settle slowly, underwater, and will not be hurried to the surface.`;
-      case "steady|reflex":
-        return `That is a slow live wire. The signal reaches the skin, but at the body's pace, not the room's.`;
-      case "live-wire|reflex":
-        return `That is the system at full discharge. The signal hits the room before any internal review has happened.`;
-      case "live-wire|friction":
-        return `That is voltage caught in the body. The discharge wants out, but the nervous system makes it physical first.`;
-      case "live-wire|submerged":
-        return `That is sudden surfacing. The discharge breaks through underwater density in bursts, then goes quiet again.`;
-      default:
-        return null;
-    }
-  }
-
-  const hardwareLines: string[] = [];
-  const collisionLines: string[] = [];
-
-  const auditPlanet = (planet: string, sign: string | undefined, house: number | null | undefined) => {
-    if (!sign || !house) return;
-    const med = HOUSE_DENSITY[house];
-    const volt = VOLTAGE[`${planet}-${sign}`];
-    if (!med || !volt) return;
-    hardwareLines.push(`${sign} ${planet} runs as ${volt.phrase} through ${med.phrase}.`);
-    const coll = describeCollision(volt.class, med.class, planet);
-    if (coll) collisionLines.push(coll);
-  };
-
-  auditPlanet("Mercury", mercurySign, mercuryHouse);
-  auditPlanet("Mars", marsSign, marsHouse);
-  if (p.chartRuler && p.chartRuler.rulerName !== "Mercury" && p.chartRuler.rulerName !== "Mars") {
-    auditPlanet(p.chartRuler.rulerName, p.chartRuler.rulerSign, p.chartRuler.rulerHouse ?? null);
-  }
-
-  // Precompute editorial-layer (Section 9) flags so older Section 6 blocks
-  // can be suppressed when 9a / 9c will fire and say the same thing better.
-  const _p9 = (chart?.planets ?? {}) as any;
-  const _scorpio1st_pre = (_p9.Sun?.sign === "Scorpio" && sunHouse === 1)
-    || (_p9.Mars?.sign === "Scorpio" && marsHouse === 1)
-    || _p9.Pluto?.house === 1
-    || (p as any)?.ascendant?.sign === "Scorpio";
-  const _saturnLeo10_pre = _p9.Saturn?.sign === "Leo" && _p9.Saturn?.house === 10;
-  const _libraIdentity_pre = _p9.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
-  const _merc12_pre = mercuryHouse === 12;
-  const _venusJupReception_pre = _p9.Venus?.sign && _p9.Jupiter?.sign
-    && RULER_OF[_p9.Venus.sign] === "Jupiter" && RULER_OF[_p9.Jupiter.sign] === "Venus";
-  const _jup8_pre = _p9.Jupiter?.house === 8;
-  const _venus8_pre = _p9.Venus?.house === 8;
-  const will9aFire = _scorpio1st_pre && (_saturnLeo10_pre || _libraIdentity_pre || _merc12_pre);
-  const will9cFire = !!(_venusJupReception_pre || _jup8_pre || _venus8_pre);
-
-  // Section 6 collision block — suppress when 9a will fire (9a explains the
-  // same power/restraint dynamic with proper chart weight). Also strip the
-  // mechanism teaser line; that sequencing now lives in In The Moment / How
-  // The System Works, not in the Core Portrait.
-  if (!will9aFire && collisionLines.length >= 1) {
-    const uniqueCollisions = Array.from(new Set(collisionLines));
-    portraitParts.push(`In the body, ${uniqueCollisions.join(" ")} That is pressure reaching the body before language has fully caught up — not a personality problem.`);
-  }
-
-  // 6b. PHASE PRESSURE — the current developmental stage pairs with one specific
-  // planet, and that planet's voltage/medium is the circuit being stress-tested
-  // right now. This is what makes the same chart feel different at 17 vs. 47.
+  // Phase-pressure note: plain version only, no mechanism vocabulary.
   const stageName = p.developmentalAnchor?.stage || "";
   const PHASE_PLANET: Array<{ match: RegExp; planet: string; label: string }> = [
     { match: /Lunar Phase/i,        planet: "Moon",    label: "Lunar Phase" },
@@ -780,46 +729,30 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     const phPlanetData = (chart?.planets as any)?.[activePhase.planet];
     const phSign = phPlanetData?.sign as string | undefined;
     const phHouse = calcHouse(phPlanetData?.sign, phPlanetData?.degree, phPlanetData?.minutes);
-    const phMed = phHouse ? HOUSE_DENSITY[phHouse] : undefined;
-    const phVolt = phSign ? VOLTAGE[`${activePhase.planet}-${phSign}`] : undefined;
-    if (phMed && phVolt) {
+    if (phSign && phHouse) {
       portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} is the part of the chart under the most pressure. ${phSign} ${activePhase.planet} in the ${ord(phHouse!)} house shows where this age asks for more capacity. The "pushing back" or "shutting down" you are seeing is not character. It is ${name} meeting more weight in this part of life than the body has carried before, and learning how much it can take before it needs support.`,
-      );
-    } else if (phSign && phHouse) {
-      portraitParts.push(
-        `Right now, ${name} is in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the chart part under pressure. The behavior that looks like rebellion or shutdown is ${name} learning what this part of life can carry.`,
+        `Right now, ${name} ${G.is} in the ${activePhase.label}, so ${activePhase.planet} in ${phSign} (${ord(phHouse)} house) is the part of life under the most weight. What can look like pushing back or shutting down is ${name} learning what this chapter actually asks ${G.obj} to carry.`,
       );
     }
   }
 
-  // 6c. MIRROR / MAGNET FLIP — when Sun and Mars sit in houses of different
-  // density (especially Sun in a submerged/wireless house and Mars in a reflex
-  // or friction house), the system can flip from "absorbing the room" to
-  // "broadcasting from the body" to protect itself.
-  const sunMed = sunHouse ? HOUSE_DENSITY[sunHouse] : undefined;
-  const marsMed = marsHouse ? HOUSE_DENSITY[marsHouse] : undefined;
-  if (sunMed && marsMed && sunHouse !== marsHouse && sunMed.class !== marsMed.class) {
-    const ABSORB_MODE: Partial<Record<Density, string>> = {
-      submerged: `absorbing, because the Sun in the ${ord(sunHouse!)} takes the room in before ${name} knows what to do with it`,
-      wireless:  `mirroring, because the Sun in the ${ord(sunHouse!)} reflects what is in the room quickly`,
-      reflex:    `tracking, because the Sun in the ${ord(sunHouse!)} reads the room at the skin`,
-      friction:  `metabolizing, because the Sun in the ${ord(sunHouse!)} runs the room through the body first`,
-    };
-    const BROADCAST_MODE: Partial<Record<Density, string>> = {
-      reflex:    `showing the reaction immediately, because Mars in the ${ord(marsHouse!)} reaches the surface fast`,
-      friction:  `moving the heat through the body, because Mars in the ${ord(marsHouse!)} has to act physically before it can settle`,
-      submerged: `going underground, because Mars in the ${ord(marsHouse!)} drops the heat below the surface first`,
-      wireless:  `pushing the heat outward fast, because Mars in the ${ord(marsHouse!)} needs expression before reflection`,
-    };
-    const absorb = ABSORB_MODE[sunMed.class];
-    const broadcast = BROADCAST_MODE[marsMed.class];
-    if (absorb && broadcast) {
-      portraitParts.push(
-        `There is a switch between two modes. Default position is ${absorb}. When the room gets too loud inside, ${name} flips to ${broadcast}. What looks like ${name} "going not-nice" or "going cold" is usually protection, not a sudden change in character.`,
-      );
-    }
-  }
+  // Precompute editorial-layer (Section 9) flags so 9a/9c know whether to fire.
+  const _p9 = (chart?.planets ?? {}) as any;
+  const _scorpio1st_pre = (_p9.Sun?.sign === "Scorpio" && sunHouse === 1)
+    || (_p9.Mars?.sign === "Scorpio" && marsHouse === 1)
+    || _p9.Pluto?.house === 1
+    || (p as any)?.ascendant?.sign === "Scorpio";
+  const _saturnLeo10_pre = _p9.Saturn?.sign === "Leo" && _p9.Saturn?.house === 10;
+  const _libraIdentity_pre = _p9.Sun?.sign === "Libra" || (p as any)?.ascendant?.sign === "Libra";
+  const _merc12_pre = mercuryHouse === 12;
+  const _venusJupReception_pre = _p9.Venus?.sign && _p9.Jupiter?.sign
+    && RULER_OF[_p9.Venus.sign] === "Jupiter" && RULER_OF[_p9.Jupiter.sign] === "Venus";
+  const _jup8_pre = _p9.Jupiter?.house === 8;
+  const _venus8_pre = _p9.Venus?.house === 8;
+  const will9aFire = _scorpio1st_pre && (_saturnLeo10_pre || _libraIdentity_pre || _merc12_pre);
+  const will9cFire = !!(_venusJupReception_pre || _jup8_pre || _venus8_pre);
+
+
 
   // 6d. MUTUAL RECEPTION — Universal Remote. When Mercury and another personal
   // planet host each other's sign, the inner critic / structure / heat has a
