@@ -876,6 +876,20 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     closeSentence,
   ].filter(Boolean).join(" ");
 
+  // Life-stage anchor planet — used by downstream sections (System Mechanism,
+  // How The System Works). Not concatenated into the Core Portrait paragraph.
+  const stageName = p.developmentalAnchor?.stage || "";
+  const PHASE_PLANET: Array<{ match: RegExp; planet: string; label: string }> = [
+    { match: /Lunar Phase/i,             planet: "Moon",    label: "Lunar Phase" },
+    { match: /Mercury Phase/i,           planet: "Mercury", label: "Mercury Phase" },
+    { match: /Mars/i,                    planet: "Mars",    label: "Mars / Identity Phase" },
+    { match: /Saturn Return: Building/i, planet: "Saturn",  label: "First Saturn Return" },
+    { match: /Uranus Opposition/i,       planet: "Uranus",  label: "Uranus Opposition" },
+    { match: /Chiron Return/i,           planet: "Chiron",  label: "Chiron Return" },
+    { match: /Second Saturn Return/i,    planet: "Saturn",  label: "Second Saturn Return" },
+  ];
+  const activePhase = PHASE_PLANET.find(ph => ph.match.test(stageName));
+
   // ── 1b. SYSTEM MECHANISM ────────────────────────────────────────────────────
   // Driver = chart ruler (engine). Translator = Sun (how it comes out).
   // Trigger = the strongest stress signature. The synthesis MUST bridge the
