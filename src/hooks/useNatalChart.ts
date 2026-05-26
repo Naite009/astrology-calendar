@@ -404,6 +404,31 @@ export const useNatalChart = () => {
     return storedUserChart ? 'user' : 'general';
   });
 
+  // Persist auto-seeded pronouns back to storage so the backfill is durable.
+  useEffect(() => {
+    if (userNatalChart && PRONOUN_SEED[(userNatalChart.name ?? "").trim().split(/\s+/)[0]?.toLowerCase()]) {
+      const stored = safeParseJSON<NatalChart | null>('userNatalChart', null);
+      if (stored && !stored.pronouns?.subject) {
+        saveWithRollingBackups('userNatalChart', userNatalChart);
+      }
+    }
+  }, [userNatalChart]);
+
+  useEffect(() => {
+    const needsPersist = savedCharts.some(c => {
+      const first = (c.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+      return first && PRONOUN_SEED[first] && c.pronouns?.subject;
+    });
+    if (!needsPersist) return;
+    const stored = safeParseJSON<NatalChart[]>('savedCharts', []);
+    const anyMissingInStorage = stored.some(c => {
+      const first = (c.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
+      return first && PRONOUN_SEED[first] && !c.pronouns?.subject;
+    });
+    if (anyMissingInStorage) saveWithRollingBackups('savedCharts', savedCharts);
+  }, [savedCharts]);
+
+
   // Normalize invalid selections (e.g. deleted saved chart id)
   useEffect(() => {
     const isValidSelection =
