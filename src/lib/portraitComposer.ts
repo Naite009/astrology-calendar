@@ -660,7 +660,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
         jup.house === 8
           ? "tracks what the truth could change inside a bond, money, trust, or shared stability"
           : jup.house === 2
-          ? "tracks whether honesty grows or threatens what they own"
+          ? `tracks whether honesty grows or threatens what ${G.subj} ${G.v("own")}`
           : jup.house === 7
           ? "expands the reach of close partnerships and what gets believed there"
           : jup.house === 5
@@ -674,13 +674,13 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     if (ven?.sign && ven?.house && [2, 7, 8, 10].includes(ven.house) && coreChartLogic.length < 7) {
       const venRole =
         ven.sign === "Sagittarius"
-          ? "wants truth, honesty, and the freedom not to betray themselves"
-          : "carries what they value, how they relate, and what feels worth keeping";
+          ? `wants truth, honesty, and the freedom not to betray ${G.refl}`
+          : `carries what ${G.subj} ${G.v("value")}, how ${G.subj} ${G.v("relate")}, and what feels worth keeping`;
       const ah = ven.house === 2 ? "ties it to self-worth and personal resources"
         : ven.house === 7 ? "lives it through the closest one-on-one relationships"
         : ven.house === 8 ? "ties it to trust, intimacy, and what gets shared"
         : "ties it to public role and reputation";
-      add(`Venus in ${ven.sign}, ${ord(ven.house)} house`, `${venRole}; ${ah}`);
+      add(`Venus in ${ven.sign}, ${ord(ven.house)} house`, `${venRole}, ${ah}`);
     }
   }
 
