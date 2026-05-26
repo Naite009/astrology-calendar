@@ -222,7 +222,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                 Core Portrait
               </div>
 
-              {/* What the chart is showing — proof box (4–7 lines, Placement — role). */}
+              {/* What the chart is showing: proof box (4–7 lines, Placement: role). */}
               {composed.coreChartLogic && composed.coreChartLogic.length > 0 && (
                 <div className="rounded-md border border-primary/25 bg-background/60 px-4 py-3 space-y-1.5">
                   <div className="text-[10px] uppercase tracking-widest text-primary/80 font-semibold mb-1">
@@ -232,7 +232,7 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
                     {composed.coreChartLogic.map((line, i) => (
                       <li key={i}>
                         <span className="font-semibold">{line.placement}</span>
-                        <span className="text-foreground/70"> — {line.role}.</span>
+                        <span className="text-foreground/70">: {line.role}.</span>
                       </li>
                     ))}
                   </ul>
