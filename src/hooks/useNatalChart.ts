@@ -368,7 +368,9 @@ export const useNatalChart = () => {
     return applyAutoSeededPronouns(normalizeAscendantFromHouse1(c));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
-    const raw = readSavedChartsWithRecovery().map(normalizeAscendantFromHouse1);
+    const raw = readSavedChartsWithRecovery()
+      .map(normalizeAscendantFromHouse1)
+      .map(applyAutoSeededPronouns);
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
