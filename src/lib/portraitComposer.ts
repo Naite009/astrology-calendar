@@ -892,7 +892,7 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   } else if (isSecondSaturn || isElder) {
     parentOpener = `What ${name} is integrating now is not new astrology, it is a lifetime of it. The placements below are the ones still doing real work, the ones worth listening to instead of explaining away.`;
   } else {
-    parentOpener = `The parts of the chart actually shaping how ${name} ${G.v("move")} through this stretch of life are a small set, not a long list. The placements below are the ones doing the most work right now, and the paragraph that follows is what they ${G.v("feel")} like from the inside.`;
+    parentOpener = `The parts of the chart actually shaping how ${name} ${G.v("move")} through this stretch of life are a small set, not a long list. The placements below are the ones doing the most work right now, and the paragraph that follows is what they feel like from the inside.`;
   }
 
   const corePortrait = [
