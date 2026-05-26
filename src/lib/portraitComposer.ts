@@ -816,24 +816,26 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
     return `Saturn in ${sat.sign} in the 4th makes home and inner foundation serious, so being direct close to home can feel like changing the structure underneath ${G.obj}`;
   })();
 
-  // Sentence 1–2: behavioral truth opening (Sun).
+  // Sentence 1–2: behavioral truth opening (Sun). Uses pronouns only; the
+  // person's name lives in the parent-actionable opener above this block so
+  // the paragraph does not repeat the name in every clause.
   const truthBySun: Record<string, string> = {
-    Libra: `${name} ${G.does} not hesitate because ${G.subj} ${G.v("lack")} a response. ${subjCap} ${G.v("hesitate")} because ${G.subj} ${G.v("know")} a real response can change the room.`,
-    Pisces: `${name} ${G.does} not go quiet because ${G.subj} ${G.v("have")} nothing to say. ${subjCap} ${G.v("go")} quiet because ${G.subj} ${G.v("absorb")} more of the room than the room is showing.`,
-    Scorpio: `${name} ${G.does} not hold back because ${G.subj} ${G.v("lack")} force. ${subjCap} ${G.v("hold")} back because ${G.subj} ${G.v("know")} the full version of what ${G.subj} ${G.v("feel")} would change the room if it came out raw.`,
-    Cancer: `${name} ${G.does} not react small because ${G.subj} ${G.v("feel")} small. ${subjCap} ${G.v("react")} the way ${G.subj} ${G.does} because ${G.subj} already ${G.v("pick")} up what shifted in the room before anyone named it.`,
-    Aries: `${name} ${G.does} not move first because ${G.subj} ${G.v("ignore")} the room. ${subjCap} ${G.v("move")} first because waiting feels physically wrong, and the body already knows what it wants to do.`,
-    Taurus: `${name} ${G.does} not stall because ${G.subj} ${G.v("lack")} an answer. ${subjCap} ${G.v("stall")} because the body refuses to commit until the new ground has been felt.`,
-    Gemini: `${name} ${G.does} not jump topics because ${G.subj} ${G.v("lose")} the thread. ${subjCap} ${G.v("think")} by talking, so the conversation is the thinking, not a report on it.`,
-    Leo: `${name} ${G.does} not need attention for ego. ${subjCap} ${G.v("need")} it to know that being fully seen still gets warmth back, not a flat response.`,
-    Virgo: `${name} ${G.does} not point out what is off to criticize. ${subjCap} ${G.v("point")} at it because ${G.subj} can already see the gap between what is and what would actually work.`,
-    Sagittarius: `${name} ${G.does} not push back on the rule to rebel. ${subjCap} ${G.v("push")} back because ${G.subj} ${G.v("need")} the reason for the rule to actually hold up.`,
-    Capricorn: `${name} ${G.does} not take over because ${G.subj} ${G.does} not trust people. ${subjCap} ${G.v("take")} over because ${G.subj} ${G.does} not yet trust the room to carry the weight, and getting it right matters.`,
-    Aquarius: `${name} ${G.does} not stand apart to be difficult. ${subjCap} ${G.v("stand")} apart because ${G.subj} ${G.is} testing whether the rule still makes sense, not refusing to belong.`,
+    Libra: `${subjCap} ${G.does} not hesitate because ${G.subj} ${G.v("lack")} a response. ${subjCap} ${G.v("hesitate")} because ${G.subj} ${G.v("know")} a real response can change the room.`,
+    Pisces: `${subjCap} ${G.does} not go quiet because ${G.subj} ${G.v("have")} nothing to say. ${subjCap} ${G.v("go")} quiet because ${G.subj} ${G.v("absorb")} more of the room than the room is showing.`,
+    Scorpio: `${subjCap} ${G.does} not hold back because ${G.subj} ${G.v("lack")} force. ${subjCap} ${G.v("hold")} back because ${G.subj} ${G.v("know")} the full version of what ${G.subj} ${G.v("feel")} would change the room if it came out raw.`,
+    Cancer: `${subjCap} ${G.does} not react small because ${G.subj} ${G.v("feel")} small. ${subjCap} ${G.v("react")} the way ${G.subj} ${G.does} because ${G.subj} already ${G.v("pick")} up what shifted in the room before anyone named it.`,
+    Aries: `${subjCap} ${G.does} not move first because ${G.subj} ${G.v("ignore")} the room. ${subjCap} ${G.v("move")} first because waiting feels physically wrong, and the body already knows what it wants to do.`,
+    Taurus: `${subjCap} ${G.does} not stall because ${G.subj} ${G.v("lack")} an answer. ${subjCap} ${G.v("stall")} because the body refuses to commit until the new ground has been felt.`,
+    Gemini: `${subjCap} ${G.does} not jump topics because ${G.subj} ${G.v("lose")} the thread. ${subjCap} ${G.v("think")} by talking, so the conversation is the thinking, not a report on it.`,
+    Leo: `${subjCap} ${G.does} not need attention for ego. ${subjCap} ${G.v("need")} it to know that being fully seen still gets warmth back, not a flat response.`,
+    Virgo: `${subjCap} ${G.does} not point out what is off to criticize. ${subjCap} ${G.v("point")} at it because ${G.subj} can already see the gap between what is and what would actually work.`,
+    Sagittarius: `${subjCap} ${G.does} not push back on the rule to rebel. ${subjCap} ${G.v("push")} back because ${G.subj} ${G.v("need")} the reason for the rule to actually hold up.`,
+    Capricorn: `${subjCap} ${G.does} not take over because ${G.subj} ${G.does} not trust people. ${subjCap} ${G.v("take")} over because ${G.subj} ${G.does} not yet trust the room to carry the weight, and getting it right matters.`,
+    Aquarius: `${subjCap} ${G.does} not stand apart to be difficult. ${subjCap} ${G.v("stand")} apart because ${G.subj} ${G.is} testing whether the rule still makes sense, not refusing to belong.`,
   };
-  const opening = sunSign && truthBySun[sunSign]
+  const sunBehavior = sunSign && truthBySun[sunSign]
     ? truthBySun[sunSign]
-    : `${name} ${G.is} more layered in the moment than the surface suggests, and the chart explains why.`;
+    : `${subjCap} ${G.is} more layered in the moment than the surface suggests, and the chart explains why.`;
 
   // Sentence 3: Sun reads + Mercury house (woven into one sentence).
   const sunRead = sunSign && SIGN_READ[sunSign] ? SIGN_READ[sunSign] : "";
@@ -857,7 +859,6 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   } else if (venusWantClause) {
     valueStakesSentence = `${venusWantClause}.`;
   } else if (jupiterStakesClause) {
-    // strip leading "but " for standalone use
     valueStakesSentence = `${cap(jupiterStakesClause.replace(/^but /, ""))}.`;
   }
 
@@ -867,8 +868,36 @@ export function composePortrait(p: ChildPortrait, chart?: NatalChart, profile?: 
   // Sentence 7: consequence-awareness close.
   const closeSentence = `The result is not confusion. It is consequence-awareness: ${G.subj} ${G.is} weighing what the truth will change before ${G.subj} ${G.v("say")} it.`;
 
+  // ── Parent-actionable opener ────────────────────────────────────────────────
+  // Editorial first sentence that frames WHY this matters for the person
+  // reading. Uses the name exactly once so the rest of the paragraph can run
+  // on pronouns. Tone borrowed from family-systems and developmental writers
+  // (Siegel, Faber & Mazlish, Aron), not from astrology jargon.
+  const stageLabel = (p.developmentalAnchor?.stage || "").toLowerCase();
+  const isChildAge = (p.age ?? 99) <= 17;
+  const isYoungAdult = (p.age ?? 0) >= 18 && (p.age ?? 0) <= 25;
+  const isMidlife = /uranus opposition|chiron return/.test(stageLabel);
+  const isSaturnReturn = /saturn return: building/.test(stageLabel);
+  const isSecondSaturn = /second saturn return/.test(stageLabel);
+  const isElder = /eldering/.test(stageLabel);
+  let parentOpener: string;
+  if (isChildAge) {
+    parentOpener = `The most useful thing to know about ${name} right now is not a personality label, but the small set of patterns ${G.subj} already ${G.v("run")} on. The placements below are the ones that actually shape how ${G.subj} ${G.v("meet")} a room, a question, or a hard moment, so the adults closest to ${G.obj} can stop interpreting the behavior and start meeting it.`;
+  } else if (isYoungAdult) {
+    parentOpener = `${name} is at the point where ${G.subj} ${G.is} sorting out which parts of ${G.refl} are real and which were borrowed. A few placements do most of the work in that sorting, and they are the ones to pay attention to before reading anything else into ${G.pposs} behavior.`;
+  } else if (isSaturnReturn) {
+    parentOpener = `${name} is inside the chapter where the structure of an adult life gets built or rebuilt, and only a handful of placements actually carry the weight of that build. Those are the ones below.`;
+  } else if (isMidlife) {
+    parentOpener = `${name} is in a chapter where the life that worked in the first half stops fitting the same way, and a small number of placements are doing the real loosening. Those are the ones below.`;
+  } else if (isSecondSaturn || isElder) {
+    parentOpener = `What ${name} is integrating now is not new astrology, it is a lifetime of it. The placements below are the ones still doing real work, the ones worth listening to instead of explaining away.`;
+  } else {
+    parentOpener = `The parts of the chart actually shaping how ${name} ${G.v("move")} through this stretch of life are a small set, not a long list. The placements below are the ones doing the most work right now, and the paragraph that follows is what they ${G.v("feel")} like from the inside.`;
+  }
+
   const corePortrait = [
-    opening,
+    parentOpener,
+    sunBehavior,
     readAndWordsSentence,
     marsSentence,
     valueStakesSentence,
