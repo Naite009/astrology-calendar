@@ -217,10 +217,29 @@ export function ChildPortraitCard({ members, primaryChartId, viewerAge }: Props)
             )}
 
             {/* ═══════════ TIER 1 · HEADLINE ═══════════ */}
-            <section className="rounded-lg bg-gradient-to-br from-primary/15 via-primary/8 to-transparent px-5 py-5 space-y-3">
+            <section className="rounded-lg bg-gradient-to-br from-primary/15 via-primary/8 to-transparent px-5 py-5 space-y-4">
               <div className="text-[10px] uppercase tracking-widest text-primary font-semibold">
                 Core Portrait
               </div>
+
+              {/* What the chart is showing — proof box (4–7 lines, Placement — role). */}
+              {composed.coreChartLogic && composed.coreChartLogic.length > 0 && (
+                <div className="rounded-md border border-primary/25 bg-background/60 px-4 py-3 space-y-1.5">
+                  <div className="text-[10px] uppercase tracking-widest text-primary/80 font-semibold mb-1">
+                    What the chart is showing
+                  </div>
+                  <ul className="space-y-1.5 text-[13px] leading-snug text-foreground/90">
+                    {composed.coreChartLogic.map((line, i) => (
+                      <li key={i}>
+                        <span className="font-semibold">{line.placement}</span>
+                        <span className="text-foreground/70"> — {line.role}.</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Lived translation — human paragraph that follows the proof. */}
               <p className="text-sm leading-relaxed text-foreground">
                 {composed.corePortrait}
               </p>
