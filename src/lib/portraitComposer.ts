@@ -196,6 +196,12 @@ const MOON12_MISREAD =
 
 export interface ComposedPortrait {
   lifeStageChapter: string;
+  /**
+   * "What the chart is showing" — short proof box rendered above the Core
+   * Portrait paragraph. 4–7 lines, format: "[Placement] — [role in plain English]."
+   * The paragraph translates these into lived behavior; box carries the proof.
+   */
+  coreChartLogic: Array<{ placement: string; role: string }>;
   corePortrait: string;
   systemMechanism: {
     driver: { label: string; detail: string };
