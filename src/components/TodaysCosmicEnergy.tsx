@@ -1626,6 +1626,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                       {voiceStyle === 'cafe' && 'Straightforward, accessible - practical daily guidance'}
                       {voiceStyle === 'astrotwins' && 'Modern lifestyle - warm, hip, culturally current'}
                       {voiceStyle === 'chani' && 'Poetic and contemplative - therapeutic, socially conscious'}
+                      {voiceStyle === 'teen' && 'Quick & Real - teen-friendly, common talk, no extra words, thorough but fast to read'}
                     </p>
                   </CardContent>
                 </Card>
