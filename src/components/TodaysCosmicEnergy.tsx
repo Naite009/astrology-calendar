@@ -15,6 +15,7 @@ import { formatLocalDateKey } from "@/lib/localDate";
 import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeaningsLookup";
 import { calculateTransitAspects, getTopTransitAspects } from "@/lib/transitAspects";
 import { getTransitPlanetHouse, getNatalPlanetHouse } from "@/lib/houseCalculations";
+import { formatMoonHouseSchedule } from "@/lib/moonHouseSchedule";
 import { buildMorningDigest } from "@/lib/cosmicWeatherMorningDigest";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
