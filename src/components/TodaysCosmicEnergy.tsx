@@ -304,7 +304,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [monthSummary, setMonthSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState<'week' | 'month' | null>(null);
   const [selectedChartId, setSelectedChartId] = useState<string | null>('user');
-  const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani'>('tara');
+  const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani' | 'teen'>('tara');
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -1610,6 +1610,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                           <SelectItem value="cafe">☕ Cafe Astrology</SelectItem>
                           <SelectItem value="astrotwins">♊ AstroTwins</SelectItem>
                           <SelectItem value="chani">🦋 CHANI</SelectItem>
+                          <SelectItem value="teen">🎯 Quick & Real</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1625,6 +1626,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                       {voiceStyle === 'cafe' && 'Straightforward, accessible - practical daily guidance'}
                       {voiceStyle === 'astrotwins' && 'Modern lifestyle - warm, hip, culturally current'}
                       {voiceStyle === 'chani' && 'Poetic and contemplative - therapeutic, socially conscious'}
+                      {voiceStyle === 'teen' && 'Quick & Real - teen-friendly, common talk, no extra words, thorough but fast to read'}
                     </p>
                   </CardContent>
                 </Card>
