@@ -116,7 +116,6 @@ serve(async (req) => {
 
     const userPrompt = [
       `Date: ${dateLabel}.`,
-      recipientName ? `Reader: ${recipientName}.` : "",
       moonHouseToday ? `Moon spends most of today in the reader's house ${moonHouseToday}.` : "",
       "",
       "NATAL_PLANETS (source of truth for sign/house/degree):",
