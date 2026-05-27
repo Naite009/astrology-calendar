@@ -840,9 +840,11 @@ ${natalPlanetsWithHouses}
 THEIR HOUSE CUSPS:
 ${natalHouseCusps}
 
-TRANSITING MOON RIGHT NOW: ${moonDeg.toFixed(1)}° ${moonSignName}${moonHouseForUser ? ` — falls in THEIR ${moonHouseForUser}${moonHouseForUser === 1 ? 'st' : moonHouseForUser === 2 ? 'nd' : moonHouseForUser === 3 ? 'rd' : 'th'} house` : ''}
+TRANSITING MOON RIGHT NOW: ${moonDeg.toFixed(1)}° ${moonSignName}${moonHouseForUser ? ` — currently in THEIR ${moonHouseForUser}${moonHouseForUser === 1 ? 'st' : moonHouseForUser === 2 ? 'nd' : moonHouseForUser === 3 ? 'rd' : 'th'} house` : ''}
+MOON HOUSE SCHEDULE FOR TODAY (use this exactly — the Moon may change houses BEFORE it changes signs):
+${formatMoonHouseSchedule(chartForPersonal, now, userTimezone, userTzAbbr || 'ET')}
 
-TODAY'S TIGHTEST TRANSITS TO ${chartForPersonal.name.toUpperCase()}'S NATAL CHART:
+TODAY'S TIGHTEST TRANSITS TO ${chartForPersonal.name.toUpperCase()}'S NATAL CHART (each line is formatted as "transiting [planet] in [sign] [aspect] natal [planet] in [sign]" — preserve this transit-vs-natal distinction in the reading):
 ${topTransits || 'None within 5° orb right now. Say so honestly rather than invent contacts.'}`;
         } catch (e) {
           console.warn('[CosmicWeather] could not build personalChartContext', e);
