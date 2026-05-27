@@ -997,18 +997,31 @@ DO NOT USE (auto-fail nonsense openers — applies to EVERY voice, EVERY section
 - Any greeting or hype line. NEVER open with chitchat. Open with the actual content. First sentence must already be carrying real information (a placement, a behavior, a concrete fact).
 
 ## What to Focus On
-IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted. Format each line as:
-- [Specific suggestion] [planetary glyphs in brackets, e.g., (☽ ☌ ♃) or (☿ □ ♄)]
+IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted, AND MUST disambiguate transit vs natal vs sky-to-sky. Applies to EVERY voice — no exceptions.
+
+ASPECT NOTATION RULES (non-negotiable, applies everywhere in the reading, not just this section):
+- Prefix every planet glyph with "t." for transiting (sky right now) or "n." for natal (the reader's birth chart). Include the SIGN of each side in parentheses or after.
+- Format: \`(t.☽ Libra □ n.♃ Cancer)\` — transit Moon in Libra square natal Jupiter in Cancer
+- If BOTH sides are transiting (a sky-to-sky aspect, not touching the natal chart), use \`sky\` for both: \`(sky ♂ Scorpio □ sky ♄ Pisces)\`
+- Never write a bare \`(☽ □ ♃)\` — it is ambiguous and not allowed.
+- When the personal chart context lists a line like "transiting Mars in Scorpio square natal Venus in Leo", carry that EXACT framing into the prose: "transiting Mars in Scorpio is squaring your natal Venus in Leo".
+- When citing the day's Moon-ruler placement (e.g. "Moon's ruler Mars in Taurus"), specify whether you mean the TRANSITING ruler in the sky right now (\`t.♂ Taurus\`) or the reader's NATAL ruler (\`n.♂ Taurus\`). They are not the same. If you don't know, say "in the sky right now" or "in your birth chart" in plain words.
+
+Format each focus item as:
+- [Specific suggestion] (notation)
 
 Examples:
-- Nurturing your inner world and trusting your gut (☽ ☌ ♃)
-- Communication might feel heavy - think before you speak (☿ □ ♄)
-- Good day for creative projects and romance (♀ △ ♆)
+- Nurturing your inner world and trusting your gut (t.☽ Libra ☌ n.♃ Cancer)
+- Communication might feel heavy, think before you speak (t.☿ Scorpio □ n.♄ Aquarius)
+- Sky-wide: love and structure are wrestling (sky ♀ Sagittarius □ sky ♄ Pisces)
 
-Include 3-4 focus items, each with the aspect or transit glyphs that explain the recommendation.
+Include 3-4 focus items.
 
 Glyph reference: ☉=Sun, ☽=Moon, ☿=Mercury, ♀=Venus, ♂=Mars, ♃=Jupiter, ♄=Saturn, ♅=Uranus, ♆=Neptune, ♇=Pluto, ☊=North Node, ☋=South Node
 Aspects: ☌=conjunction, ⚹=sextile, □=square, △=trine, ☍=opposition
+
+MOON HOUSE ACCURACY (critical):
+If the personal chart context includes a "MOON HOUSE SCHEDULE FOR TODAY" line, you MUST use that exact schedule. The Moon often crosses ONE OR MORE natal house cusps within a single sign — never write "Moon in [sign] in your [N]th house until [sign-change time]" as if the house is fixed for the whole sign window. Always reflect the intra-day house change(s).
 
 ## Planetary Day Practice
 IMPORTANT: Extract the day of the week from the date string provided in the user prompt (e.g., "Monday, February 16, 2026" → Monday). Use THAT exact day name below. Do NOT guess or use a different day.
