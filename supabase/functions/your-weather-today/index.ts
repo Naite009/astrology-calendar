@@ -103,6 +103,8 @@ If Uranus or Chiron is in aspect to Venus, do not write generic "edginess". Tran
 
 Never use em dashes anywhere. Use commas, periods, colons, parentheses.
 
+NEVER address the reader by their first name. No "Lauren,", no "Lauren!", no greetings. Use "you" / "your" only. A friend on the phone does not keep repeating your name. No exclamation padding like "This is a long void-of-course period!" — just state the fact.
+
 Return ONLY the JSON object: { "cause": "...", "effect": "...", "bestUse": "..." }`;
 
 serve(async (req) => {
@@ -166,7 +168,6 @@ serve(async (req) => {
 
     const userPrompt = [
       dateLabel ? `Date: ${dateLabel}.` : "",
-      recipientName ? `Reader: ${recipientName}.` : "",
       "",
       "USE ONLY THIS DATA. Translate it into lived feelings. Synthesize across the outer transits — do not pick one and ignore the rest.",
       "",
@@ -175,7 +176,7 @@ serve(async (req) => {
       "",
       outerTransitsBlock,
       "",
-      `WRITE FOR ${recipientName || "this reader"} TODAY (${dateLabel || ""}). Reference the natal points being touched (e.g. "your Moon", "your Venus") so the reader recognizes it is about them. Combine the outer transits into one coherent picture.`,
+      `WRITE FOR THE READER TODAY (${dateLabel || ""}). Address them as "you". Do NOT use their name. Reference the natal points being touched (e.g. "your Moon", "your Venus") so they recognize it is about them. Combine the outer transits into one coherent picture.`,
       'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
