@@ -2197,14 +2197,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                 </CardContent>
               </Card>
 
-              {/* Your Weather Today: bridges collective sky and personal chart */}
-              {selectedChart && (
-                <YourWeatherToday
-                  chart={selectedChart}
-                  transitPositions={currentPlanets || planets}
-                  recipientName={selectedChart.name}
-                />
-              )}
+              {/* Your Weather Today removed — redundant with main panel above */}
 
               {/* Back Button */}
 
