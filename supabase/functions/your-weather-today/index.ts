@@ -168,7 +168,6 @@ serve(async (req) => {
 
     const userPrompt = [
       dateLabel ? `Date: ${dateLabel}.` : "",
-      recipientName ? `Reader: ${recipientName}.` : "",
       "",
       "USE ONLY THIS DATA. Translate it into lived feelings. Synthesize across the outer transits — do not pick one and ignore the rest.",
       "",
@@ -177,7 +176,7 @@ serve(async (req) => {
       "",
       outerTransitsBlock,
       "",
-      `WRITE FOR ${recipientName || "this reader"} TODAY (${dateLabel || ""}). Reference the natal points being touched (e.g. "your Moon", "your Venus") so the reader recognizes it is about them. Combine the outer transits into one coherent picture.`,
+      `WRITE FOR THE READER TODAY (${dateLabel || ""}). Address them as "you". Do NOT use their name. Reference the natal points being touched (e.g. "your Moon", "your Venus") so they recognize it is about them. Combine the outer transits into one coherent picture.`,
       'Return JSON only: { "cause": "...", "effect": "...", "bestUse": "..." }',
     ].filter(Boolean).join("\n");
 
