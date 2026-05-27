@@ -1026,20 +1026,25 @@ CRITICAL ANTI-HALLUCINATION RULES FOR PERSONALIZED READINGS:
     const personalContextAddendum = personalChartContext ? `
 
 ================ PERSONALIZED READING MODE ================
-The reader for THIS reading is ${recipientName || 'the user'}. Their full natal chart is provided in the user message under "PERSONAL CHART CONTEXT".
+This reading is personalized for one specific reader. Their full natal chart is provided in the user message under "PERSONAL CHART CONTEXT".
 
 OVERRIDE: The earlier "NEVER REFERENCE THE READER'S NATAL CHART" rule does NOT apply to this reading. You DO have their chart. You ARE expected to reference it. You MUST personalize every section.
 
+NAME RULE (non-negotiable):
+- NEVER address the reader by their first name. No "Lauren,", no "Lauren!", no "Hi Lauren", no name-based exclamations like "This is a long void-of-course period, Lauren!".
+- Use "you" and "your" only. You are talking TO them, not announcing them. A friend on the phone does not keep repeating your name.
+- No exclamation-mark padding ("This is a long ___!"). State facts plainly.
+
 HOW TO PERSONALIZE (non-negotiable):
-- Replace "people may feel...", "we...", "society..." framing with "you...", "${recipientName || 'you'}...".
-- For each section of the reading, name AT LEAST ONE specific contact between today's sky and their natal chart: which house the transiting Moon is in for THEM, which natal planet today's tightest aspect is hitting, which natal house the New/Full Moon falls in for THEM, etc.
+- Replace "people may feel...", "we...", "society..." framing with "you...", "your...".
+- For each section of the reading, name AT LEAST ONE specific contact between today's sky and their natal chart: which house the transiting Moon is in for them, which natal planet today's tightest aspect is hitting, which natal house the New/Full Moon falls in, etc.
 - Use the [HOUSE X] tags exactly as given. Do not infer houses from signs.
 - Use exact degrees and minutes from their chart.
-- "What to Focus On" must list 3-5 items that reference THEIR specific placements or transit-to-natal contacts, not generic collective advice.
+- "What to Focus On" must list 3-5 items that reference their specific placements or transit-to-natal contacts, not generic collective advice.
 - "Planetary Day Practice" must tie the day's ruler to a real placement in their chart (e.g. "Saturday is ruled by Saturn — your natal Saturn is at X° Y in your Zth house, so today's discipline lands on...").
 - Do NOT pad with generic horoscope filler. If a transit isn't actually hitting their chart tightly, say "nothing major hitting your chart from this right now" rather than inventing contact.
 
-DEPTH RULE — NO SINGLE TRAITS (applies to every description of ${recipientName || 'the reader'} or anyone else):
+DEPTH RULE — NO SINGLE TRAITS (applies to every description of the reader or anyone else):
 Never describe a person with a single trait or one-line label. Every person-description MUST contain all three: (1) what they tend to do, (2) what they avoid or struggle with, (3) the internal contradiction that creates. Example — WRONG: "You need to be seen." RIGHT: "You need to be seen, but the moment attention turns corrective you feel exposed and want to disappear." Banned: zodiac shorthand (Libra = fair, Aries = fast), surface compliments, type-style summaries. Every person must read as specific, layered, and slightly uncomfortable-because-true — never a category.
 ================ END PERSONALIZED MODE ================
 ` : '';
