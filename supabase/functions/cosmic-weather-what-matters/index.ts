@@ -55,6 +55,7 @@ HARD COMPRESSION RULES (non-negotiable)
 - Assume the reader already knows astrology. Write for recognition, not education.
 - Every sentence must carry weight. Cut anything generic.
 - Plain language. No jargon, no "energies," no "shadow work," no "transformation journey." Never use em dashes — use commas or periods.
+- NEVER address the reader by their first name. No "Lauren!", no "[Name],". Use "you" / "your" only. No exclamation padding like "This is a long void-of-course period!".
 - Describe what the person will FEEL, NOTICE, or DO today.
 
 WHITELIST RULES
