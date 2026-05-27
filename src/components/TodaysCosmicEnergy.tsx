@@ -15,6 +15,7 @@ import { formatLocalDateKey } from "@/lib/localDate";
 import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeaningsLookup";
 import { calculateTransitAspects, getTopTransitAspects } from "@/lib/transitAspects";
 import { getTransitPlanetHouse, getNatalPlanetHouse } from "@/lib/houseCalculations";
+import { formatMoonHouseSchedule } from "@/lib/moonHouseSchedule";
 import { buildMorningDigest } from "@/lib/cosmicWeatherMorningDigest";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
@@ -754,7 +755,12 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             .slice(0, 10)
             .map(t => {
               const h = getNatalPlanetHouse(t.natalPlanet, chartForPersonal);
-              return `Transit ${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}${h ? ` (H${h})` : ''} — orb ${t.orb}°${t.isExact ? ' EXACT' : ''}`;
+              const natalData: any = (correctedPlanets as any)[t.natalPlanet];
+              const natalSign = natalData?.sign || natalData?.signName || '?';
+              const transitSign =
+                (planetPositions as any)?.[t.transitPlanet.toLowerCase()]?.signName ||
+                (planetPositions as any)?.[t.transitPlanet.toLowerCase()]?.sign || '?';
+              return `transiting ${t.transitPlanet} in ${transitSign} ${t.aspect} natal ${t.natalPlanet} in ${natalSign}${h ? ` (their ${h}H)` : ''} — orb ${t.orb}°${t.isExact ? ' EXACT' : ''}`;
             })
             .join('\n');
 
@@ -834,9 +840,11 @@ ${natalPlanetsWithHouses}
 THEIR HOUSE CUSPS:
 ${natalHouseCusps}
 
-TRANSITING MOON RIGHT NOW: ${moonDeg.toFixed(1)}° ${moonSignName}${moonHouseForUser ? ` — falls in THEIR ${moonHouseForUser}${moonHouseForUser === 1 ? 'st' : moonHouseForUser === 2 ? 'nd' : moonHouseForUser === 3 ? 'rd' : 'th'} house` : ''}
+TRANSITING MOON RIGHT NOW: ${moonDeg.toFixed(1)}° ${moonSignName}${moonHouseForUser ? ` — currently in THEIR ${moonHouseForUser}${moonHouseForUser === 1 ? 'st' : moonHouseForUser === 2 ? 'nd' : moonHouseForUser === 3 ? 'rd' : 'th'} house` : ''}
+MOON HOUSE SCHEDULE FOR TODAY (use this exactly — the Moon may change houses BEFORE it changes signs):
+${formatMoonHouseSchedule(chartForPersonal, now, userTimezone, userTzAbbr || 'ET')}
 
-TODAY'S TIGHTEST TRANSITS TO ${chartForPersonal.name.toUpperCase()}'S NATAL CHART:
+TODAY'S TIGHTEST TRANSITS TO ${chartForPersonal.name.toUpperCase()}'S NATAL CHART (each line is formatted as "transiting [planet] in [sign] [aspect] natal [planet] in [sign]" — preserve this transit-vs-natal distinction in the reading):
 ${topTransits || 'None within 5° orb right now. Say so honestly rather than invent contacts.'}`;
         } catch (e) {
           console.warn('[CosmicWeather] could not build personalChartContext', e);
