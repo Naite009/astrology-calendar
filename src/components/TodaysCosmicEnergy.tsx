@@ -755,7 +755,12 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
             .slice(0, 10)
             .map(t => {
               const h = getNatalPlanetHouse(t.natalPlanet, chartForPersonal);
-              return `Transit ${t.transitPlanet} ${t.aspect} natal ${t.natalPlanet}${h ? ` (H${h})` : ''} — orb ${t.orb}°${t.isExact ? ' EXACT' : ''}`;
+              const natalData: any = (correctedPlanets as any)[t.natalPlanet];
+              const natalSign = natalData?.sign || natalData?.signName || '?';
+              const transitSign =
+                (planetPositions as any)?.[t.transitPlanet.toLowerCase()]?.signName ||
+                (planetPositions as any)?.[t.transitPlanet.toLowerCase()]?.sign || '?';
+              return `transiting ${t.transitPlanet} in ${transitSign} ${t.aspect} natal ${t.natalPlanet} in ${natalSign}${h ? ` (their ${h}H)` : ''} — orb ${t.orb}°${t.isExact ? ' EXACT' : ''}`;
             })
             .join('\n');
 
