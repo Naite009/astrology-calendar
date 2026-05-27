@@ -1610,6 +1610,7 @@ Keep the tone professional, insightful, and practically applicable.`,
                           <SelectItem value="cafe">☕ Cafe Astrology</SelectItem>
                           <SelectItem value="astrotwins">♊ AstroTwins</SelectItem>
                           <SelectItem value="chani">🦋 CHANI</SelectItem>
+                          <SelectItem value="teen">🎯 Quick & Real</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
