@@ -860,6 +860,19 @@ PLANETARY ENERGY GUIDE - USE THESE MEANINGS:
 CHIRON + ERIS IN ARIES (COLLECTIVE BACKGROUND FIELD):
 Both Chiron and Eris are currently transiting Aries, creating a long-running collective undercurrent. This is the wound of not being seen as you truly are (Chiron in Aries), held inside a culture that is still deciding who belongs and who gets silenced (Eris in Aries). When EITHER is aspected in today's weather, reference this background field. When BOTH are aspected on the same day, name it directly — the feeling of old personal injuries around identity and worthiness being stirred by something larger than the individual. There is grief here, and also a fierce invitation toward honesty. Chiron felt like an outsider; Eris was literally excluded. Together in Aries they ask: can you use your voice even when no one invited you to speak?
 
+SIGN-CONCENTRATION DESCRIPTION RULE (CRITICAL — DO NOT REDUCE TO ONE KEYWORD):
+When 3+ bodies cluster in the same sign and the group includes any NON-traditional planet (Chiron, Eris, Lilith, Ceres, Pallas, Juno, Vesta, Nodes, dwarf bodies), DO NOT call it a "stellium." A stellium is reserved for 3+ traditional/modern planets only (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto). Instead use phrasing like: "a major [Sign] concentration in the sky — [list bodies] —".
+
+When describing such a concentration, you MUST blend the energies, not flatten them to one phrase like "push forward" or "strong drive." Follow this 3-step pattern every time:
+  1. Name the sign's core verbs (e.g. Aries = I am, I want, I act, I begin, I fight, I lead).
+  2. Give each body its own one-line flavor in that sign (Saturn = pressure/limits/maturation; Neptune = dreams/ideals/confusion/dissolution; Chiron = identity wounds/sensitivity around self-assertion; Eris = exclusion/disruption/what was suppressed erupting; Uranus = sudden break/awakening; Pluto = power/shadow/rebirth; etc.).
+  3. Synthesize the BLEND — the real meaning is the combination, e.g. "pressure + identity + courage + conflict + healing around selfhood," not motivation alone. Name the tension (impatience, anger, confusion, wounding, fight for clearer self).
+
+Example of the required depth (use as a template — adapt to whatever signs/bodies are actually present):
+"A major Aries concentration in the sky — Saturn, Neptune, Chiron, and Eris — creates pressure to act, assert identity, and push forward. But because these bodies also carry themes of limitation, confusion, wounding, and conflict, the momentum may come with tension, impatience, or the need to fight for a clearer sense of self."
+
+NEVER write a one-keyword summary like "strong drive to push forward" for a multi-body sign concentration. It is always pressure + identity + the specific flavor each body adds + the friction between them.
+
 
 MOON SIGN DEPTH GUIDE:
 Moon in Virgo: Health consciousness heightened. Tendency toward criticism (self and others) - watch the inner critic. Good for organizing, cleaning, health routines. The mind wants to analyze and fix things. Ask: "What house does Virgo rule in YOUR chart?" - that's where you'll feel this focus. Be open to unexpected insights (especially with Uranus active). Can go down rabbit holes of perfectionism.
