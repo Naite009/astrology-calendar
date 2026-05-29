@@ -838,26 +838,34 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
               <p className="text-xs text-muted-foreground italic px-3">
                 Hover over body names and aspect symbols to learn what they mean
               </p>
-              {minorMoonAspects.map((aspect, i) => (
-                <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-lg">☽</span>
-                    <span style={{ color: aspect.color }} className="font-medium">
-                      {renderAspectDescription(aspect.aspect)}
-                    </span>
-                    <span className="text-sm">
-                      {BODY_DESCRIPTIONS[aspect.natalPlanet]?.name || aspect.natalPlanet}
-                      {renderBodyDescription(aspect.natalPlanet)}
-                    </span>
-                    <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
-                      {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
-                    </Badge>
+              {minorMoonAspects.map((aspect, i) => {
+                const { notation, felt } = buildMoonAspectFelt(aspect);
+                const curated = getMoonToNatalInterpretation(aspect.natalPlanet, aspect.aspect, moonSign);
+                const isGeneric = curated.startsWith("The Moon's current position");
+                return (
+                  <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-lg">☽</span>
+                      <span style={{ color: aspect.color }} className="font-medium">
+                        {renderAspectDescription(aspect.aspect)}
+                      </span>
+                      <span className="text-sm">
+                        {BODY_DESCRIPTIONS[aspect.natalPlanet]?.name || aspect.natalPlanet}
+                        {renderBodyDescription(aspect.natalPlanet)}
+                      </span>
+                      <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
+                        {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
+                      </Badge>
+                    </div>
+                    <p className="text-xs font-mono text-muted-foreground/80 mb-1">{notation}</p>
+                    <p className="text-sm text-muted-foreground">{felt}</p>
+                    {!isGeneric && (
+                      <p className="text-xs text-muted-foreground/70 italic mt-1">{curated}</p>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {getMoonToNatalInterpretation(aspect.natalPlanet, aspect.aspect, moonSign)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
+
             </CollapsibleContent>
           </Collapsible>
         )}
