@@ -787,27 +787,35 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
               Moon Touching Your Major Planets
             </h4>
             <div className="space-y-3">
-              {majorMoonAspects.map((aspect, i) => (
-                <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-lg">☽</span>
-                    <span style={{ color: aspect.color }} className="font-medium">
-                      {renderAspectDescription(aspect.aspect)}
-                    </span>
-                    <span className="text-sm">
-                      {aspect.natalPlanet}
-                      {renderBodyDescription(aspect.natalPlanet)}
-                    </span>
-                    <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
-                      {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
-                    </Badge>
+              {majorMoonAspects.map((aspect, i) => {
+                const { notation, felt } = buildMoonAspectFelt(aspect);
+                const curated = getMoonToNatalInterpretation(aspect.natalPlanet, aspect.aspect, moonSign);
+                const isGeneric = curated.startsWith("The Moon's current position");
+                return (
+                  <div key={i} className="p-3 rounded-lg bg-background/50 border border-border/50">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-lg">☽</span>
+                      <span style={{ color: aspect.color }} className="font-medium">
+                        {renderAspectDescription(aspect.aspect)}
+                      </span>
+                      <span className="text-sm">
+                        {aspect.natalPlanet}
+                        {renderBodyDescription(aspect.natalPlanet)}
+                      </span>
+                      <Badge variant={aspect.isExact ? "default" : "outline"} className="text-xs">
+                        {aspect.isExact ? 'EXACT!' : `${aspect.orb}° orb`}
+                      </Badge>
+                    </div>
+                    <p className="text-xs font-mono text-muted-foreground/80 mb-1">{notation}</p>
+                    <p className="text-sm text-muted-foreground">{felt}</p>
+                    {!isGeneric && (
+                      <p className="text-xs text-muted-foreground/70 italic mt-1">{curated}</p>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {getMoonToNatalInterpretation(aspect.natalPlanet, aspect.aspect, moonSign)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
           </div>
         )}
 
