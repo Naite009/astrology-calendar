@@ -88,6 +88,113 @@ const ASPECT_DESCRIPTIONS: Record<string, { name: string; symbol: string; meanin
   trine: { name: 'Trine', symbol: '△', meaning: 'Easy flow and harmony. Natural talents and gifts.' },
   square: { name: 'Square', symbol: '□', meaning: 'Friction and challenge. Growth through tension and action.' },
   sextile: { name: 'Sextile', symbol: '⚹', meaning: 'Opportunity and cooperation. Gentle support requiring effort to activate.' },
+  quincunx: { name: 'Quincunx', symbol: '⚻', meaning: 'Awkward adjustment. Two parts of you that do not naturally talk; today they have to.' },
+  semisextile: { name: 'Semisextile', symbol: '⚺', meaning: 'Subtle nudge. A quiet, almost subliminal tap between two areas of life.' },
+};
+
+const ZODIAC_GLYPHS: Record<string, string> = {
+  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
+  Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
+  Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+};
+
+const PLANET_GLYPHS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂',
+  Jupiter: '♃', Saturn: '♄', Uranus: '♅', Neptune: '♆', Pluto: '♇',
+  Ascendant: 'AC', Midheaven: 'MC', NorthNode: '☊', SouthNode: '☋', Chiron: '⚷',
+  Ceres: '⚳', Pallas: '⚴', Juno: '⚵', Vesta: '⚶', Lilith: '⚸',
+};
+
+// How each aspect FEELS in the body when the Moon touches a natal planet
+const ASPECT_FELT: Record<string, string> = {
+  conjunction: 'becomes emotionally lit up and obvious; you feel it directly',
+  opposition: 'gets mirrored back at you through someone else or a situation, asking for balance',
+  trine: 'feels easy to reach today, almost effortless',
+  square: 'feels rubbed against; small friction pushes you to do something about it',
+  sextile: 'gets a small opening; if you notice it and reach, it answers',
+  quincunx: 'feels slightly off-key, like wearing a shoe that almost fits; needs a small adjustment, not a big fix',
+  semisextile: 'gets a quiet tap most people miss; if you slow down for a beat you will catch it as a passing mood or stray thought',
+};
+
+// What each natal planet actually IS in your life (plain language)
+const PLANET_FUNCTION: Record<string, string> = {
+  Sun: 'sense of self and vitality',
+  Moon: 'emotional baseline and comfort needs',
+  Mercury: 'thinking, talking, and processing',
+  Venus: 'what you value, enjoy, and love',
+  Mars: 'drive, irritation, and how you push',
+  Jupiter: 'where you reach for more and find meaning',
+  Saturn: 'where you have to be the adult',
+  Uranus: 'need for freedom and the unexpected',
+  Neptune: 'imagination, longing, and what blurs',
+  Pluto: 'power, depth, and what gets transformed',
+  Ascendant: 'how you show up and what people meet first',
+  Midheaven: 'public role and direction',
+  NorthNode: 'growth edge you are pulled toward',
+  Chiron: 'old tender spot and quiet teaching',
+  Lilith: 'untamed instinct you usually edit',
+};
+
+// What the transiting Moon is DOING in a given house today (short, concrete)
+const MOON_HOUSE_FLAVOR: Record<number, string> = {
+  1: 'your mood is right on the surface and visible',
+  2: 'feelings circle money, body, and what steadies you',
+  3: 'mental and chatty: texts, errands, quick exchanges',
+  4: 'pulled toward home, family, and inner quiet',
+  5: 'play, flirtation, creative spark, kids',
+  6: 'daily tasks, routine, body and work rhythm',
+  7: 'feelings come up through other people',
+  8: 'intimate, private, deeper than usual',
+  9: 'restless for meaning, travel, or a bigger picture',
+  10: 'public, visible, career-tinted mood',
+  11: 'friends, groups, future-leaning',
+  12: 'inward, dreamy, behind-the-scenes',
+};
+
+// What life-area a natal planet LIVES in (short, concrete)
+const NATAL_HOUSE_FLAVOR: Record<number, string> = {
+  1: 'identity and how you come across',
+  2: 'money, body, self-worth',
+  3: 'thinking, siblings, daily voice',
+  4: 'home, roots, private self',
+  5: 'creativity, romance, play',
+  6: 'work, health, daily routine',
+  7: 'partnerships and one-on-one others',
+  8: 'shared resources, intimacy, what is hidden',
+  9: 'beliefs, travel, the bigger view',
+  10: 'career and public reputation',
+  11: 'friends, groups, long-range hopes',
+  12: 'inner life, solitude, things behind the curtain',
+};
+
+const ordSuffix = (n: number) => (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+
+// Build a placement-grounded felt-sense line for a Moon-to-natal-planet aspect.
+// Always names: t.Moon sign + house, aspect, n.Planet sign + house, then what it lands as.
+const buildMoonAspectFelt = (a: {
+  transitSign: string; transitHouse: number | null;
+  natalPlanet: string; natalSign: string; natalHouse: number | null;
+  aspect: string;
+}): { notation: string; felt: string } => {
+  const moonG = PLANET_GLYPHS.Moon;
+  const natG = PLANET_GLYPHS[a.natalPlanet] || a.natalPlanet;
+  const aspG = ASPECT_DESCRIPTIONS[a.aspect]?.symbol || '';
+  const tSignG = ZODIAC_GLYPHS[a.transitSign] || a.transitSign;
+  const nSignG = ZODIAC_GLYPHS[a.natalSign] || a.natalSign;
+  const tHouseTxt = a.transitHouse ? ` (your ${a.transitHouse}${ordSuffix(a.transitHouse)} house)` : '';
+  const nHouseTxt = a.natalHouse ? ` (your ${a.natalHouse}${ordSuffix(a.natalHouse)} house)` : '';
+  const notation = `t.${moonG} ${a.transitSign} ${tSignG}${tHouseTxt} ${aspG} n.${natG} ${a.natalPlanet} ${a.natalSign} ${nSignG}${nHouseTxt}`;
+
+  const moonHF = a.transitHouse ? MOON_HOUSE_FLAVOR[a.transitHouse] : '';
+  const natHF = a.natalHouse ? NATAL_HOUSE_FLAVOR[a.natalHouse] : '';
+  const fn = PLANET_FUNCTION[a.natalPlanet] || a.natalPlanet;
+  const lands = ASPECT_FELT[a.aspect] || `touches your ${fn}`;
+
+  const where = moonHF ? `Today's Moon ${moonHF}` : `Today's Moon is in ${a.transitSign}`;
+  const yours = natHF
+    ? `your natal ${a.natalPlanet} in ${a.natalSign} lives in ${natHF}, so your ${fn} ${lands}`
+    : `your natal ${a.natalPlanet} in ${a.natalSign} (${fn}) ${lands}`;
+  return { notation, felt: `${where}, and ${yours}.` };
 };
 
 // Get interpretations for where Moon lands in natal houses
