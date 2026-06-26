@@ -313,7 +313,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             {srChartsForNatal.sort((a, b) => b.solarReturnYear - a.solarReturnYear).map(sr => {
               const asc = (sr.houseCusps as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.house1;
               const sun = (sr.planets as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.Sun;
-              const isActive = selectedSRId === sr.id;
+              const isActive = effectiveSRId === sr.id;
               return (
                 <div
                   key={sr.id}
