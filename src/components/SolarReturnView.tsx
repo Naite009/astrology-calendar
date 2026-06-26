@@ -131,7 +131,14 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const srChartsForNatal = selectedNatal ? getSolarReturnsForChart(selectedNatal.id) : [];
 
   const [selectedSRId, setSelectedSRId] = useState<string | null>(null);
-  const selectedSR = srChartsForNatal.find(c => c.id === selectedSRId) || null;
+  // Auto-select the most recent SR when nothing is selected so the analysis
+  // renders without requiring the user to click the row first.
+  const effectiveSRId = useMemo(() => {
+    if (selectedSRId && srChartsForNatal.some(c => c.id === selectedSRId)) return selectedSRId;
+    if (srChartsForNatal.length === 0) return null;
+    return [...srChartsForNatal].sort((a, b) => b.solarReturnYear - a.solarReturnYear)[0].id;
+  }, [selectedSRId, srChartsForNatal]);
+  const selectedSR = srChartsForNatal.find(c => c.id === effectiveSRId) || null;
 
   const [showInputForm, setShowInputForm] = useState(false);
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
@@ -306,7 +313,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             {srChartsForNatal.sort((a, b) => b.solarReturnYear - a.solarReturnYear).map(sr => {
               const asc = (sr.houseCusps as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.house1;
               const sun = (sr.planets as Record<string, { sign: string; degree: number; minutes: number }> | undefined)?.Sun;
-              const isActive = selectedSRId === sr.id;
+              const isActive = effectiveSRId === sr.id;
               return (
                 <div
                   key={sr.id}
