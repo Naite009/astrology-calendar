@@ -21,6 +21,7 @@ import {
   SUIT_EMOJI,
   THREE_CARD_POSITIONS,
   CELTIC_CROSS_POSITIONS,
+  MONTHLY_SPREAD_POSITIONS,
   findCard,
   type TarotCard,
   type TarotSuit,
