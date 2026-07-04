@@ -21,6 +21,7 @@ import {
   SUIT_EMOJI,
   THREE_CARD_POSITIONS,
   CELTIC_CROSS_POSITIONS,
+  MONTHLY_SPREAD_POSITIONS,
   findCard,
   type TarotCard,
   type TarotSuit,
@@ -52,7 +53,7 @@ interface Props {
   profile: FunctionProfile;
 }
 
-type SpreadType = "three-card" | "celtic-cross";
+type SpreadType = "three-card" | "celtic-cross" | "monthly";
 
 const SUITS_BY_GROUP: { label: string; suit: TarotSuit }[] = [
   { label: "Major Arcana", suit: "Major" },
@@ -70,7 +71,11 @@ export function InteractiveTarotReading({ profile }: Props) {
   const [interpretation, setInterpretation] = useState<string | null>(null);
 
   const positions =
-    spreadType === "three-card" ? THREE_CARD_POSITIONS : CELTIC_CROSS_POSITIONS;
+    spreadType === "three-card"
+      ? THREE_CARD_POSITIONS
+      : spreadType === "celtic-cross"
+      ? CELTIC_CROSS_POSITIONS
+      : MONTHLY_SPREAD_POSITIONS;
 
   const groupedDeck = useMemo(() => {
     const groups: Record<TarotSuit, TarotCard[]> = {
@@ -139,7 +144,7 @@ export function InteractiveTarotReading({ profile }: Props) {
   })();
 
   async function generate() {
-    if (!question.trim()) {
+    if (!question.trim() && spreadType !== "monthly") {
       toast.error("Type the question you'd like the cards to answer.");
       return;
     }
@@ -205,14 +210,21 @@ export function InteractiveTarotReading({ profile }: Props) {
               <SelectContent>
                 <SelectItem value="three-card">Three-Card (Past / Present / Future)</SelectItem>
                 <SelectItem value="celtic-cross">Celtic Cross (10 cards)</SelectItem>
+                <SelectItem value="monthly">Monthly Spread (7 cards)</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="question">Your question</Label>
+            <Label htmlFor="question">
+              {spreadType === "monthly" ? "Focus (optional)" : "Your question"}
+            </Label>
             <Input
               id="question"
-              placeholder='e.g. "What do I need to know about this new opportunity?"'
+              placeholder={
+                spreadType === "monthly"
+                  ? 'Optional — e.g. "How will November unfold?"'
+                  : 'e.g. "What do I need to know about this new opportunity?"'
+              }
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
             />
@@ -323,7 +335,7 @@ export function InteractiveTarotReading({ profile }: Props) {
 }
 
 function emptyDraw(spread: SpreadType): DrawnCard[] {
-  const count = spread === "three-card" ? 3 : 10;
+  const count = spread === "three-card" ? 3 : spread === "celtic-cross" ? 10 : 7;
   return Array.from({ length: count }, () => ({ cardName: "", reversed: false }));
 }
 

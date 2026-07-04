@@ -137,3 +137,4 @@ Updated: now
 - [Canonical Fact Enforcement](mem://features/ask-tab/canonical-fact-enforcement) — factsAwareRetrogradeSweep + runPreGateLocalAudit own prose ↔ chart-fact agreement; never add another narrow regex corrector
 - [Narrative Reading Standards](mem://features/ask-tab/narrative-reading-standards) — 5-movement long-form prose portrait reading type in the Ask tab
 - [Sacred Directive Reading Standards](mem://features/ask-tab/sacred-directive-reading-standards) — Big Three + Saturn + North Node fortune-cookie directive in the Ask tab
+- [Monthly tarot spread](mem://features/tarot/monthly-spread-interpretation) — 7-card monthly spread positions, non-predictive tone, contextual reversals, hierarchy, silent Interpretation Check, and computed number-pattern hints for interpret-tarot-spread.
