@@ -210,6 +210,7 @@ export function InteractiveTarotReading({ profile }: Props) {
               <SelectContent>
                 <SelectItem value="three-card">Three-Card (Past / Present / Future)</SelectItem>
                 <SelectItem value="celtic-cross">Celtic Cross (10 cards)</SelectItem>
+                <SelectItem value="monthly">Monthly Spread (7 cards)</SelectItem>
               </SelectContent>
             </Select>
           </div>
