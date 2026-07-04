@@ -85,3 +85,13 @@ export const CELTIC_CROSS_POSITIONS: { label: string; meaning: string }[] = [
   { label: "9. Hopes & Fears", meaning: "what you secretly want or dread" },
   { label: "10. Outcome", meaning: "where this all lands" },
 ];
+
+export const MONTHLY_SPREAD_POSITIONS: { label: string; meaning: string; weight: "primary" | "supporting" }[] = [
+  { label: "1. Foundation", meaning: "what you're carrying in from last month — the ground you're standing on as this month begins", weight: "supporting" },
+  { label: "2. The New Season", meaning: "the energy or theme entering — what this month is really about", weight: "primary" },
+  { label: "3. Your Inner Energy", meaning: "how you may feel internally / how your own energy may behave this month", weight: "supporting" },
+  { label: "4. Your Outer Energy", meaning: "how you may show up to others / how others may respond to you", weight: "supporting" },
+  { label: "5. What Needs Clearer Action or Awareness", meaning: "the place asking for honesty, attention, or a decision", weight: "primary" },
+  { label: "6. Hidden Opportunity", meaning: "something not immediately obvious — a gift, resource, or opening under the surface", weight: "supporting" },
+  { label: "7. North Star", meaning: "the practical guide for the month — the attitude or action most likely to help", weight: "primary" },
+];
