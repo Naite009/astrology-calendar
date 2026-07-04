@@ -329,7 +329,7 @@ export function InteractiveTarotReading({ profile }: Props) {
 }
 
 function emptyDraw(spread: SpreadType): DrawnCard[] {
-  const count = spread === "three-card" ? 3 : 10;
+  const count = spread === "three-card" ? 3 : spread === "celtic-cross" ? 10 : 7;
   return Array.from({ length: count }, () => ({ cardName: "", reversed: false }));
 }
 
