@@ -71,7 +71,11 @@ export function InteractiveTarotReading({ profile }: Props) {
   const [interpretation, setInterpretation] = useState<string | null>(null);
 
   const positions =
-    spreadType === "three-card" ? THREE_CARD_POSITIONS : CELTIC_CROSS_POSITIONS;
+    spreadType === "three-card"
+      ? THREE_CARD_POSITIONS
+      : spreadType === "celtic-cross"
+      ? CELTIC_CROSS_POSITIONS
+      : MONTHLY_SPREAD_POSITIONS;
 
   const groupedDeck = useMemo(() => {
     const groups: Record<TarotSuit, TarotCard[]> = {
