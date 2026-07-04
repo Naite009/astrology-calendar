@@ -215,10 +215,16 @@ export function InteractiveTarotReading({ profile }: Props) {
             </Select>
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="question">Your question</Label>
+            <Label htmlFor="question">
+              {spreadType === "monthly" ? "Focus (optional)" : "Your question"}
+            </Label>
             <Input
               id="question"
-              placeholder='e.g. "What do I need to know about this new opportunity?"'
+              placeholder={
+                spreadType === "monthly"
+                  ? 'Optional — e.g. "How will November unfold?"'
+                  : 'e.g. "What do I need to know about this new opportunity?"'
+              }
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
             />
