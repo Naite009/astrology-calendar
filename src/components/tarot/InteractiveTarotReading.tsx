@@ -144,7 +144,7 @@ export function InteractiveTarotReading({ profile }: Props) {
   })();
 
   async function generate() {
-    if (!question.trim()) {
+    if (!question.trim() && spreadType !== "monthly") {
       toast.error("Type the question you'd like the cards to answer.");
       return;
     }
