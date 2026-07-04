@@ -40,10 +40,50 @@ function trackedLabel(doc: jsPDF, text: string, x: number, y: number, opts?: { a
   doc.setCharSpace(0);
 }
 
+/** Ordinal for houses: 1 -> "1st" */
+function ord(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/**
+ * Replace Unicode astrological glyphs with plain-English words. jsPDF's
+ * built-in Times font is Latin-1 only; any glyph outside that range renders
+ * as garbage like "&S" or "&K".
+ */
+export function sanitizeAstroForPdf(text: string): string {
+  const map: Record<string, string> = {
+    '♈': 'Aries', '♉': 'Taurus', '♊': 'Gemini', '♋': 'Cancer',
+    '♌': 'Leo', '♍': 'Virgo', '♎': 'Libra', '♏': 'Scorpio',
+    '♐': 'Sagittarius', '♑': 'Capricorn', '♒': 'Aquarius', '♓': 'Pisces',
+    '☉': 'Sun', '☽': 'Moon', '☾': 'Moon',
+    '☿': 'Mercury', '♀': 'Venus', '♂': 'Mars',
+    '♃': 'Jupiter', '♄': 'Saturn', '♅': 'Uranus',
+    '♆': 'Neptune', '♇': 'Pluto',
+    '⚷': 'Chiron', '⚴': 'Ceres', '⚵': 'Pallas', '⚶': 'Juno', '⚸': 'Lilith',
+    '☊': 'North Node', '☋': 'South Node',
+    '☌': 'conjunct', '⚹': 'sextile', '□': 'square',
+    '△': 'trine', '☍': 'opposite', '⚺': 'semisextile', '⚻': 'quincunx',
+  };
+  let out = text;
+  for (const [glyph, word] of Object.entries(map)) {
+    out = out.split(glyph).join(word);
+  }
+  // Turn [HOUSE N] tags into readable ordinals ("5th house").
+  out = out.replace(/\[HOUSE\s*(\d+)\]/gi, (_m, n) => `${ord(parseInt(n, 10))} house`);
+  // Collapse duplicate "5th house 5th house" the AI sometimes produces.
+  out = out.replace(/(\d+(?:st|nd|rd|th)\s+house)(?:\s+\1)+/gi, '$1');
+  // Strip parenthetical "sky ..." markup blocks that leak into bullets.
+  out = out.replace(/\(sky[^)]*\)/gi, '').replace(/[ \t]{2,}/g, ' ');
+  return out;
+}
+
 /** Parse markdown into simple segments for PDF rendering */
 function parseMarkdownSegments(text: string): Array<{ type: 'h2' | 'bold' | 'body' | 'bullet'; text: string }> {
-  // Strip recipe blocks
-  const cleaned = text.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '').trim();
+  const cleaned = sanitizeAstroForPdf(
+    text.replace(/\*\*RECIPE_START\*\*[\s\S]*?\*\*RECIPE_END\*\*/, '').trim()
+  );
   const lines = cleaned.split('\n');
   const segments: Array<{ type: 'h2' | 'bold' | 'body' | 'bullet'; text: string }> = [];
 
@@ -58,7 +98,6 @@ function parseMarkdownSegments(text: string): Array<{ type: 'h2' | 'bold' | 'bod
     } else if (/^\*\*[^*]+\*\*$/.test(trimmed)) {
       segments.push({ type: 'bold', text: trimmed.replace(/\*\*/g, '') });
     } else {
-      // Inline bold → just treat as body with bold stripped visually (jsPDF can't do inline bold easily)
       segments.push({ type: 'body', text: trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') });
     }
   }
@@ -127,10 +166,10 @@ export function generateCosmicWeatherPDF(opts: CosmicWeatherPDFOptions) {
   doc.setFont('times', 'normal');
   doc.setFontSize(14);
   doc.setTextColor(...MUTED);
-  doc.text(`${opts.moonPhase}`, pw / 2, y, { align: 'center' });
+  doc.text(`${sanitizeAstroForPdf(opts.moonPhase)}`, pw / 2, y, { align: 'center' });
   y += 22;
   doc.setFontSize(12);
-  doc.text(`Moon: ${opts.moonPosition}   •   Sun: ${opts.sunPosition}`, pw / 2, y, { align: 'center' });
+  doc.text(`Moon: ${sanitizeAstroForPdf(opts.moonPosition)}   •   Sun: ${sanitizeAstroForPdf(opts.sunPosition)}`, pw / 2, y, { align: 'center' });
   y += 18;
   doc.text(`Illumination: ${opts.illumination}%`, pw / 2, y, { align: 'center' });
   y += 40;
@@ -164,11 +203,11 @@ export function generateCosmicWeatherPDF(opts: CosmicWeatherPDFOptions) {
       doc.setFontSize(9);
       doc.setTextColor(...MUTED);
       const bigThree = [
-        opts.sunSign ? `☉ ${opts.sunSign} Sun` : '',
-        opts.moonSign ? `☽ ${opts.moonSign} Moon` : '',
-        opts.risingSign ? `ASC ${opts.risingSign}` : '',
+        opts.sunSign ? `Sun in ${opts.sunSign}` : '',
+        opts.moonSign ? `Moon in ${opts.moonSign}` : '',
+        opts.risingSign ? `${opts.risingSign} Rising` : '',
       ].filter(Boolean).join('   •   ');
-      doc.text(bigThree, pw / 2, y + 72, { align: 'center' });
+      doc.text(sanitizeAstroForPdf(bigThree), pw / 2, y + 72, { align: 'center' });
     }
 
     y += badgeH + 30;

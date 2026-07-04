@@ -248,7 +248,7 @@ ${aspects.map((a: any) => `- ${a.planet1} ${a.symbol} ${a.planet2} (orb: ${a.orb
     // Moon sign change text
     const moonSignChangeText = moonSignChange
       ? `IMPORTANT - MOON SIGN CHANGE TODAY: The Moon moves from ${moonSignChange.fromSign} into ${moonSignChange.toSign} at ${moonSignChange.time}. This means the day will feel like TWO different energies. The morning is ${moonSignChange.fromSign} energy, but the afternoon/evening shifts to ${moonSignChange.toSign}. EMPHASIZE this transition - do NOT say "the Moon is in ${moonSignChange.fromSign} all day" because it is NOT. The ${moonSignChange.toSign} energy will dominate the latter part of the day.`
-      : '';
+      : `MOON SIGN — NO CHANGE TODAY: The Moon stays in ${moonSign} for the entire day and does NOT ingress into the next sign today. Do NOT write "the Moon enters [next sign] at [time]" or "later today the Moon shifts into [next sign]" — that is factually wrong. The next sign ingress is more than 24 hours away. Describe today as a full ${moonSign} Moon day.`;
 
     // Imminent planet sign changes
     const imminentChangesText = imminentSignChanges?.length > 0
