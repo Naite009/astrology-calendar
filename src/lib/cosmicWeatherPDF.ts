@@ -166,10 +166,10 @@ export function generateCosmicWeatherPDF(opts: CosmicWeatherPDFOptions) {
   doc.setFont('times', 'normal');
   doc.setFontSize(14);
   doc.setTextColor(...MUTED);
-  doc.text(`${opts.moonPhase}`, pw / 2, y, { align: 'center' });
+  doc.text(`${sanitizeAstroForPdf(opts.moonPhase)}`, pw / 2, y, { align: 'center' });
   y += 22;
   doc.setFontSize(12);
-  doc.text(`Moon: ${opts.moonPosition}   •   Sun: ${opts.sunPosition}`, pw / 2, y, { align: 'center' });
+  doc.text(`Moon: ${sanitizeAstroForPdf(opts.moonPosition)}   •   Sun: ${sanitizeAstroForPdf(opts.sunPosition)}`, pw / 2, y, { align: 'center' });
   y += 18;
   doc.text(`Illumination: ${opts.illumination}%`, pw / 2, y, { align: 'center' });
   y += 40;
