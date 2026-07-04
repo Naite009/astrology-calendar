@@ -53,7 +53,7 @@ interface Props {
   profile: FunctionProfile;
 }
 
-type SpreadType = "three-card" | "celtic-cross";
+type SpreadType = "three-card" | "celtic-cross" | "monthly";
 
 const SUITS_BY_GROUP: { label: string; suit: TarotSuit }[] = [
   { label: "Major Arcana", suit: "Major" },
