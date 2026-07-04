@@ -203,11 +203,11 @@ export function generateCosmicWeatherPDF(opts: CosmicWeatherPDFOptions) {
       doc.setFontSize(9);
       doc.setTextColor(...MUTED);
       const bigThree = [
-        opts.sunSign ? `☉ ${opts.sunSign} Sun` : '',
-        opts.moonSign ? `☽ ${opts.moonSign} Moon` : '',
-        opts.risingSign ? `ASC ${opts.risingSign}` : '',
+        opts.sunSign ? `Sun in ${opts.sunSign}` : '',
+        opts.moonSign ? `Moon in ${opts.moonSign}` : '',
+        opts.risingSign ? `${opts.risingSign} Rising` : '',
       ].filter(Boolean).join('   •   ');
-      doc.text(bigThree, pw / 2, y + 72, { align: 'center' });
+      doc.text(sanitizeAstroForPdf(bigThree), pw / 2, y + 72, { align: 'center' });
     }
 
     y += badgeH + 30;
