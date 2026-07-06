@@ -26,7 +26,7 @@ import {
   type TarotCard,
   type TarotSuit,
 } from "@/lib/tarotDeck";
-import { Loader2, Shuffle, Sparkles, RotateCw } from "lucide-react";
+import { Loader2, Shuffle, Sparkles, RotateCw, Printer } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
