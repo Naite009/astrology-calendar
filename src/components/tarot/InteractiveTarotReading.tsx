@@ -323,7 +323,26 @@ export function InteractiveTarotReading({ profile }: Props) {
         {/* Interpretation */}
         {interpretation && (
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-5 space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <p className="text-xs uppercase tracking-widest text-primary/70">Your Personalized Reading</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs uppercase tracking-widest text-primary/70">Your Personalized Reading</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  printReading({
+                    spreadType,
+                    question,
+                    positions,
+                    drawn,
+                    interpretation,
+                    profile,
+                  })
+                }
+              >
+                <Printer className="mr-2 h-4 w-4" /> Print / Save PDF
+              </Button>
+            </div>
             <article className="prose prose-sm max-w-none text-foreground prose-headings:font-serif prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-h2:text-base prose-h2:mt-4 prose-h3:text-sm prose-h3:mt-3">
               <ReactMarkdown>{interpretation}</ReactMarkdown>
             </article>
