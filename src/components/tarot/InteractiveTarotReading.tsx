@@ -364,3 +364,125 @@ function lensFor(suit: TarotSuit, profile: FunctionProfile): string | null {
   if (suit === profile.inferiorSuit) return "Growth edge";
   return "Auxiliary support";
 }
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Minimal markdown → HTML for print (headings, bold, italic, blockquote, lists, paragraphs).
+function mdToHtml(md: string): string {
+  const lines = md.replace(/\r\n/g, "\n").split("\n");
+  const out: string[] = [];
+  let inUl = false;
+  let inOl = false;
+  const closeLists = () => {
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
+  };
+  const inline = (t: string) =>
+    escapeHtml(t)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[\s(])\*(?!\s)([^*\n]+?)\*(?=[\s.,;:!?)]|$)/g, "$1<em>$2</em>");
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (!line.trim()) { closeLists(); continue; }
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if (h) { closeLists(); const lvl = h[1].length; out.push(`<h${lvl}>${inline(h[2])}</h${lvl}>`); continue; }
+    if (line.startsWith("> ")) { closeLists(); out.push(`<blockquote>${inline(line.slice(2))}</blockquote>`); continue; }
+    const ul = line.match(/^[-*]\s+(.*)$/);
+    if (ul) { if (!inUl) { closeLists(); out.push("<ul>"); inUl = true; } out.push(`<li>${inline(ul[1])}</li>`); continue; }
+    const ol = line.match(/^\d+\.\s+(.*)$/);
+    if (ol) { if (!inOl) { closeLists(); out.push("<ol>"); inOl = true; } out.push(`<li>${inline(ol[1])}</li>`); continue; }
+    closeLists();
+    out.push(`<p>${inline(line)}</p>`);
+  }
+  closeLists();
+  return out.join("\n");
+}
+
+function spreadTitle(s: SpreadType): string {
+  return s === "monthly" ? "Monthly 7-Card Spread"
+    : s === "celtic-cross" ? "Celtic Cross Spread"
+    : "Three-Card Spread";
+}
+
+function printReading(args: {
+  spreadType: SpreadType;
+  question: string;
+  positions: { label: string; meaning: string }[];
+  drawn: DrawnCard[];
+  interpretation: string;
+  profile: FunctionProfile;
+}) {
+  const { spreadType, question, positions, drawn, interpretation, profile } = args;
+  const now = new Date().toLocaleString(undefined, {
+    year: "numeric", month: "long", day: "numeric",
+  });
+  const cardsList = drawn
+    .map((d, i) => {
+      const pos = positions[i];
+      const orient = d.reversed ? "Reversed" : "Upright";
+      return `<li><strong>${escapeHtml(pos.label)}</strong> — ${escapeHtml(d.cardName)} <em>(${orient})</em><br/><span class="pos-meaning">${escapeHtml(pos.meaning)}</span></li>`;
+    })
+    .join("");
+
+  const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Tarot Reading — ${escapeHtml(spreadTitle(spreadType))}</title>
+<style>
+  @page { margin: 0.75in; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #1a1a1a; line-height: 1.55; max-width: 7.5in; margin: 0 auto; padding: 0.25in 0; }
+  h1 { font-size: 22pt; margin: 0 0 4pt 0; }
+  h2 { font-size: 14pt; margin: 18pt 0 6pt 0; border-bottom: 1px solid #999; padding-bottom: 2pt; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 12pt 0 4pt 0; page-break-after: avoid; }
+  h4 { font-size: 11pt; margin: 8pt 0 3pt 0; }
+  p, li { font-size: 11pt; }
+  blockquote { border-left: 3px solid #7a5cff; margin: 8pt 0; padding: 4pt 10pt; background: #f5f2ff; font-style: italic; }
+  ul, ol { padding-left: 20pt; }
+  .meta { color: #555; font-size: 10pt; margin-bottom: 12pt; }
+  .cards-drawn { background: #faf7ee; border: 1px solid #d9cfa3; padding: 10pt 14pt; margin: 10pt 0 18pt 0; border-radius: 4pt; }
+  .cards-drawn h2 { margin-top: 0; border: none; font-size: 12pt; }
+  .cards-drawn ul { list-style: none; padding-left: 0; }
+  .cards-drawn li { margin-bottom: 6pt; }
+  .pos-meaning { color: #666; font-size: 10pt; }
+  .question { font-style: italic; margin: 6pt 0 0 0; }
+  article h2, article h3 { break-inside: avoid; }
+  article p, article li, article blockquote { break-inside: avoid; }
+  @media print { .no-print { display: none; } }
+  .no-print { text-align: right; margin-bottom: 10pt; }
+  .no-print button { font: inherit; padding: 6pt 12pt; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="no-print"><button onclick="window.print()">Print</button></div>
+  <h1>${escapeHtml(spreadTitle(spreadType))}</h1>
+  <div class="meta">
+    ${escapeHtml(profile.chartName || "Reading")} · ${escapeHtml(now)}<br/>
+    Function profile: ${escapeHtml(profile.superiorFunction)} (superior) / ${escapeHtml(profile.inferiorFunction)} (inferior)
+    ${question.trim() ? `<div class="question">Focus: "${escapeHtml(question.trim())}"</div>` : ""}
+  </div>
+  <section class="cards-drawn">
+    <h2>Cards Drawn</h2>
+    <ul>${cardsList}</ul>
+  </section>
+  <article>${mdToHtml(interpretation)}</article>
+  <script>window.addEventListener("load", () => setTimeout(() => window.print(), 300));</script>
+</body>
+</html>`;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    toast.error("Pop-up blocked. Please allow pop-ups to print your reading.");
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
