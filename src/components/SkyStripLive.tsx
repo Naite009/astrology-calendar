@@ -21,11 +21,16 @@ const BODY_THEME: Record<string, { chip: string; ring: string; accent: string }>
   northNode: { chip: "bg-violet-500 text-white",        ring: "ring-violet-400/60",  accent: "text-violet-600 dark:text-violet-400" },
 };
 
+// Elemental color system: Fire=red/orange, Earth=green, Air=yellow/gold, Water=blue
 const SIGN_TINT: Record<string, string> = {
-  Aries: "text-red-500", Taurus: "text-emerald-600", Gemini: "text-yellow-500",
-  Cancer: "text-sky-400", Leo: "text-orange-500", Virgo: "text-lime-600",
-  Libra: "text-pink-500", Scorpio: "text-rose-700", Sagittarius: "text-purple-500",
-  Capricorn: "text-stone-600", Aquarius: "text-cyan-500", Pisces: "text-indigo-400",
+  // Fire
+  Aries: "text-red-500", Leo: "text-orange-500", Sagittarius: "text-orange-600",
+  // Earth
+  Taurus: "text-emerald-600", Virgo: "text-green-600", Capricorn: "text-emerald-800",
+  // Air
+  Gemini: "text-yellow-500", Libra: "text-amber-500", Aquarius: "text-yellow-600",
+  // Water
+  Cancer: "text-sky-400", Scorpio: "text-blue-700", Pisces: "text-indigo-500",
 };
 
 const FALLBACK = { chip: "bg-primary/15 text-primary", ring: "ring-primary/40", accent: "text-primary" };
