@@ -68,14 +68,14 @@ export function SkyStripLive({ at }: { at?: Date }) {
         </span>
       </header>
 
-      <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 p-4">
+      <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2.5 p-4">
         {entries.map(e => {
           const theme = BODY_THEME[e.key] ?? FALLBACK;
           const signColor = SIGN_TINT[e.sign] ?? "text-primary";
           return (
             <li
               key={e.key}
-              className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/90 px-3 py-2.5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all"
+              className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-card/90 px-2.5 py-2.5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all"
               title={`${e.label} ${e.degree}°${String(e.minutes).padStart(2, "0")}' ${e.sign}${e.retrograde ? " retrograde" : ""}`}
             >
               <span
@@ -87,32 +87,33 @@ export function SkyStripLive({ at }: { at?: Date }) {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme.accent}`}>
+                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme.accent} truncate`}>
                     {e.label}
                   </span>
                   {e.retrograde && (
-                    <span className="text-[9px] font-bold px-1 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                    <span className="flex-none text-[9px] font-bold px-1 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
                       Rx
                     </span>
                   )}
                 </div>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="tabular-nums text-sm font-serif text-foreground">
-                    {e.degree}°{String(e.minutes).padStart(2, "0")}′
-                  </span>
+                <div className="tabular-nums text-sm font-serif text-foreground mt-0.5">
+                  {e.degree}°{String(e.minutes).padStart(2, "0")}′
+                </div>
+                <div className="flex items-baseline gap-1 mt-0.5">
                   <span
-                    className={`text-base leading-none ${signColor}`}
+                    className={`text-sm leading-none ${signColor}`}
                     style={{ fontFamily: '"Apple Symbols","Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif' }}
                     aria-hidden
                   >
                     {e.signSymbol}
                   </span>
-                  <span className={`text-xs font-medium ${signColor}`}>
+                  <span className={`text-xs font-semibold ${signColor} truncate`}>
                     {e.sign}
                   </span>
                 </div>
               </div>
             </li>
+
           );
         })}
       </ul>
