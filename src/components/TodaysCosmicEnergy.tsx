@@ -21,6 +21,7 @@ import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } f
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { generateCosmicWeatherPDF } from "@/lib/cosmicWeatherPDF";
+import { SkyStripLive } from "@/components/SkyStripLive";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
@@ -2016,6 +2017,8 @@ Keep the tone professional, insightful, and practically applicable.`,
                     )}
                   </CardHeader>
                   <CardContent className="p-6 md:p-8">
+                    <SkyStripLive />
+
                     {(isLoading || weekDayLoading !== null) && (
                       <div className="flex flex-col items-center justify-center py-12 gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />

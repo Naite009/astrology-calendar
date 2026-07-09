@@ -6,6 +6,7 @@
 
 import * as Astronomy from "astronomy-engine";
 import { findNextMoonSignChange } from "./voidOfCourseMoon";
+import { getDetailedChironPosition, getDetailedNodePosition } from "./astrology";
 
 const ZODIAC = [
   { name: "Aries", symbol: "♈" },
@@ -121,22 +122,53 @@ export interface SkyEntry {
 
 export function buildSkyEntries(date: Date): SkyEntry[] {
   const target = getEasternMidnightDate(date);
-  return PLANETS.map(p => {
-    const lon = longitudeOf(p.body, target);
-    const pos = fmtPos(lon);
-    const r = isRetro(p.body, target);
+  return buildSkyEntriesAt(target);
+}
+
+/**
+ * Real-time (live) sky positions at the exact Date passed in.
+ * Includes Chiron and the True North Node in addition to the ten planets.
+ */
+export function buildSkyEntriesAt(target: Date): SkyEntry[] {
+  const extended: { key: string; label: string; symbol: string; body: Astronomy.Body | "Moon" | "Chiron" | "NorthNode" }[] = [
+    ...PLANETS,
+    { key: "chiron", label: "Chiron", symbol: "⚷", body: "Chiron" },
+    { key: "northNode", label: "N. Node", symbol: "☊", body: "NorthNode" },
+  ];
+  return extended.map(p => {
+    let sign: string;
+    let deg: number;
+    let min: number;
+    let signSymbol: string;
+    let retro = false;
+    if (p.body === "Chiron") {
+      const c = getDetailedChironPosition(target);
+      sign = c.sign; deg = c.degree; min = c.minutes; retro = !!c.isRetrograde;
+      signSymbol = ZODIAC.find(z => z.name === sign)?.symbol || "";
+    } else if (p.body === "NorthNode") {
+      const n = getDetailedNodePosition(target);
+      sign = n.sign; deg = n.degree; min = n.minutes; retro = true;
+      signSymbol = ZODIAC.find(z => z.name === sign)?.symbol || "";
+    } else {
+      const lon = longitudeOf(p.body as Astronomy.Body | "Moon", target);
+      const pos = fmtPos(lon);
+      sign = pos.sign; deg = pos.deg; min = pos.min; signSymbol = pos.symbol;
+      retro = isRetro(p.body as Astronomy.Body | "Moon", target);
+    }
     return {
       key: p.key,
       label: p.label,
       symbol: p.symbol,
-      sign: pos.sign,
-      signSymbol: pos.symbol,
-      degree: pos.deg,
-      minutes: pos.min,
-      retrograde: r,
+      sign,
+      signSymbol,
+      degree: deg,
+      minutes: min,
+      retrograde: retro,
     };
   });
 }
+
+function normalize360(x: number): number { return ((x % 360) + 360) % 360; }
 
 export function formatSkyBlockForEmail(date: Date): string {
   const midnightET = getEasternMidnightDate(date);

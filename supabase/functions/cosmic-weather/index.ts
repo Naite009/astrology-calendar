@@ -834,6 +834,12 @@ CRITICAL RULES:
    - Example sanity check: Moon 0° Scorpio and Pluto 3° Aquarius are ~94° apart (a square), not a conjunction.
    - If you see Saturn at 29° and North Node at 10°, that is a 19° gap = NO ASPECT. Do not mention it.
    - Check the orb value provided - if it's over 10°, it's not a valid major aspect.
+5c. **SPACING & TYPO GUARD**: ALWAYS put a space between a planet's name and the word "in" (write "Chiron in Taurus", NEVER "Chironin Taurus"). Same for every planet: "Sun in Cancer", "Moon in Libra", "Mars in Taurus". Never concatenate a planet name with the following word. Read every sentence back before emitting it and split any glued words.
+5d. **OUT-OF-SIGN (DISSOCIATE) CONJUNCTIONS**: A conjunction can be within a tight orb yet fall in DIFFERENT signs (e.g., transit Chiron at 0° Taurus conjunct natal Chiron at 29° Aries). When the two bodies are in different signs, you MUST:
+   (a) name both signs explicitly ("transit Chiron at 0° Taurus is conjunct your natal Chiron at 29° Aries"),
+   (b) label it as "out-of-sign" or "dissociate" and note the energy feels different because the signs differ,
+   (c) never collapse the two placements into a single sign ("conjunct your natal Chiron in Taurus" is WRONG when natal Chiron is in Aries).
+   Same rule for out-of-sign oppositions, squares, trines, sextiles.
 5b. **ABSOLUTELY CRITICAL - NEVER REFERENCE THE READER'S NATAL CHART**: This function does NOT receive the reader's natal chart. You do NOT know where their natal Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Chiron, Lilith, Nodes, or angles are. You therefore may NOT write phrases like:
    - "Neptune opposition natal Moon"
    - "Lilith conjunct your natal Sun"
@@ -1298,7 +1304,14 @@ CRITICAL INSTRUCTIONS:
       return output;
     };
 
-    const insightPostProcessed = enforcePlanetSigns(insightVerified);
+    let insightPostProcessed = enforcePlanetSigns(insightVerified);
+
+    // Split glued planet+in typos ("Chironin Taurus" → "Chiron in Taurus").
+    const PLANETS_FOR_TYPO_FIX = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Ceres","Pallas","Juno","Vesta","Eris"];
+    for (const p of PLANETS_FOR_TYPO_FIX) {
+      const re = new RegExp(`\\b${p}in\\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\\b`, "g");
+      insightPostProcessed = insightPostProcessed.replace(re, `${p} in $1`);
+    }
 
     // =========================================================================
     // ASTROLOGICAL FACT VALIDATION
