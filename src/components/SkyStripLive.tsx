@@ -99,18 +99,19 @@ export function SkyStripLive({ at }: { at?: Date }) {
                 <div className="tabular-nums text-sm font-serif text-foreground mt-0.5">
                   {e.degree}°{String(e.minutes).padStart(2, "0")}′
                 </div>
-                <div className="flex items-baseline gap-1 mt-0.5">
+                <div className="flex items-baseline gap-1 mt-0.5 min-w-0">
                   <span
-                    className={`text-sm leading-none ${signColor}`}
+                    className={`flex-none text-sm leading-none ${signColor}`}
                     style={{ fontFamily: '"Apple Symbols","Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif' }}
                     aria-hidden
                   >
                     {e.signSymbol}
                   </span>
-                  <span className={`text-xs font-semibold ${signColor} truncate`}>
+                  <span className={`text-xs font-semibold ${signColor} whitespace-normal break-words leading-tight`}>
                     {e.sign}
                   </span>
                 </div>
+
               </div>
             </li>
 
