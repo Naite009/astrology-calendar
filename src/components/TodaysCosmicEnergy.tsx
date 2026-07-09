@@ -21,6 +21,7 @@ import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } f
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import { generateCosmicWeatherPDF } from "@/lib/cosmicWeatherPDF";
+import { SkyStripLive } from "@/components/SkyStripLive";
 import { toast } from "@/hooks/use-toast";
 import { LunarCycleView } from "./LunarCycleView";
 import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
