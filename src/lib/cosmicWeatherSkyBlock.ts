@@ -136,31 +136,33 @@ export function buildSkyEntriesAt(target: Date): SkyEntry[] {
     { key: "northNode", label: "N. Node", symbol: "☊", body: "NorthNode" },
   ];
   return extended.map(p => {
-    let lon: number;
+    let sign: string;
+    let deg: number;
+    let min: number;
+    let signSymbol: string;
     let retro = false;
     if (p.body === "Chiron") {
-      // Approximate Chiron ecliptic longitude via linear ephemeris fit (2020-2035).
-      // Anchored to JPL data: 2020-01-01 = 2°22' Aries, 2026-06-01 ≈ 29°Aries/0°Taurus.
-      const t = (target.getTime() - Date.UTC(2020, 0, 1)) / (365.25 * 86400 * 1000);
-      lon = normalize360(2.37 + t * 4.3); // ~4.3°/year mean motion
+      const c = getDetailedChironPosition(target);
+      sign = c.sign; deg = c.degree; min = c.minutes; retro = !!c.isRetrograde;
+      signSymbol = ZODIAC.find(z => z.name === sign)?.symbol || "";
     } else if (p.body === "NorthNode") {
-      // Mean node: retrograde ~19.34°/year from a 2020-01-01 anchor of 5°34' Cancer (95.57°).
-      const t = (target.getTime() - Date.UTC(2020, 0, 1)) / (365.25 * 86400 * 1000);
-      lon = normalize360(95.57 - t * 19.341);
-      retro = true;
+      const n = getDetailedNodePosition(target);
+      sign = n.sign; deg = n.degree; min = n.minutes; retro = true;
+      signSymbol = ZODIAC.find(z => z.name === sign)?.symbol || "";
     } else {
-      lon = longitudeOf(p.body as Astronomy.Body | "Moon", target);
+      const lon = longitudeOf(p.body as Astronomy.Body | "Moon", target);
+      const pos = fmtPos(lon);
+      sign = pos.sign; deg = pos.deg; min = pos.min; signSymbol = pos.symbol;
       retro = isRetro(p.body as Astronomy.Body | "Moon", target);
     }
-    const pos = fmtPos(lon);
     return {
       key: p.key,
       label: p.label,
       symbol: p.symbol,
-      sign: pos.sign,
-      signSymbol: pos.symbol,
-      degree: pos.deg,
-      minutes: pos.min,
+      sign,
+      signSymbol,
+      degree: deg,
+      minutes: min,
       retrograde: retro,
     };
   });
