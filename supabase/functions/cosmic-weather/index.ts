@@ -1304,7 +1304,14 @@ CRITICAL INSTRUCTIONS:
       return output;
     };
 
-    const insightPostProcessed = enforcePlanetSigns(insightVerified);
+    let insightPostProcessed = enforcePlanetSigns(insightVerified);
+
+    // Split glued planet+in typos ("Chironin Taurus" → "Chiron in Taurus").
+    const PLANETS_FOR_TYPO_FIX = ["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn","Uranus","Neptune","Pluto","Chiron","Lilith","Ceres","Pallas","Juno","Vesta","Eris"];
+    for (const p of PLANETS_FOR_TYPO_FIX) {
+      const re = new RegExp(`\\b${p}in\\s+(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\\b`, "g");
+      insightPostProcessed = insightPostProcessed.replace(re, `${p} in $1`);
+    }
 
     // =========================================================================
     // ASTROLOGICAL FACT VALIDATION
