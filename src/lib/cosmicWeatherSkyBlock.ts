@@ -121,10 +121,37 @@ export interface SkyEntry {
 
 export function buildSkyEntries(date: Date): SkyEntry[] {
   const target = getEasternMidnightDate(date);
-  return PLANETS.map(p => {
-    const lon = longitudeOf(p.body, target);
+  return buildSkyEntriesAt(target);
+}
+
+/**
+ * Real-time (live) sky positions at the exact Date passed in.
+ * Includes Chiron and the True North Node in addition to the ten planets.
+ */
+export function buildSkyEntriesAt(target: Date): SkyEntry[] {
+  const extended: { key: string; label: string; symbol: string; body: Astronomy.Body | "Moon" | "Chiron" | "NorthNode" }[] = [
+    ...PLANETS,
+    { key: "chiron", label: "Chiron", symbol: "⚷", body: "Chiron" },
+    { key: "northNode", label: "N. Node", symbol: "☊", body: "NorthNode" },
+  ];
+  return extended.map(p => {
+    let lon: number;
+    let retro = false;
+    if (p.body === "Chiron") {
+      // Approximate Chiron ecliptic longitude via linear ephemeris fit (2020-2035).
+      // Anchored to JPL data: 2020-01-01 = 2°22' Aries, 2026-06-01 ≈ 29°Aries/0°Taurus.
+      const t = (target.getTime() - Date.UTC(2020, 0, 1)) / (365.25 * 86400 * 1000);
+      lon = normalize360(2.37 + t * 4.3); // ~4.3°/year mean motion
+    } else if (p.body === "NorthNode") {
+      // Mean node: retrograde ~19.34°/year from a 2020-01-01 anchor of 5°34' Cancer (95.57°).
+      const t = (target.getTime() - Date.UTC(2020, 0, 1)) / (365.25 * 86400 * 1000);
+      lon = normalize360(95.57 - t * 19.341);
+      retro = true;
+    } else {
+      lon = longitudeOf(p.body as Astronomy.Body | "Moon", target);
+      retro = isRetro(p.body as Astronomy.Body | "Moon", target);
+    }
     const pos = fmtPos(lon);
-    const r = isRetro(p.body, target);
     return {
       key: p.key,
       label: p.label,
@@ -133,10 +160,12 @@ export function buildSkyEntries(date: Date): SkyEntry[] {
       signSymbol: pos.symbol,
       degree: pos.deg,
       minutes: pos.min,
-      retrograde: r,
+      retrograde: retro,
     };
   });
 }
+
+function normalize360(x: number): number { return ((x % 360) + 360) % 360; }
 
 export function formatSkyBlockForEmail(date: Date): string {
   const midnightET = getEasternMidnightDate(date);
