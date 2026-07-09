@@ -86,8 +86,8 @@ export function SkyStripLive({ at }: { at?: Date }) {
                 {e.symbol}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[11px] font-semibold uppercase tracking-wider ${theme.accent} truncate`}>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider ${theme.accent}`}>
                     {e.label}
                   </span>
                   {e.retrograde && (
@@ -99,6 +99,7 @@ export function SkyStripLive({ at }: { at?: Date }) {
                 <div className="tabular-nums text-sm font-serif text-foreground mt-0.5">
                   {e.degree}°{String(e.minutes).padStart(2, "0")}′
                 </div>
+
                 <div className="flex items-baseline gap-1 mt-0.5 min-w-0">
                   <span
                     className={`flex-none text-sm leading-none ${signColor}`}
