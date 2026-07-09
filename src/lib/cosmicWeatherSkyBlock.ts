@@ -6,6 +6,7 @@
 
 import * as Astronomy from "astronomy-engine";
 import { findNextMoonSignChange } from "./voidOfCourseMoon";
+import { getDetailedChironPosition, getDetailedNodePosition } from "./astrology";
 
 const ZODIAC = [
   { name: "Aries", symbol: "♈" },
