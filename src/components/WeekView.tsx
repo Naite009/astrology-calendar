@@ -9,6 +9,7 @@ import {
 import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect, HOUSE_MEANINGS } from "@/lib/transitAspects";
 import { getMercuryRetroGuidance } from "@/lib/mercuryRetroGuidance";
+import { buildPersonalMercuryRxSentence } from "@/lib/mercuryRetroPersonal";
 import { buildPersonalDailyGuidance } from "@/lib/personalDailyGuidance";
 
 interface WeekViewProps {
@@ -176,7 +177,7 @@ export const WeekView = ({
             transitAspects,
           });
           const mercuryTag = mercuryRetro
-            ? ` ${getMercuryRetroGuidance(planets.mercury.signName)}`
+            ? ` ${buildPersonalMercuryRxSentence(activeChart, planets.mercury.signName)}`
             : "";
           const guidance = personal.reflection + mercuryTag;
           const journalPrompt = personal.journalPrompt;
