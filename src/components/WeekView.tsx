@@ -59,6 +59,21 @@ const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: stri
   Pisces: { action: "flow intuitively", focus: "spirituality and compassion", avoid: "escapism" },
 };
 
+const MERCURY_RX_TAG_BY_SIGN: Record<string, string> = {
+  Aries: "Mercury Rx in Aries backdrop: slow the send button, finish before you start.",
+  Taurus: "Mercury Rx in Taurus backdrop: reprice, unsubscribe, postpone big purchases.",
+  Gemini: "Mercury Rx in Gemini backdrop: back up devices, reply to the ignored message.",
+  Cancer: "Mercury Rx in Cancer backdrop: family conversations and home logistics resurface.",
+  Leo: "Mercury Rx in Leo backdrop: reopen the creative file, watch for ex-energy.",
+  Virgo: "Mercury Rx in Virgo backdrop: re-book, re-audit one routine, stop editing and ship.",
+  Libra: "Mercury Rx in Libra backdrop: reread contracts, have the direct conversation.",
+  Scorpio: "Mercury Rx in Scorpio backdrop: handle avoided paperwork, say the hard true thing.",
+  Sagittarius: "Mercury Rx in Sagittarius backdrop: reconfirm travel, let a smaller opinion be enough.",
+  Capricorn: "Mercury Rx in Capricorn backdrop: redraft the pitch, do not lock in the new title yet.",
+  Aquarius: "Mercury Rx in Aquarius backdrop: message the friend you miss, revisit the shelved plan.",
+  Pisces: "Mercury Rx in Pisces backdrop: write it down before you decide, choose the boring clear sentence.",
+};
+
 const getDailyGuidance = (
   moonPhase: { isBalsamic: boolean; phaseName: string },
   mercuryRetro: boolean,
@@ -66,48 +81,31 @@ const getDailyGuidance = (
   mercurySign?: string
 ): string => {
   const signData = SIGN_ENERGIES[moonSign] || SIGN_ENERGIES.Aries;
+  const mercuryTag = mercuryRetro && mercurySign ? ` ${MERCURY_RX_TAG_BY_SIGN[mercurySign] || ""}` : "";
 
-  if (mercuryRetro) {
-    return getMercuryRetroGuidance(mercurySign || moonSign);
-  }
-
+  let base: string;
   if (moonPhase.isBalsamic) {
-    return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
+    base = `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
+  } else if (moonPhase.phaseName === "New Moon") {
+    base = `New Moon in ${moonSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
+  } else if (moonPhase.phaseName === "Waxing Crescent") {
+    base = `Waxing Crescent in ${moonSign} - Take first brave steps toward your New Moon intentions. Energy builds as you ${signData.action}. Focus on ${signData.focus}. Faith and momentum are growing.`;
+  } else if (moonPhase.phaseName === "First Quarter") {
+    base = `First Quarter Moon in ${moonSign} - Crisis of action. Push through resistance. Make decisive choices around ${signData.focus}. ${signData.action} despite challenges. This is your test of commitment.`;
+  } else if (moonPhase.phaseName === "Waxing Gibbous") {
+    base = `Waxing Gibbous in ${moonSign} - Refine and perfect. Adjust your approach to ${signData.focus}. Details matter now. ${signData.action} with increasing wisdom. The peak approaches - prepare well.`;
+  } else if (moonPhase.phaseName === "Full Moon") {
+    base = `Full Moon in ${moonSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+  } else if (moonPhase.phaseName === "Waning Gibbous") {
+    base = `Waning Gibbous in ${moonSign} - Share your wisdom. Give back what you have learned about ${signData.focus}. ${signData.action} with generosity. Gratitude amplifies your blessings. Teach and mentor.`;
+  } else if (moonPhase.phaseName === "Last Quarter") {
+    base = `Last Quarter Moon in ${moonSign} - Crisis of consciousness. Let go of what blocks your path around ${signData.focus}. ${signData.action} toward release. Forgive. Break old patterns. The light is waning - surrender gracefully.`;
+  } else if (moonPhase.phaseName === "Waning Crescent") {
+    base = `Waning Crescent in ${moonSign} - Preparation for renewal. Rest deeply. Reflect on ${signData.focus}. ${signData.action} mindfully as you wind down. Spiritual practices deepen. The dark moon approaches - trust the process.`;
+  } else {
+    base = `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
   }
-
-  if (moonPhase.phaseName === "New Moon") {
-    return `New Moon in ${moonSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
-  }
-
-  if (moonPhase.phaseName === "Waxing Crescent") {
-    return `Waxing Crescent in ${moonSign} - Take first brave steps toward your New Moon intentions. Energy builds as you ${signData.action}. Focus on ${signData.focus}. Faith and momentum are growing.`;
-  }
-
-  if (moonPhase.phaseName === "First Quarter") {
-    return `First Quarter Moon in ${moonSign} - Crisis of action. Push through resistance. Make decisive choices around ${signData.focus}. ${signData.action} despite challenges. This is your test of commitment.`;
-  }
-
-  if (moonPhase.phaseName === "Waxing Gibbous") {
-    return `Waxing Gibbous in ${moonSign} - Refine and perfect. Adjust your approach to ${signData.focus}. Details matter now. ${signData.action} with increasing wisdom. The peak approaches - prepare well.`;
-  }
-
-  if (moonPhase.phaseName === "Full Moon") {
-    return `Full Moon in ${moonSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
-  }
-
-  if (moonPhase.phaseName === "Waning Gibbous") {
-    return `Waning Gibbous in ${moonSign} - Share your wisdom. Give back what you have learned about ${signData.focus}. ${signData.action} with generosity. Gratitude amplifies your blessings. Teach and mentor.`;
-  }
-
-  if (moonPhase.phaseName === "Last Quarter") {
-    return `Last Quarter Moon in ${moonSign} - Crisis of consciousness. Let go of what blocks your path around ${signData.focus}. ${signData.action} toward release. Forgive. Break old patterns. The light is waning - surrender gracefully.`;
-  }
-
-  if (moonPhase.phaseName === "Waning Crescent") {
-    return `Waning Crescent in ${moonSign} - Preparation for renewal. Rest deeply. Reflect on ${signData.focus}. ${signData.action} mindfully as you wind down. Spiritual practices deepen. The dark moon approaches - trust the process.`;
-  }
-
-  return `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+  return base + mercuryTag;
 };
 
 export const WeekView = ({
