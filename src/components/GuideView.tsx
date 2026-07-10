@@ -1798,7 +1798,7 @@ const DIVINE_FEM_ITEMS: Array<{
   { key: "Vesta",     glyph: "⚶", name: "Vesta — The Sacred Flame", blurb: "Devotion, dedication, what you'll sacrifice for. Focused sexual energy channeled into work or service.", accent: "bg-secondary" },
 ];
 
-const DivineFeminineSection = () => {
+function DivineFeminineSection() {
   const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
   const activeChart =
     selectedChartForTiming === "general"
