@@ -8,6 +8,7 @@ import {
 } from "@/lib/astrology";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect, HOUSE_MEANINGS } from "@/lib/transitAspects";
+import { getMercuryRetroGuidance } from "@/lib/mercuryRetroGuidance";
 
 interface WeekViewProps {
   currentDate: Date;
@@ -61,12 +62,13 @@ const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: stri
 const getDailyGuidance = (
   moonPhase: { isBalsamic: boolean; phaseName: string },
   mercuryRetro: boolean,
-  moonSign: string
+  moonSign: string,
+  mercurySign?: string
 ): string => {
   const signData = SIGN_ENERGIES[moonSign] || SIGN_ENERGIES.Aries;
 
   if (mercuryRetro) {
-    return `Mercury Retrograde in ${moonSign} - Review and revise communications. Back up data. Reconnect with old contacts. Avoid new contracts. Practice patience with technology and travel.`;
+    return getMercuryRetroGuidance(mercurySign || moonSign);
   }
 
   if (moonPhase.isBalsamic) {
@@ -155,7 +157,7 @@ export const WeekView = ({
           const moonPhase = getMoonPhase(date);
           const mercuryRetro = isMercuryRetrograde(date);
           const energy = getEnergyRating(moonPhase, mercuryRetro);
-          const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName);
+          const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName, planets.mercury.signName);
           const dateKey = date.toISOString().split("T")[0];
           const isToday = date.toDateString() === new Date().toDateString();
 
