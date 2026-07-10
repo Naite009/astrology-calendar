@@ -1772,13 +1772,8 @@ const DIVINE_FEM_ITEMS: Array<{
 ];
 
 function DivineFeminineSection() {
-  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
-  const activeChart =
-    selectedChartForTiming === "general"
-      ? null
-      : selectedChartForTiming === "user"
-        ? userNatalChart
-        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
   const [open, setOpen] = useState(false);
   const [reading, setReading] = useState<PersonalReading | null>(null);
 
@@ -1789,6 +1784,14 @@ function DivineFeminineSection() {
 
   return (
     <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
       <p>
         Beyond the traditional planets, astrologers work with additional celestial bodies that
         represent different facets of the feminine divine, healing, and destiny.
@@ -1799,7 +1802,7 @@ function DivineFeminineSection() {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Select a chart in the Chart Library to get a personal reading on each of these.
+          Pick a chart above to get a personal reading on each of these.
         </p>
       )}
 
