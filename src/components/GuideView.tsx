@@ -1779,6 +1779,90 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
   },
 };
 
+// ---------- Wave 1: Divine Feminine Bodies (clickable, chart-personalized) ----------
+
+const DIVINE_FEM_ITEMS: Array<{
+  key: DivineFemBody;
+  glyph: string;
+  name: string;
+  blurb: string;
+  accent: string;
+}> = [
+  { key: "NorthNode", glyph: "☊", name: "North Node", blurb: "Where you're headed in this lifetime. Growth, evolution, future direction. Feels uncomfortable but rewarding.", accent: "bg-green-50 dark:bg-green-900/30" },
+  { key: "SouthNode", glyph: "☋", name: "South Node", blurb: "Past-life skills and comfort zone. What you've already mastered. Can become a crutch when overused.", accent: "bg-secondary" },
+  { key: "Chiron",    glyph: "⚷", name: "Chiron — The Wounded Healer", blurb: "Your deepest wound and your greatest healing gift. Where you were hurt is where you can quietly help others.", accent: "bg-secondary" },
+  { key: "Lilith",    glyph: "⚸", name: "Lilith — Dark Moon", blurb: "The wild, untamed feminine. Your primal instincts and what you refuse to be controlled about.", accent: "bg-secondary" },
+  { key: "Ceres",     glyph: "⚳", name: "Ceres — The Great Mother", blurb: "Nurturing, sustenance, what you need to feel cared for. Mother-child dynamics, grief, and loss.", accent: "bg-secondary" },
+  { key: "Pallas",    glyph: "⚴", name: "Pallas — The Warrior Strategist", blurb: "Intelligence, pattern recognition, creative wisdom. Political savvy and legal acumen.", accent: "bg-secondary" },
+  { key: "Juno",      glyph: "⚵", name: "Juno — The Divine Consort", blurb: "Committed partnership, marriage, what you need in long-term relationships. Loyalty and balance of power.", accent: "bg-secondary" },
+  { key: "Vesta",     glyph: "⚶", name: "Vesta — The Sacred Flame", blurb: "Devotion, dedication, what you'll sacrifice for. Focused sexual energy channeled into work or service.", accent: "bg-secondary" },
+];
+
+const DivineFeminineSection = () => {
+  const { getActiveChart } = useNatalChart();
+  const activeChart = getActiveChart();
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openBody = (body: DivineFemBody) => {
+    setReading(personalizeDivineFeminineBody(activeChart, body));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <p>
+        Beyond the traditional planets, astrologers work with additional celestial bodies that
+        represent different facets of the feminine divine, healing, and destiny.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any body to see it read for {activeChart.name}'s chart specifically.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Select a chart in the Chart Library to get a personal reading on each of these.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {DIVINE_FEM_ITEMS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openBody(item.key)}
+            className={`group text-left rounded-sm border border-border ${item.accent} p-4 transition hover:border-primary hover:shadow-sm`}
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">
+              {item.blurb}
+            </div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Read for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+};
+
+
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
 
