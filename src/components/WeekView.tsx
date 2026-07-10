@@ -176,7 +176,7 @@ export const WeekView = ({
             transitAspects,
           });
           const mercuryTag = mercuryRetro
-            ? ` ${getMercuryRetroGuidance(planets.mercury.signName)}`
+            ? ` ${buildPersonalMercuryRxSentence(activeChart, planets.mercury.signName)}`
             : "";
           const guidance = personal.reflection + mercuryTag;
           const journalPrompt = personal.journalPrompt;
