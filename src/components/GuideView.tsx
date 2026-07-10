@@ -1865,7 +1865,7 @@ function DivineFeminineSection() {
       />
     </>
   );
-};
+}
 
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
