@@ -139,3 +139,38 @@ export const getPersonalRetroImpact = (
     natalHits,
   };
 };
+
+/**
+ * One-paragraph personal Mercury retrograde sentence for daily guidance.
+ * Reads: "Mercury retrograde is in Cancer, transiting your 4th house — home,
+ * family, your emotional foundation. It's reworking your natal Moon in Cancer.
+ * Do this: <sign-specific action>."
+ */
+export const buildPersonalMercuryRxSentence = (
+  chart: NatalChart | null | undefined,
+  mercurySign: string,
+): string => {
+  const impact = getPersonalRetroImpact(chart, mercurySign);
+  const parts: string[] = [`Mercury retrograde is in ${mercurySign}.`];
+
+  if (chart) {
+    if (impact.houseLabel) {
+      parts.push(`It's transiting your ${impact.houseLabel}.`);
+    }
+    if (impact.natalHits.length > 0) {
+      parts.push(
+        `It's reworking your natal ${impact.natalHits.join(", ")} in ${mercurySign}.`,
+      );
+    } else if (impact.houseNumber != null) {
+      parts.push(
+        `You don't have natal planets in ${mercurySign}, so the pressure lands on the house itself, not a planet.`,
+      );
+    }
+  }
+
+  if (impact.guidance) {
+    parts.push(`Do this: ${impact.guidance.doThis}`);
+  }
+
+  return parts.join(" ");
+};
