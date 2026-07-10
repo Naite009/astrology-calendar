@@ -62,7 +62,8 @@ const getDailyGuidance = (
   mercuryRetro: boolean,
   moonSign: string,
   exactPhaseSign?: string,
-  exactPhaseType?: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter'
+  exactPhaseType?: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter',
+  mercurySign?: string
 ): string => {
   const isExactNewMoon = exactPhaseType === 'New Moon';
   const isExactFullMoon = exactPhaseType === 'Full Moon';
@@ -79,7 +80,7 @@ const getDailyGuidance = (
   const signData = SIGN_ENERGIES[phaseSign] || SIGN_ENERGIES.Aries;
 
   if (mercuryRetro) {
-    return `Mercury Retrograde in ${moonSign} - Review and revise communications. Back up data. Reconnect with old contacts. Avoid new contracts. Practice patience with technology and travel.`;
+    return getMercuryRetroGuidance(mercurySign || moonSign);
   }
   // If today contains an exact New/Full Moon moment, that story comes first.
   // (The balsamic phase is still true, but the exact lunation is the headline.)
