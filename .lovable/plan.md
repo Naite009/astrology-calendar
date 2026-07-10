@@ -1,59 +1,74 @@
-# Aspects Tab — Personalized Aspect Decoder
+# Personalize the Guide: click any concept, see it in your chart
 
-A new top-level tab that turns every chart's aspect grid into a ranked, plain-language reading — including the dissociate (out-of-sign) aspects that Astro.com doesn't draw a line for. This is exactly the moment we just had with Nicki's Saturn ⚻ Uranus: the math is real, the line is missing, and nobody explains why or what it feels like in the body.
+## What you're asking for
 
-## What the user sees
+The Guide is currently a generic encyclopedia. You want every card / heading / concept to become clickable. When you click "North Node," "Chiron," "Juno," "Mercury Retrograde," "Fixed Stars," "Balsamic Moon," "Ceres," etc., a panel opens that reads *your* chart for that concept: sign, house, tight aspects, and one blended paragraph about what it means for you specifically. Same simplicity as the personalized North Node line I just wrote.
 
-1. **Person picker (top)** — same pattern as Lauren's starred dropdown:
-   - Searchable Popover + Command
-   - Alphabetical
-   - Primary user pinned on top with amber star
-   - Name-only (no role labels)
+This is a big surface. I'll do it in tested waves rather than one giant push, so each wave can be verified against your chart before moving on.
 
-2. **Aspect-type tabs** — All · ☌ Conjunction · ☍ Opposition · △ Trine · □ Square · ⚹ Sextile · ⚻ Quincunx · (and minor: semi-sextile, sesquiquadrate if data present)
+## The pattern (used everywhere)
 
-3. **Ranked list of that person's aspects.** Importance ranking (research-backed, not just orb):
-   - **Planet weight** (Luminaries 10 > Personal 7 > Social 5 > Outer 4 > Points 3) — Sun/Moon contacts always rank above outers
-   - **Aspect weight** (Conjunction 10 > Opposition 9 > Square 8 > Trine 7 > Sextile 5 > Quincunx 4 > minors 2)
-   - **Orb tightness** (tighter = higher, scaled against the aspect's max orb from `aspectOrbs.ts`)
-   - **Angularity bonus** (planets in 1/4/7/10 houses, or aspects to ASC/MC)
-   - **Dissociate flag** — shown as a badge "Dissociate / Out-of-Sign" with a one-line explanation of why Astro.com doesn't draw the line
-   - Final score = (planetA + planetB) × aspectWeight × tightnessFactor + angularityBonus
-   - So **Sun ☌ Moon** outranks a tight **Saturn ⚻ Uranus** every time, as the user expected.
+Every clickable concept opens the same modal shell, filled by a concept-specific "personalizer" function. Each personalizer follows the same 4-part structure so the voice stays consistent:
 
-4. **Each aspect card has 3 layers** (matches our existing `aspect-narrative-growth-layers` standard):
-   - **Headline:** Planet A [sign/house] [aspect] Planet B [sign/house] — orb · applying/separating · dissociate badge if applicable
-   - **The mechanic** (1 sentence): what's structurally being negotiated
-   - **How it feels in your chart** (2–3 sentences): grounded in the actual sign + house placements, ruler context, retrograde state, and any third planet stacked at the same degree (e.g. Uranus conj South Node + Jupiter + Moon → adds a "this contact is also wired into your karmic release point and your emotional body" line). No jargon, no generic trait words — felt-sense per our copy standard.
+1. **Placement line** — the raw fact (e.g., "Your North Node is in Scorpio, in your 1st house").
+2. **Aspect line** — tightest aspects to that point from your natal chart (conjunctions first, then squares/oppositions, then trines/sextiles), only within real orb.
+3. **Blended reading** — one paragraph, plain English, that combines sign + house + tightest aspect into a single lived meaning ("Where you're headed in this lifetime is…").
+4. **What to do with it** — one concrete behavioral line.
 
-5. **"Why this isn't drawn on Astro.com" callout** — appears automatically on any dissociate aspect with a short, teaching-tone explanation (the exact thing we just discussed with the user). This is the section that "points out the knowledge" they want the app built around.
+No new AI calls. All deterministic, calculated from the active chart, so the answer is the same every time and can be fact-checked.
 
-## Verification (Nicki's chart, before shipping)
+## Waves (in build order)
 
-Confirm the three aspects the user is seeing on Astro and currently can't identify:
-- ⚻ ♆ → ♄ (Neptune quincunx Saturn) — verify by absolute degrees
-- ♂ → ♄ (Mars to Saturn — likely square or trine, confirm aspect type)
-- ☉ → ♇ or ☽ (Sun to Pluto vs Sun to Moon — confirm which by reading the chart data)
-Surface all three in the ranked list with a "you spotted this on Astro" tone so the user can trust the engine.
+**Wave 1 — Divine Feminine Bodies** (the page in your screenshot)
+- North Node, South Node (as a pair)
+- Chiron
+- Lilith (Black Moon Lilith / mean apogee — flag if data missing)
+- Ceres, Pallas, Juno, Vesta
 
-## Technical section
+**Wave 2 — Retrogrades**
+- Each currently-retrograde planet personalized (sign + house + natal hits + sign-specific action). Same engine as the daily Mercury Rx line, extended to Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.
+- Also: your natal retrogrades (planets born retrograde in your chart) — what each means for you.
 
-**New files**
-- `src/lib/aspectRanking.ts` — pure scoring function: takes `chart`, returns `RankedAspect[]` with score breakdown, dissociate flag, applying/separating, third-body stacks (any other planet within 3° of either endpoint).
-- `src/lib/aspectPersonalization.ts` — generates the 3-layer felt-sense copy per aspect, pulling from existing `aspectMeaningLibrary.ts` / `aspectContextInterpreter.ts` and enriching with sign + house + ruler + retrograde + stack context. No new AI calls — deterministic templated copy following the felt-sense + no-single-traits memory rules.
-- `src/components/AspectsView.tsx` — the tab UI: person picker, aspect-type tabs, ranked card list, dissociate callout.
+**Wave 3 — Moon Phases + VOC**
+- Click your natal moon phase → what being born under that phase means for you.
+- Click today's phase → what this phase is asking of you specifically (already partially built, will wire into the guide).
+- VOC Moon → when the next one hits your chart and what house it lands in.
 
-**Wiring**
-- Add an `aspects` tab to whatever top-level nav currently hosts Foundations / Moon Cycle / Ask (check `AstroCalendar` or wherever the main tabs live) — surface as its own tab, not nested under Foundations, since the user asked for it as a top-level destination.
-- Reuse the existing person-picker component used for Lauren-starred dropdowns (per `dropdown-universal-standard` memory). Find the current implementation and reuse it directly rather than rebuilding.
-- Use `aspectOrbs.ts` for all orb math. No new orb constants.
-- Use `formatLocalDateKey` / `parseLocalDate` if any timing is shown.
+**Wave 4 — Dignities + Difficult Placements**
+- Click any planet dignity row → your planet's dignity score, whether it's in domicile / exalted / detriment / fall, and what that means behaviorally.
+- Difficult placements: list which of these you actually have and translate each.
 
-**Out of scope (this pass)**
-- Transit aspects to the natal chart (this tab is natal-only for now).
-- Editing aspects.
-- PDF export of the aspects view.
+**Wave 5 — Fixed Stars**
+- Which major fixed stars conjunct your natal planets/angles within 1° orb, and what each one activates.
 
-## Open question before I build
+**Wave 6 — Venus Cycles, Solar Arc, Progressions, Life Cycles**
+- Where you are in each cycle right now, next major hit date, plain-language meaning.
 
-Where should the tab live? Top-level next to Foundations / Moon Cycle / Ask, or as a sub-tab inside Foundations next to "Aspects" (which currently shows the encyclopedia, not personalized)? I'd recommend **top-level** since you described it as its own destination, but say the word and I'll nest it instead.
+**Wave 7 — Aspects, Patterns & Cycles, Planetary Speeds, Dwarf Planets, Chart Decoder, Sacred Script, Cosmic Kitchen**
+- Click each concept → your version. (Cosmic Kitchen uses your dominant element/dosha.)
+
+**Wave 8 — Symbols, Colors, Planetary Hours, Timing & Electional, Biorhythms**
+- Personalize where it makes sense (colors → your chart-ruler color; hours → your ruling planet's next hour today; biorhythms → today's values). Symbols stays as a legend.
+
+## Accuracy & testing (per wave)
+
+Before I say a wave is done, I will:
+1. Open Lauren, Ben, and Ike in the preview and read each personalized entry.
+2. Cross-check the placements against their raw chart data in the database (sign, degree, house, aspect orbs).
+3. Fix any mismatch before moving to the next wave.
+4. Report back with what I verified so you can spot-check.
+
+Rule from your memory rules: all math is deterministic (`astronomy-engine` / stored chart cusps), no AI guessing signs or houses, orbs from `aspectOrbs.ts`, plain-language voice, no em dashes, no chitchat openers.
+
+## Technical section (for reference)
+
+- New module `src/lib/guidePersonalizers/` with one file per concept family (`divineFeminine.ts`, `retrogrades.ts`, `moonPhase.ts`, `dignities.ts`, `fixedStars.ts`, `cycles.ts`, `aspects.ts`, etc.). Each exports `personalize(chart, extraContext?)` returning `{ placement, aspects, reading, doThis }`.
+- New shared UI component `GuideConceptModal` in `src/components/guide/`. Opens on click, renders the 4-part shape, closes on esc / backdrop.
+- `GuideView.tsx` gets a small `<ConceptCard onClick=...>` wrapper. Existing static cards are wrapped, not rewritten, so the guide reads the same when the user isn't clicking.
+- House lookup reuses the existing cusp logic in `mercuryRetroPersonal.ts` (extract to `src/lib/houseForLongitude.ts` and share).
+- Aspect scan reuses `aspectOrbs.ts` and `calculateNatalAspects` so tightness / orb rules match the rest of the app.
+- Missing data (e.g., Lilith degree not in chart) shows an honest "your chart doesn't have this body imported yet — add it in Chart Library" instead of faking a reading.
+
+## What I need from you
+
+Just confirm you want me to start with **Wave 1 (Divine Feminine)** and go wave by wave, verifying against Lauren / Ben / Ike between each. I won't batch the whole guide in one shot — that's how astrology bugs sneak in.

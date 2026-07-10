@@ -1,14 +1,21 @@
 import { useState } from "react";
 import { RetroGradesHub } from "@/components/RetroGradesHub";
-import { ArrowRight, HelpCircle } from "lucide-react";
-import { 
-  GuideSection, 
-  GUIDE_NAV_ITEMS, 
-  getViewForSection, 
-  sectionHasTryIt, 
+import { ArrowRight, HelpCircle, Sparkles } from "lucide-react";
+import {
+  GuideSection,
+  GUIDE_NAV_ITEMS,
+  getViewForSection,
+  sectionHasTryIt,
   getTryItLabel,
-  ViewMode 
+  ViewMode
 } from "@/lib/guideNavigation";
+import { useNatalChart } from "@/hooks/useNatalChart";
+import {
+  personalizeDivineFeminineBody,
+  type DivineFemBody,
+  type PersonalReading,
+} from "@/lib/guidePersonalizers/divineFeminine";
+import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 
 interface GuideViewProps {
   onNavigateToView?: (view: ViewMode) => void;
@@ -748,84 +755,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
   },
   divinefeminine: {
     title: "Divine Feminine Bodies",
-    content: (
-      <>
-        <p>
-          Beyond the traditional planets, astrologers work with additional celestial bodies that 
-          represent different facets of the feminine divine, healing, and destiny.
-        </p>
-        
-        <h3>☊☋ Lunar Nodes (North & South)</h3>
-        <div className="mt-4 mb-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-sm border border-border bg-green-50 dark:bg-green-900/30 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">☊</span>
-              <span className="font-semibold text-foreground">North Node</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Your destiny point. Where you're headed in this lifetime. Growth, evolution, future direction. 
-              Feels uncomfortable but rewarding. Life purpose and soul growth.
-            </div>
-          </div>
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">☋</span>
-              <span className="font-semibold text-foreground">South Node</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Past life skills and comfort zone. What you've already mastered. Can become a crutch. 
-              Release attachment here to grow toward North Node.
-            </div>
-          </div>
-        </div>
-        
-        <h3>⚷ Chiron — The Wounded Healer</h3>
-        <p>
-          A comet between Saturn and Uranus, Chiron represents our deepest wound and our greatest 
-          healing gift. Where Chiron falls in your chart shows where you've been wounded—and where 
-          you can heal others once you've done your own healing work.
-        </p>
-        
-        <h3>⚸ Lilith — Dark Moon</h3>
-        <p>
-          The lunar apogee—the point where the Moon is farthest from Earth. Represents the 
-          wild, untamed feminine. Your primal instincts, raw sexuality, and what you refuse 
-          to be controlled about. Shadow self and repressed desires.
-        </p>
-        
-        <h3>The Asteroid Goddesses</h3>
-        <div className="mt-4 grid gap-4">
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="font-semibold text-foreground mb-2">⚳ Ceres — The Great Mother</div>
-            <div className="text-sm text-muted-foreground">
-              Nurturing, sustenance, what we need to feel nurtured. Mother-child dynamics, 
-              food relationship, grief and loss, seasons of life.
-            </div>
-          </div>
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="font-semibold text-foreground mb-2">⚴ Pallas — The Warrior Strategist</div>
-            <div className="text-sm text-muted-foreground">
-              Intelligence, pattern recognition, creative wisdom. Political savvy, 
-              father-daughter dynamics, legal acumen.
-            </div>
-          </div>
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="font-semibold text-foreground mb-2">⚵ Juno — The Divine Consort</div>
-            <div className="text-sm text-muted-foreground">
-              Committed partnership, marriage, what you need in long-term relationships. 
-              Loyalty, jealousy, balance of power in partnership.
-            </div>
-          </div>
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="font-semibold text-foreground mb-2">⚶ Vesta — The Sacred Flame</div>
-            <div className="text-sm text-muted-foreground">
-              Devotion, dedication, what you're willing to sacrifice for. Sexual energy 
-              channeled into work, focus, spiritual service.
-            </div>
-          </div>
-        </div>
-      </>
-    ),
+    content: <DivineFeminineSection />,
   },
   venuscycles: {
     title: "Understanding Venus Cycles",
@@ -1848,6 +1778,95 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     content: <RetroGradesHub allCharts={[]} />,
   },
 };
+
+// ---------- Wave 1: Divine Feminine Bodies (clickable, chart-personalized) ----------
+
+const DIVINE_FEM_ITEMS: Array<{
+  key: DivineFemBody;
+  glyph: string;
+  name: string;
+  blurb: string;
+  accent: string;
+}> = [
+  { key: "NorthNode", glyph: "☊", name: "North Node", blurb: "Where you're headed in this lifetime. Growth, evolution, future direction. Feels uncomfortable but rewarding.", accent: "bg-green-50 dark:bg-green-900/30" },
+  { key: "SouthNode", glyph: "☋", name: "South Node", blurb: "Past-life skills and comfort zone. What you've already mastered. Can become a crutch when overused.", accent: "bg-secondary" },
+  { key: "Chiron",    glyph: "⚷", name: "Chiron — The Wounded Healer", blurb: "Your deepest wound and your greatest healing gift. Where you were hurt is where you can quietly help others.", accent: "bg-secondary" },
+  { key: "Lilith",    glyph: "⚸", name: "Lilith — Dark Moon", blurb: "The wild, untamed feminine. Your primal instincts and what you refuse to be controlled about.", accent: "bg-secondary" },
+  { key: "Ceres",     glyph: "⚳", name: "Ceres — The Great Mother", blurb: "Nurturing, sustenance, what you need to feel cared for. Mother-child dynamics, grief, and loss.", accent: "bg-secondary" },
+  { key: "Pallas",    glyph: "⚴", name: "Pallas — The Warrior Strategist", blurb: "Intelligence, pattern recognition, creative wisdom. Political savvy and legal acumen.", accent: "bg-secondary" },
+  { key: "Juno",      glyph: "⚵", name: "Juno — The Divine Consort", blurb: "Committed partnership, marriage, what you need in long-term relationships. Loyalty and balance of power.", accent: "bg-secondary" },
+  { key: "Vesta",     glyph: "⚶", name: "Vesta — The Sacred Flame", blurb: "Devotion, dedication, what you'll sacrifice for. Focused sexual energy channeled into work or service.", accent: "bg-secondary" },
+];
+
+function DivineFeminineSection() {
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const activeChart =
+    selectedChartForTiming === "general"
+      ? null
+      : selectedChartForTiming === "user"
+        ? userNatalChart
+        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openBody = (body: DivineFemBody) => {
+    setReading(personalizeDivineFeminineBody(activeChart, body));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <p>
+        Beyond the traditional planets, astrologers work with additional celestial bodies that
+        represent different facets of the feminine divine, healing, and destiny.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any body to see it read for {activeChart.name}'s chart specifically.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Select a chart in the Chart Library to get a personal reading on each of these.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {DIVINE_FEM_ITEMS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openBody(item.key)}
+            className={`group text-left rounded-sm border border-border ${item.accent} p-4 transition hover:border-primary hover:shadow-sm`}
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">
+              {item.blurb}
+            </div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Read for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+}
+
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
