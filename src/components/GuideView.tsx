@@ -1823,6 +1823,78 @@ function DivineFeminineSection() {
   );
 }
 
+// ---------- Wave 2: Retrogrades (clickable, chart-personalized) ----------
+
+function RetrogradesSection() {
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const activeChart =
+    selectedChartForTiming === "general"
+      ? null
+      : selectedChartForTiming === "user"
+        ? userNatalChart
+        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openPlanet = (p: RetroPlanet) => {
+    setReading(personalizeRetrograde(activeChart, p));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <p>
+        When a planet appears to move backward from Earth's perspective, it's called
+        retrograde. The planet's themes turn inward: review, revise, reconsider. This is
+        where you get to fix, edit, and re-decide instead of push forward.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any planet to see its retrograde read for {activeChart.name}'s chart specifically,
+          including where the next retrograde will land in {activeChart.name}'s houses.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Select a chart in the Chart Library to get a personal retrograde reading for each planet.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {RETRO_PLANETS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openPlanet(item.key)}
+            className="group text-left rounded-sm border border-border bg-secondary p-4 transition hover:border-primary hover:shadow-sm"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">{item.blurb}</div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Read for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+}
+
+
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
