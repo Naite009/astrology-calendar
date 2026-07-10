@@ -1009,7 +1009,8 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               mercuryRetro,
               planets.moon.signName,
               exactLunarPhase?.sign,
-              exactLunarPhase?.type
+              exactLunarPhase?.type,
+              planets.mercury.signName
             )}
           </p>
         </div>
