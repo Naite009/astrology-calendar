@@ -15,6 +15,11 @@ import {
   type DivineFemBody,
   type PersonalReading,
 } from "@/lib/guidePersonalizers/divineFeminine";
+import {
+  personalizeRetrograde,
+  RETRO_PLANETS,
+  type RetroPlanet,
+} from "@/lib/guidePersonalizers/retrogrades";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 
 interface GuideViewProps {
@@ -263,56 +268,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
   },
   retrogrades: {
     title: "Understanding Retrogrades",
-    content: (
-      <>
-        <p>
-          When a planet appears to move backward in the sky (from our perspective on Earth), 
-          it's called "retrograde." This is an optical illusion caused by the relative speeds 
-          of Earth and the other planet.
-        </p>
-        
-        <h3>What Does Retrograde Mean?</h3>
-        <p>
-          During retrograde periods, the planet's energy is turned inward. It's a time to 
-          review, revise, and reconsider matters related to that planet.
-        </p>
-        
-        <h3>☿℞ Mercury Retrograde</h3>
-        <p>The most famous retrograde! Mercury rules communication, technology, and travel.</p>
-        <ul>
-          <li><strong>Frequency:</strong> 3-4 times per year, lasting about 3 weeks each</li>
-          <li><strong>Effects:</strong> Communication mishaps, technology glitches, travel delays, misunderstandings</li>
-          <li><strong>Best Activities:</strong> Review, revise, reconnect with old friends, edit, research, reflect</li>
-          <li><strong>Avoid:</strong> Signing contracts, buying electronics, starting new projects, making major decisions</li>
-          <li><strong>Shadow Period:</strong> The effects can be felt 1-2 weeks before and after the actual retrograde</li>
-        </ul>
-        
-        <h3>Other Retrogrades</h3>
-        <p>
-          All planets except the Sun and Moon go retrograde. Your calendar shows Mercury 
-          retrograde as it has the most noticeable day-to-day effects.
-        </p>
-        <ul>
-          <li><strong>Venus Retrograde:</strong> Every 18 months - Review relationships and values</li>
-          <li><strong>Mars Retrograde:</strong> Every 2 years - Reevaluate how you take action</li>
-          <li><strong>Outer Planet Retrogrades:</strong> Jupiter, Saturn, Uranus, Neptune, Pluto all retrograde annually for several months</li>
-        </ul>
-        
-        <h3>How to Work With Retrogrades</h3>
-        <p>
-          Retrogrades aren't "bad" - they're opportunities for reflection and course correction. 
-          Use these periods to:
-        </p>
-        <ul>
-          <li>Review and revise your plans</li>
-          <li>Reconnect with old friends or revisit past ideas</li>
-          <li>Research and gather information</li>
-          <li>Rest and recharge</li>
-          <li>Finish projects you've already started</li>
-          <li>Back up your data and double-check details</li>
-        </ul>
-      </>
-    ),
+    content: <RetrogradesSection />,
   },
   aspects: {
     title: "Planetary Aspects",
@@ -1866,6 +1822,78 @@ function DivineFeminineSection() {
     </>
   );
 }
+
+// ---------- Wave 2: Retrogrades (clickable, chart-personalized) ----------
+
+function RetrogradesSection() {
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const activeChart =
+    selectedChartForTiming === "general"
+      ? null
+      : selectedChartForTiming === "user"
+        ? userNatalChart
+        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openPlanet = (p: RetroPlanet) => {
+    setReading(personalizeRetrograde(activeChart, p));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <p>
+        When a planet appears to move backward from Earth's perspective, it's called
+        retrograde. The planet's themes turn inward: review, revise, reconsider. This is
+        where you get to fix, edit, and re-decide instead of push forward.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any planet to see its retrograde read for {activeChart.name}'s chart specifically,
+          including where the next retrograde will land in {activeChart.name}'s houses.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Select a chart in the Chart Library to get a personal retrograde reading for each planet.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {RETRO_PLANETS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openPlanet(item.key)}
+            className="group text-left rounded-sm border border-border bg-secondary p-4 transition hover:border-primary hover:shadow-sm"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">{item.blurb}</div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Read for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+}
+
 
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
