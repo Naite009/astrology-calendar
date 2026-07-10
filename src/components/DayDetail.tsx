@@ -35,6 +35,7 @@ import { calculatePlanetaryHours, getDayRuler, formatPlanetaryHourTime, Planetar
 import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, getUpcomingSolarArcAspects, getSolarArcPlanetSymbol, formatSolarArcAge } from '@/lib/solarArcDirections';
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
 import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, formatRetrogradeDateWithTime, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
+import { getMercuryRetroGuidance } from '@/lib/mercuryRetroGuidance';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -61,7 +62,8 @@ const getDailyGuidance = (
   mercuryRetro: boolean,
   moonSign: string,
   exactPhaseSign?: string,
-  exactPhaseType?: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter'
+  exactPhaseType?: 'New Moon' | 'Full Moon' | 'First Quarter' | 'Last Quarter',
+  mercurySign?: string
 ): string => {
   const isExactNewMoon = exactPhaseType === 'New Moon';
   const isExactFullMoon = exactPhaseType === 'Full Moon';
@@ -78,7 +80,7 @@ const getDailyGuidance = (
   const signData = SIGN_ENERGIES[phaseSign] || SIGN_ENERGIES.Aries;
 
   if (mercuryRetro) {
-    return `Mercury Retrograde in ${moonSign} - Review and revise communications. Back up data. Reconnect with old contacts. Avoid new contracts. Practice patience with technology and travel.`;
+    return getMercuryRetroGuidance(mercurySign || moonSign);
   }
   // If today contains an exact New/Full Moon moment, that story comes first.
   // (The balsamic phase is still true, but the exact lunation is the headline.)
@@ -1007,7 +1009,8 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               mercuryRetro,
               planets.moon.signName,
               exactLunarPhase?.sign,
-              exactLunarPhase?.type
+              exactLunarPhase?.type,
+              planets.mercury.signName
             )}
           </p>
         </div>
