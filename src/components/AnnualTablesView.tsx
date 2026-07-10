@@ -10,7 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDownloadImage } from "@/hooks/useDownloadImage";
+import type { NatalChart } from "@/hooks/useNatalChart";
+import { getPersonalRetroImpact } from "@/lib/mercuryRetroPersonal";
 import { getNewMoonInterpretation, NewMoonInterpretation } from "@/lib/newMoonInterpretations";
+
 import {
   Collapsible,
   CollapsibleContent,
