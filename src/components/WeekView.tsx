@@ -8,6 +8,7 @@ import {
 } from "@/lib/astrology";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { calculateTransitAspects, getTopTransitAspects, getPersonalizedJournalPrompt, getTransitPlanetSymbol, TransitAspect, HOUSE_MEANINGS } from "@/lib/transitAspects";
+import { getMercuryRetroGuidance } from "@/lib/mercuryRetroGuidance";
 
 interface WeekViewProps {
   currentDate: Date;
