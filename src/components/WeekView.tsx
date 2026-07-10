@@ -156,7 +156,6 @@ export const WeekView = ({
           const moonPhase = getMoonPhase(date);
           const mercuryRetro = isMercuryRetrograde(date);
           const energy = getEnergyRating(moonPhase, mercuryRetro);
-          const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName, planets.mercury.signName);
           const dateKey = date.toISOString().split("T")[0];
           const isToday = date.toDateString() === new Date().toDateString();
 
@@ -166,10 +165,23 @@ export const WeekView = ({
             : [];
           const topTransits = getTopTransitAspects(transitAspects, 5);
 
-          // Get personalized journal prompt if chart active
-          const journalPrompt = activeChart && transitAspects.length > 0
-            ? getPersonalizedJournalPrompt(transitAspects, planets.moon.signName, moonPhase.phaseName)
-            : "How are you feeling today? What happened? What are you grateful for?";
+          // Personal daily guidance (chart-aware). Falls back gracefully with no chart.
+          const personal = buildPersonalDailyGuidance({
+            moonSign: planets.moon.signName,
+            moonDegree: planets.moon.degree,
+            moonMinutes: planets.moon.minutes,
+            moonPhaseName: moonPhase.phaseName,
+            isBalsamic: moonPhase.isBalsamic,
+            chart: activeChart,
+            transitAspects,
+          });
+          const mercuryTag = mercuryRetro
+            ? ` ${getMercuryRetroGuidance(planets.mercury.signName)}`
+            : "";
+          const guidance = personal.reflection + mercuryTag;
+          const journalPrompt = personal.journalPrompt;
+
+
 
           return (
             <div
