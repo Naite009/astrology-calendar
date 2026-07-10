@@ -157,7 +157,7 @@ export const WeekView = ({
           const moonPhase = getMoonPhase(date);
           const mercuryRetro = isMercuryRetrograde(date);
           const energy = getEnergyRating(moonPhase, mercuryRetro);
-          const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName);
+          const guidance = getDailyGuidance(moonPhase, mercuryRetro, planets.moon.signName, planets.mercury.signName);
           const dateKey = date.toISOString().split("T")[0];
           const isToday = date.toDateString() === new Date().toDateString();
 
