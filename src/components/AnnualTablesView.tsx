@@ -26,7 +26,9 @@ import {
 
 interface AnnualTablesViewProps {
   year: number;
+  activeChart?: NatalChart | null;
 }
+
 
 interface ExactLunarEvent {
   type: "New Moon" | "Full Moon" | "First Quarter" | "Last Quarter";
