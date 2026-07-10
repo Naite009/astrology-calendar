@@ -36,6 +36,7 @@ import { calculateSolarArcChart, findSolarArcAspects, getExactSolarArcAspects, g
 import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAspects, getProgressedPlanetSymbol, formatSignChangeDate } from '@/lib/secondaryProgressions';
 import { getMercuryRetrogrades, getRetrogradeStatus, formatRetrogradeDate, formatRetrogradeDateWithTime, getAllRetrogradePeriods, getRetrogradeDisplay, getRetrogradeChartActivation, MARS_RETROGRADE_GUIDANCE, MERCURY_RETROGRADE_GUIDANCE } from '@/lib/retrogradePatterns';
 import { getMercuryRetroGuidance } from '@/lib/mercuryRetroGuidance';
+import { buildPersonalMercuryRxSentence } from '@/lib/mercuryRetroPersonal';
 import { buildPersonalDailyGuidance } from '@/lib/personalDailyGuidance';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
