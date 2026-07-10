@@ -400,7 +400,7 @@ const NewMoonCard = ({
   );
 };
 
-export const AnnualTablesView = ({ year: yearProp }: AnnualTablesViewProps) => {
+export const AnnualTablesView = ({ year: yearProp, activeChart }: AnnualTablesViewProps) => {
   const { downloadAsImage } = useDownloadImage();
   const [selectedYear, setSelectedYear] = useState<number>(yearProp);
   const year = selectedYear;
