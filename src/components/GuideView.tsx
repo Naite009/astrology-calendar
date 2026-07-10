@@ -15,6 +15,11 @@ import {
   type DivineFemBody,
   type PersonalReading,
 } from "@/lib/guidePersonalizers/divineFeminine";
+import {
+  personalizeRetrograde,
+  RETRO_PLANETS,
+  type RetroPlanet,
+} from "@/lib/guidePersonalizers/retrogrades";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 
 interface GuideViewProps {
