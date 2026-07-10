@@ -21,6 +21,23 @@ import {
   type RetroPlanet,
 } from "@/lib/guidePersonalizers/retrogrades";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
+import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
+
+function useGuideActiveChart() {
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const defaultId =
+    selectedChartForTiming === "user" || selectedChartForTiming === "general"
+      ? userNatalChart
+        ? "user"
+        : savedCharts[0]?.id ?? null
+      : selectedChartForTiming;
+  const [activeChartId, setActiveChartId] = useState<string | null>(defaultId);
+  const activeChart =
+    activeChartId === "user"
+      ? userNatalChart
+      : savedCharts.find((c) => c.id === activeChartId) || null;
+  return { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId };
+}
 
 interface GuideViewProps {
   onNavigateToView?: (view: ViewMode) => void;
