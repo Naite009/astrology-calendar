@@ -1000,20 +1000,36 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           </div>
         )}
 
-        {/* Daily Guidance Section */}
+        {/* Daily Guidance Section — personal to this chart */}
         <div>
           <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3">Daily Guidance</h3>
-          <p className="text-sm leading-relaxed text-foreground">
-            {getDailyGuidance(
-              moonPhase,
-              mercuryRetro,
-              planets.moon.signName,
-              exactLunarPhase?.sign,
-              exactLunarPhase?.type,
-              planets.mercury.signName
-            )}
-          </p>
+          {(() => {
+            const personal = buildPersonalDailyGuidance({
+              moonSign: planets.moon.signName,
+              moonDegree: planets.moon.degree,
+              moonMinutes: planets.moon.minutes,
+              moonPhaseName: moonPhase.phaseName,
+              isBalsamic: moonPhase.isBalsamic,
+              chart: activeChart,
+              transitAspects,
+            });
+            const mercuryLine = mercuryRetro
+              ? getMercuryRetroGuidance(planets.mercury.signName)
+              : null;
+            return (
+              <>
+                <p className="text-sm leading-relaxed text-foreground">{personal.reflection}</p>
+                {mercuryLine && (
+                  <p className="text-xs text-primary/80 mt-2">{mercuryLine}</p>
+                )}
+                <p className="text-sm italic text-muted-foreground mt-3">
+                  Journal prompt: {personal.journalPrompt}
+                </p>
+              </>
+            );
+          })()}
         </div>
+
           </TabsContent>
         </Tabs>
       </div>
