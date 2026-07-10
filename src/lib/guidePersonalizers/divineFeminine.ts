@@ -1,7 +1,7 @@
 // Wave 1: Divine Feminine Bodies personalizer.
 // Given the active chart + which body was clicked, returns a 4-part reading:
 // placement, tightest aspects, blended reading, and one behavioral action.
-// Deterministic — no AI calls, no math tricks; reads stored chart data.
+// Deterministic. No AI calls, no math tricks; reads stored chart data.
 
 import type { NatalChart } from "@/hooks/useNatalChart";
 import {
@@ -32,7 +32,7 @@ export interface AspectHit {
 
 export interface PersonalReading {
   title: string;         // Human title, e.g. "Your North Node"
-  placement: string;     // "Scorpio, 1st house — 12°34'"
+  placement: string;     // "Scorpio, 1st house: 12°34'"
   aspects: AspectHit[];  // tightest first
   reading: string;       // blended paragraph
   doThis: string;        // one-line action
@@ -124,7 +124,7 @@ const MEANINGS: Record<DivineFemBody, BodyMeaning> = {
   Chiron: {
     title: "Your Chiron",
     headline: (sign) =>
-      `Your deepest wound and your greatest healing gift shows up around ${SIGN_FLAVOR[sign]} — the place you were hurt is the place you can quietly help others.`,
+      `Your deepest wound and your greatest healing gift shows up around ${SIGN_FLAVOR[sign]}. The place you were hurt is the place you can quietly help others.`,
     houseFrame: "The area of life where the wound keeps surfacing is",
     action: () =>
       "You don't have to fix this wound to be useful. Tell the truth about it in the room you're in. That's the healing.",
@@ -156,7 +156,7 @@ const MEANINGS: Record<DivineFemBody, BodyMeaning> = {
   Juno: {
     title: "Your Juno",
     headline: (sign) =>
-      `What you need in a real long-term partnership is ${SIGN_FLAVOR[sign]}. Not a personality type — a felt experience.`,
+      `What you need in a real long-term partnership is ${SIGN_FLAVOR[sign]}. Not a personality type, a felt experience.`,
     houseFrame: "The area of life where partnership dynamics keep playing out is",
     action: () =>
       "Name one non-negotiable this placement points to. Say it out loud to the person, not just to yourself.",
@@ -230,7 +230,7 @@ export const personalizeDivineFeminineBody = (
 
   const abs = toAbsoluteLongitude(point);
   const house = houseForLongitude(chart, abs);
-  const houseText = house ? `${ordinal(house)} house — ${HOUSE_ARENA[house]}` : null;
+  const houseText = house ? `${ordinal(house)} house: ${HOUSE_ARENA[house]}` : null;
   const degText =
     point.degree != null
       ? `${point.degree}°${point.minutes != null ? String(point.minutes).padStart(2, "0") + "'" : ""}`
