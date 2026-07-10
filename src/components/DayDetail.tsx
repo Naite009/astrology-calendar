@@ -1014,7 +1014,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               transitAspects,
             });
             const mercuryLine = mercuryRetro
-              ? getMercuryRetroGuidance(planets.mercury.signName)
+              ? buildPersonalMercuryRxSentence(activeChart, planets.mercury.signName)
               : null;
             return (
               <>
