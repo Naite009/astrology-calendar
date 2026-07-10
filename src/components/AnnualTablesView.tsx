@@ -976,59 +976,152 @@ export const AnnualTablesView = ({ year: yearProp, activeChart }: AnnualTablesVi
             <button
               onClick={() => downloadAsImage(retrogradesRef.current, `mercury-retrograde-${year}`)}
               className="flex items-center gap-2 rounded-sm border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              title="Save this whole Mercury Retrograde panel as a PNG image"
             >
               <Download size={14} />
-              Download Image
+              Save Panel as Image
             </button>
           </div>
         </div>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Mercury appears to move backward during these periods. Review, revise, reconnect—avoid
-          major contracts or purchases.
+        <p className="mb-6 text-sm text-muted-foreground">
+          Mercury appears to move backward during these periods. Review, revise, reconnect. Avoid
+          major contracts or purchases when you can.
         </p>
         {retrogradePeriods.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {retrogradePeriods.map((period, idx) => {
-              const days = Math.ceil(
-                (period.end.getTime() - period.start.getTime()) / (1000 * 60 * 60 * 24)
-              );
-              return (
-                <div
-                  key={idx}
-                  className="rounded-sm border border-energy-caution/50 bg-energy-caution/10 p-4"
-                >
-                  <div className="mb-2 text-lg font-medium text-foreground">
-                    {period.start.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}{" "}
-                    –{" "}
-                    {period.end.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
+          <>
+            {/* Overview cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {retrogradePeriods.map((period, idx) => {
+                const days = Math.ceil(
+                  (period.end.getTime() - period.start.getTime()) / (1000 * 60 * 60 * 24)
+                );
+                const sameSign = period.startSign === period.endSign;
+                return (
+                  <div
+                    key={idx}
+                    className="relative overflow-hidden rounded-md border border-energy-caution/40 bg-gradient-to-br from-energy-caution/10 via-background to-background p-5 shadow-sm"
+                  >
+                    <div className="mb-3 flex items-baseline justify-between border-b border-energy-caution/30 pb-2">
+                      <div className="font-serif text-lg text-foreground">
+                        {period.start.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {" – "}
+                        {period.end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {days}d
+                      </div>
+                    </div>
+                    <div className="text-sm text-foreground">
+                      {sameSign ? (
+                        <span>Retraces <strong>{period.startSign}</strong></span>
+                      ) : (
+                        <span>
+                          Starts in <strong>{period.startSign}</strong>, backs into{" "}
+                          <strong>{period.endSign}</strong>
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <div>
-                      <span className="font-medium">Duration:</span> {days} days
+                );
+              })}
+            </div>
+
+            {/* Personalized panel */}
+            <div className="mt-8">
+              <h3 className="mb-1 font-serif text-lg font-light text-foreground">
+                How this affects {activeChart ? activeChart.name : "your chart"}
+              </h3>
+              <p className="mb-4 text-xs text-muted-foreground">
+                {activeChart
+                  ? "Filtered through your natal houses and any planets sitting in the retrograde signs."
+                  : "Select a chart in the header to see which of your houses and natal planets each retrograde activates."}
+              </p>
+              <div className="space-y-3">
+                {retrogradePeriods.map((period, idx) => {
+                  const signs = period.startSign === period.endSign
+                    ? [period.startSign]
+                    : [period.startSign, period.endSign];
+                  return (
+                    <div
+                      key={`personal-${idx}`}
+                      className="rounded-md border border-border bg-secondary/40 p-4"
+                    >
+                      <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-2">
+                        <div className="font-serif text-base text-foreground">
+                          {period.start.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {" – "}
+                          {period.end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </div>
+                        <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          {signs.join(" → ")}
+                        </div>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {signs.map((sign) => {
+                          const impact = getPersonalRetroImpact(activeChart, sign);
+                          return (
+                            <div key={sign} className="rounded-sm border border-border/60 bg-background p-3">
+                              <div className="mb-1 text-xs uppercase tracking-widest text-primary/80">
+                                ☿ Rx in {sign}
+                              </div>
+                              {impact.guidance && (
+                                <div className="mb-2 text-sm text-foreground">
+                                  {impact.guidance.headline}
+                                </div>
+                              )}
+                              {activeChart && (
+                                <div className="mb-2 space-y-1 text-xs text-muted-foreground">
+                                  {impact.houseLabel && (
+                                    <div>
+                                      <span className="font-medium text-foreground">Lights up your </span>
+                                      {impact.houseLabel}
+                                    </div>
+                                  )}
+                                  {impact.natalHits.length > 0 ? (
+                                    <div>
+                                      <span className="font-medium text-foreground">Reworks your natal </span>
+                                      {impact.natalHits.join(", ")} in {sign}
+                                    </div>
+                                  ) : (
+                                    <div className="italic">
+                                      No natal planets in {sign} — pressure lands mostly on the house, not a planet.
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {impact.guidance && (
+                                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                  <li>
+                                    <span className="font-medium text-foreground">Coming back up: </span>
+                                    {impact.guidance.reviewing}
+                                  </li>
+                                  <li>
+                                    <span className="font-medium text-foreground">Watch for: </span>
+                                    {impact.guidance.watchFor}
+                                  </li>
+                                  <li>
+                                    <span className="font-medium text-foreground">Do this: </span>
+                                    {impact.guidance.doThis}
+                                  </li>
+                                </ul>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-medium">Starts in:</span> {period.startSign}
-                    </div>
-                    <div>
-                      <span className="font-medium">Ends in:</span> {period.endSign}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">
             No Mercury retrograde periods detected in {year}.
           </p>
         )}
       </section>
+
 
       {/* Legend */}
       <section className="rounded-sm border border-border bg-secondary/50 p-6">
