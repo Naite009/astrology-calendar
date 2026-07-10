@@ -268,56 +268,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
   },
   retrogrades: {
     title: "Understanding Retrogrades",
-    content: (
-      <>
-        <p>
-          When a planet appears to move backward in the sky (from our perspective on Earth), 
-          it's called "retrograde." This is an optical illusion caused by the relative speeds 
-          of Earth and the other planet.
-        </p>
-        
-        <h3>What Does Retrograde Mean?</h3>
-        <p>
-          During retrograde periods, the planet's energy is turned inward. It's a time to 
-          review, revise, and reconsider matters related to that planet.
-        </p>
-        
-        <h3>☿℞ Mercury Retrograde</h3>
-        <p>The most famous retrograde! Mercury rules communication, technology, and travel.</p>
-        <ul>
-          <li><strong>Frequency:</strong> 3-4 times per year, lasting about 3 weeks each</li>
-          <li><strong>Effects:</strong> Communication mishaps, technology glitches, travel delays, misunderstandings</li>
-          <li><strong>Best Activities:</strong> Review, revise, reconnect with old friends, edit, research, reflect</li>
-          <li><strong>Avoid:</strong> Signing contracts, buying electronics, starting new projects, making major decisions</li>
-          <li><strong>Shadow Period:</strong> The effects can be felt 1-2 weeks before and after the actual retrograde</li>
-        </ul>
-        
-        <h3>Other Retrogrades</h3>
-        <p>
-          All planets except the Sun and Moon go retrograde. Your calendar shows Mercury 
-          retrograde as it has the most noticeable day-to-day effects.
-        </p>
-        <ul>
-          <li><strong>Venus Retrograde:</strong> Every 18 months - Review relationships and values</li>
-          <li><strong>Mars Retrograde:</strong> Every 2 years - Reevaluate how you take action</li>
-          <li><strong>Outer Planet Retrogrades:</strong> Jupiter, Saturn, Uranus, Neptune, Pluto all retrograde annually for several months</li>
-        </ul>
-        
-        <h3>How to Work With Retrogrades</h3>
-        <p>
-          Retrogrades aren't "bad" - they're opportunities for reflection and course correction. 
-          Use these periods to:
-        </p>
-        <ul>
-          <li>Review and revise your plans</li>
-          <li>Reconnect with old friends or revisit past ideas</li>
-          <li>Research and gather information</li>
-          <li>Rest and recharge</li>
-          <li>Finish projects you've already started</li>
-          <li>Back up your data and double-check details</li>
-        </ul>
-      </>
-    ),
+    content: <RetrogradesSection />,
   },
   aspects: {
     title: "Planetary Aspects",
