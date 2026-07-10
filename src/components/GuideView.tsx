@@ -1799,8 +1799,13 @@ const DIVINE_FEM_ITEMS: Array<{
 ];
 
 const DivineFeminineSection = () => {
-  const { getActiveChart } = useNatalChart();
-  const activeChart = getActiveChart();
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const activeChart =
+    selectedChartForTiming === "general"
+      ? null
+      : selectedChartForTiming === "user"
+        ? userNatalChart
+        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
   const [open, setOpen] = useState(false);
   const [reading, setReading] = useState<PersonalReading | null>(null);
 
