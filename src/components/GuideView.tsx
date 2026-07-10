@@ -1,14 +1,21 @@
 import { useState } from "react";
 import { RetroGradesHub } from "@/components/RetroGradesHub";
-import { ArrowRight, HelpCircle } from "lucide-react";
-import { 
-  GuideSection, 
-  GUIDE_NAV_ITEMS, 
-  getViewForSection, 
-  sectionHasTryIt, 
+import { ArrowRight, HelpCircle, Sparkles } from "lucide-react";
+import {
+  GuideSection,
+  GUIDE_NAV_ITEMS,
+  getViewForSection,
+  sectionHasTryIt,
   getTryItLabel,
-  ViewMode 
+  ViewMode
 } from "@/lib/guideNavigation";
+import { useNatalChart } from "@/hooks/useNatalChart";
+import {
+  personalizeDivineFeminineBody,
+  type DivineFemBody,
+  type PersonalReading,
+} from "@/lib/guidePersonalizers/divineFeminine";
+import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 
 interface GuideViewProps {
   onNavigateToView?: (view: ViewMode) => void;
