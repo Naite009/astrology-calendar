@@ -79,27 +79,26 @@ const getDailyGuidance = (
   const phaseSign = (isExactNewMoon || isExactFullMoon) && exactPhaseSign ? exactPhaseSign : moonSign;
   const signData = SIGN_ENERGIES[phaseSign] || SIGN_ENERGIES.Aries;
 
-  if (mercuryRetro) {
-    return getMercuryRetroGuidance(mercurySign || moonSign);
-  }
+  const mercuryTag = mercuryRetro && mercurySign
+    ? ` Mercury Rx in ${mercurySign} runs in the background: ${getMercuryRetroGuidance(mercurySign).replace(/^Mercury Retrograde in [^.]+\.\s*/, '')}`
+    : '';
+
+  let base: string;
   // If today contains an exact New/Full Moon moment, that story comes first.
-  // (The balsamic phase is still true, but the exact lunation is the headline.)
   if (isExactNewMoon) {
-    return `New Moon in ${phaseSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
+    base = `New Moon in ${phaseSign} - Plant seeds of intention. Set powerful goals aligned with ${signData.focus}. ${signData.action} with fresh vision. Channel this initiating energy wisely. Avoid: ${signData.avoid}.`;
+  } else if (isExactFullMoon) {
+    base = `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
+  } else if (moonPhase.isBalsamic) {
+    base = `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
+  } else if (phaseForGuidance.includes('Waxing')) {
+    base = `${phaseForGuidance} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+  } else if (phaseForGuidance.includes('Waning')) {
+    base = `${phaseForGuidance} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
+  } else {
+    base = `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
   }
-  if (isExactFullMoon) {
-    return `Full Moon in ${phaseSign} - Maximum illumination! Celebrate what you have manifested around ${signData.focus}. Release what no longer serves. Emotions peak. ${signData.action} with full awareness. Harvest your efforts.`;
-  }
-  if (moonPhase.isBalsamic) {
-    return `Balsamic Moon in ${moonSign} - The final surrender before rebirth. This is sacred rest time. Release attachments. Meditate and dream. Trust the void. ${signData.focus} dissolves into the cosmic flow. Avoid starting anything new.`;
-  }
-  if (phaseForGuidance.includes('Waxing')) {
-    return `${phaseForGuidance} in ${moonSign} - Energy is building. ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
-  }
-  if (phaseForGuidance.includes('Waning')) {
-    return `${phaseForGuidance} in ${moonSign} - Time for release and integration. Reflect on ${signData.focus}. ${signData.action} mindfully.`;
-  }
-  return `Moon in ${moonSign} - ${signData.action} with awareness of ${signData.focus}. Avoid ${signData.avoid}.`;
+  return base + mercuryTag;
 };
 
 // Get planet symbol for ingress display
