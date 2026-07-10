@@ -21,6 +21,23 @@ import {
   type RetroPlanet,
 } from "@/lib/guidePersonalizers/retrogrades";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
+import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
+
+function useGuideActiveChart() {
+  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const defaultId =
+    selectedChartForTiming === "user" || selectedChartForTiming === "general"
+      ? userNatalChart
+        ? "user"
+        : savedCharts[0]?.id ?? null
+      : selectedChartForTiming;
+  const [activeChartId, setActiveChartId] = useState<string | null>(defaultId);
+  const activeChart =
+    activeChartId === "user"
+      ? userNatalChart
+      : savedCharts.find((c) => c.id === activeChartId) || null;
+  return { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId };
+}
 
 interface GuideViewProps {
   onNavigateToView?: (view: ViewMode) => void;
@@ -1755,13 +1772,8 @@ const DIVINE_FEM_ITEMS: Array<{
 ];
 
 function DivineFeminineSection() {
-  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
-  const activeChart =
-    selectedChartForTiming === "general"
-      ? null
-      : selectedChartForTiming === "user"
-        ? userNatalChart
-        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
   const [open, setOpen] = useState(false);
   const [reading, setReading] = useState<PersonalReading | null>(null);
 
@@ -1772,6 +1784,14 @@ function DivineFeminineSection() {
 
   return (
     <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
       <p>
         Beyond the traditional planets, astrologers work with additional celestial bodies that
         represent different facets of the feminine divine, healing, and destiny.
@@ -1782,7 +1802,7 @@ function DivineFeminineSection() {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Select a chart in the Chart Library to get a personal reading on each of these.
+          Pick a chart above to get a personal reading on each of these.
         </p>
       )}
 
@@ -1826,13 +1846,8 @@ function DivineFeminineSection() {
 // ---------- Wave 2: Retrogrades (clickable, chart-personalized) ----------
 
 function RetrogradesSection() {
-  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
-  const activeChart =
-    selectedChartForTiming === "general"
-      ? null
-      : selectedChartForTiming === "user"
-        ? userNatalChart
-        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
   const [open, setOpen] = useState(false);
   const [reading, setReading] = useState<PersonalReading | null>(null);
 
@@ -1843,6 +1858,14 @@ function RetrogradesSection() {
 
   return (
     <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
       <p>
         When a planet appears to move backward from Earth's perspective, it's called
         retrograde. The planet's themes turn inward: review, revise, reconsider. This is
@@ -1855,7 +1878,7 @@ function RetrogradesSection() {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Select a chart in the Chart Library to get a personal retrograde reading for each planet.
+          Pick a chart above to get a personal retrograde reading for each planet.
         </p>
       )}
 
