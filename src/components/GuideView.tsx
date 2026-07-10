@@ -1846,13 +1846,8 @@ function DivineFeminineSection() {
 // ---------- Wave 2: Retrogrades (clickable, chart-personalized) ----------
 
 function RetrogradesSection() {
-  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
-  const activeChart =
-    selectedChartForTiming === "general"
-      ? null
-      : selectedChartForTiming === "user"
-        ? userNatalChart
-        : savedCharts.find((c) => c.id === selectedChartForTiming) || null;
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
   const [open, setOpen] = useState(false);
   const [reading, setReading] = useState<PersonalReading | null>(null);
 
@@ -1863,6 +1858,14 @@ function RetrogradesSection() {
 
   return (
     <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
       <p>
         When a planet appears to move backward from Earth's perspective, it's called
         retrograde. The planet's themes turn inward: review, revise, reconsider. This is
@@ -1875,7 +1878,7 @@ function RetrogradesSection() {
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Select a chart in the Chart Library to get a personal retrograde reading for each planet.
+          Pick a chart above to get a personal retrograde reading for each planet.
         </p>
       )}
 
