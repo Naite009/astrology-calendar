@@ -44,7 +44,7 @@ export interface PersonalReading {
 // Used to explain "personal to you" vs "generational / shared with your whole class".
 export const BODY_CADENCE: Record<string, string> = {
   NorthNode:
-    "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your North Node sign, so this is a generational assignment. What makes it personal to YOU is the house it falls in and the aspects other planets make to it. A friend born a day before or after you almost certainly has the same North Node sign, but rarely the same house.",
+    "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your North Node sign, so this is a generational assignment.",
   SouthNode:
     "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your South Node sign too, so the old pattern is a generational one. Your house placement is what makes it personal.",
   Chiron:
