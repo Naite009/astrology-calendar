@@ -338,7 +338,31 @@ export const personalizeRetrograde = (
     aspects,
     reading,
     doThis,
+    cadence: PLANET_CADENCE[planet],
   };
+};
+
+// How long each planet takes to move through one sign, and how personal that sign is to you
+// versus how much it's shared with your generation / peer group.
+const PLANET_CADENCE: Record<RetroPlanet, string> = {
+  Mercury:
+    "Mercury moves through a sign in about 2 to 4 weeks (longer when retrograde). It's a personal placement: a friend born a few weeks before or after you can easily have a different Mercury sign. The sign here is genuinely yours.",
+  Venus:
+    "Venus moves through a sign in about 3 to 5 weeks (longer when retrograde). Personal: close friends born a month apart often have different Venus signs. The sign here is yours.",
+  Mars:
+    "Mars moves through a sign in about 6 to 7 weeks on average, but can stay up to 7 months when retrograde. Semi-personal: same-year friends can share it, but often don't.",
+  Jupiter:
+    "Jupiter spends about 12 to 13 months in each sign. Everyone born in your birth-year cohort shares your Jupiter sign, so this is a peer-group placement. The house is what makes it personal to you.",
+  Saturn:
+    "Saturn spends about 2.5 years in each sign. Everyone born within that ~2.5-year window shares your Saturn sign, so this is a generational-peer marker. The house is where it becomes yours.",
+  Uranus:
+    "Uranus spends about 7 years in each sign. This is a generational placement: your whole age cohort shares it. The house is what makes it personal.",
+  Neptune:
+    "Neptune spends about 14 years in each sign. Purely generational: it defines a whole class of people your age. The house is the personal marker.",
+  Pluto:
+    "Pluto spends anywhere from 12 to 30 years in a sign (its orbit is very uneven). Fully generational: entire birth-cohorts share it. The house tells you where the transformation lives for you specifically.",
+  Chiron:
+    "Chiron moves slowly and spends about 2 to 8 years in a sign. Your age cohort likely shares your Chiron sign, so the wound theme is generational. The house makes it yours.",
 };
 
 export const RETRO_PLANETS: Array<{ key: RetroPlanet; glyph: string; name: string; blurb: string }> = [
