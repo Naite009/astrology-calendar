@@ -89,6 +89,15 @@ export const GuideConceptModal = ({ open, onClose, reading, chartName }: GuideCo
               </div>
               <p className="text-sm leading-relaxed text-foreground">{reading.doThis}</p>
             </section>
+
+            {reading.cadence && (
+              <section className="rounded-md border border-border/60 bg-secondary/30 p-3">
+                <div className="mb-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  How personal is this?
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">{reading.cadence}</p>
+              </section>
+            )}
           </div>
         )}
       </div>
