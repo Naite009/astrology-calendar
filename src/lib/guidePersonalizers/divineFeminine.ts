@@ -280,5 +280,6 @@ export const personalizeDivineFeminineBody = (
     aspects,
     reading,
     doThis: meaning.action(point.sign, house),
+    cadence: BODY_CADENCE[body],
   };
 };
