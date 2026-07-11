@@ -46,19 +46,19 @@ export const BODY_CADENCE: Record<string, string> = {
   NorthNode:
     "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your North Node sign, so this is a generational assignment.",
   SouthNode:
-    "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your South Node sign too, so the old pattern is a generational one. Your house placement is what makes it personal.",
+    "The Nodes move backward through the zodiac and spend about 18 months in each sign. Everyone born inside that ~1.5-year window shares your South Node sign too, so the old pattern is a generational one.",
   Chiron:
-    "Chiron moves slowly and spends roughly 2 to 8 years in a sign (its orbit is uneven). Everyone in your age cohort likely shares your Chiron sign, so the wound theme is generational. The house it lives in is what makes the wound yours specifically.",
+    "Chiron moves slowly and spends roughly 2 to 8 years in a sign (its orbit is uneven). Everyone in your age cohort likely shares your Chiron sign, so the wound theme is generational.",
   Lilith:
-    "Black Moon Lilith moves through a sign in about 9 months. It's more personal than the Nodes or Chiron, but people born within the same year often share her sign. The house is where it becomes uniquely yours.",
+    "Black Moon Lilith moves through a sign in about 9 months. It's more personal than the Nodes or Chiron, but people born within the same year often share her sign.",
   Ceres:
-    "Ceres moves through a sign in roughly 4 to 5 months, so people born within that window share your Ceres sign. The house makes it personal.",
+    "Ceres moves through a sign in roughly 4 to 5 months, so people born within that window share your Ceres sign.",
   Pallas:
-    "Pallas moves through a sign in roughly 3 to 5 months (her orbit is elliptical). Close friends can easily share your Pallas sign. The house is the personal marker.",
+    "Pallas moves through a sign in roughly 3 to 5 months (her orbit is elliptical). Close friends can easily share your Pallas sign.",
   Juno:
-    "Juno moves through a sign in about 3 months on average. It's more personal than Ceres or Pallas, but people born the same season can share it. The house and aspects are what make it yours.",
+    "Juno moves through a sign in about 3 months on average. It's more personal than Ceres or Pallas, but people born the same season can share it.",
   Vesta:
-    "Vesta moves through a sign in about 4 months. People born the same season can share your Vesta sign. The house tells you where your sacred focus actually lives.",
+    "Vesta moves through a sign in about 4 months. People born the same season can share your Vesta sign.",
 };
 
 // Bodies to scan for aspect contacts (the ones people care about).
