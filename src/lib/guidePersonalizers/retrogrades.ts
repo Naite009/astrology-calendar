@@ -352,17 +352,17 @@ const PLANET_CADENCE: Record<RetroPlanet, string> = {
   Mars:
     "Mars moves through a sign in about 6 to 7 weeks on average, but can stay up to 7 months when retrograde. Semi-personal: same-year friends can share it, but often don't.",
   Jupiter:
-    "Jupiter spends about 12 to 13 months in each sign. Everyone born in your birth-year cohort shares your Jupiter sign, so this is a peer-group placement. The house is what makes it personal to you.",
+    "Jupiter spends about 12 to 13 months in each sign. Everyone born in your birth-year cohort shares your Jupiter sign, so this is a peer-group placement.",
   Saturn:
-    "Saturn spends about 2.5 years in each sign. Everyone born within that ~2.5-year window shares your Saturn sign, so this is a generational-peer marker. The house is where it becomes yours.",
+    "Saturn spends about 2.5 years in each sign. Everyone born within that ~2.5-year window shares your Saturn sign, so this is a generational-peer marker.",
   Uranus:
-    "Uranus spends about 7 years in each sign. This is a generational placement: your whole age cohort shares it. The house is what makes it personal.",
+    "Uranus spends about 7 years in each sign. This is a generational placement: your whole age cohort shares it.",
   Neptune:
-    "Neptune spends about 14 years in each sign. Purely generational: it defines a whole class of people your age. The house is the personal marker.",
+    "Neptune spends about 14 years in each sign. Purely generational: it defines a whole class of people your age.",
   Pluto:
-    "Pluto spends anywhere from 12 to 30 years in a sign (its orbit is very uneven). Fully generational: entire birth-cohorts share it. The house tells you where the transformation lives for you specifically.",
+    "Pluto spends anywhere from 12 to 30 years in a sign (its orbit is very uneven). Fully generational: entire birth-cohorts share it.",
   Chiron:
-    "Chiron moves slowly and spends about 2 to 8 years in a sign. Your age cohort likely shares your Chiron sign, so the wound theme is generational. The house makes it yours.",
+    "Chiron moves slowly and spends about 2 to 8 years in a sign. Your age cohort likely shares your Chiron sign, so the wound theme is generational.",
 };
 
 export const RETRO_PLANETS: Array<{ key: RetroPlanet; glyph: string; name: string; blurb: string }> = [
