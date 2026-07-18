@@ -20,6 +20,10 @@ import {
   RETRO_PLANETS,
   type RetroPlanet,
 } from "@/lib/guidePersonalizers/retrogrades";
+import {
+  personalizeFixedStar,
+  FIXED_STAR_CARDS,
+} from "@/lib/guidePersonalizers/fixedStars";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
 
@@ -621,110 +625,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
   },
   fixedstars: {
     title: "Fixed Stars",
-    content: (
-      <>
-        <p>
-          Fixed stars are distant suns that move so slowly through the zodiac (about 1° per 72 years) 
-          that they appear "fixed" in the sky. When planets conjunct these powerful points, 
-          their energy is activated.
-        </p>
-        
-        <h3>The Royal Stars (Guardians of the Sky)</h3>
-        <p>Four stars marking the four corners of the heavens in ancient Persian astrology:</p>
-        
-        <div className="mt-4 grid gap-4">
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Aldebaran (9° Gemini)</span>
-              <span className="text-xs text-muted-foreground">Guardian of the East</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              The Bull's Eye. Integrity, honor, eloquence. "Success through integrity." Military honors, courage, passion for truth.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Regulus (29° Leo)</span>
-              <span className="text-xs text-muted-foreground">Guardian of the North</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Heart of the Lion. Royal power, leadership, fame, success. "Success if revenge is avoided." Military honors, nobility, positions of power.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Antares (9° Sagittarius)</span>
-              <span className="text-xs text-muted-foreground">Guardian of the West</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion. Passionate and powerful.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Fomalhaut (3° Pisces)</span>
-              <span className="text-xs text-muted-foreground">Guardian of the South</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              The Mouth of the Fish. Idealism, mysticism, fame. The "fallen angel" star—potential for both rise and fall. Charisma, magic, spiritual power.
-            </div>
-          </div>
-        </div>
-        
-        <h3>Other Major Fixed Stars</h3>
-        <div className="mt-4 grid gap-4">
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Sirius (14° Cancer)</span>
-              <span className="text-xs text-amber-600 dark:text-amber-400">Brightest Star</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star marking the New Year. Divine downloads, kundalini awakening.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Algol (26° Taurus)</span>
-              <span className="text-xs text-red-600 dark:text-red-400">Most Infamous</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              Medusa's Head. Transformation through facing shadow. Feminine rage transmuted to power. Losing one's head, then reclaiming it.
-            </div>
-          </div>
-          
-          <div className="rounded-sm border border-border bg-secondary p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⭐</span>
-              <span className="font-semibold text-foreground">Spica (23° Libra)</span>
-              <span className="text-xs text-green-600 dark:text-green-400">Most Benefic</span>
-            </div>
-            <div className="text-sm text-muted-foreground leading-relaxed">
-              The Wheat Sheaf. Gifts, talents, protection. Venus-Jupiter nature. Artistic success, harvest of efforts. The priestess star.
-            </div>
-          </div>
-        </div>
-        
-        <h3>How Fixed Stars Work</h3>
-        <div className="mt-4 p-4 rounded-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700">
-          <ul className="space-y-2">
-            <li><strong>Orb:</strong> Fixed stars use tight orbs (1-2°). A planet must be very close to activate the star.</li>
-            <li><strong>Conjunction only:</strong> Traditionally, only conjunctions matter for fixed stars.</li>
-            <li><strong>Your calendar shows:</strong> When planets transit near major fixed stars, activating their energy.</li>
-            <li><strong>Natal chart:</strong> Check if you have natal planets conjunct fixed stars for lifelong themes.</li>
-          </ul>
-        </div>
-      </>
-    ),
+    content: <FixedStarsSection />,
   },
   divinefeminine: {
     title: "Divine Feminine Bodies",
@@ -1916,6 +1817,90 @@ function RetrogradesSection() {
     </>
   );
 }
+
+
+// ---------- Fixed Stars (clickable, chart-personalized) ----------
+
+function FixedStarsSection() {
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openStar = (name: string) => {
+    setReading(personalizeFixedStar(activeChart, name));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
+      <p>
+        Fixed stars are distant suns that drift only about 1° every 72 years, so their
+        positions are nearly identical for everyone alive today. What makes a star personal
+        is when one of your natal points (Ascendant, Midheaven, Sun, Moon, or a personal
+        planet) sits within a very tight orb of it. Tap any star to check.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any star to see whether it's activated on {activeChart.name}'s chart, and where.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Pick a chart above to check each star against a real natal chart.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {FIXED_STAR_CARDS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openStar(item.key)}
+            className="group text-left rounded-sm border border-border bg-secondary p-4 transition hover:border-primary hover:shadow-sm"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              {item.badge ? (
+                <span className={`text-[10px] uppercase tracking-widest ${item.badgeClass || "text-muted-foreground"}`}>
+                  {item.badge}
+                </span>
+              ) : (
+                <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+              )}
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">{item.blurb}</div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Check for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+}
+
+
+
 
 
 
