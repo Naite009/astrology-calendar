@@ -1418,6 +1418,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Dwarf Planets & TNOs",
     content: (
       <>
+        <DwarfPlanetsPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
+
         <p>
           <strong>Trans-Neptunian Objects (TNOs)</strong> are celestial bodies orbiting beyond Neptune. 
           While smaller than the traditional planets, they carry powerful symbolic meaning, especially 
