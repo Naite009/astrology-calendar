@@ -2185,7 +2185,13 @@ function DifficultPlacementsPersonalSection() {
 }
 
 
-export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
+export const GuideView = ({ onNavigateToView, userNatalChart, savedCharts }: GuideViewProps = {}) => {
+  // Share parent-provided chart data with child sections via module-level override
+  // so all useGuideActiveChart calls see the same cloud-synced list.
+  GUIDE_CHART_OVERRIDE =
+    userNatalChart !== undefined || savedCharts !== undefined
+      ? { user: userNatalChart ?? null, saved: savedCharts ?? [] }
+      : null;
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
 
 
