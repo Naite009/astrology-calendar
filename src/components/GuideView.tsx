@@ -24,8 +24,24 @@ import {
   personalizeFixedStar,
   FIXED_STAR_CARDS,
 } from "@/lib/guidePersonalizers/fixedStars";
+import {
+  personalizeAspectType,
+  personalizeDignity,
+  personalizeDwarf,
+  personalizeMoonPhase,
+  personalizeVenusPhase,
+  personalizeDifficultPlacements,
+  ASPECT_TYPES,
+  DIGNITY_PLANETS,
+  DWARF_BODIES,
+  MOON_PHASES,
+  type AspectType,
+  type DwarfBody,
+  type MoonPhase,
+} from "@/lib/guidePersonalizers/concepts";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
+
 
 function useGuideActiveChart() {
   const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
