@@ -395,7 +395,10 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Planetary Dignities",
     content: (
       <>
+        <DignitiesPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
         <p>
+
           Planetary dignities describe how well a planet functions in each zodiac sign. 
           When a planet is in a sign where it's strong (domicile or exaltation), its positive qualities shine. 
           When weak (detriment or fall), the planet struggles to express itself naturally.
