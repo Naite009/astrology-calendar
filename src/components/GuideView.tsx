@@ -653,6 +653,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           Tip: If you want, tell me which planet + sign the app flags as a “costume adjustment” for your chart and I’ll
           write a tailored practice plan (behavior, boundary, and a 14‑day experiment).
         </p>
+        </div>
       </>
     ),
   },
@@ -668,6 +669,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Understanding Venus Cycles",
     content: (
       <>
+        <VenusCyclesPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
+
         <p>
           Venus has a unique 584-day cycle that creates profound patterns in our lives around 
           love, values, beauty, and self-worth. Twice in this cycle, Venus conjuncts the Sun—
