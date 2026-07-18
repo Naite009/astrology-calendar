@@ -732,7 +732,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
             </p>
           </div>
         </div>
+        </div>
       </>
+
     ),
   },
   vocmoon: {
