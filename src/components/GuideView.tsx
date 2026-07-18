@@ -1497,7 +1497,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           The TNOs tab provides detailed information on each dwarf planet, including their 
           mythology, current sign placement, and how to interpret them in your chart.
         </p>
+        </div>
       </>
+
     ),
   },
   speeds: {
