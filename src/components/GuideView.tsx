@@ -303,8 +303,10 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           <li><strong>Avoid:</strong> Starting new projects, making major decisions</li>
           <li><strong>This is marked on your calendar as "Balsamic Moon"</strong></li>
         </ul>
+        </div>
       </>
     ),
+
   },
   retrogrades: {
     title: "Understanding Retrogrades",
