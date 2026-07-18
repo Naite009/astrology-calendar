@@ -17,12 +17,11 @@ import {
   getAspectMeaning,
   PLANET_MEANINGS,
   DIGNITY_EXPLAINERS,
-  generatePlainEnglish,
-  generateRemedies,
   generateDispositorExperience
 } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
 import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
+import { synthesizePlanet } from '@/lib/planetSynthesis';
 
 interface PlanetDetailCardProps {
   planet: ChartPlanet;
@@ -44,8 +43,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
   const status = getDignityStatus(planet.name, planet.sign);
   const meaning = PLANET_MEANINGS[planet.name] || 'Symbolic point in the chart.';
   const dignityExplainer = DIGNITY_EXPLAINERS[dignity];
-  const plainEnglish = generatePlainEnglish(planet, dignity);
-  const remedies = generateRemedies(planet, dignity);
+  const synthesis = synthesizePlanet(planet, aspects, dignity);
 
   const getOtherPlanet = (aspect: ChartAspect): ChartPlanet | undefined => {
     const otherName = aspect.planet1 === planet.name ? aspect.planet2 : aspect.planet1;
@@ -108,19 +106,26 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
 
         <Separator />
 
-        {/* Plain English */}
-        <section>
-          <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
-            In Plain English
-          </h3>
-          <ul className="space-y-2">
-            {plainEnglish.map((point, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="text-primary mt-0.5">•</span>
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
+        {/* Chart-specific synthesis */}
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
+              What it looks like
+            </h3>
+            <p className="text-sm leading-relaxed text-foreground/90">{synthesis.look}</p>
+          </div>
+          <div>
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
+              The tension
+            </h3>
+            <p className="text-sm leading-relaxed text-foreground/90">{synthesis.tension}</p>
+          </div>
+          <div className="p-3 rounded-md bg-emerald-500/5 border border-emerald-500/20">
+            <h3 className="text-[11px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-2">
+              What helps
+            </h3>
+            <p className="text-sm leading-relaxed text-foreground/90">{synthesis.help}</p>
+          </div>
         </section>
 
         <Separator />
@@ -297,22 +302,6 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
           </p>
         </section>
 
-        <Separator />
-
-        {/* Practical Support */}
-        <section>
-          <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
-            What Helps — Practical Support
-          </h3>
-          <ul className="space-y-2">
-            {remedies.map((remedy, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="text-emerald-500 mt-0.5">✓</span>
-                <span>{remedy}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
 
         {/* View in Phase Wheel Button */}
         {onViewInPhaseWheel && (
