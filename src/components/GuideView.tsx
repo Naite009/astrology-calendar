@@ -225,10 +225,13 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Moon Phases Explained",
     content: (
       <>
-        <p>
-          The Moon goes through eight distinct phases in its ~29.5 day cycle. 
-          Each phase carries different energy and is best suited for specific activities.
-        </p>
+        <MoonPhasesPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
+          <p>
+            The Moon goes through eight distinct phases in its ~29.5 day cycle. 
+            Each phase carries different energy and is best suited for specific activities.
+          </p>
+
         
         <h3>🌑 New Moon</h3>
         <p>
