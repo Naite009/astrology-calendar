@@ -546,6 +546,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           The <strong>Chart Decoder</strong> tab shows your natal chart's dignity distribution, 
           including a full breakdown of which planets are strong or weak by placement.
         </p>
+        </div>
       </>
     ),
   },
@@ -553,6 +554,9 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Working With Difficult Placements",
     content: (
       <>
+        <DifficultPlacementsPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
+
         <p>
           In this app, “costume adjustments” means: the planet isn’t broken — it’s just wearing a costume that
           makes its instincts come out sideways at first. Your work is to make the planet conscious, trainable,
