@@ -302,22 +302,6 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
           </p>
         </section>
 
-        <Separator />
-
-        {/* Practical Support */}
-        <section>
-          <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
-            What Helps — Practical Support
-          </h3>
-          <ul className="space-y-2">
-            {remedies.map((remedy, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="text-emerald-500 mt-0.5">✓</span>
-                <span>{remedy}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
 
         {/* View in Phase Wheel Button */}
         {onViewInPhaseWheel && (
