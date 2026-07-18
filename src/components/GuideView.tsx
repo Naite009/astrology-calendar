@@ -316,7 +316,10 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
     title: "Planetary Aspects",
     content: (
       <>
+        <AspectsPersonalSection />
+        <div className="mt-8 border-t border-border pt-6">
         <p>
+
           Aspects are the angles planets make to each other in the sky. They show how 
           planetary energies interact and influence each other.
         </p>
