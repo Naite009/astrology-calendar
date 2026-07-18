@@ -43,8 +43,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
   const status = getDignityStatus(planet.name, planet.sign);
   const meaning = PLANET_MEANINGS[planet.name] || 'Symbolic point in the chart.';
   const dignityExplainer = DIGNITY_EXPLAINERS[dignity];
-  const plainEnglish = generatePlainEnglish(planet, dignity);
-  const remedies = generateRemedies(planet, dignity);
+  const synthesis = synthesizePlanet(planet, aspects, dignity);
 
   const getOtherPlanet = (aspect: ChartAspect): ChartPlanet | undefined => {
     const otherName = aspect.planet1 === planet.name ? aspect.planet2 : aspect.planet1;
