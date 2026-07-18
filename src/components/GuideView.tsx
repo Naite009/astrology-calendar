@@ -386,8 +386,10 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           An "orb" is how close an aspect needs to be to be felt. Your calendar shows the orb 
           in degrees. Tighter orbs (0-2°) are stronger than wider orbs (5-8°).
         </p>
+        </div>
       </>
     ),
+
   },
   dignities: {
     title: "Planetary Dignities",
