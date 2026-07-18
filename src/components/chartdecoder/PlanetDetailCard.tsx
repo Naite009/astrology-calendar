@@ -17,12 +17,11 @@ import {
   getAspectMeaning,
   PLANET_MEANINGS,
   DIGNITY_EXPLAINERS,
-  generatePlainEnglish,
-  generateRemedies,
   generateDispositorExperience
 } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
 import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
+import { synthesizePlanet } from '@/lib/planetSynthesis';
 
 interface PlanetDetailCardProps {
   planet: ChartPlanet;
