@@ -1819,6 +1819,90 @@ function RetrogradesSection() {
 }
 
 
+// ---------- Fixed Stars (clickable, chart-personalized) ----------
+
+function FixedStarsSection() {
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } =
+    useGuideActiveChart();
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openStar = (name: string) => {
+    setReading(personalizeFixedStar(activeChart, name));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
+      <p>
+        Fixed stars are distant suns that drift only about 1° every 72 years, so their
+        positions are nearly identical for everyone alive today. What makes a star personal
+        is when one of your natal points (Ascendant, Midheaven, Sun, Moon, or a personal
+        planet) sits within a very tight orb of it. Tap any star to check.
+      </p>
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          Tap any star to see whether it's activated on {activeChart.name}'s chart, and where.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Pick a chart above to check each star against a real natal chart.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {FIXED_STAR_CARDS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openStar(item.key)}
+            className="group text-left rounded-sm border border-border bg-secondary p-4 transition hover:border-primary hover:shadow-sm"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              {item.badge ? (
+                <span className={`text-[10px] uppercase tracking-widest ${item.badgeClass || "text-muted-foreground"}`}>
+                  {item.badge}
+                </span>
+              ) : (
+                <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+              )}
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">{item.blurb}</div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Check for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal
+        open={open}
+        onClose={() => setOpen(false)}
+        reading={reading}
+        chartName={activeChart?.name}
+      />
+    </>
+  );
+}
+
+
+
+
+
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
