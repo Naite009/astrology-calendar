@@ -43,8 +43,15 @@ import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
 
 
+import type { NatalChart } from "@/hooks/useNatalChart";
+
+let GUIDE_CHART_OVERRIDE: { user: NatalChart | null; saved: NatalChart[] } | null = null;
+
 function useGuideActiveChart() {
-  const { userNatalChart, savedCharts, selectedChartForTiming } = useNatalChart();
+  const hook = useNatalChart();
+  const userNatalChart = GUIDE_CHART_OVERRIDE?.user ?? hook.userNatalChart;
+  const savedCharts = GUIDE_CHART_OVERRIDE?.saved ?? hook.savedCharts;
+  const { selectedChartForTiming } = hook;
   const defaultId =
     selectedChartForTiming === "user" || selectedChartForTiming === "general"
       ? userNatalChart
@@ -61,6 +68,8 @@ function useGuideActiveChart() {
 
 interface GuideViewProps {
   onNavigateToView?: (view: ViewMode) => void;
+  userNatalChart?: NatalChart | null;
+  savedCharts?: NatalChart[];
 }
 
 const SymbolCard = ({ icon, name, desc }: { icon: string; name: string; desc: string }) => (
@@ -2176,7 +2185,13 @@ function DifficultPlacementsPersonalSection() {
 }
 
 
-export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
+export const GuideView = ({ onNavigateToView, userNatalChart, savedCharts }: GuideViewProps = {}) => {
+  // Share parent-provided chart data with child sections via module-level override
+  // so all useGuideActiveChart calls see the same cloud-synced list.
+  GUIDE_CHART_OVERRIDE =
+    userNatalChart !== undefined || savedCharts !== undefined
+      ? { user: userNatalChart ?? null, saved: savedCharts ?? [] }
+      : null;
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
 
 

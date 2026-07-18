@@ -924,7 +924,13 @@ export const AstroCalendar = () => {
 
         {viewMode === "annual-tables" && <AnnualTablesView year={currentDate.getFullYear()} activeChart={activeChart} />}
 
-        {viewMode === "guide" && <GuideView onNavigateToView={(view) => setViewMode(view)} />}
+        {viewMode === "guide" && (
+          <GuideView
+            userNatalChart={userNatalChart}
+            savedCharts={savedCharts}
+            onNavigateToView={(view) => setViewMode(view)}
+          />
+        )}
 
         {viewMode === "charts" && (
           <ChartLibrary
