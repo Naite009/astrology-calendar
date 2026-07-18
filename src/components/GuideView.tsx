@@ -20,6 +20,10 @@ import {
   RETRO_PLANETS,
   type RetroPlanet,
 } from "@/lib/guidePersonalizers/retrogrades";
+import {
+  personalizeFixedStar,
+  FIXED_STAR_CARDS,
+} from "@/lib/guidePersonalizers/fixedStars";
 import { GuideConceptModal } from "@/components/guide/GuideConceptModal";
 import { GuideChartPicker } from "@/components/guide/GuideChartPicker";
 
