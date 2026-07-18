@@ -1916,12 +1916,241 @@ function FixedStarsSection() {
 }
 
 
+// ---------- Shared clickable-grid personalizer sections ----------
 
+interface ClickableItem {
+  key: string;
+  glyph: string;
+  name: string;
+  blurb: string;
+  badge?: string;
+}
 
+function ClickableConceptSection({
+  intro,
+  items,
+  buildReading,
+  cols = 2,
+  activeReadCta,
+  emptyChartText,
+}: {
+  intro: React.ReactNode;
+  items: ClickableItem[];
+  buildReading: (chart: ReturnType<typeof useGuideActiveChart>["activeChart"], key: string) => PersonalReading;
+  cols?: 2 | 3;
+  activeReadCta?: (name: string) => string;
+  emptyChartText?: string;
+}) {
+  const { userNatalChart, savedCharts, activeChart, activeChartId, setActiveChartId } = useGuideActiveChart();
+  const [open, setOpen] = useState(false);
+  const [reading, setReading] = useState<PersonalReading | null>(null);
+
+  const openItem = (key: string) => {
+    setReading(buildReading(activeChart, key));
+    setOpen(true);
+  };
+
+  return (
+    <>
+      <div className="mb-3">
+        <GuideChartPicker
+          userNatalChart={userNatalChart}
+          savedCharts={savedCharts}
+          activeChartId={activeChartId}
+          onSelect={setActiveChartId}
+        />
+      </div>
+      {intro}
+      {activeChart ? (
+        <p className="text-xs text-primary">
+          {activeReadCta ? activeReadCta(activeChart.name) : `Tap any card to read it for ${activeChart.name}'s chart.`}
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {emptyChartText || "Pick a chart above to get a personal reading on each of these."}
+        </p>
+      )}
+
+      <div className={`mt-4 grid gap-3 ${cols === 3 ? "sm:grid-cols-2 md:grid-cols-3" : "sm:grid-cols-2"}`}>
+        {items.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => openItem(item.key)}
+            className="group text-left rounded-sm border border-border bg-secondary p-4 transition hover:border-primary hover:shadow-sm"
+          >
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{item.glyph}</span>
+                <span className="font-semibold text-foreground">{item.name}</span>
+              </div>
+              {item.badge ? (
+                <span className="text-[10px] uppercase tracking-widest text-primary/70">{item.badge}</span>
+              ) : (
+                <Sparkles size={14} className="text-primary opacity-60 group-hover:opacity-100" />
+              )}
+            </div>
+            <div className="text-sm leading-relaxed text-muted-foreground">{item.blurb}</div>
+            {activeChart && (
+              <div className="mt-2 text-[11px] uppercase tracking-widest text-primary/70">
+                Read for {activeChart.name} →
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <GuideConceptModal open={open} onClose={() => setOpen(false)} reading={reading} chartName={activeChart?.name} />
+    </>
+  );
+}
+
+function AspectsPersonalSection() {
+  const items: ClickableItem[] = [
+    { key: "conjunction", glyph: "☌", name: "Conjunction (0°)", blurb: "Planets fuse. Their energies act as one." },
+    { key: "sextile", glyph: "⚹", name: "Sextile (60°)", blurb: "Supportive doors that open when you step through." },
+    { key: "square", glyph: "□", name: "Square (90°)", blurb: "Internal friction. Builds real muscle for change." },
+    { key: "trine", glyph: "△", name: "Trine (120°)", blurb: "Natural gifts, so easy you might not notice them." },
+    { key: "opposition", glyph: "☍", name: "Opposition (180°)", blurb: "Polarity you keep balancing, often through others." },
+  ];
+  return (
+    <ClickableConceptSection
+      intro={
+        <>
+          <p>Aspects are the angles planets make to each other. They show how planetary energies interact in your chart.</p>
+          <p>Tap any aspect below to see your own tightest natal aspects of that type, ranked by orb.</p>
+        </>
+      }
+      items={items}
+      buildReading={(chart, key) => personalizeAspectType(chart, key as AspectType)}
+      activeReadCta={(name) => `Tap any aspect to list ${name}'s tightest natal aspects of that type.`}
+    />
+  );
+}
+
+function DignitiesPersonalSection() {
+  const glyphs: Record<string, string> = { Sun: "☉", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂", Jupiter: "♃", Saturn: "♄" };
+  const items: ClickableItem[] = DIGNITY_PLANETS.map((p) => ({
+    key: p,
+    glyph: glyphs[p] || "•",
+    name: p,
+    blurb: "Tap to see this planet's dignity in your chart (domicile, exaltation, detriment, fall, or peregrine).",
+  }));
+  return (
+    <ClickableConceptSection
+      intro={
+        <p>
+          Planetary dignity describes how strong or awkward a planet is in the sign it landed in. Tap any planet to see
+          the exact dignity for your chart and what that means for how the planet acts under stress.
+        </p>
+      }
+      items={items}
+      cols={3}
+      buildReading={(chart, key) => personalizeDignity(chart, key)}
+    />
+  );
+}
+
+function DwarfPlanetsPersonalSection() {
+  const glyphs: Record<DwarfBody, string> = {
+    Eris: "⚢", Sedna: "⯕", Makemake: "🜃", Haumea: "🜄", Quaoar: "◈", Pholus: "◉", Nessus: "◇",
+  };
+  const blurbs: Record<DwarfBody, string> = {
+    Eris: "Discord & the uninvited truth. Reveals what got excluded.",
+    Sedna: "Ancestral wounds around betrayal, abandonment, and resources.",
+    Makemake: "Creation, fertility, and the consequences of what we consume.",
+    Haumea: "Regeneration, family lineage, rebirth from what broke.",
+    Quaoar: "The stories you tell to make sense of your life.",
+    Pholus: "Small triggers with enormous consequences.",
+    Nessus: "The toxic pattern that has to end in your lineage.",
+  };
+  const items: ClickableItem[] = DWARF_BODIES.map((b) => ({
+    key: b, glyph: glyphs[b], name: b, blurb: blurbs[b],
+  }));
+  return (
+    <ClickableConceptSection
+      intro={
+        <p>
+          Trans-Neptunian Objects and centaurs move so slowly that their signs are generational. What makes them
+          personal is the house they land in and the natal planets they aspect. Tap any to see where it lives in your chart.
+        </p>
+      }
+      items={items}
+      buildReading={(chart, key) => personalizeDwarf(chart, key as DwarfBody)}
+    />
+  );
+}
+
+function MoonPhasesPersonalSection() {
+  const glyphs: Record<MoonPhase, string> = {
+    "New Moon": "🌑", "Waxing Crescent": "🌒", "First Quarter": "🌓", "Waxing Gibbous": "🌔",
+    "Full Moon": "🌕", "Waning Gibbous": "🌖", "Last Quarter": "🌗", "Balsamic/Waning Crescent": "🌘",
+  };
+  const items: ClickableItem[] = MOON_PHASES.map((p) => ({
+    key: p, glyph: glyphs[p], name: p, blurb: "Tap to see if this is your natal Moon phase.",
+  }));
+  return (
+    <ClickableConceptSection
+      intro={
+        <p>
+          The Moon goes through eight phases every ~29.5 days. You were also born under one specific phase, and that
+          becomes your baseline operating rhythm for life. Tap any phase to see if it's yours.
+        </p>
+      }
+      items={items}
+      cols={3}
+      buildReading={(chart, key) => personalizeMoonPhase(chart, key as MoonPhase)}
+    />
+  );
+}
+
+function VenusCyclesPersonalSection() {
+  const items: ClickableItem[] = [
+    { key: "phase", glyph: "♀", name: "Your Venus phase", blurb: "Morning Star or Evening Star? This is fixed for life and shapes how you love." },
+  ];
+  return (
+    <ClickableConceptSection
+      intro={
+        <>
+          <p>
+            Venus has a 584-day cycle. Twice per cycle, Venus conjoins the Sun (a Venus Star Point) and resets the whole
+            theme. In between, Venus is either a Morning Star (rises before the Sun) or an Evening Star (sets after the
+            Sun). Which one YOU are is fixed at birth and shapes your whole relational signature.
+          </p>
+        </>
+      }
+      items={items}
+      buildReading={(chart) => personalizeVenusPhase(chart)}
+      activeReadCta={(name) => `Tap the card to see whether ${name} is a Morning Star or Evening Star Venus.`}
+    />
+  );
+}
+
+function DifficultPlacementsPersonalSection() {
+  const items: ClickableItem[] = [
+    { key: "list", glyph: "🎭", name: "Your costume adjustments", blurb: "Which of your planets are in detriment or fall in this chart." },
+  ];
+  return (
+    <ClickableConceptSection
+      intro={
+        <>
+          <p>
+            A "costume adjustment" is a planet in detriment or fall. It isn't broken. It just wants to do its normal
+            job in a foreign language, so it comes out sideways under stress until you give it a clean, on-purpose role.
+          </p>
+        </>
+      }
+      items={items}
+      buildReading={(chart) => personalizeDifficultPlacements(chart)}
+      activeReadCta={(name) => `Tap to see which of ${name}'s planets need this translation work.`}
+    />
+  );
+}
 
 
 export const GuideView = ({ onNavigateToView }: GuideViewProps = {}) => {
   const [guideSection, setGuideSection] = useState<GuideSection>("overview");
+
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-in">
