@@ -118,6 +118,7 @@ import {
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 import { ChildPortraitCard } from "./ChildPortrait";
+import { TodayForPersonPanel } from "./TodayForPersonPanel";
 
 /**
  * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
@@ -609,6 +610,14 @@ export const FamilyTab = ({ userNatalChart, savedCharts }: FamilyTabProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Today's transits vs a chosen family member's natal — quick answer to "what's going on with them today?" */}
+      {allCharts.length > 0 && (
+        <TodayForPersonPanel
+          charts={allCharts.filter(c => c.id !== userNatalChart?.id)}
+          defaultName="Ben"
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
