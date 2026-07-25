@@ -73,7 +73,7 @@ function anxietyFlag(a: TransitAspect): boolean {
 
 function whatHelpsLine(flags: TransitAspect[], firstName: string): string {
   if (!flags.length) {
-    return `No hard nervous-system transits landing on ${firstName} today. If anxiety is showing up, it's likely running on yesterday's residue or a longer pattern, not today's sky. Ask what happened this week, not what's wrong right now.`;
+    return `No hard transits landing on ${firstName}'s personal points today. Whatever is going on is either running on a longer pattern from earlier in the week, something environmental (school, friends, sleep, food), or simply a light day. The sky isn't pressing on him right now.`;
   }
   const top = flags[0];
   const t = top.transitPlanet;
@@ -82,12 +82,12 @@ function whatHelpsLine(flags: TransitAspect[], firstName: string): string {
 
   // Concrete parent action per transit flavor
   let action = "";
-  if (t === "Saturn") action = `Don't lecture or push for a fix. Saturn wants structure and a witness. Sit next to ${firstName}, keep your voice low, and name the pressure out loud: "It sounds like something feels really heavy right now." Then offer ONE small doable next step, not five.`;
-  else if (t === "Neptune") action = `Don't try to logic this out. Neptune blurs the edges, so ${firstName} may not be able to name what's wrong. Cut screens, feed them, get them outside or in water, and don't require a clear reason for the feeling.`;
-  else if (t === "Pluto") action = `Something underneath is asking to be seen. Don't demand they open up, but make it obvious you're available. A car ride or a walk works better than eye contact at the kitchen table.`;
-  else if (t === "Mars") action = `The charge is physical. Get it out of the body before you try to talk. Movement, a punching bag, a hard run, a chore that uses arms. Then the conversation lands.`;
-  else if (t === "Chiron") action = `An old sore spot is getting touched. Don't try to fix or reassure it away. Just acknowledge it exists: "That one always hurts, doesn't it." Presence is the medicine.`;
-  else if (t === "Moon") action = `Today's mood is temporary but real. Let ${firstName} feel it without making it a big diagnosis. Feed them, keep the day simple, don't schedule anything hard tonight.`;
+  if (t === "Saturn") action = `Saturn shows up as heaviness, self-criticism, or feeling like something is his job to carry. Sit next to ${firstName}, keep your voice low, name the weight out loud, and offer ONE small doable next step, not five.`;
+  else if (t === "Neptune") action = `Neptune shows up as foggy, tired, tender, or "I don't know what's wrong." Cut screens, feed him, get him outside or near water, and don't require a clear reason for the feeling.`;
+  else if (t === "Pluto") action = `Pluto shows up as something underneath asking to be seen: control, intensity, a fixation, or a quiet withdrawal. Don't demand he open up, but make it obvious you're available. A car ride or a walk works better than eye contact at the kitchen table.`;
+  else if (t === "Mars") action = `Mars shows up as irritation, a short fuse, or physical restlessness. Get it out of the body before you try to talk. Movement, a hard run, a chore that uses arms, then the conversation lands.`;
+  else if (t === "Chiron") action = `Chiron shows up as an old sore spot getting touched: not-good-enough, left out, misunderstood. Don't try to fix or reassure it away. Acknowledge it: "That one always hurts, doesn't it." Presence is the medicine.`;
+  else if (t === "Moon") action = `The Moon is temporary but real. Let ${firstName} feel today's mood without making it a diagnosis. Feed him, keep the day simple, don't schedule anything hard tonight.`;
   else action = `Slow the day down. Fewer demands, more presence.`;
 
   const contactWord =
@@ -95,8 +95,9 @@ function whatHelpsLine(flags: TransitAspect[], firstName: string): string {
     asp === "opposition" ? "pulling against" :
     asp === "square" ? "pressing on" : "in contact with";
 
-  return `Today, transiting ${t} is ${contactWord} ${firstName}'s natal ${n} (${asp}, orb ${top.orb}°). That's the anxiety signature. ${action}`;
+  return `Today, transiting ${t} is ${contactWord} ${firstName}'s natal ${n} (${asp}, orb ${top.orb}°). That's what the sky is doing to him today. ${action}`;
 }
+
 
 export function TodayForPersonPanel({ charts, defaultName }: Props) {
   const [selectedId, setSelectedId] = useState<string>("");
@@ -183,7 +184,7 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
           <p className="text-sm text-muted-foreground">Pick a person to see today's sky against their natal chart.</p>
         ) : (
           <>
-            {/* Anxiety watch — the answer to "what's going on with them today" */}
+            {/* What the sky is doing today */}
             <div className={`rounded-lg border p-3 ${data.anxietyHits.length ? "border-destructive/40 bg-destructive/5" : "border-muted bg-muted/30"}`}>
               <div className="flex items-center gap-2 mb-2">
                 {data.anxietyHits.length ? (
@@ -192,7 +193,7 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
                   <Heart className="h-4 w-4 text-primary" />
                 )}
                 <span className="text-sm font-semibold">
-                  {data.anxietyHits.length ? "Anxiety watch" : "Nervous system today"}
+                  {data.anxietyHits.length ? `What the sky is pressing on for ${firstName} today` : `Light day for ${firstName}`}
                 </span>
               </div>
               <p className="text-sm leading-relaxed text-foreground">
