@@ -118,6 +118,7 @@ import {
 } from "@/lib/familySystemSynastry";
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 import { ChildPortraitCard } from "./ChildPortrait";
+import { TodayForPersonPanel } from "./TodayForPersonPanel";
 
 /**
  * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
