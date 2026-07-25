@@ -184,7 +184,7 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
           <p className="text-sm text-muted-foreground">Pick a person to see today's sky against their natal chart.</p>
         ) : (
           <>
-            {/* Anxiety watch — the answer to "what's going on with them today" */}
+            {/* What the sky is doing today */}
             <div className={`rounded-lg border p-3 ${data.anxietyHits.length ? "border-destructive/40 bg-destructive/5" : "border-muted bg-muted/30"}`}>
               <div className="flex items-center gap-2 mb-2">
                 {data.anxietyHits.length ? (
@@ -193,7 +193,7 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
                   <Heart className="h-4 w-4 text-primary" />
                 )}
                 <span className="text-sm font-semibold">
-                  {data.anxietyHits.length ? "Anxiety watch" : "Nervous system today"}
+                  {data.anxietyHits.length ? `What the sky is pressing on for ${firstName} today` : `Light day for ${firstName}`}
                 </span>
               </div>
               <p className="text-sm leading-relaxed text-foreground">
