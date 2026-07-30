@@ -1117,6 +1117,13 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
 
       setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
+
+      // Bring the finished reading into view so it's the first thing seen.
+      requestAnimationFrame(() => {
+        readingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+
       
       // Generate week forecast
       setWeekForecast(getWeekForecast());
