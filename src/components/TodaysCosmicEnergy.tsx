@@ -309,6 +309,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani' | 'teen'>('tara');
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const readingRef = useRef<HTMLDivElement>(null);
 
   // Document excerpts for AI enrichment
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
@@ -1116,6 +1117,13 @@ ${topTransits || 'None within 5° orb right now. Say so honestly rather than inv
 
       setCosmicData(newCosmicData);
       setLastFetched(generatedTime);
+
+      // Bring the finished reading into view so it's the first thing seen.
+      requestAnimationFrame(() => {
+        readingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+
       
       // Generate week forecast
       setWeekForecast(getWeekForecast());
@@ -1957,7 +1965,7 @@ Keep the tone professional, insightful, and practically applicable.`,
 
               {/* DAILY VIEW - Main Content Card */}
               {viewMode === 'daily' && (
-                <Card className="border-primary/20 shadow-lg">
+                <Card ref={readingRef} className="border-primary/20 shadow-lg scroll-mt-4">
                   <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">

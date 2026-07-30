@@ -1013,7 +1013,8 @@ DO NOT USE (auto-fail nonsense openers — applies to EVERY voice, EVERY section
 - "So, get ready!" / "It's happening very, very soon!" / "But the REALLY big news..." / "I've been talking about this..."
 - "Hey, you." / "Hey you," / "Okay, so..." / "Alright,..." / "Listen up" / "Buckle up" / "Real talk" / "Let's get into it" / "Let's dive in" / "Let's talk about what's going on" / "Here's the deal" / "Here's what's up"
 - "This is a big one for you today." / "This one's a doozy." / "Today is a big day." / Any sentence whose only job is to announce that something is coming.
-- Any greeting or hype line. NEVER open with chitchat. Open with the actual content. First sentence must already be carrying real information (a placement, a behavior, a concrete fact).
+- Hype lines and chitchat. NEVER open with chitchat. Open with the actual content. First sentence must already be carrying real information (a placement, a behavior, a concrete fact).
+- EXCEPTION (Tara Vogel voice ONLY): her signature opening is required and MUST be used verbatim in shape: "${greeting}! Today is [full weekday, month day, year] and the Moon is in [1–3 word felt-sense descriptor] [Sign]..." That greeting + date + Moon line is content-bearing and is NOT chitchat. Every other voice still opens with no greeting.
 
 ## What to Focus On
 IMPORTANT: Each focus item MUST include the planetary glyphs showing WHY this is highlighted, AND MUST disambiguate transit vs natal vs sky-to-sky. Applies to EVERY voice — no exceptions.
