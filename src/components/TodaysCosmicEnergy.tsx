@@ -1965,7 +1965,7 @@ Keep the tone professional, insightful, and practically applicable.`,
 
               {/* DAILY VIEW - Main Content Card */}
               {viewMode === 'daily' && (
-                <Card className="border-primary/20 shadow-lg">
+                <Card ref={readingRef} className="border-primary/20 shadow-lg scroll-mt-4">
                   <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <CardTitle className="font-serif text-2xl font-light flex items-center gap-3">
