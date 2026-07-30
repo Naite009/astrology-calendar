@@ -755,29 +755,41 @@ Format with ## headers. Be chart-specific - no generic advice that could apply t
             shows the structured personal data (Moon in house, aspects, transits). */}
 
         {/* Moon in House */}
-        {moonHouse && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-primary/10">
-                ☽ Moon in Your {moonHouse}
-                {moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} House
-                {moonHouse && chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign
-                  ? ` (${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign} cusp)`
-                  : ''}
-              </Badge>
+        {moonHouse && (() => {
+          const ord = (n: number) => (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+          const cuspOf = (n: number) =>
+            chart.houseCusps?.[`house${((n - 1) % 12) + 1}` as keyof typeof chart.houseCusps] as
+              | { sign?: string; degree?: number; minutes?: number }
+              | undefined;
+          const start = cuspOf(moonHouse);
+          const nextHouse = moonHouse === 12 ? 1 : moonHouse + 1;
+          const end = cuspOf(nextHouse);
+          const fmt = (c?: { sign?: string; degree?: number; minutes?: number }) =>
+            c?.sign
+              ? `${c.degree ?? 0}°${(c.minutes ?? 0).toString().padStart(2, '0')}' ${c.sign}`
+              : '';
+          const range = start?.sign && end?.sign ? `${fmt(start)} to ${fmt(end)}` : '';
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-primary/10">
+                  ☽ Moon at {moonDegree.toFixed(0)}° {moonSign}, in your {moonHouse}
+                  {ord(moonHouse)} house
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {moonHouseInterpretation}
+              </p>
+              {range && (
+                <p className="text-xs text-muted-foreground italic">
+                  Your {moonHouse}
+                  {ord(moonHouse)} house runs from {range}, so {moonDegree.toFixed(0)}° {moonSign} sits
+                  inside it.
+                </p>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {moonHouseInterpretation}
-            </p>
-            <p className="text-xs text-muted-foreground italic">
-              {moonSign} at {moonDegree.toFixed(0)}° is in your {moonHouse}
-              {moonHouse === 1 ? 'st' : moonHouse === 2 ? 'nd' : moonHouse === 3 ? 'rd' : 'th'} house
-              {moonHouse && chart.houseCusps?.[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign
-                ? ` (cusp at ${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.degree || 0}° ${chart.houseCusps[`house${moonHouse}` as keyof typeof chart.houseCusps]?.sign})`
-                : ''}
-            </p>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Major Moon Aspects to Natal Planets */}
         {majorMoonAspects.length > 0 && (
