@@ -309,6 +309,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
   const [voiceStyle, setVoiceStyle] = useState<'tara' | 'chris' | 'anne' | 'kathy' | 'krs' | 'malika' | 'sarah' | 'astrodienst' | 'cafe' | 'astrotwins' | 'chani' | 'teen'>('tara');
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const readingRef = useRef<HTMLDivElement>(null);
 
   // Document excerpts for AI enrichment
   const { buildPromptBlock: buildRefBlock } = useDocumentExcerpts();
