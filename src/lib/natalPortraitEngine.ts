@@ -316,12 +316,27 @@ function countModalities(bodies: Array<{ sign: string }>): Record<string, number
   return counts;
 }
 
+/**
+ * Returns a dominance label from raw counts of the 10 major planets.
+ * A category is only called dominant when it strictly exceeds every other
+ * category. Ties are reported as ties instead of picking an arbitrary winner.
+ */
 function getDominant(counts: Record<string, number>): string {
-  let max = 0, dom = '';
-  for (const [k, v] of Object.entries(counts)) {
-    if (v > max) { max = v; dom = k; }
-  }
-  return dom;
+  const entries = Object.entries(counts).filter(([, v]) => v > 0);
+  if (entries.length === 0) return '';
+  const max = Math.max(...entries.map(([, v]) => v));
+  const leaders = entries.filter(([, v]) => v === max).map(([k]) => k);
+  if (leaders.length === 1) return leaders[0];
+  const under = Object.entries(counts)
+    .filter(([, v]) => v < max)
+    .sort((a, b) => a[1] - b[1])
+    .map(([k]) => k);
+  const tied = leaders.length === 2
+    ? leaders.join(' and ')
+    : `${leaders.slice(0, -1).join(', ')} and ${leaders[leaders.length - 1]}`;
+  return under.length > 0
+    ? `${tied} evenly represented (${under.join(', ')} comparatively underrepresented)`
+    : `${tied} evenly represented`;
 }
 
 // ─── Identity Descriptions ──────────────────────────────────────────
@@ -712,7 +727,7 @@ function rankTopThemes(chart: NatalChart, bodies: ReturnType<typeof getBodyData>
     themes.push({
       title: 'Strong Inner World (Multiple Retrogrades)',
       score: retros.length * 6,
-      description: `${retros.length} personal planets retrograde means much of your life process happens internally. You refine, rethink, and re-do until satisfied.`,
+      description: `${retros.length === 4 ? 'Four' : retros.length} major planets are retrograde (${retros.map(r => r.name).join(', ')}). Much of your process happens internally: you refine, rethink, and re-do until satisfied.`,
       drivers: retros.map(r => `${r.name} Rx in ${r.sign}`),
     });
   }

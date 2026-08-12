@@ -178,7 +178,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
                 </div>
               ))}
             </div>
-            <p className="text-[10px] text-primary mt-2">Dominant: {lp.dominantElement}</p>
+            <p className="text-[10px] text-primary mt-2">{lp.dominantElement?.includes('evenly') ? lp.dominantElement : `Dominant: ${lp.dominantElement}`} (10 major planets)</p>
           </div>
           <div className="p-3 bg-secondary/30 rounded-sm">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">Modality Balance</p>
@@ -193,7 +193,7 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
                 </div>
               ))}
             </div>
-            <p className="text-[10px] text-primary mt-2">Dominant: {lp.dominantModality}</p>
+            <p className="text-[10px] text-primary mt-2">{lp.dominantModality?.includes('evenly') ? lp.dominantModality : `Dominant: ${lp.dominantModality}`} (10 major planets)</p>
           </div>
         </div>
       </div>

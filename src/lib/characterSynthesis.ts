@@ -109,8 +109,8 @@ export const TRIPLE_MODALITY_COMBINATIONS: Record<string, { description: string;
     challenge: 'May start endlessly but finish rarely. Restlessness becomes existential. Difficulty with maintenance, follow-through, and the "boring" middle of projects.',
   },
   'Fixed': {
-    description: 'Triple Fixed creates absolute determination incarnate. With Sun, Moon, AND Rising all in Fixed signs, you are immovable force—once set, nothing shifts you.',
-    energy: 'Maximum persistence. Your identity (Sun), emotions (Moon), and outward presentation (Rising) all resist change and commit completely. You ARE stability itself.',
+    description: 'With the Sun, Moon and Ascendant all in fixed signs, persistence, loyalty and staying power are especially strong. Once you commit, you tend to stay committed.',
+    energy: 'Your identity (Sun), emotional needs (Moon) and outward manner (Rising) all favor consistency over change. The challenge can be adapting once you have committed emotionally or mentally to a direction.',
     challenge: 'Rigidity becomes your shadow. Difficulty adapting even when change is clearly needed. May miss opportunities by refusing to pivot.',
   },
   'Mutable': {

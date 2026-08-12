@@ -123,7 +123,7 @@ export const PsychicGiftsCard = ({ indicators, chartName }: PsychicGiftsCardProp
                     </span>
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {chartName ? `${chartName}'s intuitive abilities` : 'Intuitive abilities at a glance'}
+                    Spiritual / esoteric interpretation, not a chart fact. {chartName ? `Traditional intuitive signatures in ${chartName}'s chart.` : 'Traditional intuitive signatures at a glance.'}
                   </p>
                 </div>
               </div>

@@ -903,13 +903,20 @@ export const getDecanRuler = (sign: string, degree: number): string => {
 };
 
 export type DignityStatus = {
-  type: 'Ruler' | 'Exaltation' | 'Detriment' | 'Fall' | 'Peregrine';
+  type: 'Ruler' | 'Exaltation' | 'Detriment' | 'Fall' | 'Peregrine' | 'Not assigned';
   color: string;
   bgColor: string;
 };
 
+/** Traditional essential dignity covers the seven visible planets only. */
+export const TRADITIONAL_DIGNITY_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
 export const getDignityStatus = (planetName: string, sign: string): DignityStatus => {
   const dignities = PLANET_DIGNITIES[planetName];
+  // Uranus, Neptune and Pluto are not given traditional essential dignity.
+  if (!TRADITIONAL_DIGNITY_PLANETS.includes(planetName)) {
+    return { type: 'Not assigned', color: 'hsl(var(--muted-foreground))', bgColor: 'hsl(var(--muted) / 0.3)' };
+  }
   if (!dignities) {
     return { type: 'Peregrine', color: 'hsl(var(--muted-foreground))', bgColor: 'hsl(var(--muted) / 0.3)' };
   }

@@ -58,7 +58,8 @@ function getPlacementFeeling(planet: string, sign: string, dignity: DignityType,
     fall: `This is where you build earned confidence. Not weakness — mastery develops through practice.`,
     peregrine: house 
       ? `This energy expresses most clearly through the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house themes and its aspects.`
-      : `A free agent — its expression comes through aspects and the life areas it touches.`
+      : `A free agent, so its expression comes through aspects and the life areas it touches.`,
+    notAssigned: `Traditional essential dignity is not assigned to ${planet}, so read it through its house, aspects and cycles instead.`
   };
   return dignityFeelings[dignity];
 }
@@ -466,13 +467,14 @@ export const ReadingScriptGenerator: React.FC<ReadingScriptGeneratorProps> = ({
       openingContent.push(`"${chartRulerCondition.traditionalInterpretation}"`);
       
       // Dignity details
-      if (chartRulerDignity !== 'peregrine') {
+      if (chartRulerDignity !== 'peregrine' && chartRulerDignity !== 'notAssigned') {
         const dignityTexts: Record<DignityType, string> = {
           rulership: `${chartRuler} is in its own sign (${chartRulerPlanet.sign}) — it operates with natural authority and ease. Your chart ruler is strong. The director has full creative control.`,
           exaltation: `${chartRuler} is exalted in ${chartRulerPlanet.sign} — it operates at an elevated, idealized level. Your chart ruler has special gifts to offer.`,
           detriment: `${chartRuler} is in detriment in ${chartRulerPlanet.sign} — it must work in unfamiliar territory. This doesn't mean weakness, but your chart ruler needs conscious strategy to express itself.`,
           fall: `${chartRuler} is in fall in ${chartRulerPlanet.sign} — it lacks natural confidence here. Your chart ruler earns its authority through effort rather than inheritance.`,
-          peregrine: ''
+          peregrine: '',
+          notAssigned: ''
         };
         openingContent.push(`"${dignityTexts[chartRulerDignity]}"`);
       }

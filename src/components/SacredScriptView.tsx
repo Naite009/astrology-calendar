@@ -1237,7 +1237,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
             <details className="group">
               <summary className="cursor-pointer text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-2">
                 <Sparkles size={16} />
-                View All {psychicIndicators.length} Psychic Indicators (Detailed)
+                View All {psychicIndicators.length} Intuitive Signatures (Spiritual / esoteric interpretation)
                 <ChevronDown size={14} className="group-open:rotate-180 transition-transform ml-1" />
               </summary>
               <div className="mt-3 space-y-3">

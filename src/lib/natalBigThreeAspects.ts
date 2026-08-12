@@ -259,7 +259,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
     square: {
       feeling: 'Your drive for power conflicts with your conscious identity. You may fear your own intensity.',
       manifestation: 'Crisis, power struggles, obsessive patterns. Incredible transformation once you embrace your own depth.',
-      clientDescription: 'Pluto squares your Sun—you\'ve faced power struggles and crisis. Embracing your own intensity is the path to freedom.',
+      clientDescription: 'Sun square Pluto can correlate with heightened sensitivity to power, control and intensity, and with periods of significant personal reinvention. Owning your own intensity, rather than hiding it, tends to be what eases the pressure.',
     },
   },
   Chiron: {
