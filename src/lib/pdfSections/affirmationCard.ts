@@ -185,7 +185,7 @@ function buildClosingSendOff(
     definingTheme =
       `${name}, this Solar Return is ${ascTheme}` +
       (sunFocus ? `, with the year's center of gravity sitting in ${sunFocus}` : '') +
-      `. The clearest signal in your chart is SR ${strongest.planet1} ${strongest.type?.toLowerCase()} natal ${strongest.planet2} — that is the one to listen to.`;
+      `. The clearest signal in your chart is ${(strongest as any).label || `Solar Return ${strongest.planet1} ${strongest.type?.toLowerCase()} natal ${strongest.planet2}`}, and that is the one to listen to.`;
   } else {
     definingTheme =
       `${name}, this Solar Return is ${ascTheme}` +
