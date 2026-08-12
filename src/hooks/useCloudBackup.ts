@@ -479,44 +479,45 @@ export const useCloudBackup = (
     if (initialCheckDoneRef.current) return;
     initialCheckDoneRef.current = true;
 
-    let cancelled = false;
     const checkAndRestore = async () => {
-      // Check if local storage is empty
-      const hasLocalUser = userNatalChart && userNatalChart.name;
-      const hasLocalSaved = savedCharts.length > 0;
-      const localSavedCount = savedCharts.length;
-      
-      // Always check cloud to see if there are more charts than local
-      console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? getCachedUserId() ?? 'device' });
-      const cloudCharts = await fetchCloudCharts();
-      if (cancelled) return;
-      
-      // Count non-user charts in cloud
-      const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user' && !c.chart_id.startsWith('sr_')).length;
-      
-      if (!hasLocalUser && !hasLocalSaved && cloudCharts.length > 0) {
-        // Local is completely empty, restore everything from cloud
-        console.log('[CloudBackup] Local storage empty, restoring', cloudCharts.length, 'charts from cloud...');
-        await restoreFromCloud();
-      } else if (cloudSavedCount > localSavedCount) {
-        // Cloud has more saved charts than local - merge them in
-        console.log('[CloudBackup] Cloud has more charts (' + cloudSavedCount + ') than local (' + localSavedCount + '), restoring...');
-        await restoreFromCloud();
-      } else if (hasLocalUser || hasLocalSaved) {
-        // Local has data and cloud doesn't have more, sync local to cloud
-        console.log('[CloudBackup] Local has data, syncing to cloud...');
-        setState(prev => ({ ...prev, isLoading: false }));
-        triggerSync();
-      } else {
+      try {
+        // Check if local storage is empty
+        const hasLocalUser = userNatalChart && userNatalChart.name;
+        const hasLocalSaved = savedCharts.length > 0;
+        const localSavedCount = savedCharts.length;
+
+        // Always check cloud to see if there are more charts than local
+        console.log('[CloudBackup] Checking cloud for charts...', { authedAs: user?.id ?? getCachedUserId() ?? 'device' });
+        const cloudCharts = await fetchCloudCharts();
+
+        // Count non-user charts in cloud
+        const cloudSavedCount = cloudCharts.filter(c => c.chart_id !== 'user' && !c.chart_id.startsWith('sr_')).length;
+
+        if (!hasLocalUser && !hasLocalSaved && cloudCharts.length > 0) {
+          // Local is completely empty, restore everything from cloud
+          console.log('[CloudBackup] Local storage empty, restoring', cloudCharts.length, 'charts from cloud...');
+          await restoreFromCloud();
+        } else if (cloudSavedCount > localSavedCount) {
+          // Cloud has more saved charts than local - merge them in
+          console.log('[CloudBackup] Cloud has more charts (' + cloudSavedCount + ') than local (' + localSavedCount + '), restoring...');
+          await restoreFromCloud();
+        } else if (hasLocalUser || hasLocalSaved) {
+          // Local has data and cloud doesn't have more, sync local to cloud
+          console.log('[CloudBackup] Local has data, syncing to cloud...');
+          triggerSync();
+        }
+      } catch (err) {
+        console.error('[CloudBackup] Initial cloud check failed:', err);
+      } finally {
+        // NEVER leave the UI stuck on "Reconnecting to your account...".
         setState(prev => ({ ...prev, isLoading: false }));
       }
     };
 
     void checkAndRestore();
-    return () => {
-      cancelled = true;
-    };
-  }, [authChecked, user?.id, userNatalChart, savedCharts, fetchCloudCharts, restoreFromCloud, triggerSync]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authChecked]);
+
 
   // Sync whenever charts change
   useEffect(() => {
