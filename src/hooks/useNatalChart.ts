@@ -392,7 +392,7 @@ const normalizeSouthNode = <T extends NatalChart | null>(chart: T): T => {
         sign: oppSign,
         degree: nn.degree,
         minutes: nn.minutes,
-        retrograde: nn.retrograde,
+        isRetrograde: nn.isRetrograde,
       },
     },
   } as T;
