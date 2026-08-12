@@ -126,12 +126,14 @@ export const useCloudBackup = (
           .select('*')
           .order('updated_at', { ascending: false });
         
-        // If authenticated, fetch by user_id; otherwise by device_id
+        // If authenticated, include this device's not-yet-claimed charts too,
+        // so a chart saved before/around sign-in never disappears from the library.
         if (cachedUserId) {
-          query = query.eq('user_id', cachedUserId);
+          query = query.or(`user_id.eq.${cachedUserId},and(user_id.is.null,device_id.eq.${deviceId.current})`);
         } else {
           query = query.eq('device_id', deviceId.current);
         }
+
         
         const { data, error } = await withTimeout(query, CLOUD_REQUEST_TIMEOUT_MS, 'device_charts fetch');
 
