@@ -226,15 +226,16 @@ export const personalizeDivineFeminineBody = (
     };
   }
 
-  // South Node: derive from North Node if not stored separately (they're exactly opposite).
+  // South Node is ALWAYS the exact opposite point of the North Node, so we
+  // derive it rather than trusting whatever was stored or imported.
   let point = (chart.planets as any)[body];
-  if (!point && body === "SouthNode") {
+  if (body === "SouthNode") {
     const nn = chart.planets.NorthNode;
     if (nn?.sign) {
       const nnIdx = SIGN_NAMES.findIndex((s) => s.toLowerCase() === nn.sign!.toLowerCase());
       if (nnIdx >= 0) {
         const oppSign = SIGN_NAMES[(nnIdx + 6) % 12];
-        point = { sign: oppSign, degree: nn.degree, minutes: nn.minutes };
+        point = { ...(point ?? {}), sign: oppSign, degree: nn.degree, minutes: nn.minutes };
       }
     }
   }

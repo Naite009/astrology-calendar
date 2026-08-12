@@ -361,16 +361,54 @@ const applyAutoSeededPronouns = <T extends NatalChart | null>(chart: T): T => {
   return seeded ? ({ ...chart, pronouns: seeded } as T) : chart;
 };
 
+// ── South Node integrity ─────────────────────────────────────────────────────
+// The South Node is ALWAYS the exact opposite point of the North Node: same
+// degree and minute, sign +6. OCR / manual entry frequently gets this wrong,
+// so we derive it deterministically and overwrite whatever was stored.
+const SN_SIGNS = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+];
+const normalizeSouthNode = <T extends NatalChart | null>(chart: T): T => {
+  const nn = chart?.planets?.NorthNode;
+  if (!chart || !nn?.sign) return chart;
+  const idx = SN_SIGNS.findIndex((s) => s.toLowerCase() === String(nn.sign).toLowerCase());
+  if (idx < 0) return chart;
+  const oppSign = SN_SIGNS[(idx + 6) % 12];
+  const existing = chart.planets.SouthNode;
+  if (
+    existing?.sign === oppSign &&
+    existing?.degree === nn.degree &&
+    (existing?.minutes ?? 0) === (nn.minutes ?? 0)
+  ) {
+    return chart;
+  }
+  return {
+    ...chart,
+    planets: {
+      ...chart.planets,
+      SouthNode: {
+        ...(existing ?? {}),
+        sign: oppSign,
+        degree: nn.degree,
+        minutes: nn.minutes,
+        isRetrograde: nn.isRetrograde,
+      },
+    },
+  } as T;
+};
+
 export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     const c = readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
-    return applyAutoSeededPronouns(normalizeAscendantFromHouse1(c));
+    return normalizeSouthNode(applyAutoSeededPronouns(normalizeAscendantFromHouse1(c)));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
     const raw = readSavedChartsWithRecovery()
       .map(normalizeAscendantFromHouse1)
-      .map(applyAutoSeededPronouns);
+      .map(applyAutoSeededPronouns)
+      .map(normalizeSouthNode);
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
