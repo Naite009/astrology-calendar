@@ -243,23 +243,24 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         </ul>
       </div>
 
-      {/* Header & person picker — only people with SR charts, plus option to add new */}
+      {/* Header & person picker — every natal chart must remain selectable,
+          including people who do not have a Solar Return chart yet. */}
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Solar Return:</label>
-        {natalChartsWithSR.length > 0 ? (
+        {allCharts.length > 0 ? (
           <select
             value={selectedNatalId}
             onChange={(e) => { setSelectedNatalId(e.target.value); setSelectedSRId(null); }}
             className="border border-border bg-background text-foreground rounded-sm px-3 py-1.5 text-sm"
           >
-            {natalChartsWithSR.map(c => (
+            {allCharts.map(c => (
               <option key={c.id} value={c.id}>
                 {c.id === userNatalChart?.id ? `★ ${c.name}` : c.name}
               </option>
             ))}
           </select>
         ) : (
-          <span className="text-sm text-muted-foreground">No Solar Return charts yet</span>
+          <span className="text-sm text-muted-foreground">No natal charts yet</span>
         )}
         <button
           onClick={() => { setShowAddForNewPerson(!showAddForNewPerson); }}
