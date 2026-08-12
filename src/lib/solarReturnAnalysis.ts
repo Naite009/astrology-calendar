@@ -262,7 +262,34 @@ interface Aspect {
   type: string;
   orb: number;
   exact: number;
+  /** Which two charts this aspect connects. Never strip this. */
+  source?: 'sr-to-natal' | 'sr-internal';
+  /** Prebuilt, unambiguous sentence label. Renderers must print this. */
+  label?: string;
 }
+
+/** Human names for points so labels never print camelCase. */
+const POINT_DISPLAY: Record<string, string> = {
+  NorthNode: 'North Node', SouthNode: 'South Node', PartOfFortune: 'Part of Fortune',
+  Ascendant: 'Ascendant', MC: 'Midheaven',
+};
+const displayPoint = (p: string): string => POINT_DISPLAY[p] || p;
+
+/**
+ * Canonical aspect label. Always names the chart each planet belongs to, so a
+ * Solar Return planet can never be confused with a natal one.
+ */
+export const buildAspectLabel = (
+  planet1: string,
+  planet1Source: 'SR' | 'Natal',
+  type: string,
+  planet2: string,
+  planet2Source: 'SR' | 'Natal',
+): string => {
+  const side = (p: string, src: 'SR' | 'Natal') =>
+    `${src === 'SR' ? 'Solar Return' : 'natal'} ${displayPoint(p)}`;
+  return `${side(planet1, planet1Source)} ${type.toLowerCase()} ${side(planet2, planet2Source)}`;
+};
 
 const ASPECT_ANGLES = [
   { name: 'Conjunction', angle: 0, orb: 8 },
@@ -925,6 +952,8 @@ export const analyzeSolarReturn = (
           planet1: srPlanet, planet1Source: 'SR',
           planet2: natPlanet, planet2Source: 'Natal',
           type: asp.type, orb: asp.orb, exact: 0,
+          source: 'sr-to-natal',
+          label: buildAspectLabel(srPlanet, 'SR', asp.type, natPlanet, 'Natal'),
           interpretation: aspectMeaning(srPlanet, natPlanet, asp.type),
         });
       }
@@ -950,6 +979,8 @@ export const analyzeSolarReturn = (
           planet1: p1, planet1Source: 'SR',
           planet2: p2, planet2Source: 'SR',
           type: asp.type, orb: asp.orb, exact: 0,
+          source: 'sr-internal',
+          label: buildAspectLabel(p1, 'SR', asp.type, p2, 'SR'),
           interpretation: internalAspectMeaning(p1, p2, asp.type),
         });
       }
