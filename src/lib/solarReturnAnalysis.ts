@@ -900,7 +900,7 @@ export const analyzeSolarReturn = (
       if (natalDeg !== null) natalOrigHouse = findNatalHouse(natalDeg, natalChart);
     }
 
-    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse);
+    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse, cuspBridgeNote(deg, sh, srChart));
 
     houseOverlays.push({
       planet,
