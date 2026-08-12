@@ -25,7 +25,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
   const finalAdvice = useMemo(() => buildFinalAdvice(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
   const topThemes = useMemo(() => {
     const bMonth = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(5, 7), 10) - 1 : 0;
-    return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+    return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
   }, [analysis, natalChart]);
 
   return (

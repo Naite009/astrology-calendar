@@ -947,12 +947,12 @@ export function downloadBirthdayJSONStandalone(
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
       })(),
       topThemes: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
       })(),
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
@@ -1290,12 +1290,12 @@ export function buildFullJsonStandalone(
     scoredAspects: (() => {
       const bd = natalChart.birthDate || '';
       const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-      return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+      return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
     })(),
     topThemes: (() => {
       const bd = natalChart.birthDate || '';
       const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
     })(),
     houseEmphasis: buildHouseEmphasis(analysis),
     lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
@@ -2971,12 +2971,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
       })(),
       topThemes: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
       })(),
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
