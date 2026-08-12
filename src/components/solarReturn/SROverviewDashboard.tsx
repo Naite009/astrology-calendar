@@ -359,7 +359,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
               {tightestAspects.map((asp, i) => (
                 <div key={i}>
                   <p className="text-sm font-serif text-foreground">
-                    {asp.planet1} {asp.type} {asp.planet2}
+                    {asp.label || `${asp.planet1} ${asp.type} ${asp.planet2}`}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-[11px] text-muted-foreground">{asp.orb}° orb</span>
@@ -389,7 +389,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
               {tightestInternal.map((asp, i) => (
                 <div key={i}>
                   <p className="text-sm font-serif text-foreground">
-                    {asp.planet1} {asp.type} {asp.planet2}
+                    {asp.label || `${asp.planet1} ${asp.type} ${asp.planet2}`}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-[11px] text-muted-foreground">{asp.orb}° orb</span>
