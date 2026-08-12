@@ -108,6 +108,30 @@ const findSRHouse = (planetDeg: number, srChart: SolarReturnChart): number | nul
   return cusps ? findHouseInCusps(planetDeg, cusps) : null;
 };
 
+/**
+ * Cusp-bridging check. If a planet sits within `orb` degrees of the NEXT house
+ * cusp, the placement should be read as bridging both houses rather than being
+ * silently reassigned. Returns null when the planet sits cleanly inside a house.
+ */
+const cuspBridgeNote = (
+  planetDeg: number,
+  house: number | null,
+  chart: SolarReturnChart | NatalChart,
+  orb = 2,
+): string | null => {
+  if (!house) return null;
+  const cusps = extractCusps(chart as any);
+  if (!cusps) return null;
+  const nextHouse = house === 12 ? 1 : house + 1;
+  const nextCusp = cusps[nextHouse - 1];
+  if (nextCusp === undefined) return null;
+  let gap = nextCusp - planetDeg;
+  while (gap < 0) gap += 360;
+  while (gap >= 360) gap -= 360;
+  if (gap > orb) return null;
+  return `At ${gap.toFixed(1)}° from the ${nextHouse}${ordinalSuffix(nextHouse)} house cusp, this placement bridges both houses, so read it in your ${house}${ordinalSuffix(house)} house and your ${nextHouse}${ordinalSuffix(nextHouse)} house together.`;
+};
+
 // ─── Dignity calculation (Step 2) ───────────────────────────────────
 const domicileSigns: Record<string, string[]> = {
   Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
@@ -712,6 +736,7 @@ function generateOverlayInterpretation(
   srHouse: number | null,
   natalLandingHouse: number | null,
   natalOriginalHouse: number | null,
+  bridgeNote?: string | null,
 ): string {
   const drive = PLANET_OVERLAY_DRIVE[planet] || { what: `${planet}'s themes`, shift: `where ${planet} focuses` };
   const signFelt = getSignFeltSense(srSign);
@@ -723,14 +748,16 @@ function generateOverlayInterpretation(
 
   if (natalOriginalHouse && srHouse && natalOriginalHouse !== srHouse) {
     const origArea = SR_HOUSE_LIFE_AREA[natalOriginalHouse] || `house ${natalOriginalHouse}`;
-    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house — meaning ${drive.shift} moves from ${origArea} to ${srArea}. `;
+    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house, so ${drive.shift} moves from ${origArea} to ${srArea}. `;
   } else if (natalOriginalHouse && srHouse && natalOriginalHouse === srHouse) {
     interp += `${planet} returns to its natal house this year, reinforcing its lifelong themes around ${srArea}. This is a year of deepening, not redirecting, this energy. `;
   }
 
   if (natalArea && natalLandingHouse !== srHouse) {
-    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events.`;
+    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events. `;
   }
+
+  if (bridgeNote) interp += bridgeNote;
 
   return interp.trim();
 }
