@@ -44,6 +44,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   // Build sections list
   const sections: { title: string; desc: string }[] = [];
   sections.push({ title: 'How to Read This Report', desc: 'Key concepts explained in plain language' });
+  sections.push({ title: 'The Story of Your Year', desc: 'What the year is about, and the themes ranked by weight' });
   sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
   
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
@@ -54,7 +55,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.stelliums.length > 0) sections.push({ title: 'Stelliums', desc: 'Where 3+ planets cluster' });
   if (a.elementBalance) sections.push({ title: 'Element & Modality Balance', desc: 'Fire/Earth/Air/Water and Cardinal/Fixed/Mutable' });
   if (a.hemisphericEmphasis) sections.push({ title: 'Where Your Energy Lives', desc: 'Hemispheric distribution' });
-  if (a.lordOfTheYear || a.profectionYear) sections.push({ title: 'Your Time Lord (Lord of the Year)', desc: 'The planet running the show this year' });
+  if (a.lordOfTheYear || a.profectionYear) sections.push({ title: 'Annual Profection Time Lord', desc: 'The profection Time Lord, and how it differs from the natal chart ruler' });
   sections.push({ title: 'Profection Wheel & Your Profection Year', desc: 'Visual diagram and activated house' });
   if (a.profectionYear) sections.push({ title: 'Key Dates', desc: 'Exact dates when your Time Lord activates natal planets' });
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you are being tested and growing' });
@@ -64,6 +65,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
   sections.push({ title: 'Your Year in Four Seasons', desc: 'Key themes for each quarter' });
+  sections.push({ title: 'What You Need to Know', desc: 'The short version, plus one question for the year' });
   if (birthdayMode) sections.push({ title: 'Take This With You', desc: 'Your natal strength, this year\'s ask, and a closing note' });
 
   for (let i = 0; i < sections.length; i++) {

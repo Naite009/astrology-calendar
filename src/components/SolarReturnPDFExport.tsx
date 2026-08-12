@@ -1872,6 +1872,11 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
   generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
 
+  // FINAL: WHAT YOU NEED TO KNOW + one reflection question
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('WHAT YOU NEED TO KNOW', doc.getNumberOfPages());
+  generateWhatYouNeedToKnow(ctx, doc, analysis, yearStory);
+
   // GOLD BORDERS on all pages
   {
     const totalPages = doc.getNumberOfPages();
@@ -1887,11 +1892,6 @@ export async function generateBirthdayGiftPDF(
       for (const [cx2, cy2] of corners) doc.circle(cx2, cy2, 3.5, 'F');
     }
   }
-
-  // FINAL: WHAT YOU NEED TO KNOW + one reflection question
-  doc.addPage(); ctx.y = margin;
-  ctx.sectionPages.set('WHAT YOU NEED TO KNOW', doc.getNumberOfPages());
-  generateWhatYouNeedToKnow(ctx, doc, analysis, yearStory);
 
   // TOC links
   addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
