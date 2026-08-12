@@ -209,7 +209,7 @@ export const useCloudBackup = (
         const { error } = await supabase
           .from('device_charts')
           .update({
-            chart_data: payload,
+            chart_data: payload as never,
             chart_name: chart.name,
             updated_at: new Date().toISOString(),
           })
