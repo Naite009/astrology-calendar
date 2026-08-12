@@ -132,32 +132,14 @@ const cuspBridgeNote = (
   return `At ${gap.toFixed(1)}° from the ${nextHouse}${ordinalSuffix(nextHouse)} house cusp, this placement bridges both houses, so read it in your ${house}${ordinalSuffix(house)} house and your ${nextHouse}${ordinalSuffix(nextHouse)} house together.`;
 };
 
-// ─── Dignity calculation (Step 2) ───────────────────────────────────
-const domicileSigns: Record<string, string[]> = {
-  Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
-  Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
-  Uranus: ['Aquarius'], Neptune: ['Pisces'], Pluto: ['Scorpio'],
-};
-const exaltationSigns: Record<string, string> = {
-  Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
-  Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
-};
-const detrimentSigns: Record<string, string[]> = {
-  Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
-  Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
-};
-const fallSigns: Record<string, string> = {
-  Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
-  Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
+// ─── Dignity calculation (canonical, traditional planets only) ──────
+// Uranus, Neptune and Pluto are never assigned domicile/exaltation/
+// detriment/fall. See src/lib/essentialDignity.ts.
+const getDignity = (planet: string, sign: string): string => {
+  const d = getEssentialDignity(planet, sign);
+  return d === 'NotAssigned' ? 'NotAssigned' : d;
 };
 
-const getDignity = (planet: string, sign: string): string => {
-  if (domicileSigns[planet]?.includes(sign)) return 'Domicile';
-  if (exaltationSigns[planet] === sign) return 'Exaltation';
-  if (detrimentSigns[planet]?.includes(sign)) return 'Detriment';
-  if (fallSigns[planet] === sign) return 'Fall';
-  return 'Peregrine';
-};
 
 // ─── Lord of Year house interpretations (Step 2) ────────────────────
 const lordHouseInterps: Record<number, string> = {
