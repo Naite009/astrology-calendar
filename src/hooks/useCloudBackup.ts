@@ -169,13 +169,14 @@ export const useCloudBackup = (
       // Find existing rows (there may be duplicates if a previous bug inserted multiple rows)
       const baseLookup = supabase
         .from('device_charts')
-        .select('id, updated_at')
+        .select('id, updated_at, chart_data')
         .order('updated_at', { ascending: false })
         .limit(10);
 
       const { data: existingRows, error: lookupError } = user?.id
         ? await baseLookup.eq('user_id', user.id).eq('chart_id', chart.id)
         : await baseLookup.eq('device_id', deviceId.current).eq('chart_id', chart.id);
+
 
       if (lookupError) {
         console.error('[CloudBackup] Error looking up existing chart rows:', chart.name, lookupError);
@@ -197,15 +198,23 @@ export const useCloudBackup = (
       }
 
       if (keepRowId) {
+        // Local storage no longer keeps the base64 chart image (too large), so
+        // preserve whatever the cloud already has instead of wiping it.
+        const existingImage = (existingRows?.[0] as { chart_data?: Record<string, unknown> } | undefined)
+          ?.chart_data?.chartImageBase64;
+        const payload = JSON.parse(JSON.stringify(chart)) as Record<string, unknown>;
+        if (!payload.chartImageBase64 && existingImage) payload.chartImageBase64 = existingImage;
+
         // Update the kept record
         const { error } = await supabase
           .from('device_charts')
           .update({
-            chart_data: JSON.parse(JSON.stringify(chart)),
+            chart_data: payload as never,
             chart_name: chart.name,
             updated_at: new Date().toISOString(),
           })
           .eq('id', keepRowId);
+
 
         if (error) {
           console.error('[CloudBackup] Error updating chart:', chart.name, error);

@@ -238,14 +238,41 @@ const readWithRollingBackups = <T,>(
   return fallback;
 };
 
+// Chart images (base64 wheel screenshots) are ~1MB each and blow the 5MB
+// localStorage budget, which silently stops new charts from being saved.
+// They live in the cloud copy, so we never persist them to localStorage.
+const stripHeavyFields = (data: unknown): unknown => {
+  const clean = (c: unknown) => {
+    if (!c || typeof c !== 'object') return c;
+    const { chartImageBase64, ...rest } = c as Record<string, unknown>;
+    return rest;
+  };
+  return Array.isArray(data) ? data.map(clean) : clean(data);
+};
+
+// Drop expired/legacy cached blobs to free room when storage is full.
+const freeUpStorage = (): void => {
+  const disposable = /^(cosmic-weather-|cosmic-day-weather-|cosmic-weekly-recipe-|ask-conversations$|.*__backup)/;
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && disposable.test(k)) keys.push(k);
+  }
+  for (const k of keys) {
+    try { localStorage.removeItem(k); } catch { /* ignore */ }
+  }
+  if (keys.length) console.warn(`[NatalChart] Freed ${keys.length} cached storage entries to make room`);
+};
+
 // Save with rolling backups (keeps last 3 versions)
 const saveWithRollingBackups = (key: string, data: unknown): void => {
   try {
-    const serialized = JSON.stringify(data);
+    const serialized = JSON.stringify(stripHeavyFields(data));
     
     // Check if we have space — if data is large, skip backups to avoid quota issues
     const dataSize = serialized.length;
     const skipBackups = dataSize > 500_000; // >500KB, skip backup rotation
+
     
     if (!skipBackups) {
       try {
@@ -283,11 +310,18 @@ const saveWithRollingBackups = (key: string, data: unknown): void => {
     }
     try { localStorage.removeItem(`${key}__backup`); } catch { /* ignore */ }
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(key, JSON.stringify(stripHeavyFields(data)));
       console.log(`[NatalChart] Saved ${key} after clearing backups`);
-    } catch (e2) {
-      console.error(`[NatalChart] Still cannot save ${key}:`, e2);
+    } catch {
+      freeUpStorage();
+      try {
+        localStorage.setItem(key, JSON.stringify(stripHeavyFields(data)));
+        console.log(`[NatalChart] Saved ${key} after freeing cached storage`);
+      } catch (e2) {
+        console.error(`[NatalChart] Still cannot save ${key}:`, e2);
+      }
     }
+
   }
 };
 
