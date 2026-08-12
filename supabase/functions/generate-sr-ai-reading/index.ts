@@ -355,7 +355,18 @@ ${ageInstructions}
 
    Every ## header must be on its own line with a blank line before and after it. Never put a ## header inside a sentence or paragraph. Do not include any other section headers. Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph. Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
 
-  Keep the total reading between 500-700 words. Every word must earn its place. Brevity is strength.`;
+
+
+  DOCTRINE FOR THE PLAIN READING:
+  A. Story first. Say what the year is about in ordinary words, using the pre-computed YEAR STORY order, before any detail.
+  B. Follow the theme ranking supplied in YEAR STORY exactly. Do not reorder it and do not promote something because it had more aspects.
+  C. Say plainly when several different parts of the chart point at the same area of life, because that is why it ranks first.
+  D. No medical predictions, no organs, no symptoms, no diagnoses. Talk about workload, routines, stamina, pacing, rest and stress management instead.
+  E. Use "may", "can" and "is likely to". Never guarantee an event.
+  F. No em dashes anywhere.
+  G. Close with a short "What You Need to Know" wrap up and then the single reflection question supplied in the data.
+
+  Keep the total reading between 600-800 words. Every word must earn its place. Brevity is strength.`;
 }
 
 function astroSystemPrompt(ageInstructions: string): string {
