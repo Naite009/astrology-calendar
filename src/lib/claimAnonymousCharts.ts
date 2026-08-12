@@ -20,7 +20,9 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const DEVICE_ID_KEY = "astro_device_id";
-const CLAIMED_FLAG_KEY_PREFIX = "astro_charts_claimed_for_";
+const CLAIM_THROTTLE_MS = 15_000;
+const lastClaimAt = new Map<string, number>();
+
 
 const getDeviceId = (): string | null => {
   try {
