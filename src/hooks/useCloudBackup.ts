@@ -169,13 +169,14 @@ export const useCloudBackup = (
       // Find existing rows (there may be duplicates if a previous bug inserted multiple rows)
       const baseLookup = supabase
         .from('device_charts')
-        .select('id, updated_at')
+        .select('id, updated_at, chart_data')
         .order('updated_at', { ascending: false })
         .limit(10);
 
       const { data: existingRows, error: lookupError } = user?.id
         ? await baseLookup.eq('user_id', user.id).eq('chart_id', chart.id)
         : await baseLookup.eq('device_id', deviceId.current).eq('chart_id', chart.id);
+
 
       if (lookupError) {
         console.error('[CloudBackup] Error looking up existing chart rows:', chart.name, lookupError);
