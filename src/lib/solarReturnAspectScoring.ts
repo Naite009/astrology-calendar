@@ -69,6 +69,24 @@ function getPeakMonths(srPlanet: string, birthdayMonth: number): string[] {
   return offsets.map(offset => MONTHS_FULL[(birthdayMonth + offset) % 12]);
 }
 
+// Bodies that may reinforce a theme but must never create one
+const MINOR_BODIES = new Set([
+  'Ceres','Pallas','Juno','Vesta','Lilith','Eris','Psyche','Eros','Amor','Hygiea',
+  'Nessus','Pholus','Chariklo','Sedna','Makemake','Haumea','Quaoar','Orcus','Ixion',
+  'Varuna','Gonggong','Salacia','PartOfFortune','Vertex','SouthNode',
+]);
+
+const MAJOR_ASPECTS = new Set(['Conjunction','Opposition','Square','Trine','Sextile']);
+
+export interface AspectScoringContext {
+  /** Ruler of the Solar Return Ascendant */
+  chartRuler?: string;
+  /** Annual profection Time Lord */
+  timeLord?: string;
+  /** Planets within 8 degrees of an SR angle */
+  angularPlanets?: string[];
+}
+
 export function scoreAspects(
   aspects: Array<{
     planet1?: string;
@@ -82,7 +100,12 @@ export function scoreAspects(
     interpretation?: string;
   }>,
   birthdayMonth: number = 0,
+  ctx: AspectScoringContext = {},
 ): ScoredAspect[] {
+  const keyPlayers = new Set(
+    ['Sun', 'Moon', 'Ascendant', 'MC', ctx.chartRuler || '', ctx.timeLord || ''].filter(Boolean),
+  );
+  const angular = new Set(ctx.angularPlanets || []);
   return aspects.map(a => {
     const srPlanet = a.planet1 || a.srPlanet || '';
     const natalPlanet = a.planet2 || a.natalPlanet || '';
@@ -95,7 +118,21 @@ export function scoreAspects(
     const orbMod = orb <= 0.5 ? 2 : orb <= 1 ? 1.5 : orb <= 2 ? 1 : orb <= 3 ? 0.7 : 0.4;
     const angularBonus = ANGULAR_TARGETS.includes(natalPlanet) || ANGULAR_TARGETS.includes(srPlanet) ? 1.5 : 0;
 
-    const raw = ((srWeight + natalWeight) / 2 * (aspectWeight / 10) * orbMod) + angularBonus;
+    // Hierarchy multipliers: an aspect only matters as much as the players in it.
+    const isMajor = MAJOR_ASPECTS.has(aspectType);
+    const involvesKeyPlayer = keyPlayers.has(srPlanet) || keyPlayers.has(natalPlanet);
+    const involvesAngular = angular.has(srPlanet) || angular.has(natalPlanet);
+    const involvesMinorBody = MINOR_BODIES.has(srPlanet) || MINOR_BODIES.has(natalPlanet);
+
+    let raw = ((srWeight + natalWeight) / 2 * (aspectWeight / 10) * orbMod) + angularBonus;
+    if (involvesKeyPlayer) raw += 1.5;
+    if (involvesAngular) raw += 1;
+    if (!isMajor) raw *= 0.5;          // minor aspects stay in the background
+    if (involvesMinorBody) raw *= 0.45; // asteroids and points reinforce only
+    // Nothing wider than 5 degrees is allowed to read as a defining contact.
+    if (orb > 5) raw = Math.min(raw, 3.4);
+    if (orb > 3 && !involvesKeyPlayer) raw = Math.min(raw, 5.4);
+
     const importance = Math.max(1, Math.min(10, Math.round(raw)));
     const category: ScoredAspect['category'] = importance >= 7 ? 'major' : importance >= 4 ? 'moderate' : 'background';
 
