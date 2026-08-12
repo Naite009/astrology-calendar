@@ -1,5 +1,6 @@
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEssentialDignity, dignityNote } from './essentialDignity';
 import { analyzeSRHemispheres, type SRHemisphericResult } from './solarReturnHemispheres';
 import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex';
 import {
