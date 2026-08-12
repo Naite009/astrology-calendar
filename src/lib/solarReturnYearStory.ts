@@ -156,7 +156,7 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
   /* 2. SR Sun */
   if (sunHouse) {
     const bonus = STRONG_DIGNITY.has(sunDignity) ? 4 : 0;
-    add(sunHouse, 14 + bonus, 'sr-sun',
+    add(sunHouse, 16 + bonus, 'sr-sun',
       `The Solar Return Sun is in the ${ordinal(sunHouse)} house${sunSign ? ` in ${sunSign}` : ''}${bonus ? ` and is in ${sunDignity.toLowerCase()}, which strengthens it` : ''}.`);
   }
 
@@ -209,13 +209,14 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
 
   /* 6. Annual profection and Time Lord */
   if (profHouse) {
-    add(profHouse, 12, 'profection',
+    add(profHouse, 16, 'profection',
       `At this age the annual profection activates the ${ordinal(profHouse)} house, which is a yearly timing technique rather than a transit.`);
   }
   if (timeLordHouse) {
-    add(timeLordHouse, 9, 'time-lord',
-      `${timeLord}, the annual profection Time Lord, is in the Solar Return ${ordinal(timeLordHouse)} house${timeLordSign ? ` in ${timeLordSign}` : ''}, so this is how the profected year actually operates day to day.`);
-    add(timeLordHouse, 3, 'time-lord-occupancy');
+    // The Time Lord's own house describes HOW the profected year is worked out.
+    // It must not outrank the profected house itself or the Sun's house.
+    add(timeLordHouse, 5, 'time-lord',
+      `${timeLord}, the annual profection Time Lord, is in the Solar Return ${ordinal(timeLordHouse)} house${timeLordSign ? ` in ${timeLordSign}` : ''}, which is how the profected year gets worked out in practice.`);
   }
 
   /* 7. Rulers of major activated houses */
@@ -234,6 +235,7 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
   const keyPlayers = new Set(['Sun','Moon','Ascendant','MC',ascRuler,timeLord].filter(Boolean));
   const aspectPool = [...(analysis.srInternalAspects || []), ...(analysis.srToNatalAspects || [])];
   const aspectCredit: Record<number, number> = {};
+  const definingAspects: { label: string; orb: number; planets: string[] }[] = [];
   for (const asp of aspectPool) {
     const p1 = (asp as any).planet1 || '';
     const p2 = (asp as any).planet2 || '';
@@ -242,14 +244,18 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
     if (!MAJOR_ASPECTS.has(type)) continue;
     if (MINOR_BODIES.has(p1) || MINOR_BODIES.has(p2)) continue;
     if (!keyPlayers.has(p1) && !keyPlayers.has(p2)) continue;
-    if (orb > 2) continue;
+    // Contacts involving the Time Lord or a luminary stay defining out to 3 degrees.
+    const involvesLord = p1 === timeLord || p2 === timeLord || p1 === 'Sun' || p2 === 'Sun' || p1 === 'Moon' || p2 === 'Moon';
+    if (orb > (involvesLord ? 3 : 2)) continue;
+    const label = (asp as any).label || `${p1} ${type.toLowerCase()} ${p2}`;
+    if (!definingAspects.some(d => d.label === label)) definingAspects.push({ label, orb, planets: [p1, p2] });
     for (const p of [p1, p2]) {
       const h = houses[p];
       if (!h) continue;
       if ((aspectCredit[h] || 0) >= 8) continue; // cap so aspect count cannot dominate
       aspectCredit[h] = (aspectCredit[h] || 0) + 4;
       add(h, 4, 'tight-aspect',
-        `${p1} ${type.toLowerCase()} ${p2} at ${orb}° is tight enough to be a defining contact of the year.`);
+        `${(asp as any).label || `${p1} ${type.toLowerCase()} ${p2}`} at ${orb}° is tight enough to be a defining contact of the year.`);
     }
   }
 
@@ -263,11 +269,26 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
   }
 
   /* ── Rank ── */
-  const ranked = Object.entries(buckets)
+  let ranked = Object.entries(buckets)
     .map(([h, b]) => ({ house: parseInt(h, 10), ...b }))
     .sort((a, b) => (b.score - a.score) || (b.kinds.size - a.kinds.size))
     .filter(t => t.score >= 8)
     .slice(0, 5);
+
+  // Ordering guarantee: the profected house and the Sun's house always outrank a
+  // house that qualifies mainly because the Time Lord happens to sit there.
+  const primaryHouses = [sunHouse, profHouse].filter(Boolean) as number[];
+  const isTimeLordOnly = (t: typeof ranked[number]): boolean => {
+    if (primaryHouses.includes(t.house)) return false;
+    const kinds = [...t.kinds];
+    const structural = kinds.filter(k => ['sr-sun', 'profection', 'stellium', 'sign-stellium', 'sr-ascendant', 'chart-ruler'].includes(k));
+    return structural.length === 0 && kinds.some(k => k.startsWith('time-lord'));
+  };
+  ranked = [
+    ...ranked.filter(t => primaryHouses.includes(t.house)).sort((a, b) => b.score - a.score),
+    ...ranked.filter(t => !primaryHouses.includes(t.house) && !isTimeLordOnly(t)),
+    ...ranked.filter(t => !primaryHouses.includes(t.house) && isTimeLordOnly(t)),
+  ];
 
   const themes: YearTheme[] = ranked.map(t => ({
     house: t.house,
@@ -284,6 +305,7 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
     sunHouse, sunSign, sunDignity, moonHouse, moonSign,
     profHouse, timeLord, timeLordHouse, timeLordSign,
     topHouses: themes.map(t => t.house),
+    definingAspects,
   };
 
   for (const theme of themes) theme.summary = buildThemeSummary(theme.house, ctx);
@@ -316,6 +338,7 @@ interface StoryContext {
   timeLordHouse: number | null;
   timeLordSign: string;
   topHouses: number[];
+  definingAspects: { label: string; orb: number; planets: string[] }[];
 }
 
 function signOf(analysis: SolarReturnAnalysis, planet: string): string {
