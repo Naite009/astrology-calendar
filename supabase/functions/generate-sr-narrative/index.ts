@@ -41,9 +41,9 @@ serve(async (req) => {
       dataContext += `SR ASC DEGREE IN NATAL: The SR Ascendant falls in Natal House ${a.srAscInNatalHouse.natalHouse} (${a.srAscInNatalHouse.natalHouseTheme || ''})\n`;
     }
 
-    // Lord of the Year
+    // Natal chart ruler (a DIFFERENT technique from the profection Time Lord)
     if (a.lordOfTheYear) {
-      dataContext += `LORD OF THE YEAR: ${a.lordOfTheYear.planet} in ${a.lordOfTheYear.srSign} ${a.lordOfTheYear.srDegree}${a.lordOfTheYear.srHouse ? ` (SR House ${a.lordOfTheYear.srHouse})` : ''} — ${a.lordOfTheYear.dignity}${a.lordOfTheYear.isRetrograde ? ' Rx' : ''}\n`;
+      dataContext += `NATAL CHART RULER (ruler of the natal Ascendant, NOT the profection Time Lord): ${a.lordOfTheYear.planet} in ${a.lordOfTheYear.srSign} ${a.lordOfTheYear.srDegree}${a.lordOfTheYear.srHouse ? ` (SR House ${a.lordOfTheYear.srHouse})` : ''}, dignity ${a.lordOfTheYear.dignity}${a.lordOfTheYear.isRetrograde ? ' Rx' : ''}\n`;
       dataContext += `Natal Rising Sign: ${a.lordOfTheYear.natalRisingSign}\n`;
     }
 
@@ -174,7 +174,22 @@ serve(async (req) => {
 
     const systemPrompt = `You are a master astrologer with 40 years of experience writing a personalized solar return reading. Write in flowing paragraphs with warmth and authority. No bullet points. No section headers inside the narrative. No technical jargon lists. Every sentence must be grounded in the chart data provided. Never invent placements or aspects not in the data.
 
-HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Avoid abstract phrases like "intense dynamics", "transformative energy", "emotionally complex." Instead: "you may find yourself rethinking your career path — it feels unsettling because you thought that decision was behind you, but this year's chart is reopening that question."${refBlock}`;
+HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Avoid abstract phrases like "intense dynamics", "transformative energy", "emotionally complex." Instead: "you may find yourself rethinking your career path, which can feel unsettling because you thought that decision was behind you, and this year the question is open again."
+
+NON-NEGOTIABLE DOCTRINE:
+1. Story first, astrology second. Say what the year is about, then support it with the chart. Never open with a placement list.
+2. Weight the chart in this order: SR Ascendant and its ruler, the Sun's house and condition, the Moon's house, angular planets, concentrations, the annual profection house and Time Lord, rulers of activated houses, then very tight major aspects. Minor bodies may reinforce a theme, never create one. Never rank a theme higher because it collected more aspects.
+3. When several independent signatures point at the same life area, say so plainly, because that repetition is the real message.
+4. Only aspects under 2 degrees may be called defining. 2 to 5 degrees is supporting. Over 5 degrees is background. Never call a wide aspect exact or fused.
+5. Three separate techniques, never merged: "Annual Profection Time Lord" (ruler of the profected house), "Natal Chart Ruler" (ruler of the natal Ascendant), "Solar Return Dominant Planet" (scoring based). Name the technique whenever you name the planet.
+6. State dignity correctly. Saturn in Aries is in Fall. Do not invent dignities.
+7. A planet within about 2 degrees of the next cusp bridges both houses, so interpret both. A planet conjunct an angle keeps the house it is actually in.
+8. No medical predictions of any kind: no organs, symptoms or diagnoses. Use workload, routines, stamina, pacing, rest and stress management. Saturn in the sixth means sustainability, not sickness. A quincunx is not a health problem.
+9. Use "may", "can", "is likely to". Never guarantee an event.
+10. No generic aspect filler such as "squares are the engine of achievement" or "these energies merge into one force".
+11. Explain each placement fully once. Later mentions must add something new or connect themes.
+12. No em dashes anywhere.
+13. Close with a short "What You Need to Know" wrap up, then one specific reflection question.${refBlock}`;
 
     // Build structured user prompt with interpolated data
     const srAsc = a.yearlyTheme?.ascendantSign || '—';
@@ -183,11 +198,14 @@ HYBRID CLARITY RULE: For each key insight, follow this sequence: (1) Start with 
     const srAscRulerHouse = a.yearlyTheme?.ascendantRulerHouse || '—';
     const srAscRulerNatalHouse = a.srAscRulerInNatal?.rulerNatalHouse || '—';
     const profectionHouse = a.profectionYear?.houseNumber || '—';
-    const timeLord = a.profectionYear?.timeLord || a.lordOfTheYear?.planet || '—';
-    const timeLordSign = a.lordOfTheYear?.srSign || a.profectionYear?.timeLordSRSign || '—';
-    const timeLordHouse = a.lordOfTheYear?.srHouse || a.profectionYear?.timeLordSRHouse || '—';
-    const timeLordDignity = a.lordOfTheYear?.dignity || 'Peregrine';
-    const timeLordRx = a.lordOfTheYear?.isRetrograde ? 'yes' : 'no';
+    // Keep the two techniques strictly separate: the Annual Profection Time Lord
+    // is the ruler of the profected house, which is often NOT the natal chart ruler.
+    const timeLord = a.profectionYear?.timeLord || '—';
+    const timeLordSign = a.profectionYear?.timeLordSRSign || '—';
+    const timeLordHouse = a.profectionYear?.timeLordSRHouse || '—';
+    const isSamePlanet = !!(a.lordOfTheYear && a.profectionYear && a.lordOfTheYear.planet === a.profectionYear.timeLord);
+    const timeLordDignity = isSamePlanet ? (a.lordOfTheYear?.dignity || 'Peregrine') : 'see dignity table';
+    const timeLordRx = isSamePlanet ? (a.lordOfTheYear?.isRetrograde ? 'yes' : 'no') : 'see chart data';
     const srMoonSign = a.moonSign || '—';
     const srMoonHouse = a.moonHouse?.house || '—';
     const moonPhase = a.moonPhase?.phase || '—';
