@@ -81,11 +81,25 @@ function buildContext(d: any, age: number | null): string {
   }
 
   if (d.lordOfTheYear) {
-    ctx += `Lord of the Year: ${d.lordOfTheYear.planet} in ${d.lordOfTheYear.srSign} (house ${d.lordOfTheYear.srHouse || '—'}), dignity: ${d.lordOfTheYear.dignity}${d.lordOfTheYear.isRetrograde ? ' (Rx)' : ''}\n`;
+    ctx += `Natal Chart Ruler (ruler of the NATAL Ascendant, NOT the profection Time Lord): ${d.lordOfTheYear.planet} in ${d.lordOfTheYear.srSign} (house ${d.lordOfTheYear.srHouse || '—'}), dignity: ${d.lordOfTheYear.dignity}${d.lordOfTheYear.isRetrograde ? ' (Rx)' : ''}\n`;
   }
 
   if (d.profectionYear) {
-    ctx += `Profection: House ${d.profectionYear.houseNumber || d.profectionYear.house}, Time Lord: ${d.profectionYear.timeLord}\n`;
+    ctx += `Annual Profection Time Lord: ${d.profectionYear.timeLord} (from the House ${d.profectionYear.houseNumber || d.profectionYear.house} profection)\n`;
+  }
+
+  if (d.dominantPlanets?.ranked?.length) {
+    ctx += `Solar Return Dominant Planet (scoring based, a separate technique again): ${d.dominantPlanets.ranked[0]?.planet || ''}\n`;
+  }
+
+  if (d.yearStory) {
+    ctx += `\n--- YEAR STORY (PRE-COMPUTED SYNTHESIS: FOLLOW THIS HIERARCHY, DO NOT REORDER IT) ---\n`;
+    ctx += `Core story: ${d.yearStory.coreStory}\n`;
+    (d.yearStory.themes || []).forEach((t: any, i: number) => {
+      ctx += `Theme ${i + 1} (house ${t.house}, ${t.reinforcements} independent signatures): ${t.title}\n  ${t.summary}\n  Evidence: ${(t.signatures || []).join(' ')}\n`;
+    });
+    (d.yearStory.hierarchy || []).forEach((h: any) => { ctx += `Emphasis: ${h.label} = ${h.detail}\n`; });
+    ctx += `Reflection question to close with: ${d.yearStory.reflectionQuestion}\n`;
   }
 
   ctx += `\n--- PLACEMENTS ---\n`;
@@ -391,7 +405,45 @@ Name the chart's internal contradictions. How do opposing pulls resolve? What do
 ## Practical Synthesis
 Despite being technical, end with 4-6 concrete, age-appropriate actions grounded in the chart. Each should reference the specific placement that motivates it.
 
-Aim for 1200-1800 words. Be technically dense but readable. Show mastery through specificity, not through jargon for jargon's sake.`;
+Aim for 1200-1800 words. Be technically dense but readable. Show mastery through specificity, not through jargon for jargon's sake.
+
+
+## NON-NEGOTIABLE REPORT DOCTRINE
+
+STRUCTURE: story first, astrology second. Open with the story of the year in plain language, then use the chart to support it. Never open with a placement list.
+
+THEME HIERARCHY: use the pre-computed YEAR STORY order exactly. Do not promote a theme because it collected more aspects. Weight evidence in this order: Solar Return Ascendant and its ruler, the Sun's house and condition, the Moon's house, angular planets, house or sign concentrations, the annual profection house and Time Lord, rulers of activated houses, then very tight major aspects. Minor bodies (Chiron, asteroids, Eris, Lilith, points) may reinforce a theme, never create one.
+
+REPEATED THEMES ARE THE POINT: if three or four independent signatures point at the same life area, say so explicitly and say that this is why it ranks first.
+
+ORB DISCIPLINE: only aspects under 2 degrees may be called defining or exact. 2 to 5 degrees is supporting. Over 5 degrees is background and usually not worth naming. Never call a 5 degree aspect exact, fused, or "right on top of".
+
+TIME LORD TERMINOLOGY: these are three different techniques and must never be merged or called "the Lord of the Year" without qualification:
+- "Annual Profection Time Lord" for the ruler of the profected house.
+- "Natal Chart Ruler" for the ruler of the natal Ascendant.
+- "Solar Return Dominant Planet" for the scoring based dominant.
+Name the technique every time you name the planet.
+
+DIGNITY: state dignity correctly. Saturn in Aries is in Fall, not Detriment. Saturn in Cancer or Leo is in Detriment. Do not invent dignities.
+
+HOUSES NEAR CUSPS: if a planet sits within about 2 degrees of the next house cusp, say it bridges both houses and interpret both. A planet conjunct an angle keeps the house it is actually in. Never move a planet into a different house to make a point.
+
+NO MEDICAL PREDICTIONS: never predict illness, name organs, body parts, diagnoses, or symptoms. Use workload, routines, stamina, pacing, rest, stress management and sustainability instead. Sixth house and Saturn contacts mean sustainability, not sickness. A quincunx does not mean a health problem.
+
+SATURN IN THE SIXTH: read as workload, structure, discipline and what can be maintained over time, not as physical decline.
+
+TENTATIVE LANGUAGE: use "may", "can", "is likely to", "this often shows up as". Never guarantee an outcome or an event.
+
+NO GENERIC ASPECT COPY: never write "squares are the engine of achievement", "energies merge into one force", "the universe is asking you", or similar filler. Explain what the specific pair may do in this specific year.
+
+REDUCE REPETITION: each placement gets its fullest explanation once. Later mentions must add something new or connect it to another theme.
+
+CONNECT, DO NOT LIST: link the themes to each other, for example how a professional focus interacts with the profected relationship house, or how workload determines what growth can actually be sustained.
+
+NO EM DASHES anywhere. Use commas, colons, periods or parentheses.
+
+CLOSE WITH: a section called "What You Need to Know" covering what is changing, what matters most, what may be challenging, where the opportunity is, and what to pay attention to. Then end with the single reflection question supplied in the data, or one just as specific.
+`;
 }
 
 serve(async (req) => {
