@@ -453,6 +453,14 @@ CONNECT, DO NOT LIST: link the themes to each other, for example how a professio
 
 NO EM DASHES anywhere. Use commas, colons, periods or parentheses.
 
+GRAMMAR AND PRONOUNS: the reader is addressed as "you", which takes plural verb forms. Write "you have", "you are", "you were", "your". Never write "you has", "you is", "you's", "you was", or "yous". Never attach a possessive apostrophe to "you".
+
+ASPECT CHART SOURCE: every aspect must name both charts explicitly, for example "Solar Return Mars square natal Saturn" or "Solar Return Venus opposite Solar Return Saturn". Never write a bare pair like "Mars square Saturn", and never mix a Solar Return to natal contact with a Solar Return internal contact in the same sentence as if they were the same thing. Use the label supplied with each aspect in the data when one is present.
+
+ECLIPSES: describe eclipses as timing that brings something already building to a head. Never call anything fated, destined, karmic payback, meant to be, or written. No language that removes the reader's choice.
+
+DO NOT LET ONE HOUSE SWALLOW THE READING: no single house may dominate more than roughly a quarter of the text. The profected house and the Sun's house lead the reading. A house that is emphasised only because the Time Lord sits there is HOW the year gets worked out, not WHAT the year is about.
+
 CLOSE WITH: a section called "What You Need to Know" covering what is changing, what matters most, what may be challenging, where the opportunity is, and what to pay attention to. Then end with the single reflection question supplied in the data, or one just as specific.
 `;
 }
