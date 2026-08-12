@@ -768,7 +768,9 @@ export const getElementGuidance = (element: string, type: 'missing' | 'abundant'
 
 // Calculate age from birth date
 export const calculateAge = (birthDate: string): number => {
+  if (typeof birthDate !== 'string') return 0;
   const [year, month, day] = birthDate.split('-').map(Number);
+  if (![year, month, day].every(Number.isFinite)) return 0;
   const birth = new Date(year, month - 1, day);
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();

@@ -6,6 +6,7 @@ import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
 const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ default: m.ChartDecoderView })));
 import { AskView } from "./AskView";
 import { ChartSelector } from "./ChartSelector";
+import { SacredScriptErrorBoundary } from "./SacredScriptErrorBoundary";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -970,21 +971,23 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "sacred-script" && (
-          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
-            {userNatalChart || savedCharts[0] ? (
-              <SacredScriptView 
-                natalChart={userNatalChart || savedCharts[0]}
-                allCharts={[
-                  ...(userNatalChart ? [userNatalChart] : []),
-                  ...savedCharts
-                ]}
-              />
-            ) : (
-              <div className="flex items-center justify-center py-20 text-muted-foreground">
-                Restoring your charts…
-              </div>
-            )}
-          </Suspense>
+          <SacredScriptErrorBoundary>
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+              {userNatalChart || savedCharts[0] ? (
+                <SacredScriptView 
+                  natalChart={userNatalChart || savedCharts[0]}
+                  allCharts={[
+                    ...(userNatalChart ? [userNatalChart] : []),
+                    ...savedCharts
+                  ]}
+                />
+              ) : (
+                <div className="flex items-center justify-center py-20 text-muted-foreground">
+                  Restoring your charts…
+                </div>
+              )}
+            </Suspense>
+          </SacredScriptErrorBoundary>
         )}
 
         {viewMode === "decoder" && (
