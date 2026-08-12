@@ -944,6 +944,7 @@ export function downloadBirthdayJSONStandalone(
       aiReadingAstro: aiReadings?.astro || null,
       // ─── Structured summary objects ───
       yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      yearStory: buildYearStory(analysis),
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
@@ -1287,6 +1288,7 @@ export function buildFullJsonStandalone(
 
     // ─── Structured summary objects ───
     yearSummary: buildYearSummary(analysis, natalChart, srChart),
+    yearStory: buildYearStory(analysis),
     scoredAspects: (() => {
       const bd = natalChart.birthDate || '';
       const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
@@ -2968,6 +2970,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // New structured summary objects
       yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      yearStory: buildYearStory(analysis),
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
