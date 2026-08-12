@@ -364,7 +364,10 @@ ${ageInstructions}
   D. No medical predictions, no organs, no symptoms, no diagnoses. Talk about workload, routines, stamina, pacing, rest and stress management instead.
   E. Use "may", "can" and "is likely to". Never guarantee an event.
   F. No em dashes anywhere.
-  G. Close with a short "What You Need to Know" wrap up and then the single reflection question supplied in the data.
+  G. Grammar: the reader is "you", so write "you have", "you are", "you were". Never "you has", "you is", "you's" or "you was".
+  H. Eclipses are timing, not destiny. Never say fated, destined, karmic payback, meant to be, or written.
+  I. No single area of life may take up more than about a quarter of the reading. The profected year and the Sun's area lead the story.
+  J. Close with a short "What You Need to Know" wrap up and then the single reflection question supplied in the data.
 
   Keep the total reading between 600-800 words. Every word must earn its place. Brevity is strength.`;
 }
