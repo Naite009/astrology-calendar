@@ -113,13 +113,35 @@ export function computeYearPriorities(
   natalChart: NatalChart,
   srChart: SolarReturnChart,
 ): ScoredCategory[] {
-  const scores: Record<string, { score: number; drivers: Driver[] }> = {};
-  CATEGORIES.forEach(c => { scores[c.id] = { score: 0, drivers: [] }; });
+  // Signature based scoring. A category scores once per KIND of evidence, not once
+  // per aspect. Extra hits of the same kind add a small reinforcement only, and each
+  // kind is capped, so aspect volume can never inflate a theme.
+  const KIND_CAP: Record<string, number> = {
+    'sun-house': 12, 'moon-house': 10, 'house-emphasis': 12, 'angular-house': 3,
+    'natal-overlay': 10, 'angle-activation': 10, 'lunar-phase': 4,
+    'sr-natal-aspect': 10, 'minor-body': 2,
+  };
+  const scores: Record<string, { kinds: Record<string, { max: number; count: number }>; drivers: Driver[] }> = {};
+  CATEGORIES.forEach(c => { scores[c.id] = { kinds: {}, drivers: [] }; });
 
-  const add = (catId: string, weight: number, source: string) => {
-    if (!scores[catId]) return;
-    scores[catId].score += weight;
-    scores[catId].drivers.push({ source, weight });
+  const add = (catId: string, weight: number, source: string, kind = 'other') => {
+    if (!scores[catId] || weight <= 0) return;
+    const entry = scores[catId];
+    if (entry.drivers.some(d => d.source === source)) return; // never count the same fact twice
+    const k = entry.kinds[kind] || (entry.kinds[kind] = { max: 0, count: 0 });
+    k.max = Math.max(k.max, weight);
+    k.count += 1;
+    entry.drivers.push({ source, weight });
+  };
+
+  const kindTotal = (catId: string): number => {
+    const entry = scores[catId];
+    let total = 0;
+    for (const [kind, k] of Object.entries(entry.kinds)) {
+      const cap = KIND_CAP[kind] ?? 6;
+      total += Math.min(cap, k.max + Math.min(3, (k.count - 1) * 1));
+    }
+    return total;
   };
 
   // ──── PRIMARY SIGNAL: House placements ────────────────────────
@@ -127,14 +149,14 @@ export function computeYearPriorities(
   const sunH = analysis.sunHouse?.house;
   if (sunH) {
     const cat = HOUSE_TO_CATEGORY[sunH];
-    if (cat) add(cat, 12, `Sun in ${sunH}${ordSuffix(sunH)} house — your core energy focuses here`);
+    if (cat) add(cat, 12, `Sun in ${sunH}${ordSuffix(sunH)} house, your core energy focuses here`, 'sun-house');
   }
 
   // Moon house (second strongest — where your heart invests)
   const moonH = analysis.moonHouse?.house;
   if (moonH) {
     const cat = HOUSE_TO_CATEGORY[moonH];
-    if (cat) add(cat, 10, `Moon in ${moonH}${ordSuffix(moonH)} house — your emotional investment lives here`);
+    if (cat) add(cat, 10, `Moon in ${moonH}${ordSuffix(moonH)} house, your emotional investment lives here`, 'moon-house');
   }
 
   // House emphasis (2+ planets in a house)
@@ -147,8 +169,8 @@ export function computeYearPriorities(
     const cat = HOUSE_TO_CATEGORY[hNum];
     if (cat && planets.length >= 2) {
       const planetNames = planets.join(', ');
-      add(cat, 9, `${planets.length} planets (${planetNames}) in ${hNum}${ordSuffix(hNum)} house`);
-      if ([1, 4, 7, 10].includes(hNum)) add(cat, 3, `Angular house ${hNum} — extra emphasis`);
+      add(cat, 9, `${planets.length} planets (${planetNames}) in ${hNum}${ordSuffix(hNum)} house`, 'house-emphasis');
+      if ([1, 4, 7, 10].includes(hNum)) add(cat, 3, `Angular house ${hNum}, extra emphasis`, 'angular-house');
     }
   }
 
@@ -157,7 +179,7 @@ export function computeYearPriorities(
     const overlayH = (ov as any).srInNatalHouse ?? ov.natalHouse;
     if (overlayH) {
       const cat = HOUSE_TO_CATEGORY[overlayH];
-      if (cat) add(cat, 8, `SR ${ov.planet} falls in your natal ${overlayH}${ordSuffix(overlayH)} house`);
+      if (cat) add(cat, 8, `SR ${ov.planet} falls in your natal ${overlayH}${ordSuffix(overlayH)} house`, 'natal-overlay');
     }
   }
 
@@ -187,7 +209,7 @@ export function computeYearPriorities(
         if (Math.abs(diff - asp.angle) <= ORB) {
           const w = Math.min(ASPECT_WEIGHTS[asp.name] || 2, 8);
           const dp = pName === 'NorthNode' ? 'North Node' : pName;
-          angleCats.forEach(c => add(c, w, `SR ${angle.name} ${asp.name}s your natal ${dp}`));
+          angleCats.forEach(c => add(c, w, `SR ${angle.name} ${asp.name}s your natal ${dp}`, 'angle-activation'));
         }
       }
     }
@@ -206,7 +228,7 @@ export function computeYearPriorities(
         if (Math.abs(diff - asp.angle) <= ORB) {
           const w = Math.min((ASPECT_WEIGHTS[asp.name] || 2) - 1, 7);
           const dp = pName === 'NorthNode' ? 'North Node' : pName;
-          angleCats.forEach(c => add(c, w, `SR ${dp} ${asp.name}s your natal ${angle.name}`));
+          angleCats.forEach(c => add(c, w, `SR ${dp} ${asp.name}s your natal ${angle.name}`, 'angle-activation'));
         }
       }
     }
@@ -218,7 +240,7 @@ export function computeYearPriorities(
     const timeline = computeLunarPhaseTimeline(sun.sign, sun.degree, sun.minutes, natalChart.birthDate, srChart.solarReturnYear);
     const current = timeline.find(e => e.isCurrent);
     if (current) {
-      (PHASE_BOOSTS[current.phase] || []).forEach(catId => add(catId, 4, `${current.phase} lunar phase supports this direction`));
+      (PHASE_BOOSTS[current.phase] || []).forEach(catId => add(catId, 4, `${current.phase} lunar phase supports this direction`, 'lunar-phase'));
     }
   }
 
@@ -226,7 +248,10 @@ export function computeYearPriorities(
   // Only cross-chart aspects matter for category ranking.
   // SR internal aspects (e.g., SR Mars conjunct SR Mars) are expected
   // in Solar Returns and don't indicate specific life areas.
+  const MINOR = new Set(['Ceres','Pallas','Juno','Vesta','Lilith','Eris','Psyche','Eros','Amor','Hygiea','Sedna','SouthNode','PartOfFortune','Vertex']);
   for (const asp of (analysis.srToNatalAspects || [])) {
+    // Minor bodies may reinforce a theme but may never create one
+    if (MINOR.has(asp.planet1) || MINOR.has(asp.planet2)) continue;
     // Skip Sun-Sun conjunction — it's the defining feature of every Solar Return
     if (asp.planet1 === 'Sun' && asp.planet2 === 'Sun') continue;
     
@@ -240,31 +265,27 @@ export function computeYearPriorities(
     
     if (p1House) {
       const cat = HOUSE_TO_CATEGORY[p1House];
-      if (cat) add(cat, w, `SR ${p1} (${p1House}${ordSuffix(p1House)} house) ${asp.type.toLowerCase()}s natal ${p2}`);
+      if (cat) add(cat, w, `SR ${p1} (${p1House}${ordSuffix(p1House)} house) ${asp.type.toLowerCase()}s natal ${p2}`, 'sr-natal-aspect');
     }
     if (p2NatalHouse && p2NatalHouse !== p1House) {
       const cat = HOUSE_TO_CATEGORY[p2NatalHouse];
-      if (cat) add(cat, w - 1, `Natal ${p2} (${p2NatalHouse}${ordSuffix(p2NatalHouse)} house) aspected by SR ${p1}`);
+      if (cat) add(cat, w - 1, `Natal ${p2} (${p2NatalHouse}${ordSuffix(p2NatalHouse)} house) aspected by SR ${p1}`, 'sr-natal-aspect');
     }
   }
 
-  // ──── Stacking bonus (3+ distinct signals → strong theme) ────
-  for (const catId of Object.keys(scores)) {
-    const uniqueSources = new Set(scores[catId].drivers.map(d => d.source));
-    if (uniqueSources.size >= 3) {
-      scores[catId].score += 5;
-      scores[catId].drivers.push({ source: 'Multiple reinforcing signals point here', weight: 5 });
-    }
-  }
-
-  // Build ranked
+  // Build ranked. Score = capped signature total plus a bonus for genuinely
+  // independent KINDS of evidence (not for aspect count).
   return CATEGORIES.map(c => {
     const s = scores[c.id];
-    const conf = s.score >= 28 ? 'Very High' : s.score >= 20 ? 'High' : s.score >= 12 ? 'Moderate' : 'Emerging';
+    const independentKinds = Object.keys(s.kinds).length;
+    let score = kindTotal(c.id);
+    if (independentKinds >= 3) score += 5;
+    score = Math.round(Math.min(60, score));
+    const conf = score >= 34 ? 'Very High' : score >= 24 ? 'High' : score >= 14 ? 'Moderate' : 'Emerging';
     const uniqueDrivers: Driver[] = [];
     const seen = new Set<string>();
     for (const d of s.drivers) { if (!seen.has(d.source)) { seen.add(d.source); uniqueDrivers.push(d); } }
     const summary = buildSummary(c.id, c.label, uniqueDrivers);
-    return { id: c.id, label: c.label, score: s.score, confidence: conf, drivers: uniqueDrivers, summary };
+    return { id: c.id, label: c.label, score, confidence: conf, drivers: uniqueDrivers, summary };
   }).filter(c => c.score > 0).sort((a, b) => b.score - a.score);
 }
