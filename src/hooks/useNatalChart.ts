@@ -402,12 +402,13 @@ export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     const c = readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
-    return applyAutoSeededPronouns(normalizeAscendantFromHouse1(c));
+    return normalizeSouthNode(applyAutoSeededPronouns(normalizeAscendantFromHouse1(c)));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
     const raw = readSavedChartsWithRecovery()
       .map(normalizeAscendantFromHouse1)
-      .map(applyAutoSeededPronouns);
+      .map(applyAutoSeededPronouns)
+      .map(normalizeSouthNode);
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
