@@ -163,10 +163,10 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Sun: 2, Saturn: 2, Jupiter: 1.5, Mars: 1.5, MC: 2, Venus: 1, Mercury: 1, Pluto: 1, Uranus: 1 },
     advice: {
-      challenging: 'Your career is getting your full attention this year — expect a growth area where you refine your direction, prove what you\'re capable of, and build toward something that lasts.',
-      transformative: 'Your career path is evolving — old roles or ambitions are making room for something that fits the real you better.',
-      supportive: 'Professional momentum is real this year — doors are opening, and this is a great time to step up and advance.',
-      quiet: 'Career is on a slow simmer — focus on skill-building and preparation rather than big launches.',
+      challenging: 'Your career is getting your full attention this year, so expect a growth area where you refine your direction, prove what you\'re capable of, and build toward something that lasts.',
+      transformative: 'Your career path is evolving, and old roles or ambitions are making room for something that fits the real you better.',
+      supportive: 'Professional momentum is real this year, doors are opening, and this is a great time to step up and advance.',
+      quiet: 'Career is on a slow simmer, so focus on skill-building and preparation rather than big launches.',
       mixed: 'Some career energy is present — stay engaged and responsive without forcing big moves.',
     },
   },
@@ -418,14 +418,20 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     const breakdown: ScoreContribution[] = [];
     const { houses, activityWeights, houseReasons } = config;
 
-    // 1. House occupancy
+    // 1. House occupancy. One signature per house: the first occupant of a house
+    // carries it, later occupants only reinforce, so a crowded house cannot
+    // out-shout independent evidence.
     let houseOccupantCount = 0;
+    const housesCounted = new Set<number>();
+    const countedPlanets = new Set<string>();
     for (const overlay of analysis.houseOverlays) {
       const h = overlay.srHouse || 0;
       if (houses.includes(h)) {
         const explicitWeight = activityWeights[overlay.planet];
         if (explicitWeight && explicitWeight > 0) {
-          const diminish = houseOccupantCount >= 2 ? 0.5 : 1;
+          const diminish = housesCounted.has(h) ? 0.4 : houseOccupantCount >= 2 ? 0.5 : 1;
+          housesCounted.add(h);
+          countedPlanets.add(overlay.planet);
           const w = Math.min(explicitWeight, 1.5) * diminish;
           activity += w;
           houseOccupantCount++;
@@ -448,7 +454,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
             source: `${overlay.planet}${rxNote} in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'}`,
             points: Math.round(w * 10) / 10,
             tonePoints: Math.round(finalTone * 10) / 10,
-            reason: `${overlay.planet} (${planetDesc}) in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'} — ${houseDesc}. Nature: ${nature}${rxNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
+            reason: `${overlay.planet} (${planetDesc}) in your ${HOUSE_PLAIN_LDS[h] || ordinal(h) + ' House'}, ${houseDesc}. Nature: ${nature}${rxNote}.${diminish < 1 ? ' (diminishing returns)' : ''}`,
             nature,
           });
         } else {
@@ -470,7 +476,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
               source: `${overlay.planet} in ${ordinal(h)} House`,
               points: w,
               tonePoints: Math.round(finalTone * 10) / 10,
-              reason: `${overlay.planet} is present but not a key planet for ${config.label} — minor activation`,
+              reason: `${overlay.planet} is present but not a key planet for ${config.label}, so this is a minor activation`,
               nature,
             });
           }
@@ -487,7 +493,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       const tp = getToneWeight('Sun', domain);
       toneTotal += tp;
       allDrivers.push({ planet: 'Sun', house: sunH, effect: getEffect('Sun'), nature: 'luminary', points: w, tonePoints: tp });
-      breakdown.push({ source: `Sun in ${ordinal(sunH)} House`, points: w, tonePoints: tp, reason: `Sun (core identity) in ${ordinal(sunH)} House — makes ${config.label} a central theme.`, nature: 'luminary' });
+      breakdown.push({ source: `Sun in ${ordinal(sunH)} House`, points: w, tonePoints: tp, reason: `Sun (core identity) in ${ordinal(sunH)} House makes ${config.label} a central theme.`, nature: 'luminary' });
     }
     const moonH = analysis.moonHouse.house;
     if (moonH && houses.includes(moonH) && !allDrivers.some(d => d.planet === 'Moon')) {
@@ -496,7 +502,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       const tp = getToneWeight('Moon', domain);
       toneTotal += tp;
       allDrivers.push({ planet: 'Moon', house: moonH, effect: getEffect('Moon'), nature: 'luminary', points: w, tonePoints: tp });
-      breakdown.push({ source: `Moon in ${ordinal(moonH)} House`, points: w, tonePoints: tp, reason: `Moon (emotional needs) in ${ordinal(moonH)} House — feelings are drawn here.`, nature: 'luminary' });
+      breakdown.push({ source: `Moon in ${ordinal(moonH)} House`, points: w, tonePoints: tp, reason: `Moon (emotional needs) in ${ordinal(moonH)} House, so feelings are drawn here.`, nature: 'luminary' });
     }
 
     // 3. Stelliums
@@ -505,7 +511,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         const hNum = parseInt(st.location, 10);
         if (!isNaN(hNum) && houses.includes(hNum)) {
           activity += 1.0;
-          breakdown.push({ source: `Stellium in ${ordinal(hNum)} House`, points: 1.0, reason: `3+ planets clustered in ${ordinal(hNum)} House (${houseReasons[hNum] || ''}) — concentrated energy` });
+          breakdown.push({ source: `Stellium in ${ordinal(hNum)} House`, points: 1.0, reason: `3+ planets clustered in ${ordinal(hNum)} House (${houseReasons[hNum] || ''}), which concentrates energy there` });
         }
       }
     }
@@ -518,8 +524,11 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     const MAX_ASPECT = 2.0;
     for (const asp of allAspects) {
       if (aspectBoost >= MAX_ASPECT) break;
-      const p1w = activityWeights[asp.planet1] || 0;
-      const p2w = activityWeights[asp.planet2] || 0;
+      // A planet already counted through house occupancy does not get counted again
+      // through its aspects. Aspects only add NEW information.
+      if (countedPlanets.has(asp.planet1) && countedPlanets.has(asp.planet2)) continue;
+      const p1w = countedPlanets.has(asp.planet1) ? 0 : (activityWeights[asp.planet1] || 0);
+      const p2w = countedPlanets.has(asp.planet2) ? 0 : (activityWeights[asp.planet2] || 0);
       if (p1w > 0 || p2w > 0) {
         let weight = BENEFIC_ASPECTS.includes(asp.type) ? 0.15 : MALEFIC_ASPECTS.includes(asp.type) ? 0.1 : 0.05;
         weight = Math.min(weight, MAX_ASPECT - aspectBoost);
@@ -560,7 +569,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         } else if (apSrHouse) {
           allDrivers.push({ planet: ap, house: apSrHouse, effect: 'angular emphasis', nature, points: w, tonePoints: Math.round(tp * 10) / 10 });
         }
-        breakdown.push({ source: `${ap} angular${apSrHouse ? ` (in ${ordinal(apSrHouse)} House)` : ''}`, points: w, tonePoints: Math.round(tp * 10) / 10, reason: `${ap} on a chart angle — louder in your year`, nature });
+        breakdown.push({ source: `${ap} angular${apSrHouse ? ` (in ${ordinal(apSrHouse)} House)` : ''}`, points: w, tonePoints: Math.round(tp * 10) / 10, reason: `${ap} on a chart angle, which makes it louder in your year`, nature });
       }
     }
 
