@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { SolarReturnPDFExport, generateBirthdayGiftPDF, downloadBirthdayJSONStandalone, buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { SROverviewDashboard } from '@/components/solarReturn/SROverviewDashboard';
+import { YearStoryPanel } from '@/components/solarReturn/YearStoryPanel';
 import { LunarPhaseTimeline } from '@/components/solarReturn/LunarPhaseTimeline';
 import { StoryOfTheYear } from '@/components/solarReturn/StoryOfTheYear';
 
@@ -1173,6 +1174,9 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         <ContradictionCard contradictions={contradictions} />
       )}
 
+      {/* Story first, details afterwards */}
+      <YearStoryPanel analysis={analysis} year={srChart.solarReturnYear} />
+
       {/* Dashboard Details */}
       <SROverviewDashboard analysis={analysis} natalChart={natalChart} srChart={srChart} />
 
@@ -1251,11 +1255,11 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         </div>
       )}
 
-      {/* Lord of the Year */}
+      {/* Natal chart ruler (not the profection Time Lord) */}
       {analysis.lordOfTheYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            Lord of the Year — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${analysis.lordOfTheYear.srHouse}th House` : '—'}
+            Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${analysis.lordOfTheYear.srHouse}th House` : '—'}
           </h3>
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             <span className="text-2xl">{PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || analysis.lordOfTheYear.planet}</span>
@@ -1275,7 +1279,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.lordOfTheYear.interpretation}</p>
           <p className="text-[10px] text-muted-foreground mt-2">
-            This is your natal {analysis.lordOfTheYear.natalRisingSign} ruler — its SR placement shows where your core self is operating this year.
+            This is the ruler of your natal {analysis.lordOfTheYear.natalRisingSign} Ascendant. Its Solar Return placement shows where your core self is operating this year. It is a different technique from the Annual Profection Time Lord below.
           </p>
         </div>
       )}
@@ -1284,7 +1288,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {analysis.profectionYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            Profection Year — House {analysis.profectionYear.houseNumber} / Time Lord: {PLANET_SYMBOLS[analysis.profectionYear.timeLord] || ''} {analysis.profectionYear.timeLord}
+            Annual Profection Time Lord — House {analysis.profectionYear.houseNumber} / {PLANET_SYMBOLS[analysis.profectionYear.timeLord] || ''} {analysis.profectionYear.timeLord}
           </h3>
           <p className="text-xs text-muted-foreground mb-1">
             Age at this Solar Return: <span className="font-medium text-foreground">{analysis.profectionYear.age}</span>
@@ -2567,7 +2571,7 @@ const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
       {!narrative && !loading && (
         <div className="text-center py-6 space-y-3">
           <p className="text-sm text-muted-foreground">
-            Generate an AI-written year-ahead reading that weaves together all the data from your Solar Return — Lord of the Year, Profection, Moon Phase, Stelliums, Saturn, and more — into a cohesive narrative.
+            Generate an AI-written year-ahead reading that weaves together all the data from your Solar Return: the natal chart ruler, the Annual Profection Time Lord, Moon Phase, Stelliums, Saturn, and more — into a cohesive narrative.
           </p>
           <button
             onClick={generateNarrative}

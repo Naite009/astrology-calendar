@@ -24,7 +24,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
         <p className="text-xs text-foreground leading-relaxed">
           <strong>Two techniques, two rulers:</strong> the Profection Time Lord (
           {analysis.profectionYear ? <>{PLANET_SYMBOLS[analysis.profectionYear.timeLord]} {analysis.profectionYear.timeLord}</> : '—'}
-          ) comes from the activated house cusp sign; the Lord of the Year (
+          ) comes from the activated house cusp sign; the natal chart ruler (
           {analysis.lordOfTheYear ? <>{PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}</> : '—'}
           ) comes from the SR Ascendant's natal ruler. Both are active this year.
         </p>
@@ -123,11 +123,11 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
         </div>
       )}
 
-      {/* Lord of the Year */}
+      {/* Natal chart ruler */}
       {analysis.lordOfTheYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            Lord of the Year — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}
+            Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}
             {analysis.lordOfTheYear.srHouse ? ` in SR ${ordinal(analysis.lordOfTheYear.srHouse)} House` : ''}
           </h3>
           <div className="flex items-center gap-3 mb-3 flex-wrap">

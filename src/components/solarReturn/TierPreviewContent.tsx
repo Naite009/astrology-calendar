@@ -102,7 +102,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
             'Vertex — fated encounters',
             'Moon sign shift narrative',
             'Metonic cycle echoes',
-            'Lord of the Year full breakdown',
+            'Natal chart ruler full breakdown',
             'Key dates (Time Lord transits)',
             'Profection wheel visual',
           ]} />

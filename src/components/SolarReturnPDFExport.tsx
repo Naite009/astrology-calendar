@@ -1752,7 +1752,7 @@ export async function generateBirthdayGiftPDF(
     ctx.y += 14;
 
     ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+      ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Annual Profection Time Lord`, ctx.colors.gold, 11);
       ctx.y += 2;
       // Explain the chain: Age → House → Natal cusp sign → Ruler = Time Lord
       const ordH = `${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'}`;
@@ -2473,7 +2473,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         // Why this planet
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+          ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Annual Profection Time Lord`, ctx.colors.gold, 11);
           ctx.y += 2;
           ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show — every transit to or from ${P[tlPlanet] || tlPlanet} hits harder this year.`, ctx.colors.bodyText, 10, 14);
         });
@@ -2497,19 +2497,19 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (tlDignity === 'Detriment' || tlDignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
         if (tlDignity === 'Domicile' || tlDignity === 'Exaltation') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentGreen);
         }
         if (tlIsRetro) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as Lord of the Year means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as the Annual Profection Time Lord means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
