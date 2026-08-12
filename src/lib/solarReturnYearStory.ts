@@ -429,7 +429,10 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
       parts.push('Travel, study and your working worldview are emphasised.');
       break;
     case 11:
-      parts.push('Community, friendship and where you are heading next are emphasised.');
+      parts.push('Who you spend your life around, and what you are aiming at next, moves to the front of the year.');
+      if (hasSun) parts.push('With the Solar Return Sun here, your sense of purpose is tied to the people you choose and the direction you are pointing in, rather than to a title or an achievement. Friendships, networks, groups and long range plans are where you become most yourself this year.');
+      if (occupants.length >= 2) parts.push(`With ${list} in this house, the chart keeps returning to the difference between the company you have drifted into and the company you would choose on purpose.`);
+      parts.push('This can look like new circles, a clearer set of standards for who gets access to you, and plans that finally have a shape instead of staying a wish.');
       break;
   }
 
@@ -454,7 +457,11 @@ function buildCoreStory(themes: YearTheme[], ctx: StoryContext): string {
   if (t3) {
     parts.push(`Underneath the visible part of the year there is a quieter process involving ${areaPhrase(t3.house)}.`);
   }
-  parts.push('The honest summary is that your choices carry more weight this year than usual, and the chart asks you to be deliberate about what you are building and who or what belongs in it.');
+  if (ctx.definingAspects.length) {
+    const d = ctx.definingAspects[0];
+    parts.push(`The tightest contact of the return, ${d.label} at ${d.orb}°, is the one to actually listen to.`);
+  }
+  parts.push('The honest summary is that this is a year to be intentional about the future you are heading toward and about the people who belong in it. What you choose deliberately will hold, and what you have only tolerated is likely to show its cost.');
 
   return parts.join(' ');
 }
@@ -542,6 +549,7 @@ function buildWhatYouNeedToKnow(themes: YearTheme[], ctx: StoryContext): { headi
 
 function buildReflectionQuestion(themes: YearTheme[], ctx: StoryContext): string {
   const t = themes.map(x => x.house);
+  if (t.includes(11) && t.includes(7)) return 'Which people and which plans am I choosing on purpose, and which ones am I simply used to?';
   if (t.includes(10) && t.includes(6)) return 'Do I have a life capable of holding the growth I am asking for?';
   if (t.includes(7)) return 'Does this belong in the life I am trying to build?';
   if (t.includes(2)) return 'What am I actually willing to accept, and what is that costing me?';
