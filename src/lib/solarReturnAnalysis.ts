@@ -203,12 +203,14 @@ const PROFECTION_SR_HOUSE_AREA: Record<number, string> = {
 };
 
 const DIGNITY_FORCE_NOTE: Record<string, string> = {
-  Domicile: 'in domicile (its home sign) — operating at full strength',
-  Exaltation: 'in exaltation — operating with unusual elevation and authority',
-  Detriment: 'in detriment — operating in unfamiliar territory and asked to work harder',
-  Fall: 'in fall — operating against its grain, which can feel like dragging the year uphill',
-  Peregrine: 'in a neutral sign — neither boosted nor weakened by dignity',
+  Domicile: 'in domicile, its own sign, so it operates at full strength',
+  Exaltation: 'in exaltation, so it operates with extra elevation and authority',
+  Detriment: 'in detriment, so it works in unfamiliar territory and has to try harder',
+  Fall: 'in fall, so it works against its own grain',
+  Peregrine: 'in a sign where it has no essential dignity, which is neutral rather than weak',
+  NotAssigned: '',
 };
+
 
 function buildProfectionSynthesis(
   timeLord: string,
