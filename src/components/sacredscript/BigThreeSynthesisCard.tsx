@@ -216,7 +216,7 @@ const generateUnifiedSynthesis = (
     if (sect.isNightChart && sun.house === 1) {
       synthesis += `**THE PARADOX YOU FEEL:**\n`;
       synthesis += `Your Sun is in the 1st house—traditionally the placement of someone who IS meant to be seen. But you were born before sunrise, making this a **Night Chart**.\n\n`;
-      synthesis += `In night charts, the Moon becomes the "chart lord"—your emotional, receptive nature leads, while the Sun works more quietly, internally. So you have this tension: 1st house Sun says "be seen" but Night Chart Sun says "your power is behind the scenes."\n\n`;
+      synthesis += `In night charts the Moon is the sect light, so your emotional, receptive nature carries extra emphasis while the Sun works more quietly. That is not the same thing as your chart ruler, which is whichever planet rules your Ascendant. So you may feel a tension: a 1st house Sun says "be seen," while a night chart puts more weight on what happens off stage.\n\n`;
       synthesis += `This is why you feel like hiding despite being "supposed to" shine. You're not wrong or broken—you're a Night Chart person with a daytime placement. Your visibility will come on YOUR terms: gradual, earned, honest rather than performed. Your gifts emerge in intimate settings, through written word, through influence that works best when you're not trying to be impressive.\n\n`;
     }
   } else {
@@ -246,7 +246,7 @@ const generateUnifiedSynthesis = (
     
     // Sect interpretation
     if (sect.isNightChart) {
-      synthesis += `As a **Night Chart** native, your Moon is the "chart lord"—your emotional, intuitive, receptive nature is emphasized over the solar, will-driven self. You may feel more at home in your Moon sign than your Sun sign.`;
+      synthesis += `Because you were born at night, the Moon is your **sect light**, giving your emotional and receptive nature additional emphasis. This is separate from your chart ruler, which is the planet ruling your Ascendant. You may recognize yourself more readily in your Moon sign than your Sun sign.`;
     }
   }
   

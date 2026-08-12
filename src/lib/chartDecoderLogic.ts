@@ -37,7 +37,10 @@ export interface AspectOrbs {
   quincunx: number;
 }
 
-export type DignityType = 'rulership' | 'exaltation' | 'detriment' | 'fall' | 'peregrine';
+export type DignityType = 'rulership' | 'exaltation' | 'detriment' | 'fall' | 'peregrine' | 'notAssigned';
+
+/** Traditional essential dignity applies only to the seven visible planets. */
+export const TRADITIONAL_DIGNITY_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
 
 export interface DispositorChainResult {
   chain: string[];
@@ -149,7 +152,8 @@ export const DIGNITY_EXPLAINERS: Record<DignityType, string> = {
   exaltation: 'This planet is in a sign that uplifts it. It can feel amplified, idealized, or easier to access at a high level.',
   detriment: 'This planet is in the sign opposite its home sign. It can still be strong, but it usually needs more conscious effort and strategy.',
   fall: 'This planet is in the sign opposite its exaltation. It can feel touchier, less supported, or like you must earn confidence through practice.',
-  peregrine: 'This planet has no essential dignity in this sign — neutral territory. It operates based on aspects and house placement.'
+  peregrine: 'This planet has no essential dignity in this sign, so it is neutral territory. It operates based on aspects and house placement.',
+  notAssigned: 'Traditional essential dignity: not assigned. Traditional dignity covers Sun through Saturn only, so Uranus, Neptune and Pluto get no domicile, exaltation, detriment or fall here.'
 };
 
 // ============================================================================
@@ -162,6 +166,13 @@ export const DIGNITY_EXPLAINERS: Record<DignityType, string> = {
  */
 export function computeDignity(planetName: string, sign: string, useTraditional: boolean = true): DignityType {
   const dignities = PLANET_DIGNITIES[planetName];
+
+  // Traditional essential dignity applies only to Sun through Saturn.
+  // Uranus, Neptune and Pluto are never given domicile/exaltation/detriment/fall
+  // unless the caller has explicitly asked for the modern system.
+  if (useTraditional && !TRADITIONAL_DIGNITY_PLANETS.includes(planetName)) {
+    return 'notAssigned';
+  }
   
   // For modern rulerships: check if this planet rules this sign in modern astrology
   if (!useTraditional) {

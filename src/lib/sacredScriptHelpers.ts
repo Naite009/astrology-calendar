@@ -85,6 +85,10 @@ export interface ElementalBalance {
   missing: string[];
   low: string[];
   abundant: string[];
+  /** Elements sharing the top count when nothing strictly dominates. */
+  tied: string[];
+  /** Human-readable balance note based on the 10 major planets. */
+  balanceNote: string;
   pattern: 'Energized' | 'Grounded' | 'Balanced' | 'Intense' | 'Variable';
 }
 
@@ -105,9 +109,17 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
     }
   }
   
-  // Find dominant, missing, and abundant
+  // Find dominant, missing, and abundant.
+  // An element is only "dominant" when its count strictly exceeds the others.
   const entries = Object.entries(balance).sort(([, a], [, b]) => b - a);
-  const dominant = entries[0][0];
+  const maxCountEl = entries[0][1];
+  const leaders = entries.filter(([, c]) => c === maxCountEl).map(([el]) => el);
+  const dominant = leaders.length === 1 ? leaders[0] : '';
+  const tied = leaders.length > 1 ? leaders : [];
+  const underEls = entries.filter(([, c]) => c < maxCountEl).map(([el]) => el);
+  const balanceNote = leaders.length === 1
+    ? `${leaders[0]} is the strongest element by planet count (${maxCountEl} of the 10 major planets).`
+    : `${leaders.slice(0, -1).join(', ')} and ${leaders[leaders.length - 1]} are evenly represented at ${maxCountEl} planets each${underEls.length ? `; ${underEls.join(' and ')} ${underEls.length > 1 ? 'are' : 'is'} comparatively underrepresented` : ''}. Counts use the 10 major planets only.`;
   const missing = entries.filter(([, count]) => count === 0).map(([element]) => element);
   const low = entries.filter(([, count]) => count === 1).map(([element]) => element);
   const abundant = entries.filter(([, count]) => count >= 4).map(([element]) => element);
@@ -132,6 +144,8 @@ export const calculateElementalBalance = (chart: NatalChart): ElementalBalance =
     missing,
     low,
     abundant,
+    tied,
+    balanceNote,
     pattern,
   };
 };
@@ -1229,8 +1243,8 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
         indicators.push({
           name: `${planetName} in 8th House`,
           symbol: `${symbol} in 8H`,
-          description: `${planetName} in the house of death, transformation, and the occult. Natural mediumship abilities.`,
-          clientDescription: `Your ${planetName === 'Moon' ? 'emotional nature' : 'core identity'} is attuned to death, transformation, and hidden realms. You may naturally sense spirits or be drawn to work with the dying. This is a classic mediumship placement.`,
+          description: `${planetName} in the house of death, transformation, and the occult. Traditionally associated with an interest in what is hidden, and with grief, endings and renewal.`,
+          clientDescription: `Your ${planetName === 'Moon' ? 'emotional nature' : 'core identity'} may be drawn to themes of loss, transformation and what lies beneath the surface. Some people with this placement are drawn to grief work, hospice, therapy or research. In esoteric traditions it is also read as a mediumship placement, which is interpretation rather than an established ability.`,
           strength: 'strong',
           category: 'eighth-house'
         });
@@ -1238,9 +1252,13 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
     }
   });
   
-  // 4. WATER SIGN EMPHASIS (3+ planets)
+  // 4. WATER SIGN EMPHASIS (3+ of the 10 major planets)
+  // Only the 10 major planets are counted here. Asteroids, centaurs, nodes and
+  // TNOs are never counted as "planets" in the elemental balance.
+  const MAJOR_TEN = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
   let waterCount = 0;
-  Object.entries(chart.planets).forEach(([, planet]) => {
+  MAJOR_TEN.forEach((name) => {
+    const planet = chart.planets[name as keyof typeof chart.planets];
     if (planet && planet.sign && waterSigns.includes(planet.sign)) {
       waterCount++;
     }
@@ -1250,7 +1268,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
     indicators.push({
       name: 'Strong Water Emphasis',
       symbol: '♋♏♓',
-      description: `${waterCount} planets in water signs. Highly intuitive and emotionally sensitive nature.`,
+      description: `${waterCount} of the 10 major planets are in water signs. Traditionally associated with strong intuition and emotional sensitivity.`,
       clientDescription: 'You have a very strong water element in your chart, making you naturally intuitive, empathic, and emotionally sensitive. You feel things deeply and may pick up on energies and emotions that others miss entirely.',
       strength: 'strong',
       category: 'water'
@@ -1259,7 +1277,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
     indicators.push({
       name: 'Water Emphasis',
       symbol: '♋♏♓',
-      description: `${waterCount} planets in water signs. Intuitive and emotionally attuned.`,
+      description: `${waterCount} of the 10 major planets are in water signs. Traditionally associated with emotional attunement.`,
       clientDescription: 'You have significant water energy in your chart. You\'re naturally intuitive and emotionally aware. Trust your feelings — they often contain information your logical mind hasn\'t processed yet.',
       strength: 'moderate',
       category: 'water'
@@ -1306,8 +1324,8 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
     indicators.push({
       name: 'Moon in Scorpio',
       symbol: '☽♏',
-      description: 'Emotional nature is intense and penetrating. Natural ability to sense hidden truths and the presence of the dead.',
-      clientDescription: 'Your Moon in Scorpio gives you powerful emotional radar. You sense what others try to hide, including the presence of spirits. You may have had encounters with the deceased or intense psychic experiences.',
+      description: 'Emotional nature is intense and penetrating. Traditionally associated with strong intuition, emotional sensitivity, an ability to notice subtle emotional cues, and an interest in what lies beneath the surface.',
+      clientDescription: 'Your Moon in Scorpio is traditionally read as powerful emotional radar. You may notice what others are trying to keep hidden, and surface-level explanations rarely satisfy you. Some people with this placement describe intense inner or intuitive experiences. This is a spiritual and esoteric reading, not a chart fact.',
       strength: 'strong',
       category: 'water'
     });

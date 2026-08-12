@@ -459,7 +459,7 @@ export const SectLightActivationsCard: React.FC<SectLightActivationsCardProps> =
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             {isNightChart ? <Moon size={16} className="text-violet-500" /> : <Sun size={16} className="text-amber-500" />}
-            {sectLightSymbol} {sectLight} Activations — Your Chart Lord
+            {sectLightSymbol} {sectLight} Activations, Your Sect Light
           </CardTitle>
           <Badge variant="outline" className={isNightChart ? 'text-violet-600 border-violet-500/30' : 'text-amber-600 border-amber-500/30'}>
             Next 12 Months
@@ -467,8 +467,8 @@ export const SectLightActivationsCard: React.FC<SectLightActivationsCardProps> =
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {isNightChart 
-            ? 'As a Night Chart native, your Moon is the "Chart Lord" — transits to it affect your daily life, relationships, and career more than any other planet.'
-            : 'As a Day Chart native, your Sun is the "Chart Lord" — transits to it shape your identity, purpose, and direction more than any other planet.'}
+            ? 'Because you were born at night, the Moon is your sect light, so your emotional and receptive nature carries extra emphasis. Transits to it are felt strongly in daily life and relationships. Your chart ruler is a separate question: it is the ruler of your Ascendant.'
+            : 'Because you were born during the day, the Sun is your sect light, so your conscious will and direction carry extra emphasis. Transits to it are felt strongly in identity and purpose. Your chart ruler is a separate question: it is the ruler of your Ascendant.'}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -558,7 +558,7 @@ export const SectLightActivationsCard: React.FC<SectLightActivationsCardProps> =
           <p className="text-xs text-muted-foreground">
             {isNightChart 
               ? 'If you had a Day Chart, you\'d watch transits to your Sun instead. Day Chart natives are more conscious and willful—their purpose is visible and external.'
-              : 'If you had a Night Chart, you\'d watch transits to your Moon instead. Night Chart natives are more instinctual and receptive—their power works from the inside out.'}
+              : 'If you had a Night Chart, you\'d watch transits to your Moon instead. Night charts put the emphasis on the instinctual, receptive side of the chart.'}
           </p>
         </div>
       </CardContent>

@@ -1,5 +1,12 @@
-// Planetary Decans - Traditional system dividing each sign into three 10° sections
-// Each decan is ruled by a planet based on the triplicity (element) rulership
+// Planetary Decans, MODERN SIGN-BASED SYSTEM.
+// Each sign is divided into three 10° sections, and each section is ruled by the
+// ruler of the signs of the same element, in order. Modern rulers are used for
+// Scorpio (Pluto), Aquarius (Uranus) and Pisces (Neptune).
+// This is NOT the traditional Chaldean face system. Do not mix the two without
+// saying which one is being shown.
+
+/** Label shown wherever a decan ruler is displayed. */
+export const DECAN_SYSTEM_LABEL = 'Modern sign-based decan ruler';
 
 export interface Decan {
   number: 1 | 2 | 3;
@@ -161,5 +168,5 @@ export const getDecan = (degree: number, sign: string): Decan => {
  */
 export const getDecanLabel = (degree: number, sign: string): string => {
   const decan = getDecan(degree, sign);
-  return `${decan.number}${decan.number === 1 ? 'st' : decan.number === 2 ? 'nd' : 'rd'} Decan (${decan.rulerSymbol} ${decan.ruler})`;
+  return `${decan.number}${decan.number === 1 ? 'st' : decan.number === 2 ? 'nd' : 'rd'} Decan (${decan.rulerSymbol} ${decan.ruler}, modern sign-based)`;
 };

@@ -7,6 +7,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { getBirthConditions, BirthMoonPhaseData, SectData, TimeOfDayData } from '@/lib/birthConditions';
 import { ELEMENT_TEACHINGS, ElementTeaching } from '@/lib/elementTeachings';
 import { SIGN_PROPERTIES } from '@/lib/planetDignities';
+import { TRADITIONAL_RULER } from '@/lib/essentialDignity';
 import { analyzeChartStrengths, ChartStrengthsAnalysis } from '@/lib/chartStrengths';
 import { analyzeAllPlanetaryConditions, PlanetaryCondition } from '@/lib/planetaryCondition';
 import { ChartPlanet, computeAspects, DEFAULT_ORBS } from '@/lib/chartDecoderLogic';
@@ -28,6 +29,59 @@ interface BirthConditionsDisplayProps {
 
 // Use shared helper
 import { convertToChartPlanets } from '@/lib/chartConversion';
+
+// ============================================================================
+// CHART RULER vs SECT LIGHT vs DOMINANT PLANET
+// Three different concepts. They are never merged.
+// ============================================================================
+const ThreeKeyPlanetsCard: React.FC<{
+  chart: NatalChart;
+  sectLightPlanet: string;
+  conditions: PlanetaryCondition[];
+}> = ({ chart, sectLightPlanet, conditions }) => {
+  const ascSign = chart.houseCusps?.house1?.sign || '';
+  const chartRuler = ascSign ? TRADITIONAL_RULER[ascSign] : '';
+  const dominant = [...conditions].sort((a, b) => b.totalScore - a.totalScore)[0];
+  const isNight = sectLightPlanet === 'Moon';
+
+  if (!chartRuler && !sectLightPlanet) return null;
+
+  return (
+    <Card className="border-primary/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium">Three different things, kept separate</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {chartRuler && (
+          <div>
+            <span className="font-medium text-primary">Chart Ruler: {chartRuler}</span>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              The planet that rules your Ascendant ({ascSign} Rising). This is the ruler of the chart.
+            </p>
+          </div>
+        )}
+        {sectLightPlanet && (
+          <div>
+            <span className="font-medium text-primary">Sect Light: {sectLightPlanet}</span>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isNight
+                ? 'Because you were born at night, the Moon is your sect light, giving your emotional and receptive nature additional emphasis. Being the sect light does not make it the chart ruler.'
+                : 'Because you were born during the day, the Sun is your sect light, giving your conscious direction additional emphasis. Being the sect light does not make it the chart ruler.'}
+            </p>
+          </div>
+        )}
+        {dominant && (
+          <div>
+            <span className="font-medium text-primary">Dominant Planet by app scoring: {dominant.planet}</span>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Calculated from this app's condition scoring (dignity, house, sect, aspects). It is a scoring result, not a traditional title such as Master of the Nativity.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ chart, useTraditional = true }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -111,6 +165,13 @@ export const BirthConditionsDisplay: React.FC<BirthConditionsDisplayProps> = ({ 
           </p>
         </CardContent>
       </Card>
+
+      {/* Chart Ruler vs Sect Light vs Dominant Planet: three separate ideas */}
+      <ThreeKeyPlanetsCard
+        chart={chart}
+        sectLightPlanet={strengthsAnalysis.sectLight.planet}
+        conditions={planetaryConditions}
+      />
 
       {/* Where Life Helps You Card */}
       <WhereLifeHelpsCard analysis={strengthsAnalysis} />

@@ -345,6 +345,9 @@ const getSpeedInterpretation = (planet: string, isRetrograde: boolean): string =
 };
 
 const getDignityInterpretation = (planet: string, sign: string, dignityType: string): string => {
+  if (dignityType === 'Not assigned') {
+    return `Traditional essential dignity is not assigned to ${planet}, so there is no domicile, exaltation, detriment or fall to read here. What matters for ${planet} in ${sign} is the house it falls in, the aspects it makes, and the long cycle it is moving through.`;
+  }
   const dignityFeelings: Record<string, Record<string, string>> = {
     Ruler: {
       Sun: `**How you FEEL this:** Your identity is clear and powerful. You know who you are. Confidence comes naturally, and others sense your honesty. Being yourself doesn't require effort—you simply ARE.`,
@@ -1543,8 +1546,18 @@ const DignityBox = ({
         {dignityStatus.type === 'Detriment' && '⬇️ '}
         {dignityStatus.type === 'Fall' && '❌ '}
         {dignityStatus.type === 'Peregrine' && '⚪ '}
-        Rulership Status: {dignityStatus.type}
+        {dignityStatus.type === 'Not assigned' && '➖ '}
+        {dignityStatus.type === 'Not assigned'
+          ? 'Traditional essential dignity: not assigned'
+          : `Rulership Status: ${dignityStatus.type}`}
       </div>
+      {dignityStatus.type === 'Not assigned' ? (
+        <div className="text-xs text-foreground/80">
+          Traditional essential dignity applies to the Sun through Saturn. {planetName} is not given
+          domicile, exaltation, detriment or fall here. Read it through its house, its aspects and its
+          long transit cycles instead.
+        </div>
+      ) : (
       <div className="text-xs space-y-1.5 text-foreground/80">
         <div>
           <span className="font-medium">🏛️ Ruler:</span>{' '}
@@ -1565,6 +1578,7 @@ const DignityBox = ({
           <span className="text-muted-foreground ml-1">(lowest power degree)</span>
         </div>
       </div>
+      )}
       <div className="mt-2 text-[10px] text-muted-foreground italic border-t border-border/30 pt-2">
         💡 The degrees shown (like 19°) are the <strong>exact exaltation/fall points</strong> from ancient astrology—where the planet reaches peak strength or greatest challenge. The closer your planet is to that exact degree, the more intensely you experience the dignity.
       </div>

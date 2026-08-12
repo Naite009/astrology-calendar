@@ -505,7 +505,7 @@ function generateFinalSynthesis(
   
   // The sect-aware identity statement
   if (isNightChart && moon) {
-    synthesis += `As a Night Chart native, your ${moon.sign} Moon is the dominant force — your emotional instincts, not your conscious identity, drive your daily decisions and relationships. `;
+    synthesis += `Because you were born at night, your ${moon.sign} Moon is your sect light, so emotional instinct tends to carry more weight than conscious self-image in daily decisions and relationships. Your chart ruler, the ruler of your Ascendant, is a separate factor. `;
     if (sun) {
       synthesis += `Your ${sun.sign} Sun is the private flame, burning below the surface where only you (and those closest to you) can see it. `;
     }
