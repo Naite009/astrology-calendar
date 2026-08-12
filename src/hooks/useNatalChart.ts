@@ -310,11 +310,18 @@ const saveWithRollingBackups = (key: string, data: unknown): void => {
     }
     try { localStorage.removeItem(`${key}__backup`); } catch { /* ignore */ }
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(key, JSON.stringify(stripHeavyFields(data)));
       console.log(`[NatalChart] Saved ${key} after clearing backups`);
-    } catch (e2) {
-      console.error(`[NatalChart] Still cannot save ${key}:`, e2);
+    } catch {
+      freeUpStorage();
+      try {
+        localStorage.setItem(key, JSON.stringify(stripHeavyFields(data)));
+        console.log(`[NatalChart] Saved ${key} after freeing cached storage`);
+      } catch (e2) {
+        console.error(`[NatalChart] Still cannot save ${key}:`, e2);
+      }
     }
+
   }
 };
 
