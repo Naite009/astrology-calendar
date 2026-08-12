@@ -1,5 +1,5 @@
 /**
- * Life Domain Scores — nature-weighted, tone-aware scoring
+ * Life Domain Scores, nature-weighted, tone-aware scoring
  *
  * 10 life domains scored on two axes:
  *   1. Activity Level (0–10): How much cosmic energy touches this domain
@@ -145,7 +145,7 @@ export interface LifeDomainScores {
   power: LifeDomainScore;
 }
 
-/* ── Domain Configuration — 10 domains ── */
+/* ── Domain Configuration, 10 domains ── */
 
 const DOMAIN_CONFIG: Record<DomainKey, {
   label: string;
@@ -167,7 +167,7 @@ const DOMAIN_CONFIG: Record<DomainKey, {
       transformative: 'Your career path is evolving, and old roles or ambitions are making room for something that fits the real you better.',
       supportive: 'Professional momentum is real this year, doors are opening, and this is a great time to step up and advance.',
       quiet: 'Career is on a slow simmer, so focus on skill-building and preparation rather than big launches.',
-      mixed: 'Some career energy is present — stay engaged and responsive without forcing big moves.',
+      mixed: 'Some career energy is present, stay engaged and responsive without forcing big moves.',
     },
   },
   love: {
@@ -179,11 +179,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2.5, Moon: 1.5, Sun: 1.5, Mars: 1.5, Jupiter: 1, Juno: 1.5, Pluto: 1.5, Saturn: 2, Neptune: 1.5, Chiron: 1, Uranus: 1.5, Ceres: 0.8 },
     advice: {
-      challenging: 'Relationships are in the spotlight this year — expect meaningful conversations, honest boundary-setting, and a chance to build something more real. The connections that matter most get stronger.',
-      transformative: 'Love and intimacy are evolving at a deep level — old patterns are making room for something more honest.',
-      supportive: 'Genuine warmth, connection, and romantic opportunity are flowing this year — say yes to love.',
-      quiet: 'Relationships are quieter — invest in self-knowledge and let partnerships breathe naturally.',
-      mixed: 'Relationship energy is present but nuanced — both support and growth areas are in play.',
+      challenging: 'Relationships are in the spotlight this year, expect meaningful conversations, honest boundary-setting, and a chance to build something more real. The connections that matter most get stronger.',
+      transformative: 'Love and intimacy are evolving at a deep level, old patterns are making room for something more honest.',
+      supportive: 'Genuine warmth, connection, and romantic opportunity are flowing this year, say yes to love.',
+      quiet: 'Relationships are quieter, invest in self-knowledge and let partnerships breathe naturally.',
+      mixed: 'Relationship energy is present but nuanced, both support and growth areas are in play.',
     },
   },
   health: {
@@ -195,11 +195,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Mars: 1.5, Saturn: 1.5, Moon: 1, Sun: 1, Neptune: 1, Chiron: 1, Pluto: 1 },
     advice: {
-      challenging: 'Your body is asking for more attention this year — it\'s a great time to start new routines, listen to what your body needs, and make wellness a priority.',
-      transformative: 'Your body and wellness routines are ready for an upgrade — try new approaches, listen to what feels right, and trust the signals your body sends.',
-      supportive: 'Great energy for building new wellness habits that stick — your body is on your side this year.',
-      quiet: 'Health is steady — gentle maintenance and consistency are your best strategy.',
-      mixed: 'Health is moderately active — maintain your routines and respond when your body asks for attention.',
+      challenging: 'Your body is asking for more attention this year, it\'s a great time to start new routines, listen to what your body needs, and make wellness a priority.',
+      transformative: 'Your body and wellness routines are ready for an upgrade, try new approaches, listen to what feels right, and trust the signals your body sends.',
+      supportive: 'Great energy for building new wellness habits that stick, your body is on your side this year.',
+      quiet: 'Health is steady, gentle maintenance and consistency are your best strategy.',
+      mixed: 'Health is moderately active, maintain your routines and respond when your body asks for attention.',
     },
   },
   growth: {
@@ -211,10 +211,10 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Jupiter: 2, Neptune: 1.5, Pluto: 1.5, NorthNode: 2, Uranus: 1, Chiron: 1, Mercury: 1.5 },
     advice: {
-      challenging: 'Growth comes through difficulty — the lessons are real but uncomfortable.',
-      transformative: 'Expect real shifts in how you see the world — your worldview is being rebuilt.',
-      supportive: 'Expansion and learning flow naturally — education, travel, or spiritual deepening are available.',
-      quiet: 'Inner growth is subtle this year — seeds planted now become visible in future cycles.',
+      challenging: 'Growth comes through difficulty, the lessons are real but uncomfortable.',
+      transformative: 'Expect real shifts in how you see the world, your worldview is being rebuilt.',
+      supportive: 'Expansion and learning flow naturally, education, travel, or spiritual deepening are available.',
+      quiet: 'Inner growth is subtle this year, seeds planted now become visible in future cycles.',
       mixed: 'Growth is happening through steady learning and gradually expanding your perspective.',
     },
   },
@@ -227,11 +227,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 1.5, Jupiter: 2, Saturn: 1.5, Pluto: 1.5, Mars: 1, Sun: 1, Mercury: 1, Uranus: 1 },
     advice: {
-      challenging: 'Financial pressure is real — debts, restructuring, or losses may require hard decisions. Budget carefully.',
-      transformative: 'Your relationship with money is being fundamentally rebuilt — old financial patterns are dying.',
-      supportive: 'Financial opportunity is present — benefic planets support your money houses. Time to invest in yourself.',
-      quiet: 'Money houses are quiet — maintain existing financial habits and avoid big risks.',
-      mixed: 'Mixed financial energy — some gains, some setbacks. Stay flexible and avoid overcommitting.',
+      challenging: 'Financial pressure is real, debts, restructuring, or losses may require hard decisions. Budget carefully.',
+      transformative: 'Your relationship with money is being fundamentally rebuilt, old financial patterns are dying.',
+      supportive: 'Financial opportunity is present, benefic planets support your money houses. Time to invest in yourself.',
+      quiet: 'Money houses are quiet, maintain existing financial habits and avoid big risks.',
+      mixed: 'Mixed financial energy, some gains, some setbacks. Stay flexible and avoid overcommitting.',
     },
   },
   home: {
@@ -243,11 +243,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Moon: 2, Saturn: 1.5, Ceres: 1.5, Pluto: 1, Sun: 1, Venus: 1, Mars: 1, Neptune: 1, Uranus: 1.5 },
     advice: {
-      challenging: 'Home and family are getting your full attention — big conversations, potential moves, or honest moments with loved ones can lead to a stronger foundation.',
+      challenging: 'Home and family are getting your full attention, big conversations, potential moves, or honest moments with loved ones can lead to a stronger foundation.',
       transformative: 'Your living situation or family dynamics are evolving into something that fits who you are now.',
-      supportive: 'Home life feels nourishing — a great year for moves, renovations, or deepening family bonds.',
-      quiet: 'Home life is stable and steady — that foundation lets you focus on other priorities.',
-      mixed: 'Mixed energy at home — some comfort and some adjustments. Stay flexible about living arrangements.',
+      supportive: 'Home life feels nourishing, a great year for moves, renovations, or deepening family bonds.',
+      quiet: 'Home life is stable and steady, that foundation lets you focus on other priorities.',
+      mixed: 'Mixed energy at home, some comfort and some adjustments. Stay flexible about living arrangements.',
     },
   },
   friendships: {
@@ -259,11 +259,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 1.5, Jupiter: 1.5, Mercury: 1.5, Sun: 1, Uranus: 1.5, Mars: 1, Saturn: 1, Neptune: 1 },
     advice: {
-      challenging: 'Social life is demanding — friendships may be tested, or you may outgrow certain groups.',
-      transformative: 'Your social world is shifting — expect to leave old circles and find new ones that fit who you\'re becoming.',
-      supportive: 'Social life is thriving — new connections, community involvement, and supportive friendships.',
-      quiet: 'Social sector is quiet — a few deep connections matter more than a wide network.',
-      mixed: 'Mixed social energy — some friendships deepen while others fade. Quality over quantity.',
+      challenging: 'Social life is demanding, friendships may be tested, or you may outgrow certain groups.',
+      transformative: 'Your social world is shifting, expect to leave old circles and find new ones that fit who you\'re becoming.',
+      supportive: 'Social life is thriving, new connections, community involvement, and supportive friendships.',
+      quiet: 'Social sector is quiet, a few deep connections matter more than a wide network.',
+      mixed: 'Mixed social energy, some friendships deepen while others fade. Quality over quantity.',
     },
   },
   creativity: {
@@ -275,11 +275,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Venus: 2, Sun: 1.5, Neptune: 1.5, Mercury: 1, Moon: 1, Mars: 1, Uranus: 1.5, Jupiter: 1 },
     advice: {
-      challenging: 'Creative expression may feel like it\'s pushing you — the effort is building something new and more honestly yours.',
-      transformative: 'Your creative voice is evolving — old styles are making room for fresh, exciting new forms of expression.',
-      supportive: 'Creative energy is flowing beautifully — this is a genuinely wonderful year to make, write, perform, or create.',
-      quiet: 'Creative energy is building quietly — consume inspiration now and create when it feels ready.',
-      mixed: 'Creative energy comes in waves — follow the bursts of inspiration when they arrive.',
+      challenging: 'Creative expression may feel like it\'s pushing you, the effort is building something new and more honestly yours.',
+      transformative: 'Your creative voice is evolving, old styles are making room for fresh, exciting new forms of expression.',
+      supportive: 'Creative energy is flowing beautifully, this is a genuinely wonderful year to make, write, perform, or create.',
+      quiet: 'Creative energy is building quietly, consume inspiration now and create when it feels ready.',
+      mixed: 'Creative energy comes in waves, follow the bursts of inspiration when they arrive.',
     },
   },
   spirituality: {
@@ -291,11 +291,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Neptune: 2, Jupiter: 1.5, Pluto: 1.5, NorthNode: 1.5, Chiron: 1.5, Moon: 1, Vesta: 1.5, Saturn: 1, Sun: 0.5 },
     advice: {
-      challenging: 'Your inner life is going through a meaningful clearing — old beliefs that no longer fit are making room for deeper understanding and peace.',
-      transformative: 'A profound inner shift is happening — your sense of meaning, purpose, and connection to something larger is being renewed.',
-      supportive: 'Inner growth flows naturally — meditation, quiet reflection, and spiritual exploration feel especially rewarding.',
-      quiet: 'Inner life is gentle this year — grounding in everyday life takes priority, and that\'s perfectly right.',
-      mixed: 'Your inner path has moments of clarity and moments of searching — trust the process and be patient with yourself.',
+      challenging: 'Your inner life is going through a meaningful clearing, old beliefs that no longer fit are making room for deeper understanding and peace.',
+      transformative: 'A profound inner shift is happening, your sense of meaning, purpose, and connection to something larger is being renewed.',
+      supportive: 'Inner growth flows naturally, meditation, quiet reflection, and spiritual exploration feel especially rewarding.',
+      quiet: 'Inner life is gentle this year, grounding in everyday life takes priority, and that\'s perfectly right.',
+      mixed: 'Your inner path has moments of clarity and moments of searching, trust the process and be patient with yourself.',
     },
   },
   power: {
@@ -307,11 +307,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
     activityWeights: { Pluto: 2.5, Mars: 1.5, Saturn: 1.5, Sun: 1, Uranus: 1.5, Chiron: 1, NorthNode: 1 },
     advice: {
-      challenging: 'You\'re in a growth area around personal power — learning to set stronger boundaries, speak up, and trust your own authority.',
-      transformative: 'Something fundamental about how you move through the world is changing — this is you stepping into a new chapter.',
-      supportive: 'You\'re stepping into genuine personal confidence — owning your strengths feels natural this year.',
-      quiet: 'Personal power is steady and stable — a year for maintaining what\'s working rather than big shifts.',
-      mixed: 'Some areas feel empowering while others ask you to let go of control — learn to read which is which.',
+      challenging: 'You\'re in a growth area around personal power, learning to set stronger boundaries, speak up, and trust your own authority.',
+      transformative: 'Something fundamental about how you move through the world is changing, this is you stepping into a new chapter.',
+      supportive: 'You\'re stepping into genuine personal confidence, owning your strengths feels natural this year.',
+      quiet: 'Personal power is steady and stable, a year for maintaining what\'s working rather than big shifts.',
+      mixed: 'Some areas feel empowering while others ask you to let go of control, learn to read which is which.',
     },
   },
 };
@@ -446,7 +446,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
           const finalTone = rawTone * rxMult * digMult;
           toneTotal += finalTone;
 
-          const rxNote = retrogradeSet.has(overlay.planet) ? ' (in review mode — intensified)' : '';
+          const rxNote = retrogradeSet.has(overlay.planet) ? ' (in review mode, intensified)' : '';
           const digNote = '';  // suppress technical dignity labels in user-facing text
 
           allDrivers.push({ planet: overlay.planet, house: h, effect, nature, points: Math.round(w * 10) / 10, tonePoints: Math.round(finalTone * 10) / 10 });
@@ -549,7 +549,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       });
     }
 
-    // 5. Angular planets — preserve the planet's ACTUAL SR house in the driver
+    // 5. Angular planets, preserve the planet's ACTUAL SR house in the driver
     // (never use 0, which renders as "H0" and looks like a bug).
     for (const ap of analysis.angularPlanets) {
       if ((activityWeights[ap] || 0) > 0) {
