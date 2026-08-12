@@ -504,7 +504,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           const where = house ? (HOUSE_WHERE[house] || `in the ${ordinal(house)} house domain`) : '';
           
           if (role === 'lord') {
-            return `As Lord of the Year, ${planet} governs your overall vitality and life direction. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `Placed in the ${ordinal(house)} house, you feel this most directly ${where}. This is where the year's energy concentrates — this house becomes the stage where your identity is most actively tested and developed.` : ''}`;
+            return `As the ruler of your natal Ascendant, ${planet} governs your overall vitality and life direction. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `Placed in the ${ordinal(house)} house, you feel this most directly ${where}. This is where the year's energy concentrates — this house becomes the stage where your identity is most actively tested and developed.` : ''}`;
           }
           return `As Time Lord, ${planet} sets the year's agenda and determines the conditions under which life delivers its lessons. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `In the ${ordinal(house)} house, the agenda plays out ${where}.` : ''}`;
         };
@@ -514,7 +514,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
         const timeLordSignIntercepted = prof ? interceptedSigns.includes(prof.timeLordSRSign) : false;
 
         const getInterceptionModifier = (planet: string, sign: string, role: 'lord' | 'timeLord'): string => {
-          const roleLabel = role === 'lord' ? 'Lord of the Year' : 'Time Lord';
+          const roleLabel = role === 'lord' ? 'natal chart ruler' : 'Annual Profection Time Lord';
           const opposite = OPPOSITE_PAIRS.find(([a, b]) => a === sign || b === sign);
           const oppSign = opposite ? (opposite[0] === sign ? opposite[1] : opposite[0]) : null;
 
@@ -522,7 +522,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
         };
 
         const getDoubleEmphasisExpert = (planet: string, sign: string, house: number | null): string => {
-          return `When the same planet serves as both Lord of the Year (ruler of natal Ascendant) and Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme — your vitality, your timing, your opportunities, and your challenges — routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year — they function as master switches for the entire solar return.`;
+          return `When the same planet serves as both the natal chart ruler (ruler of the natal Ascendant) and the Annual Profection Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme — your vitality, your timing, your opportunities, and your challenges — routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year — they function as master switches for the entire solar return.`;
         };
 
         return (
@@ -534,7 +534,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-2xl">{PLANET_SYMBOLS[lord.planet]}</span>
                     <div>
-                      <h3 className="text-base font-serif text-foreground">Lord of the Year</h3>
+                      <h3 className="text-base font-serif text-foreground">Natal Chart Ruler</h3>
                       <p className="text-[10px] text-muted-foreground">Ruler of natal Ascendant ({lord.natalRisingSign})</p>
                     </div>
                     <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${dignityColor(lord.dignity)}`}>
@@ -583,7 +583,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                         );
                       })}
                       <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
-                        When the Lord of the Year forms aspects within 1° of another planet or angle, those contacts are highly activated all year. They represent the most reliable channels through which the year's energy flows.
+                        When the natal chart ruler forms aspects within 1° of another planet or angle, those contacts are highly activated all year. They represent the most reliable channels through which the year's energy flows.
                       </p>
                     </div>
                   )}
@@ -664,7 +664,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                   <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">Double Emphasis — Single-Planet Year</p>
                 </div>
                 <p className="text-xs font-medium text-foreground">
-                  {lord.planet} serves as both Lord of the Year and Time Lord
+                  {lord.planet} serves as both the natal chart ruler and the Annual Profection Time Lord
                 </p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {getDoubleEmphasisExpert(lord.planet, lord.srSign, lord.srHouse)}

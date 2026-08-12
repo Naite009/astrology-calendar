@@ -44,6 +44,8 @@ import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionP
 import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
+import { generateYearStoryPage, generateWhatYouNeedToKnow } from '@/lib/pdfSections/yearStory';
+import { buildYearStory } from '@/lib/solarReturnYearStory';
 import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
 import { generatePDFNatalOverlay, generatePDFAngleActivations, generatePDFYearPriority } from '@/lib/pdfSections/yearPriorityPDF';
@@ -942,15 +944,16 @@ export function downloadBirthdayJSONStandalone(
       aiReadingAstro: aiReadings?.astro || null,
       // ─── Structured summary objects ───
       yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      yearStory: buildYearStory(analysis),
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
       })(),
       topThemes: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
       })(),
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
@@ -1285,15 +1288,16 @@ export function buildFullJsonStandalone(
 
     // ─── Structured summary objects ───
     yearSummary: buildYearSummary(analysis, natalChart, srChart),
+    yearStory: buildYearStory(analysis),
     scoredAspects: (() => {
       const bd = natalChart.birthDate || '';
       const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-      return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+      return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
     })(),
     topThemes: (() => {
       const bd = natalChart.birthDate || '';
       const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+      return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
     })(),
     houseEmphasis: buildHouseEmphasis(analysis),
     lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
@@ -1456,6 +1460,12 @@ export async function generateBirthdayGiftPDF(
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('HOW TO READ THIS REPORT', doc.getNumberOfPages());
   generateHowToReadPage(ctx, doc);
+
+  // 3b. THE STORY OF YOUR YEAR — synthesis first, details afterwards
+  const yearStory = buildYearStory(analysis);
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('THE STORY OF YOUR YEAR', doc.getNumberOfPages());
+  generateYearStoryPage(ctx, doc, analysis, yearStory);
 
   // 4. BIG THREE — comprehensive merged section (natal + SR in depth)
   doc.addPage(); ctx.y = margin;
@@ -1744,7 +1754,7 @@ export async function generateBirthdayGiftPDF(
     ctx.y += 14;
 
     ctx.drawCard(doc, () => {
-      ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+      ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Annual Profection Time Lord`, ctx.colors.gold, 11);
       ctx.y += 2;
       // Explain the chain: Age → House → Natal cusp sign → Ruler = Time Lord
       const ordH = `${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'}`;
@@ -1863,6 +1873,11 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('TAKE THIS WITH YOU', doc.getNumberOfPages());
   ctx.sectionPages.set('BIRTHDAY AFFIRMATION CARD', doc.getNumberOfPages());
   generateAffirmationCard(ctx, doc, analysis, natalChart, srChart);
+
+  // FINAL: WHAT YOU NEED TO KNOW + one reflection question
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('WHAT YOU NEED TO KNOW', doc.getNumberOfPages());
+  generateWhatYouNeedToKnow(ctx, doc, analysis, yearStory);
 
   // GOLD BORDERS on all pages
   {
@@ -2460,7 +2475,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
         // Why this planet
         ctx.drawCard(doc, () => {
-          ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Lord of the Year`, ctx.colors.gold, 11);
+          ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Annual Profection Time Lord`, ctx.colors.gold, 11);
           ctx.y += 2;
           ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show — every transit to or from ${P[tlPlanet] || tlPlanet} hits harder this year.`, ctx.colors.bodyText, 10, 14);
         });
@@ -2484,19 +2499,19 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (tlDignity === 'Detriment' || tlDignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
         if (tlDignity === 'Domicile' || tlDignity === 'Exaltation') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
-            ctx.writeBody(doc, `Your Lord of the Year is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentGreen);
         }
         if (tlIsRetro) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as Lord of the Year means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as the Annual Profection Time Lord means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
@@ -2955,15 +2970,16 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
       // New structured summary objects
       yearSummary: buildYearSummary(analysis, natalChart, srChart),
+      yearStory: buildYearStory(analysis),
       scoredAspects: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth);
+        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
       })(),
       topThemes: (() => {
         const bd = natalChart.birthDate || '';
         const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth));
+        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
       })(),
       houseEmphasis: buildHouseEmphasis(analysis),
       lunarFlow: buildLunarFlow(analysis, srChart, natalChart),

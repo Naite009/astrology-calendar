@@ -138,32 +138,34 @@ export interface SRQuarterlyFocus {
 
 // ─── Planet body associations ───────────────────────────────────────
 
+// Sustainability framing rather than medical prediction: workload, routines,
+// stamina, stress management and rest. No organs, no symptoms, no diagnoses.
 const PLANET_BODY: Record<string, { area: string; vulnerability: string }> = {
-  Sun: { area: 'Heart, spine, overall vitality', vulnerability: 'Burnout, heart strain, back issues, low energy' },
-  Moon: { area: 'Stomach, breasts, fluid balance, lymph', vulnerability: 'Digestive issues, water retention, emotional eating, sleep disruption' },
-  Mercury: { area: 'Nervous system, hands, lungs, speech', vulnerability: 'Anxiety, respiratory issues, nerve pain, communication strain' },
-  Venus: { area: 'Throat, kidneys, skin, hormonal balance', vulnerability: 'Throat infections, kidney issues, skin conditions, hormonal imbalance' },
-  Mars: { area: 'Muscles, blood, adrenals, inflammation', vulnerability: 'Injuries, inflammation, headaches, adrenal fatigue, fever' },
-  Jupiter: { area: 'Liver, hips, thighs, fat metabolism', vulnerability: 'Weight gain, liver strain, hip problems, overindulgence' },
-  Saturn: { area: 'Bones, teeth, knees, joints, skin', vulnerability: 'Joint pain, dental issues, bone density, chronic conditions, depression' },
-  Uranus: { area: 'Nervous system, circulation, ankles', vulnerability: 'Sudden spasms, circulatory issues, anxiety, erratic symptoms' },
-  Neptune: { area: 'Immune system, feet, pineal gland', vulnerability: 'Immune weakness, allergies, foot problems, misdiagnosis, substance sensitivity' },
-  Pluto: { area: 'Reproductive system, colon, detoxification', vulnerability: 'Reproductive issues, detox crises, obsessive health focus, hidden conditions' },
+  Sun: { area: 'Overall stamina and energy', vulnerability: 'running at full output for too long without recovery' },
+  Moon: { area: 'Rest, sleep rhythm and emotional load', vulnerability: 'carrying other people and skipping your own downtime' },
+  Mercury: { area: 'Mental load and pace of input', vulnerability: 'too many open tabs, too little quiet, decision fatigue' },
+  Venus: { area: 'Comfort, pleasure and balance in the day', vulnerability: 'comfort habits used as a substitute for rest' },
+  Mars: { area: 'Physical output and intensity', vulnerability: 'pushing hard, tolerating irritability, skipping recovery days' },
+  Jupiter: { area: 'Capacity and how much you take on', vulnerability: 'saying yes past what your week can hold' },
+  Saturn: { area: 'Sustainability, structure and pacing', vulnerability: 'endurance without maintenance, working past the point of return' },
+  Uranus: { area: 'Stress response and routine stability', vulnerability: 'an inconsistent schedule that keeps you keyed up' },
+  Neptune: { area: 'Boundaries, sensitivity and drift', vulnerability: 'porous boundaries and vague routines that quietly drain you' },
+  Pluto: { area: 'Deep energy reserves and what you push through', vulnerability: 'sustained pressure you have normalised' },
 };
 
 const SIGN_BODY: Record<string, string> = {
-  Aries: 'head, face, brain',
-  Taurus: 'throat, neck, thyroid',
-  Gemini: 'lungs, arms, hands, nervous system',
-  Cancer: 'chest, stomach, breasts',
-  Leo: 'heart, spine, upper back',
-  Virgo: 'intestines, digestive system',
-  Libra: 'kidneys, lower back, skin',
-  Scorpio: 'reproductive organs, colon',
-  Sagittarius: 'hips, thighs, liver',
-  Capricorn: 'knees, bones, joints, teeth',
-  Aquarius: 'ankles, circulation, nervous system',
-  Pisces: 'feet, immune system, lymphatic system',
+  Aries: 'pace and how quickly you launch into things',
+  Taurus: 'steadiness, comfort and resistance to changing routine',
+  Gemini: 'mental input and how much stimulation you take in',
+  Cancer: 'rest, home rhythm and emotional load',
+  Leo: 'output, performance and needing to be on',
+  Virgo: 'routine, detail and the pull toward over-refining',
+  Libra: 'balance between your needs and everyone else\'s',
+  Scorpio: 'intensity and what you carry privately',
+  Sagittarius: 'movement, travel and overcommitment',
+  Capricorn: 'workload, discipline and long term maintenance',
+  Aquarius: 'irregular schedules and staying mentally switched on',
+  Pisces: 'boundaries, sensitivity and the need for genuine downtime',
 };
 
 // ─── Eclipse data for 2025-2027 (common SR years) ───────────────────
@@ -389,22 +391,22 @@ export function calculateHealthOverlay(
 
 
     const BODY_PLAIN: Record<string, string> = {
-      Sun: 'your overall vitality and energy levels',
-      Moon: 'your emotional wellbeing and digestion',
-      Mercury: 'your nervous system and mental clarity',
-      Venus: 'your throat, skin, and hormonal balance',
-      Mars: 'your physical energy, muscles, and inflammation',
-      Jupiter: 'your liver, weight management, and circulation',
-      Saturn: 'your bones, joints, teeth, and long-term stamina',
-      Uranus: 'your nervous system and stress responses',
-      Neptune: 'your immune system and sensitivity to substances',
-      Pluto: 'your reproductive system and deep-body processes',
+      Sun: 'your overall stamina and energy levels',
+      Moon: 'your rest, sleep rhythm and emotional load',
+      Mercury: 'your mental load and how much input you take in',
+      Venus: 'the balance between comfort and genuine rest',
+      Mars: 'your physical output and how hard you push',
+      Jupiter: 'how much you take on in a given week',
+      Saturn: 'your pacing and long term sustainability',
+      Uranus: 'your stress response and the consistency of your routine',
+      Neptune: 'your boundaries and how easily you get drained',
+      Pluto: 'the pressure you have normalised and keep pushing through',
     };
 
     const plainPlanet = BODY_PLAIN[planet] || `your ${body.area.toLowerCase()}`;
-    const houseNote = house === 6 ? ' Because this falls in your health and daily routine area, pay extra attention to wellness habits.' :
-                      house === 12 ? ' This is in a quieter area of your chart, so health matters here may show up subtly — listen to what your body is telling you.' :
-                      house === 1 ? ' This directly affects your physical vitality and how energized you feel day to day.' : '';
+    const houseNote = house === 6 ? ' This lands in the daily routine and workload area, so pacing and consistency matter more than intensity.' :
+                      house === 12 ? ' This sits in a quieter part of the chart, so the strain may build slowly before you notice it. Rest counts as maintenance.' :
+                      house === 1 ? ' This is close to how energised you feel day to day, so it is worth tracking.' : '';
 
     overlays.push({
       planet,
@@ -414,15 +416,15 @@ export function calculateHealthOverlay(
       vulnerability: body.vulnerability,
       isStressed,
       interpretation: isStressed
-        ? `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} may need extra attention this year. Your body could be signaling through ${body.vulnerability.toLowerCase()} — treat these as invitations to take better care of yourself.${houseNote}`
-        : `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} ${dignity === 'Domicile' || dignity === 'Exaltation' ? 'are well-supported this year — a great time to build healthy habits in this area' : 'are in a neutral zone — maintain your regular wellness routines'}.${houseNote}`,
+        ? `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} may need more deliberate attention this year, particularly around ${body.vulnerability}. This is about stress management and sustainability rather than any prediction about your health.${houseNote}`
+        : `${plainPlanet.charAt(0).toUpperCase() + plainPlanet.slice(1)} ${dignity === 'Domicile' || dignity === 'Exaltation' ? 'looks well supported this year, which makes it a good time to build habits that stick' : 'looks steady, so ordinary maintenance is probably enough'}.${houseNote}`,
     });
 
     if (isStressed) {
-      primaryConcerns.push(`Your ${body.area.toLowerCase()} may need extra care — watch for ${body.vulnerability.toLowerCase()}`);
+      primaryConcerns.push(`${body.area} may need more deliberate attention, particularly around ${body.vulnerability}`);
     }
     if (dignity === 'Domicile' || dignity === 'Exaltation') {
-      supportiveFactors.push(`Your ${body.area.toLowerCase()} is well-supported — a great year to invest in ${body.area.toLowerCase()} wellness`);
+      supportiveFactors.push(`${body.area} looks well supported this year, so habits started here are more likely to hold`);
     }
   }
 

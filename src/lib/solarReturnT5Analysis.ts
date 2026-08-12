@@ -685,7 +685,17 @@ export function calculateSynthesisSections(
       Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
       Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
     };
+    const EXALT: Record<string, string> = {
+      Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
+      Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
+    };
+    const FALL: Record<string, string> = {
+      Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
+      Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
+    };
     if (DOMICILE[planet]?.includes(pos.sign)) return 'Domicile';
+    if (EXALT[planet] === pos.sign) return 'Exaltation';
+    if (FALL[planet] === pos.sign) return 'Fall';
     if (DETRIMENT[planet]?.includes(pos.sign)) return 'Detriment';
     return '';
   };

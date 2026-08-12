@@ -108,6 +108,30 @@ const findSRHouse = (planetDeg: number, srChart: SolarReturnChart): number | nul
   return cusps ? findHouseInCusps(planetDeg, cusps) : null;
 };
 
+/**
+ * Cusp-bridging check. If a planet sits within `orb` degrees of the NEXT house
+ * cusp, the placement should be read as bridging both houses rather than being
+ * silently reassigned. Returns null when the planet sits cleanly inside a house.
+ */
+const cuspBridgeNote = (
+  planetDeg: number,
+  house: number | null,
+  chart: SolarReturnChart | NatalChart,
+  orb = 2,
+): string | null => {
+  if (!house) return null;
+  const cusps = extractCusps(chart as any);
+  if (!cusps) return null;
+  const nextHouse = house === 12 ? 1 : house + 1;
+  const nextCusp = cusps[nextHouse - 1];
+  if (nextCusp === undefined) return null;
+  let gap = nextCusp - planetDeg;
+  while (gap < 0) gap += 360;
+  while (gap >= 360) gap -= 360;
+  if (gap > orb) return null;
+  return `At ${gap.toFixed(1)}° from the ${nextHouse}${ordinalSuffix(nextHouse)} house cusp, this placement bridges both houses, so read it in your ${house}${ordinalSuffix(house)} house and your ${nextHouse}${ordinalSuffix(nextHouse)} house together.`;
+};
+
 // ─── Dignity calculation (Step 2) ───────────────────────────────────
 const domicileSigns: Record<string, string[]> = {
   Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
@@ -403,7 +427,7 @@ export interface SolarReturnAnalysis {
   srToNatalAspects: SRKeyAspect[];
   srInternalAspects: SRKeyAspect[];
   angularPlanets: string[];
-  angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[];
+  angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; angleHouse?: number; straddlesCusp?: boolean; orb: number }[];
   relocationTip: string;
   lordOfTheYear: {
     planet: string;
@@ -564,12 +588,12 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
 };
 
 const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
-  Conjunction: { verb: 'fuses with', quality: 'intensification', experience: 'These two energies merge into a single force — you cannot separate them this year. They amplify each other, for better or worse. The effect is immediate and constant.' },
-  Opposition: { verb: 'opposes', quality: 'polarization and awareness', experience: 'These two energies pull in opposite directions, creating an inner tug-of-war. Oppositions demand integration — you cannot choose one side without the other demanding attention. Other people often embody the planet you are not expressing, creating external confrontations that mirror internal tension.' },
-  Trine: { verb: 'flows with', quality: 'ease and natural talent', experience: 'These energies support each other effortlessly — doors open, skills click, and the combination feels natural. The risk is complacency; trines work so smoothly that you may not fully utilize the opportunity. Conscious engagement multiplies the benefit.' },
-  Square: { verb: 'clashes with', quality: 'friction and forced growth', experience: 'These energies grind against each other, creating frustration that demands action. Squares are the engine of achievement — nothing changes without friction. Expect obstacles that ultimately force you to develop strength you did not know you had.' },
-  Sextile: { verb: 'supports', quality: 'opportunity through effort', experience: 'A cooperative opening that requires conscious engagement. Sextiles do not hand you results — they present doors. You have to walk through them. When activated, they produce tangible, practical results.' },
-  Quincunx: { verb: 'requires adjustment with', quality: 'awkward recalibration', experience: 'These energies have nothing in common — different element, different mode. The effect is a persistent irritation that cannot be resolved by choosing one side. Health issues, logistical complications, and the need for constant small adjustments are common.' },
+  Conjunction: { verb: 'combines with', quality: 'a single blended motive', experience: 'These two motives tend to move together this year, so it can be hard to tell where one ends and the other begins.' },
+  Opposition: { verb: 'sits opposite', quality: 'two valid needs asking for balance', experience: 'These two needs pull in different directions, and choosing only one side rarely settles it. Other people may voice the side you are not expressing.' },
+  Trine: { verb: 'works easily with', quality: 'a natural working relationship', experience: 'These two work together without much strain, which is useful but easy to leave unused. It tends to reward deliberate attention.' },
+  Square: { verb: 'grinds against', quality: 'productive friction', experience: 'These two ask for different things at the same time, which can show up as frustration or a decision you keep postponing. Handled directly, it usually leads to a change in how you operate.' },
+  Sextile: { verb: 'quietly supports', quality: 'an opening that needs to be used', experience: 'This is an opportunity rather than a result. It tends to show up when you initiate.' },
+  Quincunx: { verb: 'sits awkwardly with', quality: 'ongoing small adjustments', experience: 'These two do not translate neatly into each other, so it can feel like a low level mismatch that asks for repeated small adjustments rather than one decision.' },
 };
 
 const aspectMeaning = (p1: string, p2: string, type: string): string => {
@@ -577,7 +601,7 @@ const aspectMeaning = (p1: string, p2: string, type: string): string => {
   const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
   const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
 
-  return `SR ${p1} (${t1.domain}) ${feel.verb} Natal ${p2} (${t2.domain}). ${feel.experience} This year, your natal ${p2} pattern — the drive ${t2.drive} — is directly activated by the solar return's ${p1} energy. The ${type.toLowerCase()} creates ${feel.quality} between these two forces.`;
+  return `Solar Return ${p1} (${t1.domain}) ${feel.verb} natal ${p2} (${t2.domain}). ${feel.experience} In practice, your longstanding ${p2} pattern, the drive ${t2.drive}, is likely to be more active this year. Read this as ${feel.quality} rather than as a fixed outcome.`;
 };
 
 const internalAspectMeaning = (p1: string, p2: string, type: string): string => {
@@ -585,7 +609,7 @@ const internalAspectMeaning = (p1: string, p2: string, type: string): string => 
   const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
   const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
 
-  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) within the solar return chart itself. ${feel.experience} This defines the year's background climate — the dynamic between ${p1} and ${p2} colors every area of life, regardless of which houses they occupy.`;
+  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) inside the Solar Return chart itself. ${feel.experience} This one sits in the background of the whole year rather than in one life area, so it can colour how the more specific themes play out.`;
 };
 
 // ─── Stellium interpretation helpers ────────────────────────────────
@@ -712,6 +736,7 @@ function generateOverlayInterpretation(
   srHouse: number | null,
   natalLandingHouse: number | null,
   natalOriginalHouse: number | null,
+  bridgeNote?: string | null,
 ): string {
   const drive = PLANET_OVERLAY_DRIVE[planet] || { what: `${planet}'s themes`, shift: `where ${planet} focuses` };
   const signFelt = getSignFeltSense(srSign);
@@ -723,14 +748,16 @@ function generateOverlayInterpretation(
 
   if (natalOriginalHouse && srHouse && natalOriginalHouse !== srHouse) {
     const origArea = SR_HOUSE_LIFE_AREA[natalOriginalHouse] || `house ${natalOriginalHouse}`;
-    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house — meaning ${drive.shift} moves from ${origArea} to ${srArea}. `;
+    interp += `In your natal chart, ${planet} lives in your ${natalOriginalHouse}${ordinalSuffix(natalOriginalHouse)} house (${origArea}), but this year it shifts to your ${srHouse}${ordinalSuffix(srHouse)} house, so ${drive.shift} moves from ${origArea} to ${srArea}. `;
   } else if (natalOriginalHouse && srHouse && natalOriginalHouse === srHouse) {
     interp += `${planet} returns to its natal house this year, reinforcing its lifelong themes around ${srArea}. This is a year of deepening, not redirecting, this energy. `;
   }
 
   if (natalArea && natalLandingHouse !== srHouse) {
-    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events.`;
+    interp += `Landing in your natal ${natalLandingHouse}${ordinalSuffix(natalLandingHouse!)} house, ${planet} also activates ${natalArea} in a way that connects your inner natal blueprint to this year's external events. `;
   }
+
+  if (bridgeNote) interp += bridgeNote;
 
   return interp.trim();
 }
@@ -873,7 +900,7 @@ export const analyzeSolarReturn = (
       if (natalDeg !== null) natalOrigHouse = findNatalHouse(natalDeg, natalChart);
     }
 
-    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse);
+    const interp = generateOverlayInterpretation(planet, pos.sign, sh, nh, natalOrigHouse, cuspBridgeNote(deg, sh, srChart));
 
     houseOverlays.push({
       planet,
@@ -947,7 +974,7 @@ export const analyzeSolarReturn = (
 
   // 7. Angular planets (within 8° of SR ASC, MC, DSC, IC)
   const angularPlanets: string[] = [];
-  const angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; orb: number }[] = [];
+  const angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; angleHouse?: number; straddlesCusp?: boolean; orb: number }[] = [];
   const ANGLE_DEFS: { cusp: any; name: string; house: number }[] = [
     { cusp: srChart.houseCusps?.house1, name: 'Ascendant', house: 1 },
     { cusp: srChart.houseCusps?.house4, name: 'IC', house: 4 },
@@ -967,11 +994,16 @@ export const analyzeSolarReturn = (
       if (diff > 180) diff = 360 - diff;
       if (diff <= 8) {
         if (!angularPlanets.includes(planet)) angularPlanets.push(planet);
+        // Report the house the planet is ACTUALLY in. A planet can sit in the 3rd
+        // house and still be conjunct the IC, so the angle is reported separately.
+        const actualHouse = planetSRHouses[planet] ?? angleDef.house;
         angularPlanetsDetailed.push({
           planet,
           angle: angleDef.name,
           sign: pos.sign,
-          house: angleDef.house,
+          house: actualHouse,
+          angleHouse: angleDef.house,
+          straddlesCusp: actualHouse !== angleDef.house,
           orb: Math.round(diff * 10) / 10,
         });
       }
@@ -1077,7 +1109,7 @@ export const analyzeSolarReturn = (
 
         // Build specific overlap description
         let overlapSystems: string[] = [];
-        if (overlapWithLotY) overlapSystems.push('Lord of the Year (natal Ascendant ruler)');
+        if (overlapWithLotY) overlapSystems.push('the natal chart ruler (natal Ascendant ruler)');
         if (overlapWithSRAsc) overlapSystems.push('SR Ascendant ruler');
         const overlapDescription = overlapSystems.length > 0
           ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
