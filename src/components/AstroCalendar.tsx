@@ -971,13 +971,19 @@ export const AstroCalendar = () => {
 
         {viewMode === "sacred-script" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
-            <SacredScriptView 
-              natalChart={userNatalChart || savedCharts[0]}
-              allCharts={[
-                ...(userNatalChart ? [userNatalChart] : []),
-                ...savedCharts
-              ]}
-            />
+            {userNatalChart || savedCharts[0] ? (
+              <SacredScriptView 
+                natalChart={userNatalChart || savedCharts[0]}
+                allCharts={[
+                  ...(userNatalChart ? [userNatalChart] : []),
+                  ...savedCharts
+                ]}
+              />
+            ) : (
+              <div className="flex items-center justify-center py-20 text-muted-foreground">
+                Restoring your charts…
+              </div>
+            )}
           </Suspense>
         )}
 
