@@ -37,14 +37,13 @@ export const claimAnonymousChartsForUser = async (
 ): Promise<void> => {
   if (!userId) return;
 
-  // Run at most once per user per browser session — we set a flag in
-  // localStorage so we don't hammer the DB on every auth event.
-  const flagKey = `${CLAIMED_FLAG_KEY_PREFIX}${userId}`;
-  try {
-    if (localStorage.getItem(flagKey) === "1") return;
-  } catch {
-    // localStorage unavailable — fall through and try anyway
-  }
+  // Throttle rather than permanently flag: charts can be created at any time
+  // (e.g. right after sign-in), and a one-time flag would leave them orphaned.
+  const now = Date.now();
+  const last = lastClaimAt.get(userId) ?? 0;
+  if (now - last < CLAIM_THROTTLE_MS) return;
+  lastClaimAt.set(userId, now);
+
 
   if (claimInFlight) return claimInFlight;
 
