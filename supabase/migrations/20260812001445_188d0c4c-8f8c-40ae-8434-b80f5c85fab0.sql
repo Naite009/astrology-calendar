@@ -1,0 +1,1 @@
+UPDATE public.device_charts SET user_id = '3e9acc54-1a54-4150-b3c1-c578bda91fb7' WHERE user_id IS NULL AND device_id = 'device_1767537304203_i5tkrz5lgcc';
