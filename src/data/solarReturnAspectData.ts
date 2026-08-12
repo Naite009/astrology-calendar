@@ -123,17 +123,17 @@ export const SR_HORIZON_ASPECTS: Record<string, SRHorizonAspect> = {
   Jupiter: {
     planet: 'Jupiter',
     harmonious: 'Luck, expansion, and opportunity greet you this year. Travel, education, and cultural experiences enrich your life. Generosity flows both ways. Legal matters resolve favorably.',
-    discordant: 'Overconfidence, excess, and poor judgment are risks. You may take on too much or promise more than you can deliver. Weight gain is possible. Moderation in all things is advised.',
+    discordant: 'Overconfidence, excess, and poor judgment are risks. You may take on too much or promise more than you can deliver. Moderation and honest capacity checks are the useful correction here.',
   },
   Saturn: {
     planet: 'Saturn',
     harmonious: 'Gaining respect and prestige through solid work. Your reputation as an authority or expert strengthens. A sense of fulfillment from understanding your "calling in life." Years of solid work now give credibility.',
-    discordant: 'Restrictions, delays, and obstacles from external circumstances or authority figures. You may feel overburdened by responsibilities. Health issues may demand attention. Patience and perseverance are essential.',
+    discordant: 'Restrictions, delays, and obstacles from external circumstances or authority figures. You may feel overburdened by responsibilities. Workload, pacing and stamina may need real attention. Patience and steady maintenance help more than pressure.',
   },
   Uranus: {
     planet: 'Uranus',
     harmonious: 'Exciting, positive changes unfold. Unusual opportunities and unexpected breakthroughs. You feel free to express your individuality. Technology and innovation are assets.',
-    discordant: 'Sudden disruptions, separations, or unexpected events disrupt your plans. Nervousness and instability may affect health and relationships. Flexibility is essential — rigid plans will be overturned.',
+    discordant: 'Sudden disruptions, separations, or unexpected events disrupt your plans. Restlessness and an unstable schedule can wear on your energy and your relationships. Flexibility helps, since rigid plans are likely to be rewritten.',
   },
   Neptune: {
     planet: 'Neptune',
