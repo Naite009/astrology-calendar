@@ -198,15 +198,23 @@ export const useCloudBackup = (
       }
 
       if (keepRowId) {
+        // Local storage no longer keeps the base64 chart image (too large), so
+        // preserve whatever the cloud already has instead of wiping it.
+        const existingImage = (existingRows?.[0] as { chart_data?: Record<string, unknown> } | undefined)
+          ?.chart_data?.chartImageBase64;
+        const payload = JSON.parse(JSON.stringify(chart)) as Record<string, unknown>;
+        if (!payload.chartImageBase64 && existingImage) payload.chartImageBase64 = existingImage;
+
         // Update the kept record
         const { error } = await supabase
           .from('device_charts')
           .update({
-            chart_data: JSON.parse(JSON.stringify(chart)),
+            chart_data: payload,
             chart_name: chart.name,
             updated_at: new Date().toISOString(),
           })
           .eq('id', keepRowId);
+
 
         if (error) {
           console.error('[CloudBackup] Error updating chart:', chart.name, error);
