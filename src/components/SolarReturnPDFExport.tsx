@@ -44,6 +44,8 @@ import { generateProfectionPersonalSection } from '@/lib/pdfSections/profectionP
 import { generateKeyDatesTimeline } from '@/lib/pdfSections/keyDatesTimeline';
 import { generateQuarterlySummary } from '@/lib/pdfSections/quarterlySummary';
 import { generateTier1SolarReturnPDF } from '@/lib/pdfSections/tier1Report';
+import { generateYearStoryPage, generateWhatYouNeedToKnow } from '@/lib/pdfSections/yearStory';
+import { buildYearStory } from '@/lib/solarReturnYearStory';
 import { generatePlanetGallery } from '@/lib/pdfSections/planetGallery';
 import { generatePDFLunarTimeline } from '@/lib/pdfSections/lunarTimeline';
 import { generatePDFNatalOverlay, generatePDFAngleActivations, generatePDFYearPriority } from '@/lib/pdfSections/yearPriorityPDF';
@@ -1457,6 +1459,12 @@ export async function generateBirthdayGiftPDF(
   ctx.sectionPages.set('HOW TO READ THIS REPORT', doc.getNumberOfPages());
   generateHowToReadPage(ctx, doc);
 
+  // 3b. THE STORY OF YOUR YEAR — synthesis first, details afterwards
+  const yearStory = buildYearStory(analysis);
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('THE STORY OF YOUR YEAR', doc.getNumberOfPages());
+  generateYearStoryPage(ctx, doc, analysis, yearStory);
+
   // 4. BIG THREE — comprehensive merged section (natal + SR in depth)
   doc.addPage(); ctx.y = margin;
   ctx.sectionPages.set('YOUR BIG THREE', doc.getNumberOfPages());
@@ -1879,6 +1887,11 @@ export async function generateBirthdayGiftPDF(
       for (const [cx2, cy2] of corners) doc.circle(cx2, cy2, 3.5, 'F');
     }
   }
+
+  // FINAL: WHAT YOU NEED TO KNOW + one reflection question
+  doc.addPage(); ctx.y = margin;
+  ctx.sectionPages.set('WHAT YOU NEED TO KNOW', doc.getNumberOfPages());
+  generateWhatYouNeedToKnow(ctx, doc, analysis, yearStory);
 
   // TOC links
   addTOCLinks(doc, tocPageNumber, tocEntries, ctx);
