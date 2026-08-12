@@ -78,13 +78,8 @@ export const claimAnonymousChartsForUser = async (
       } else {
         console.info("[claimCharts] no anonymous charts on this device to claim");
       }
-
-      try {
-        localStorage.setItem(flagKey, "1");
-      } catch {
-        // ignore
-      }
     } catch (err) {
+
       console.warn("[claimCharts] unexpected error (will retry next sign-in):", err);
     }
   })().finally(() => {
