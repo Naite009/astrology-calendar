@@ -176,7 +176,7 @@ export function generatePDFYearAtAGlance(
 
     doc.setFont('times', 'bold'); doc.setFontSize(15);
     doc.setTextColor(...CHARCOAL);
-    const aspectLine = `Solar Return ${P[yda.planet1] || yda.planet1} ${yda.type} Natal ${P[yda.planet2] || yda.planet2}`;
+    const aspectLine = (yda as any).label || `Solar Return ${P[yda.planet1] || yda.planet1} ${yda.type.toLowerCase()} natal ${P[yda.planet2] || yda.planet2}`;
     const aspectLines: string[] = doc.splitTextToSize(aspectLine, contentW - 28);
     for (const line of aspectLines.slice(0, 2)) { doc.text(line, margin + 14, hy); hy += 12; }
 

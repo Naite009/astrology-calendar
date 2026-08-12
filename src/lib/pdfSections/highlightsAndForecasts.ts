@@ -89,7 +89,7 @@ function buildHighlights(a: SolarReturnAnalysis, _srChart: SolarReturnChart, _na
   }
   if (a.srToNatalAspects.length > 0) {
     const strongest = a.srToNatalAspects.find(asp => MAJOR_PLANETS.has(asp.planet1) && MAJOR_PLANETS.has(asp.planet2) && !(asp.planet1 === 'Sun' && asp.planet2 === 'Sun' && asp.type === 'Conjunction'));
-    if (strongest) highlights.push({ label: 'YEAR-DEFINING ASPECT', timing: `SR ${P[strongest.planet1] || strongest.planet1} ${strongest.type} Natal ${P[strongest.planet2] || strongest.planet2}`, body: strongest.interpretation });
+    if (strongest) highlights.push({ label: 'YEAR-DEFINING ASPECT', timing: (strongest as any).label || `Solar Return ${P[strongest.planet1] || strongest.planet1} ${strongest.type.toLowerCase()} natal ${P[strongest.planet2] || strongest.planet2}`, body: strongest.interpretation });
   }
   return highlights.slice(0, 4);
 }

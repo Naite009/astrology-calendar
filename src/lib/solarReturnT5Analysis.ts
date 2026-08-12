@@ -10,6 +10,7 @@
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEssentialDignity } from './essentialDignity';
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -677,27 +678,8 @@ export function calculateSynthesisSections(
   const getDignity = (planet: string): string => {
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos) return '';
-    const DOMICILE: Record<string, string[]> = {
-      Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
-      Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
-    };
-    const DETRIMENT: Record<string, string[]> = {
-      Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
-      Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
-    };
-    const EXALT: Record<string, string> = {
-      Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
-      Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
-    };
-    const FALL: Record<string, string> = {
-      Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
-      Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
-    };
-    if (DOMICILE[planet]?.includes(pos.sign)) return 'Domicile';
-    if (EXALT[planet] === pos.sign) return 'Exaltation';
-    if (FALL[planet] === pos.sign) return 'Fall';
-    if (DETRIMENT[planet]?.includes(pos.sign)) return 'Detriment';
-    return '';
+    const d = getEssentialDignity(planet, (pos as any).sign);
+    return d === 'NotAssigned' || d === 'Peregrine' ? '' : d;
   };
 
   const isRetro = (planet: string): boolean => {

@@ -1,5 +1,6 @@
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEssentialDignity, dignityNote } from './essentialDignity';
 import { analyzeSRHemispheres, type SRHemisphericResult } from './solarReturnHemispheres';
 import { calculateVertex, parseLatitudeFromLocation } from './solarReturnVertex';
 import {
@@ -132,32 +133,14 @@ const cuspBridgeNote = (
   return `At ${gap.toFixed(1)}° from the ${nextHouse}${ordinalSuffix(nextHouse)} house cusp, this placement bridges both houses, so read it in your ${house}${ordinalSuffix(house)} house and your ${nextHouse}${ordinalSuffix(nextHouse)} house together.`;
 };
 
-// ─── Dignity calculation (Step 2) ───────────────────────────────────
-const domicileSigns: Record<string, string[]> = {
-  Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
-  Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
-  Uranus: ['Aquarius'], Neptune: ['Pisces'], Pluto: ['Scorpio'],
-};
-const exaltationSigns: Record<string, string> = {
-  Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
-  Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
-};
-const detrimentSigns: Record<string, string[]> = {
-  Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
-  Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
-};
-const fallSigns: Record<string, string> = {
-  Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
-  Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
+// ─── Dignity calculation (canonical, traditional planets only) ──────
+// Uranus, Neptune and Pluto are never assigned domicile/exaltation/
+// detriment/fall. See src/lib/essentialDignity.ts.
+const getDignity = (planet: string, sign: string): string => {
+  const d = getEssentialDignity(planet, sign);
+  return d === 'NotAssigned' ? 'NotAssigned' : d;
 };
 
-const getDignity = (planet: string, sign: string): string => {
-  if (domicileSigns[planet]?.includes(sign)) return 'Domicile';
-  if (exaltationSigns[planet] === sign) return 'Exaltation';
-  if (detrimentSigns[planet]?.includes(sign)) return 'Detriment';
-  if (fallSigns[planet] === sign) return 'Fall';
-  return 'Peregrine';
-};
 
 // ─── Lord of Year house interpretations (Step 2) ────────────────────
 const lordHouseInterps: Record<number, string> = {
@@ -220,12 +203,14 @@ const PROFECTION_SR_HOUSE_AREA: Record<number, string> = {
 };
 
 const DIGNITY_FORCE_NOTE: Record<string, string> = {
-  Domicile: 'in domicile (its home sign) — operating at full strength',
-  Exaltation: 'in exaltation — operating with unusual elevation and authority',
-  Detriment: 'in detriment — operating in unfamiliar territory and asked to work harder',
-  Fall: 'in fall — operating against its grain, which can feel like dragging the year uphill',
-  Peregrine: 'in a neutral sign — neither boosted nor weakened by dignity',
+  Domicile: 'in domicile, its own sign, so it operates at full strength',
+  Exaltation: 'in exaltation, so it operates with extra elevation and authority',
+  Detriment: 'in detriment, so it works in unfamiliar territory and has to try harder',
+  Fall: 'in fall, so it works against its own grain',
+  Peregrine: 'in a sign where it has no essential dignity, which is neutral rather than weak',
+  NotAssigned: '',
 };
+
 
 function buildProfectionSynthesis(
   timeLord: string,
@@ -277,7 +262,34 @@ interface Aspect {
   type: string;
   orb: number;
   exact: number;
+  /** Which two charts this aspect connects. Never strip this. */
+  source?: 'sr-to-natal' | 'sr-internal';
+  /** Prebuilt, unambiguous sentence label. Renderers must print this. */
+  label?: string;
 }
+
+/** Human names for points so labels never print camelCase. */
+const POINT_DISPLAY: Record<string, string> = {
+  NorthNode: 'North Node', SouthNode: 'South Node', PartOfFortune: 'Part of Fortune',
+  Ascendant: 'Ascendant', MC: 'Midheaven',
+};
+const displayPoint = (p: string): string => POINT_DISPLAY[p] || p;
+
+/**
+ * Canonical aspect label. Always names the chart each planet belongs to, so a
+ * Solar Return planet can never be confused with a natal one.
+ */
+export const buildAspectLabel = (
+  planet1: string,
+  planet1Source: 'SR' | 'Natal',
+  type: string,
+  planet2: string,
+  planet2Source: 'SR' | 'Natal',
+): string => {
+  const side = (p: string, src: 'SR' | 'Natal') =>
+    `${src === 'SR' ? 'Solar Return' : 'natal'} ${displayPoint(p)}`;
+  return `${side(planet1, planet1Source)} ${type.toLowerCase()} ${side(planet2, planet2Source)}`;
+};
 
 const ASPECT_ANGLES = [
   { name: 'Conjunction', angle: 0, orb: 8 },
@@ -940,6 +952,8 @@ export const analyzeSolarReturn = (
           planet1: srPlanet, planet1Source: 'SR',
           planet2: natPlanet, planet2Source: 'Natal',
           type: asp.type, orb: asp.orb, exact: 0,
+          source: 'sr-to-natal',
+          label: buildAspectLabel(srPlanet, 'SR', asp.type, natPlanet, 'Natal'),
           interpretation: aspectMeaning(srPlanet, natPlanet, asp.type),
         });
       }
@@ -965,6 +979,8 @@ export const analyzeSolarReturn = (
           planet1: p1, planet1Source: 'SR',
           planet2: p2, planet2Source: 'SR',
           type: asp.type, orb: asp.orb, exact: 0,
+          source: 'sr-internal',
+          label: buildAspectLabel(p1, 'SR', asp.type, p2, 'SR'),
           interpretation: internalAspectMeaning(p1, p2, asp.type),
         });
       }

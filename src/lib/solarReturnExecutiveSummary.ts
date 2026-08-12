@@ -239,7 +239,7 @@ export function generateExecutiveSummary(
       type: isOpp ? 'opportunity' : 'challenge',
       title: buildAspectTitle(asp.planet1, asp.planet2, asp.type, tightLabel),
       description: buildAspectDescription(asp.planet1, asp.planet2, asp.type, isOpp) + tightNote,
-      source: `${asp.planet1} ${asp.type} natal ${asp.planet2} (${asp.orb.toFixed(1)}° orb — ${tightLabel})`,
+      source: `${(asp as any).label || `Solar Return ${asp.planet1} ${asp.type.toLowerCase()} natal ${asp.planet2}`} (${asp.orb.toFixed(1)}° orb, ${tightLabel})`,
       intensity: Math.round(score),
     });
   }

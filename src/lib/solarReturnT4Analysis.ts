@@ -10,6 +10,7 @@
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
+import { getEssentialDignity, DOMICILE_SIGNS, EXALTATION_SIGNS, dignityLabel } from './essentialDignity';
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -19,31 +20,11 @@ const traditionalRuler: Record<string, string> = {
   Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
 };
 
-const domicileSigns: Record<string, string[]> = {
-  Sun: ['Leo'], Moon: ['Cancer'], Mercury: ['Gemini','Virgo'], Venus: ['Taurus','Libra'],
-  Mars: ['Aries','Scorpio'], Jupiter: ['Sagittarius','Pisces'], Saturn: ['Capricorn','Aquarius'],
-  Uranus: ['Aquarius'], Neptune: ['Pisces'], Pluto: ['Scorpio'],
-};
-const exaltationSigns: Record<string, string> = {
-  Sun: 'Aries', Moon: 'Taurus', Mercury: 'Virgo', Venus: 'Pisces',
-  Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
-};
-const detrimentSigns: Record<string, string[]> = {
-  Sun: ['Aquarius'], Moon: ['Capricorn'], Mercury: ['Sagittarius','Pisces'], Venus: ['Aries','Scorpio'],
-  Mars: ['Taurus','Libra'], Jupiter: ['Gemini','Virgo'], Saturn: ['Cancer','Leo'],
-};
-const fallSigns: Record<string, string> = {
-  Sun: 'Libra', Moon: 'Scorpio', Mercury: 'Pisces', Venus: 'Virgo',
-  Mars: 'Cancer', Jupiter: 'Capricorn', Saturn: 'Aries',
-};
+const getDignity = (planet: string, sign: string): string => getEssentialDignity(planet, sign);
 
-const getDignity = (planet: string, sign: string): string => {
-  if (domicileSigns[planet]?.includes(sign)) return 'Domicile';
-  if (exaltationSigns[planet] === sign) return 'Exaltation';
-  if (detrimentSigns[planet]?.includes(sign)) return 'Detriment';
-  if (fallSigns[planet] === sign) return 'Fall';
-  return 'Peregrine';
-};
+// Kept for mutual reception checks only (rulership, not dignity strength).
+const domicileSigns = DOMICILE_SIGNS;
+const exaltationSigns = EXALTATION_SIGNS;
 
 const PLANETS_CORE = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
 

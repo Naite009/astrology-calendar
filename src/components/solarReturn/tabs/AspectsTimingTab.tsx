@@ -73,6 +73,7 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
                 <span className="text-xs text-muted-foreground">Natal {asp.planet2}</span>
                 <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
               </div>
+              {asp.label && <p className="text-xs text-foreground/80">{asp.label}</p>}
               <p className="text-xs text-muted-foreground leading-relaxed">{interp.howItFeels}</p>
               <p className="text-xs text-muted-foreground leading-relaxed">{interp.whatItMeans}</p>
               <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
@@ -95,12 +96,13 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
             <div key={i} className={`border rounded-md p-4 space-y-2 ${aspectBg(asp.type)}`}>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-base">{PLANET_SYMBOLS[asp.planet1]}</span>
-                <span className="text-xs text-muted-foreground">{asp.planet1}</span>
+                <span className="text-xs text-muted-foreground">SR {asp.planet1}</span>
                 <span className={`text-sm font-semibold ${aspectColor(asp.type)}`}>{aspInfo?.glyph || ''} {asp.type}</span>
                 <span className="text-base">{PLANET_SYMBOLS[asp.planet2]}</span>
-                <span className="text-xs text-muted-foreground">{asp.planet2}</span>
+                <span className="text-xs text-muted-foreground">SR {asp.planet2}</span>
                 <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
               </div>
+              {asp.label && <p className="text-xs text-foreground/80">{asp.label}</p>}
               <p className="text-xs text-muted-foreground leading-relaxed">{interp.howItFeels}</p>
               <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
                 <p className="text-[10px] uppercase tracking-widest text-primary mb-0.5">What To Do</p>
