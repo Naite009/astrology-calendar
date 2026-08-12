@@ -1,7 +1,7 @@
 // Sacred Script - Professional Astrology Reading Framework
 // Based on Debra Silverman methodology with 9-section structure
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -200,7 +200,14 @@ const getSunSignExpression = (sign: string): string => {
 export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: SacredScriptViewProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const currentDate = new Date();
-  const [selectedChartId, setSelectedChartId] = useState<string>(initialChart?.id || '');
+  const [selectedChartId, setSelectedChartId] = useState<string>(() => {
+    const savedId = sessionStorage.getItem('sacred_script_chart_id');
+    return savedId || initialChart?.id || '';
+  });
+
+  useEffect(() => {
+    if (selectedChartId) sessionStorage.setItem('sacred_script_chart_id', selectedChartId);
+  }, [selectedChartId]);
   
   // Get sorted charts: user (initialChart) first, then alphabetically
   const sortedCharts = (() => {
@@ -210,6 +217,12 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   
   // Get the selected chart
   const natalChart = sortedCharts.find(c => c.id === selectedChartId) || initialChart;
+
+  useEffect(() => {
+    if (!sortedCharts.some(chart => chart.id === selectedChartId) && initialChart?.id) {
+      setSelectedChartId(initialChart.id);
+    }
+  }, [initialChart?.id, selectedChartId, sortedCharts]);
   
   // Calculate all data
   const age = calculateAge(natalChart.birthDate);
