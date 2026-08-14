@@ -3,13 +3,14 @@
  * 12-section unified report comparable to Solar Return Birthday Gift
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, RankedTheme, NatalPowerPortrait, LifetimeWisdom } from '@/lib/natalPortraitEngine';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
+import { SectionExportButtons } from '@/components/SectionExportButtons';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
   Heart, Briefcase, Waves, Shield, Flame, Compass,
@@ -493,6 +494,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
   }, [userNatalChart, savedCharts]);
 
   const [selectedChartId, setSelectedChartId] = useState(allCharts[0]?.id || '');
+  const reportRef = useRef<HTMLDivElement>(null);
   const selectedChart = allCharts.find(c => c.id === selectedChartId) || allCharts[0];
 
   const portrait = useMemo(() => {
@@ -512,7 +514,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
   if (!portrait || !selectedChart) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div ref={reportRef} className="max-w-4xl mx-auto space-y-4">
       {/* Chart Selector */}
       {allCharts.length > 1 && (
         <div className="flex items-center gap-3 mb-6">
@@ -541,6 +543,22 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
           A comprehensive analysis of your birth chart — who you are, what drives you, where you struggle, 
           and what you're here to become. This is your lifetime operating manual.
         </p>
+        <SectionExportButtons
+          className="mt-4"
+          filename={`${selectedChart.name} Natal Portrait`}
+          targetRef={reportRef}
+          jsonData={{
+            report: 'Natal Portrait',
+            generated: new Date().toISOString(),
+            person: {
+              name: selectedChart.name,
+              birthDate: selectedChart.birthDate,
+              birthTime: selectedChart.birthTime,
+              birthLocation: selectedChart.birthLocation,
+            },
+            portrait,
+          }}
+        />
       </div>
 
       {/* 1. Life Purpose & Core Identity */}
