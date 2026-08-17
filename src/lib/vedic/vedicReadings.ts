@@ -242,12 +242,10 @@ function bigPictureSection(
   // Paragraph 3: gifts and tensions from dignity.
   if (strong.length || weak.length) {
     const strongText = strong.length
-      ? `${list(strong.map(b => `${b.name} ${b.dignity === 'exalted' ? 'exalted' : 'in its own sign'} in ${b.sign}`))} ${strong.length > 1 ? 'are' : 'is'} working at full capacity, which means ${list(strong.map(b => PLANET_MOTIVE[b.name]))} ${strong.length > 1 ? 'come' : 'comes'} more easily to you than to most people. ` +
-        `${strong.length > 1 ? 'Those functions' : 'That function'} tend to be where others rely on you.`
+      ? `${list(strong.map(b => `${b.name} ${b.dignity === 'exalted' ? 'exalted' : 'in its own sign'} in ${b.sign}`))} ${strong.length > 1 ? 'are' : 'is'} working at full capacity. Exalted means placed in the sign where a planet functions best. Practically, ${list(strong.map(b => PLANET_MOTIVE[b.name]))} ${strong.length > 1 ? 'come' : 'comes'} more easily to you than to most people, and ${strong.length > 1 ? 'those are the functions' : 'that is the function'} other people tend to rely on you for.`
       : '';
     const weakText = weak.length
-      ? `At the same time ${list(weak.map(b => `${b.name} is debilitated in ${b.sign}`))}. Debilitated means placed in the sign where a planet operates least comfortably. It is not a defect. It usually shows up as a function that matures later, works in a personal and non-standard way, and becomes genuinely capable through experience rather than arriving ready-made. ` +
-        `${weak.map(b => `${b.name} handles ${PLANET_PLAIN[b.name].replace(/^[^ ]+ describes /, '')}`).join(', and ')}, so that is the department where the learning curve sits.`
+      ? `At the same time ${list(weak.map(b => `${b.name} is debilitated in ${b.sign}`))}. Debilitated means placed in the sign where a planet operates least comfortably. It is not a defect. It usually shows up as a function that matures later, works in a personal and non-standard way, and becomes genuinely capable through experience rather than arriving ready-made. Since ${list(weak.map(b => PLANET_PLAIN[b.name]))}, that is where the learning curve sits.`
       : '';
     paras.push(`Gifts and the learning curve. ${strongText}${strongText && weakText ? ' ' : ''}${weakText}`);
   }
@@ -466,7 +464,7 @@ function purposeSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     );
   }
 
-  takeaway = `The practical version is this: your strongest contribution runs through ${PLANET_PLAIN[ak.planet].replace(/^[^ ]+,? ?[^ ]* describes /, '').replace(/^[^ ]+ describes /, '')}. Choose work, projects and commitments that ask for that function directly. When you are using it, effort tends to convert into progress. When a situation gives you no room for it, you can perform well and still feel like the wrong person for the job.`;
+  takeaway = `The practical version is this: your strongest contribution runs through ${ak.planet}, meaning ${PLANET_MOTIVE[ak.planet]}. Choose work, projects and commitments that ask for that function directly. When you are using it, effort tends to convert into progress. When a situation gives you no room for it, you can perform well and still feel like the wrong person for the job.`;
 
   return section('purpose', 'Purpose, Gifts and Talents', 'Atmakaraka and the Navamsa (D9)', logic, paras, takeaway);
 }
