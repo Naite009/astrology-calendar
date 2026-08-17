@@ -42,7 +42,10 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
                 <span className={`w-20 shrink-0 text-sm font-medium ${isPast && !isCurrent ? 'text-muted-foreground' : 'text-foreground'}`}>
                   {p.lord}
                 </span>
-                <span className="text-xs text-muted-foreground">{formatDashaRange(p)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDashaRange(p)}
+                  {birthMoment ? ` · ${formatAgeRange(p, birthMoment)}` : ''}
+                </span>
                 <span className="ml-auto hidden text-xs text-muted-foreground sm:inline">{copy.title}</span>
                 {isCurrent && (
                   <span className="ml-2 shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] uppercase tracking-widest text-primary-foreground">
