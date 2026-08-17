@@ -18,6 +18,8 @@ import { formatAyanamsa } from '@/lib/vedic/ayanamsa';
 import { VedicSectionCard } from './VedicSectionCard';
 import { DashaTimeline } from './DashaTimeline';
 import { VargaGrid } from './VargaGrid';
+import { PlacementDeepDiveCard } from './PlacementDeepDive';
+import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -58,6 +60,19 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
       return null;
     }
   }, [activeChart]);
+
+  const deepDive = useMemo(() => {
+    if (!reading) return null;
+    try {
+      return {
+        dives: buildPlacementDeepDives(reading.chart),
+        combos: findComboHits(reading.chart),
+      };
+    } catch (e) {
+      console.error('[Vedic] deep dive failed', e);
+      return null;
+    }
+  }, [reading]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +120,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         Object.entries(vargas).map(([k, v]) => [k, { reads: v.reads, lagna: v.lagnaSign, placements: v.placements }])
       ),
       sections: sections.map(s => ({ title: s.title, chartLogic: s.logic, reading: s.paragraph })),
+      placementDeepDive: buildPlacementDeepDives(chart),
+      signatureCombinations: findComboHits(chart),
     };
   }, [reading]);
 
@@ -168,6 +185,10 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           {reading.sections.slice(0, 2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
+
+          {deepDive && deepDive.dives.length > 0 && (
+            <PlacementDeepDiveCard dives={deepDive.dives} combos={deepDive.combos} name={reading.chart.name} />
+          )}
 
           <DashaTimeline periods={reading.dashas} current={reading.current} birthMoment={reading.chart.birthMoment} />
 
