@@ -102,6 +102,13 @@ const moonHandle = (date: Date): string => {
   }.`;
 };
 
+/** Joins sentence fragments, making sure each one ends with punctuation. */
+const joinSentences = (parts: (string | undefined)[]): string =>
+  parts
+    .filter((p): p is string => Boolean(p && p.trim()))
+    .map(p => (/[.!?]$/.test(p.trim()) ? p.trim() : `${p.trim()}.`))
+    .join(' ');
+
 /** Second and third sentence for hard days, per category. */
 const HARD_DETAIL: Record<string, (bodies: string[]) => string> = {
   eclipse: () =>
@@ -170,22 +177,24 @@ export const enrichElectionalDay = (day: ElectionalDay): ElectionalDay => {
     ? HARD_DETAIL[day.category]?.(bodies)
     : GOOD_DETAIL[day.category]?.(primarySign);
 
-  const signLine = isHard
+  // Only add the planet-in-sign line when it says something the Moon line will not.
+  const signLine = isHard && primary !== 'moon'
     ? `With ${primary.charAt(0).toUpperCase() + primary.slice(1)} in ${primarySign}, the pressure lands on ${SIGN_ARENA[primarySign] || 'daily life'}, and ${SIGN_TENSION[primarySign] || 'people get short with each other'}.`
     : '';
 
-  const why = [day.why, detail, signLine, moonHandle(day.date)]
-    .filter(Boolean)
-    .join(' ');
+  // Lunation days already describe the Moon, so skip the duplicate handle.
+  const lunarCategory = day.category === 'new-moon' || day.category === 'eclipse';
+  const why = joinSentences([day.why, detail, signLine, lunarCategory ? '' : moonHandle(day.date)]);
 
   const workaround = isHard
-    ? [day.workaround, HARD_WORKAROUND[day.category]].filter(Boolean).join(' ')
+    ? joinSentences([day.workaround, HARD_WORKAROUND[day.category]]) || undefined
     : day.workaround;
 
   const power = !isHard
-    ? [day.power, `Use it on one specific thing rather than the whole list: ${SIGN_SUPPORT[primarySign] || 'the move you keep postponing'}.`]
-        .filter(Boolean)
-        .join(' ')
+    ? joinSentences([
+        day.power,
+        `Use it on one specific thing rather than the whole list: ${SIGN_SUPPORT[primarySign] || 'the move you keep postponing'}.`,
+      ]) || undefined
     : day.power;
 
   return { ...day, why, workaround, power };
