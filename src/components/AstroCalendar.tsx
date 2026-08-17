@@ -1165,6 +1165,15 @@ export const AstroCalendar = () => {
           </Suspense>
         )}
 
+        {viewMode === "vedic" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <VedicView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
         {viewMode === "tarot-functions" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <TarotFunctionsView
