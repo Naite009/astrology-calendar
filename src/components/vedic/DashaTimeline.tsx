@@ -5,15 +5,16 @@
 
 import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { DashaPeriod, CurrentDasha, formatDashaRange } from '@/lib/vedic/vimshottariDasha';
+import { DashaPeriod, CurrentDasha, formatDashaRange, formatAgeRange } from '@/lib/vedic/vimshottariDasha';
 import { dashaCopy } from '@/lib/vedic/interpretations/dashaCopy';
 
 interface Props {
   periods: DashaPeriod[];
   current: CurrentDasha | null;
+  birthMoment?: Date;
 }
 
-export const DashaTimeline = ({ periods, current }: Props) => {
+export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
   const [open, setOpen] = useState<string | null>(current ? `${current.maha.lord}-${current.maha.start.getTime()}` : null);
 
   if (!periods.length) return null;
@@ -22,7 +23,7 @@ export const DashaTimeline = ({ periods, current }: Props) => {
     <div className="rounded-lg border border-border bg-card p-5 md:p-6">
       <h3 className="font-serif text-xl">Dasha Timeline</h3>
       <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1 mb-4">
-        120 years from birth · tap a period for its sub-periods
+        One full 120 year cycle from birth · later periods fall past a normal lifespan · tap a period for its sub-periods
       </p>
 
       <div className="space-y-2">
@@ -41,7 +42,10 @@ export const DashaTimeline = ({ periods, current }: Props) => {
                 <span className={`w-20 shrink-0 text-sm font-medium ${isPast && !isCurrent ? 'text-muted-foreground' : 'text-foreground'}`}>
                   {p.lord}
                 </span>
-                <span className="text-xs text-muted-foreground">{formatDashaRange(p)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDashaRange(p)}
+                  {birthMoment ? ` · ${formatAgeRange(p, birthMoment)}` : ''}
+                </span>
                 <span className="ml-auto hidden text-xs text-muted-foreground sm:inline">{copy.title}</span>
                 {isCurrent && (
                   <span className="ml-2 shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] uppercase tracking-widest text-primary-foreground">

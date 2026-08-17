@@ -76,7 +76,8 @@ export function buildVimshottari(moonSiderealLongitude: number, birthMoment: Dat
     sub: buildSubPeriods(firstLord, firstStart, firstTotal),
   });
 
-  for (let i = 1; i < order.length + 3; i++) {
+  // Exactly one full 120-year cycle. Anything past that is beyond a lifetime.
+  for (let i = 1; i < order.length; i++) {
     const lord = order[i % order.length];
     const years = DASHA_YEARS[lord];
     const end = addYears(cursor, years);
@@ -108,4 +109,16 @@ export function formatDashaDate(d: Date): string {
 
 export function formatDashaRange(p: DashaPeriod): string {
   return `${formatDashaDate(p.start)} to ${formatDashaDate(p.end)}`;
+}
+
+/** Age at a given date, in whole years. Used to keep the timeline human-scaled. */
+export function ageAt(birthMoment: Date, when: Date): number {
+  return Math.floor((when.getTime() - birthMoment.getTime()) / (DAYS_PER_YEAR * 86400000));
+}
+
+/** "age 41 to 61", clamped so pre-birth years read as "from birth". */
+export function formatAgeRange(p: DashaPeriod, birthMoment: Date): string {
+  const from = ageAt(birthMoment, p.start);
+  const to = ageAt(birthMoment, p.end);
+  return from < 0 ? `birth to age ${to}` : `age ${from} to ${to}`;
 }
