@@ -5,15 +5,16 @@
 
 import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { DashaPeriod, CurrentDasha, formatDashaRange } from '@/lib/vedic/vimshottariDasha';
+import { DashaPeriod, CurrentDasha, formatDashaRange, formatAgeRange } from '@/lib/vedic/vimshottariDasha';
 import { dashaCopy } from '@/lib/vedic/interpretations/dashaCopy';
 
 interface Props {
   periods: DashaPeriod[];
   current: CurrentDasha | null;
+  birthMoment?: Date;
 }
 
-export const DashaTimeline = ({ periods, current }: Props) => {
+export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
   const [open, setOpen] = useState<string | null>(current ? `${current.maha.lord}-${current.maha.start.getTime()}` : null);
 
   if (!periods.length) return null;
