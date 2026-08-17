@@ -44,7 +44,7 @@ export const CLASSICAL_PLACEMENTS: ClassicalPlacement[] = [
   { planet: 'Moon', sign: 'Sagittarius', statement: 'The native is consoled by movement, distance and the sense that more is possible.', inPractice: 'You escape into plans, travel or study when low, and you hate being emotionally cornered.' },
   { planet: 'Moon', sign: 'Capricorn', statement: 'The native takes charge instead of being comforted, and learned early to manage alone.', inPractice: 'You handle the crisis first and feel it later, and asking for help feels like weakness.' },
   { planet: 'Moon', sign: 'Aquarius', statement: 'The native steps back from feeling in order to see it clearly.', inPractice: 'You explain your emotions rather than show them, and you need distance before closeness.' },
-  { planet: 'Moon', sign: 'Pisces', statement: 'The native feels what is in the room, whether or not it belongs to them.', inPractice: 'You pick up other people's moods and carry them, and you need quiet to reset.' },
+  { planet: 'Moon', sign: 'Pisces', statement: 'The native feels what is in the room, whether or not it belongs to them.', inPractice: 'You pick up other peoples moods and carry them, and you need quiet to reset.' },
 
   // ---------------- MERCURY ----------------
   { planet: 'Mercury', sign: 'Aries', statement: 'The native speaks first and considers afterward, and the tongue is sharp.', inPractice: 'You decide fast and say the blunt thing, which is useful and occasionally expensive.' },
@@ -96,7 +96,7 @@ export const CLASSICAL_PLACEMENTS: ClassicalPlacement[] = [
   { planet: 'Jupiter', sign: 'Leo', statement: 'The native grows through generosity and visible confidence.', inPractice: 'Doors open when you lead openly, and close when you perform rather than give.' },
   { planet: 'Jupiter', sign: 'Virgo', statement: 'The native grows through craft and usefulness rather than through scale.', inPractice: 'Your increase comes from being very good at something specific.' },
   { planet: 'Jupiter', sign: 'Libra', statement: 'The native is favored through partnership and fair dealing.', inPractice: 'Your opportunities come through people, contracts and reputation for evenness.' },
-  { planet: 'Jupiter', sign: 'Scorpio', statement: 'The native increases through other people's resources and through what is hidden.', inPractice: 'Growth comes through shared money, deep research or work others avoid.' },
+  { planet: 'Jupiter', sign: 'Scorpio', statement: 'The native increases through other peoples resources and through what is hidden.', inPractice: 'Growth comes through shared money, deep research or work others avoid.' },
   { planet: 'Jupiter', sign: 'Sagittarius', statement: 'The native is favored in travel, teaching and belief, and lives by the long view.', inPractice: 'Luck follows the honest expansion: distance, study, or telling the truth publicly.' },
   { planet: 'Jupiter', sign: 'Capricorn', statement: 'The native increases only through structure, and gifts arrive as responsibility.', inPractice: 'Growth is earned and slow, and it holds once it arrives.' },
   { planet: 'Jupiter', sign: 'Aquarius', statement: 'The native grows through community and through what has not been tried.', inPractice: 'Opportunity comes through networks, groups and unconventional routes.' },
