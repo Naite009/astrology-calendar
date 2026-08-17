@@ -11,7 +11,8 @@ import { VedicPlanet } from './nakshatras';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
 import { dignityGloss, SIGN_LORDS } from './vedicDignity';
 import { PLANET_IN_SIGN, PLANET_IN_HOUSE, CLASSIC_COMBOS, VSign } from './interpretations/placementCopy';
-import { PLANET_ROLE, houseTheme } from './interpretations/planetCopy';
+import { PLANET_ROLE } from './interpretations/planetCopy';
+import { housePlain as houseTheme } from './interpretations/plainMeaning';
 
 export interface PlacementDeepDive {
   planet: VedicPlanet;

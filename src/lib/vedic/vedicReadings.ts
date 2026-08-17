@@ -1,23 +1,29 @@
 /**
  * Composes the Vedic reading sections.
  *
- * Every section returns two things:
- *  - logic: the technical proof lines for the "What the chart is showing" box,
- *    with Sanskrit terms visible.
- *  - paragraph: one integrated felt-sense paragraph, no jargon, no em dashes.
+ * Writing engine rules (do not relax these):
+ *  1. Interpret the astrology. Never invent a biography, an event, a symptom,
+ *     a job, a relationship or a financial circumstance.
+ *  2. Every technical term is defined in plain English the moment it is used.
+ *  3. Follow the chain: astrological fact, meaning, how it may show up, how it
+ *     connects with the rest of the chart.
+ *  4. Each section ends with a short "What this means in real life" synthesis.
+ *  5. No em dashes.
  *
- * Classical verdicts are labelled as classical. Timing is given as windows,
- * never as a promise about the future.
+ * Sophisticated technique underneath (chart ruler, house lords, dispositors,
+ * dignity, nakshatras, karakas, dasha, divisional charts), plain output on top.
  */
 
 import { VedicChart, VedicBody, houseLord, bodiesInHouse, formatDegree } from './siderealChart';
 import { buildVarga, VargaChart, isVargottama, VARGA_LABELS } from './divisionalCharts';
 import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './karakas';
 import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, CurrentDasha } from './vimshottariDasha';
-import { dashaCopy } from './interpretations/dashaCopy';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
-import { HOUSE_THEME, PLANET_ROLE, houseTheme, signStyle, moneyRoute } from './interpretations/planetCopy';
-import { dignityGloss } from './vedicDignity';
+import {
+  PLANET_PLAIN, PLANET_MOTIVE, housePlain, signTendency, dignityPlain,
+  DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, NAKSHATRA_DEFINITION, DASHA_DEFINITION,
+} from './interpretations/plainMeaning';
+import { SIGN_LORDS } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
 
 export interface VedicSectionData {
@@ -25,8 +31,12 @@ export interface VedicSectionData {
   title: string;
   subtitle: string;
   logic: string[];
+  /** Human interpretation, one entry per rendered paragraph. */
+  paragraphs: string[];
+  /** Legacy single-string form, kept for exports. */
   paragraph: string;
-  /** Optional extra rows rendered as a small table */
+  /** Short "What this means in real life" synthesis. */
+  takeaway?: string;
   rows?: { label: string; value: string }[];
 }
 
@@ -44,6 +54,42 @@ const bodyLine = (b: VedicBody): string =>
 
 const has = (b?: VedicBody): b is VedicBody => !!b;
 
+const list = (items: string[]): string =>
+  items.length <= 1 ? (items[0] || '') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+
+/** Houses a planet rules, counted from the lagna. */
+function rulership(chart: VedicChart, planet: VedicPlanet): number[] {
+  if (!chart.lagnaSign) return [];
+  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const lagnaIdx = signs.indexOf(chart.lagnaSign);
+  return Object.entries(SIGN_LORDS)
+    .filter(([, lord]) => lord === planet)
+    .map(([sign]) => ((signs.indexOf(sign) - lagnaIdx + 12) % 12) + 1)
+    .sort((a, b) => a - b);
+}
+
+function rulershipPhrase(chart: VedicChart, planet: VedicPlanet): string | null {
+  const houses = rulership(chart, planet);
+  if (!houses.length) return null;
+  return `${planet} also rules ${list(houses.map(h => `house ${h}, which covers ${housePlain(h)}`))}`;
+}
+
+/** The sign lord of the sign a planet sits in, which classical texts call its dispositor. */
+function dispositor(body: VedicBody): VedicPlanet | null {
+  const lord = SIGN_LORDS[body.sign];
+  return lord && lord !== body.name ? lord : null;
+}
+
+function section(
+  id: string, title: string, subtitle: string,
+  logic: string[], paragraphs: string[], takeaway?: string,
+  rows?: { label: string; value: string }[],
+): VedicSectionData {
+  const clean = paragraphs.filter(Boolean);
+  return { id, title, subtitle, logic, paragraphs: clean, paragraph: clean.join(' '), takeaway, rows };
+}
+
 export function buildVedicReading(chart: VedicChart, today: Date = new Date()): VedicReading {
   const vargas = {
     D2: buildVarga(chart, 'D2'),
@@ -60,6 +106,7 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
 
   const sections: VedicSectionData[] = [
     snapshotSection(chart),
+    bigPictureSection(chart, vargas, karakas, current),
     dashaSection(chart, current),
     pastLifeSection(chart, vargas.D12),
     purposeSection(chart, vargas.D9, karakas),
@@ -81,7 +128,7 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
   const logic: string[] = [];
 
   if (chart.lagnaSign && chart.lagnaDegree !== null) {
-    logic.push(`Lagna (rising): ${formatDegree(chart.lagnaDegree)} ${chart.lagnaSign}, lord ${chart.lagnaLord}`);
+    logic.push(`Lagna (rising sign): ${formatDegree(chart.lagnaDegree)} ${chart.lagnaSign}, ruled by ${chart.lagnaLord}`);
     if (chart.lagnaNakshatra) logic.push(`Lagna nakshatra: ${chart.lagnaNakshatra.name} pada ${chart.lagnaNakshatra.pada}`);
   } else {
     logic.push('Lagna: needs an accurate birth time. Sign-level material below still holds.');
@@ -90,79 +137,238 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
   if (has(moon)) logic.push(bodyLine(moon));
   logic.push(`Ayanamsa: Lahiri, ${formatDegree(chart.ayanamsa)}. Houses: whole sign.`);
 
-  const nk = moon ? nakshatraCopy(moon.nakshatra.name) : null;
-  const parts: string[] = [];
+  const paras: string[] = [];
+  paras.push(
+    'Three words before the reading starts, so nothing below needs decoding. The lagna is the rising sign, the sign coming up in the east at your birth, and it sets the whole house structure. ' +
+    NAKSHATRA_DEFINITION + ' Whole sign houses simply means the rising sign is the entire first house, the next sign the entire second, and so on.'
+  );
 
-  if (has(moon) && nk) {
-    parts.push(`Your Moon sits in ${moon.nakshatra.name}, which is the piece of this system that tends to land first: ${nk.essence}.`);
-    parts.push(`The usable side of it is ${nk.gift}. The cost is that ${nk.friction}.`);
+  if (chart.lagnaSign) {
+    paras.push(
+      `You have ${chart.lagnaSign} rising, so people meet that quality first: you tend to approach new situations ${signTendency(chart.lagnaSign)}. ` +
+      `The ruler of ${chart.lagnaSign} is ${chart.lagnaLord}, and in Vedic astrology the condition of that one planet colors everything else, because it stands for you.`
+    );
+  }
+  if (has(moon)) {
+    const nk = nakshatraCopy(moon.nakshatra.name);
+    paras.push(
+      `${PLANET_PLAIN.Moon}. Yours is in ${moon.sign}${moon.house ? `, in the house of ${housePlain(moon.house)}` : ''}, so emotionally you tend to operate ${signTendency(moon.sign)}. ` +
+      (nk ? `Inside that sign it sits in ${moon.nakshatra.name}, which narrows it further: ${nk.essence}.` : '')
+    );
   }
   if (has(sun)) {
-    parts.push(`Sidereally your Sun is in ${sun.sign}, so the way you hold authority reads as this: ${signStyle(sun.sign)}.`);
+    paras.push(
+      `${PLANET_PLAIN.Sun}. Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, so you tend to express confidence and authority ${signTendency(sun.sign)}.`
+    );
   }
-  if (chart.lagnaSign) {
-    parts.push(`With ${chart.lagnaSign} rising, people meet ${signStyle(chart.lagnaSign)} before they meet anything else about you, and ${chart.lagnaLord} is the planet whose condition sets the tone for your whole chart.`);
-  }
-  parts.push('If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than the equinox, and the gap between the two is currently about twenty four degrees.');
+  paras.push(
+    'If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than from the equinox, and the current gap between the two is about twenty four degrees. Neither chart is wrong. They are measuring from different starting points.'
+  );
 
-  return {
-    id: 'snapshot',
-    title: 'Your Vedic Snapshot',
-    subtitle: 'Sidereal placements, nakshatra and pada',
+  return section(
+    'snapshot',
+    'Your Vedic Snapshot',
+    'Sidereal placements, nakshatra and pada',
     logic,
-    paragraph: parts.join(' '),
-    rows: chart.bodies.map(b => ({
+    paras,
+    undefined,
+    chart.bodies.map(b => ({
       label: b.name,
       value: `${formatDegree(b.degree)} ${b.sign}${b.house ? ` · house ${b.house}` : ''} · ${b.nakshatra.name} pada ${b.nakshatra.pada}${b.dignity !== 'neutral' ? ` · ${b.dignity}` : ''}`,
     })),
-  };
+  );
 }
 
-/* 2. Dasha ---------------------------------------------------------------- */
+/* 2. The Big Picture ------------------------------------------------------ */
+
+function bigPictureSection(
+  chart: VedicChart,
+  vargas: Record<'D2' | 'D7' | 'D9' | 'D10' | 'D12', VargaChart>,
+  karakas: KarakaAssignment[],
+  current: CurrentDasha | null,
+): VedicSectionData {
+  const logic: string[] = [];
+  const paras: string[] = [];
+
+  const moon = chart.byName.Moon;
+  const sun = chart.byName.Sun;
+  const lagnaLordBody = chart.lagnaLord ? chart.byName[chart.lagnaLord] : undefined;
+  const ak = findKaraka(karakas, 'Atmakaraka');
+  const strong = chart.bodies.filter(b => b.dignity === 'exalted' || b.dignity === 'own sign');
+  const weak = chart.bodies.filter(b => b.dignity === 'debilitated');
+
+  // House concentration: where several bodies gather.
+  const byHouse = new Map<number, VedicBody[]>();
+  chart.bodies.forEach(b => {
+    if (!b.house) return;
+    byHouse.set(b.house, [...(byHouse.get(b.house) || []), b]);
+  });
+  const busiest = [...byHouse.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+  const cluster = busiest && busiest[1].length >= 2 ? busiest : null;
+
+  if (chart.lagnaSign) logic.push(`Rising sign ${chart.lagnaSign}, ruler ${chart.lagnaLord}${lagnaLordBody?.house ? ` in house ${lagnaLordBody.house}` : ''}`);
+  if (has(moon)) logic.push(`Moon in ${moon.sign}${moon.house ? `, house ${moon.house}` : ''}, ${moon.nakshatra.name}`);
+  if (has(sun)) logic.push(`Sun in ${sun.sign}${sun.house ? `, house ${sun.house}` : ''}`);
+  if (ak) logic.push(`Atmakaraka (highest degree planet): ${ak.planet}`);
+  if (strong.length) logic.push(`Strong by sign: ${strong.map(b => `${b.name} ${b.dignity} in ${b.sign}`).join(', ')}`);
+  if (weak.length) logic.push(`Working uphill by sign: ${weak.map(b => `${b.name} debilitated in ${b.sign}`).join(', ')}`);
+  if (cluster) logic.push(`Concentration: ${cluster[1].map(b => b.name).join(', ')} in house ${cluster[0]}`);
+  if (current) logic.push(`Current period: ${current.maha.lord} mahadasha${current.antar ? `, ${current.antar.subLord} antardasha` : ''}`);
+
+  // Paragraph 1: dominant personality pattern, rising plus its ruler.
+  if (chart.lagnaSign && lagnaLordBody) {
+    const disp = dispositor(lagnaLordBody);
+    paras.push(
+      `The core pattern. With ${chart.lagnaSign} rising you meet life ${signTendency(chart.lagnaSign)}, and the planet that runs your chart is ${chart.lagnaLord}, since it rules ${chart.lagnaSign}. ` +
+      `That planet sits in ${lagnaLordBody.sign}, in the area of ${housePlain(lagnaLordBody.house)}, which means your sense of yourself is worked out largely through that part of life rather than in the abstract. ` +
+      (disp ? `Because ${lagnaLordBody.sign} is ruled by ${disp}, the condition of ${disp} feeds into this as well, which is why the chart keeps pointing back to a small number of planets rather than treating each one separately.` : '') +
+      (cluster && cluster[1].some(b => b.name === chart.lagnaLord) ? ` It is not alone there, which intensifies that whole area.` : '')
+    );
+  } else if (chart.lagnaSign) {
+    paras.push(`The core pattern. With ${chart.lagnaSign} rising you meet life ${signTendency(chart.lagnaSign)}, and the ruler of that sign, ${chart.lagnaLord}, sets the tone for the chart as a whole.`);
+  }
+
+  // Paragraph 2: emotional pattern, Moon plus nakshatra plus Sun interaction.
+  if (has(moon)) {
+    const nk = nakshatraCopy(moon.nakshatra.name);
+    const sameHouseAsSun = has(sun) && sun.house && sun.house === moon.house;
+    paras.push(
+      `Emotionally. ${PLANET_PLAIN.Moon}, and yours works ${signTendency(moon.sign)}${moon.house ? `, focused on ${housePlain(moon.house)}` : ''}. ` +
+      (nk ? `${moon.nakshatra.name} narrows that to something more specific: ${nk.essence}. The strength in it is ${nk.gift}, and the cost is that ${nk.friction}.` : '') +
+      (sameHouseAsSun ? ` Your Sun sits in the same area, so who you are and what settles you are pulled toward the same part of life, which concentrates energy there but leaves less separation between confidence and mood.` : '')
+    );
+  }
+
+  // Paragraph 3: gifts and tensions from dignity.
+  if (strong.length || weak.length) {
+    const strongText = strong.length
+      ? `${list(strong.map(b => `${b.name} ${b.dignity === 'exalted' ? 'exalted' : 'in its own sign'} in ${b.sign}`))} ${strong.length > 1 ? 'are' : 'is'} working at full capacity. Exalted means placed in the sign where a planet functions best. Practically, ${list(strong.map(b => PLANET_MOTIVE[b.name]))} ${strong.length > 1 ? 'come' : 'comes'} more easily to you than to most people, and ${strong.length > 1 ? 'those are the functions' : 'that is the function'} other people tend to rely on you for.`
+      : '';
+    const weakText = weak.length
+      ? `At the same time ${list(weak.map(b => `${b.name} is debilitated in ${b.sign}`))}. Debilitated means placed in the sign where a planet operates least comfortably. It is not a defect. It usually shows up as a function that matures later, works in a personal and non-standard way, and becomes genuinely capable through experience rather than arriving ready-made. Since ${list(weak.map(b => PLANET_PLAIN[b.name]))}, that is where the learning curve sits.`
+      : '';
+    paras.push(`Gifts and the learning curve. ${strongText}${strongText && weakText ? ' ' : ''}${weakText}`);
+  }
+
+  // Paragraph 4: central tension and repeating lesson from AK plus dasha plus D9/D10 echoes.
+  if (ak) {
+    const akBody = chart.byName[ak.planet];
+    const ak9 = vargas.D9.byName[ak.planet];
+    const ak10 = vargas.D10.byName[ak.planet];
+    const echoes: string[] = [];
+    if (ak9 && akBody && ak9.sign === akBody.sign) echoes.push('the same sign repeats in the Navamsa, the divisional chart used to test whether something holds up over time');
+    if (ak10 && akBody && ak10.sign === akBody.sign) echoes.push('it repeats again in the Dashamsha, the chart read for work and public role');
+    if (current && current.maha.lord === ak.planet) echoes.push('and the long period you are currently in is ruled by that same planet');
+    paras.push(
+      `The repeating lesson. ${ak.planet} is your Atmakaraka, ${KARAKA_PLAIN.Atmakaraka} For you that means the recurring theme is ${PLANET_MOTIVE[ak.planet]}, worked out ${akBody ? `${signTendency(akBody.sign)}${akBody.house ? ` and mostly through ${housePlain(akBody.house)}` : ''}` : 'through that planet\u2019s themes'}. ` +
+      (echoes.length ? `This is not a single signal: ${list(echoes)}. When a theme shows up in more than one technique, it matters more, not less.` : 'Watch how often it reappears in the sections below, because repetition across techniques is how importance is measured in this system.')
+    );
+  }
+
+  // Paragraph 5: relationship and work pattern, plus current period.
+  const seventh = houseLord(chart, 7);
+  const tenth = houseLord(chart, 10);
+  const rel = seventh ? chart.byName[seventh.lord] : undefined;
+  const work = tenth ? chart.byName[tenth.lord] : undefined;
+  const relWork: string[] = [];
+  if (seventh && rel) {
+    relWork.push(`In close relationships, the seventh house covers partnership, and its ruler ${seventh.lord} sits in the area of ${housePlain(rel.house)}, so partnership tends to be bound up with that part of your life rather than kept separate from it`);
+  }
+  if (tenth && work) {
+    relWork.push(`in work, the tenth house covers career direction, and its ruler ${tenth.lord} sits in the area of ${housePlain(work.house)}, which points to the conditions you function best under rather than to a specific job`);
+  }
+  if (relWork.length) paras.push(`Relationships and work. ${list(relWork)}.`);
+
+  const takeaway = current
+    ? `You are a ${chart.lagnaSign || 'this'} rising person whose life keeps circling ${ak ? PLANET_MOTIVE[ak.planet] : 'one central theme'}, and you are currently inside a ${current.maha.lord} period, ${DASHA_EMPHASIS[current.maha.lord].label}. Read the sections below as the reasons behind that summary. Nothing here is a prediction. It is a description of tendency, and tendency responds to what you decide to do with it.`
+    : 'Read the sections below as the reasoning behind this summary. Everything here describes tendency and possibility, not fixed outcomes.';
+
+  return section(
+    'big-picture',
+    'The Big Picture',
+    'Who this chart describes, before the detail',
+    logic,
+    paras,
+    takeaway,
+  );
+}
+
+/* 3. Dasha ---------------------------------------------------------------- */
 
 function dashaSection(chart: VedicChart, current: CurrentDasha | null): VedicSectionData {
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
+  let takeaway: string | undefined;
 
   if (!current) {
     logic.push('Vimshottari dasha needs the Moon position to seed. Add the Moon to this chart to unlock the timeline.');
-    parts.push('Once the Moon is on this chart, the timeline will show which planetary chapter you are inside and when it hands over.');
+    paras.push('Once the Moon is on this chart, the timeline will show which planetary period you are inside and when it hands over.');
   } else {
-    const m = dashaCopy(current.maha.lord);
-    logic.push(`Mahadasha: ${current.maha.lord}, ${formatDashaRange(current.maha)} (${current.maha.years} years)`);
-    if (current.antar) logic.push(`Antardasha: ${current.antar.subLord} within ${current.maha.lord}, ${formatDashaRange(current.antar)}`);
+    const lord = current.maha.lord;
+    const info = DASHA_EMPHASIS[lord];
+    const seat = chart.byName[lord];
+    logic.push(`Mahadasha: ${lord}, ${formatDashaRange(current.maha)} (${current.maha.years} years)`);
+    if (current.antar) logic.push(`Antardasha: ${current.antar.subLord} within ${lord}, ${formatDashaRange(current.antar)}`);
     logic.push(`Progress through the mahadasha: ${Math.round(current.progress * 100)}%`);
-    const seat = chart.byName[current.maha.lord];
-    if (has(seat)) logic.push(`Dasha lord in the birth chart: ${bodyLine(seat)}`);
+    if (has(seat)) logic.push(`${lord} in the birth chart: ${bodyLine(seat)}`);
+    const ruled = rulership(chart, lord);
+    if (ruled.length) logic.push(`${lord} rules house ${ruled.join(' and house ')}`);
 
-    parts.push(`You are living inside the ${current.maha.lord} chapter, ${m.title}, running ${formatDashaRange(current.maha)}.`);
-    parts.push(`What this stretch asks is ${m.asks}, and what it tends to hand back is ${m.gives}.`);
-    if (has(seat) && seat.house) {
-      parts.push(`Because your ${current.maha.lord} sits in house ${seat.house}, the pressure and the payoff both show up around ${HOUSE_THEME[seat.house]}.`);
+    paras.push(`${DASHA_DEFINITION}`);
+
+    paras.push(
+      `You are currently in a ${lord} mahadasha, ${info.label}, running ${formatDashaRange(current.maha)}. ` +
+      `In general that period brings forward ${info.emphasis}. What it tends to build is ${info.grows}, and the strain that comes with it is ${info.strain}.`
+    );
+
+    if (has(seat)) {
+      const disp = dispositor(seat);
+      const rp = rulershipPhrase(chart, lord);
+      const dg = dignityPlain(lord, seat.sign, seat.dignity);
+      const nk = nakshatraCopy(seat.nakshatra.name);
+      paras.push(
+        `That general meaning has to be filtered through where ${lord} actually sits in your chart, which is what makes a period personal. ` +
+        `Yours is in ${seat.sign}${seat.house ? `, in the area of ${housePlain(seat.house)}` : ''}, so ${lord} themes are likely to be loudest there and to be handled ${signTendency(seat.sign)}. ` +
+        (rp ? `${rp}, so those areas get pulled into the period as well. ` : '') +
+        (dg ? `${dg} ` : '') +
+        (nk ? `Its nakshatra is ${seat.nakshatra.name} pada ${seat.nakshatra.pada}, ruled by ${seat.nakshatra.lord}, which adds a more specific flavor: ${nk.essence}. ` : '') +
+        (disp ? `${seat.sign} is ruled by ${disp}, so the condition of ${disp} in your chart quietly shapes how this period behaves.` : '')
+      );
     }
+
     if (current.antar) {
-      const a = dashaCopy(current.antar.subLord!);
-      parts.push(`Inside it, the ${current.antar.subLord} sub-period through ${formatDashaRange(current.antar).split(' to ')[1]} narrows the focus to ${a.asks}.`);
+      const sub = current.antar.subLord as VedicPlanet;
+      const subInfo = DASHA_EMPHASIS[sub];
+      const subBody = chart.byName[sub];
+      const subRuled = rulership(chart, sub);
+      paras.push(
+        `Inside the main period you are in a ${sub} antardasha, the sub-period running to ${formatDashaRange(current.antar).split(' to ')[1]}. ` +
+        `Read it as ${lord} and ${sub} operating together rather than as two separate forecasts. ${sub} brings ${subInfo.emphasis} into a ${lord} framework, ` +
+        (has(subBody) ? `and since your ${sub} sits in ${subBody.sign}${subBody.house ? `, in the area of ${housePlain(subBody.house)}` : ''}${subRuled.length ? ` and rules house ${subRuled.join(' and house ')}` : ''}, those are the themes most likely to feel louder right now. ` : '') +
+        `In practice the combination usually reads as ${subInfo.emphasis.split(',')[0]} being approached with the ${lord} requirement of ${info.emphasis.split(',')[0]}.`
+      );
     }
-    parts.push(`The trap to watch is ${m.trap}. That is a tendency, not a verdict, and noticing it early is most of the work.`);
+
+    takeaway = `A period emphasizes a theme. It does not switch other parts of life off, and it does not promise or withhold anything. During a ${lord} period the practical question is simple: what in your life is asking for ${info.emphasis.split(',')[0]}, and are you meeting it deliberately or resisting it? The trap named above, ${info.strain}, is the most common way people spend a good period badly.`;
   }
 
-  return {
-    id: 'dasha',
-    title: 'Your Life Timeline',
-    subtitle: 'Vimshottari dasha, the chapter you are inside now',
+  return section(
+    'dasha',
+    'Your Life Timeline',
+    'Vimshottari dasha, the period you are inside now',
     logic,
-    paragraph: parts.join(' '),
-  };
+    paras,
+    takeaway,
+  );
 }
 
-/* 3. Past life / why you came in ----------------------------------------- */
+/* 4. Past life / why you came in ----------------------------------------- */
 
 function pastLifeSection(chart: VedicChart, d12: VargaChart): VedicSectionData {
   const ketu = chart.byName.Ketu;
   const rahu = chart.byName.Rahu;
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
 
   if (has(ketu)) {
     logic.push(`Ketu: ${bodyLine(ketu)}`);
@@ -172,75 +378,102 @@ function pastLifeSection(chart: VedicChart, d12: VargaChart): VedicSectionData {
   if (has(rahu)) logic.push(`Rahu: ${bodyLine(rahu)}`);
   logic.push(`${VARGA_LABELS.D12.name} reads ${VARGA_LABELS.D12.reads}. Traditional claim, offered as inherited pattern rather than proven history.`);
 
+  paras.push(
+    'Rahu and Ketu are not planets. They are the two points where the Moon\u2019s path crosses the Sun\u2019s, and they always sit exactly opposite each other. Tradition reads them as an axis of experience: one end is already familiar, the other is not.'
+  );
+
   if (has(ketu)) {
     const nk = nakshatraCopy(ketu.nakshatra.name);
-    parts.push(`Ketu marks the ground you arrived already fluent in. Yours sits in ${ketu.sign}${ketu.house ? ` in house ${ketu.house}` : ''}, which means ${houseTheme(ketu.house)} is the area where you are competent almost without trying, and also the area you quietly discount because it came easy.`);
-    parts.push(`In ${ketu.nakshatra.name} that fluency looks like this: ${nk.gift}. The part that no longer serves you is ${nk.friction}.`);
+    paras.push(
+      `${PLANET_PLAIN.Ketu}. Yours is in ${ketu.sign}${ketu.house ? `, in the area of ${housePlain(ketu.house)}` : ''}. ` +
+      `That suggests real competence in that part of life, competence you tend to undervalue precisely because it did not cost you much to acquire. ` +
+      (nk ? `In ${ketu.nakshatra.name} the specific ability reads as ${nk.gift}, and the part that stops being useful is ${nk.friction}.` : '')
+    );
   }
   if (has(rahu)) {
-    parts.push(`Rahu sits opposite in ${rahu.sign}${rahu.house ? ` in house ${rahu.house}` : ''}, and that is the unfamiliar direction. ${rahu.house ? `You are here to get clumsy in public around ${HOUSE_THEME[rahu.house]}` : 'You are here to get clumsy in public in territory you have no track record in'}, which is why progress there feels like beginner work no matter how accomplished you are elsewhere.`);
+    paras.push(
+      `${PLANET_PLAIN.Rahu}. Yours sits opposite, in ${rahu.sign}${rahu.house ? `, in the area of ${housePlain(rahu.house)}` : ''}, and this is the side you have less experience with and more appetite for. ` +
+      `Progress there is likely to feel like beginner work no matter how accomplished you are elsewhere, which is an accurate description of the axis rather than a sign anything is wrong.`
+    );
   }
-  parts.push('Traditional texts read this axis as unfinished business carried forward. Whether or not you take that literally, the practical version is the same: the thing you keep retreating into is not where the growth is.');
+  paras.push(
+    'Classical texts describe this axis as unfinished business carried forward from a previous life. That is a traditional claim, not something the chart can prove, and you can take it literally or not without changing the practical reading.'
+  );
 
-  return {
-    id: 'past-life',
-    title: 'Why You Came In',
-    subtitle: 'Ketu, Rahu and the Dwadashamsha (D12)',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const takeaway = has(ketu) && has(rahu)
+    ? `In real life this usually shows up as a pull between two comfortable options: retreating into ${housePlain(ketu.house)}, where you already know what you are doing, or stretching into ${housePlain(rahu.house)}, where you do not. Both are legitimate. The one that develops you is the second, and the useful move is to keep the Ketu skill as a resource rather than a hiding place.`
+    : undefined;
+
+  return section('past-life', 'Why You Came In', 'Ketu, Rahu and the Dwadashamsha (D12)', logic, paras, takeaway);
 }
 
-/* 4. Purpose, gifts and talents ------------------------------------------ */
+/* 5. Purpose, gifts and talents ------------------------------------------ */
 
 function purposeSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssignment[]): VedicSectionData {
   const ak = findKaraka(karakas, 'Atmakaraka');
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
+  let takeaway: string | undefined;
 
-  if (ak) {
-    const body = chart.byName[ak.planet];
-    logic.push(`Atmakaraka: ${ak.planet} at ${formatDegree(ak.degree)} ${ak.sign}${ak.house ? `, house ${ak.house}` : ''} (highest degree in the chart)`);
-    logic.push(`Atmakaraka is ${KARAKA_MEANING.Atmakaraka}`);
-    const ak9 = d9.byName[ak.planet];
-    if (ak9) logic.push(`Atmakaraka in ${VARGA_LABELS.D9.name}: ${ak9.sign}${ak9.house ? `, house ${ak9.house}` : ''}${ak9.dignity !== 'neutral' ? `, ${ak9.dignity}` : ''}`);
-    if (isVargottama(chart, d9, ak.planet)) logic.push(`${ak.planet} is vargottama, the same sign in the birth chart and the Navamsa. Classically the strongest mark of durability.`);
-    if (has(body)) logic.push(`Nakshatra: ${body.nakshatra.name} pada ${body.nakshatra.pada}`);
-
-    parts.push(`Your Atmakaraka is ${ak.planet}, the planet that travelled furthest into its sign, and in this system that makes it the loudest voice in your life. It governs ${PLANET_ROLE[ak.planet]}, so that is the theme your life keeps handing back to you until you deal with it directly.`);
-    if (ak.house) {
-      parts.push(`Sitting in house ${ak.house}, it works itself out through ${HOUSE_THEME[ak.house]}, and it does that in a ${ak.sign} way, meaning ${signStyle(ak.sign)}.`);
-    }
-    if (ak9) {
-      const gloss = dignityGloss(ak9.dignity);
-      parts.push(`The Navamsa is the pressure test, the chart that says whether something holds up over time rather than just showing up early. There your ${ak.planet} lands in ${ak9.sign} and ${gloss}, which tells you ${ak9.dignity === 'debilitated' ? 'this gift matures late and gets stronger specifically through the years you thought you were failing at it' : ak9.dignity === 'exalted' || ak9.dignity === 'own sign' ? 'this is the ability that keeps working when everything else about your life changes' : 'this ability develops steadily rather than dramatically, and it rewards repetition more than inspiration'}.`);
-    }
-    if (isVargottama(chart, d9, ak.planet)) {
-      parts.push('It also repeats the same sign in both charts, which classical texts treat as unusually stable. In plain terms, this is the part of you that does not shift depending on who is in the room.');
-    }
-    if (has(body)) {
-      const nk = nakshatraCopy(body.nakshatra.name);
-      parts.push(`The specific talent, read through ${body.nakshatra.name}, is ${nk.gift}. Use that as the thing you offer, and treat ${nk.friction} as the maintenance cost rather than a character flaw.`);
-    }
-  } else {
+  if (!ak) {
     logic.push('Atmakaraka needs the seven grahas plus Rahu on the chart.');
-    parts.push('Fill in the remaining planets on this chart and the soul indicator will resolve.');
+    paras.push('Fill in the remaining planets on this chart and this section will resolve.');
+    return section('purpose', 'Purpose, Gifts and Talents', 'Atmakaraka and the Navamsa (D9)', logic, paras);
   }
 
-  return {
-    id: 'purpose',
-    title: 'Purpose, Gifts and Talents',
-    subtitle: 'Atmakaraka and the Navamsa (D9)',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const body = chart.byName[ak.planet];
+  logic.push(`Atmakaraka: ${ak.planet} at ${formatDegree(ak.degree)} ${ak.sign}${ak.house ? `, house ${ak.house}` : ''} (highest degree in the chart)`);
+  logic.push(`Atmakaraka is ${KARAKA_MEANING.Atmakaraka}`);
+  const ak9 = d9.byName[ak.planet];
+  if (ak9) logic.push(`Atmakaraka in ${VARGA_LABELS.D9.name}: ${ak9.sign}${ak9.house ? `, house ${ak9.house}` : ''}${ak9.dignity !== 'neutral' ? `, ${ak9.dignity}` : ''}`);
+  if (isVargottama(chart, d9, ak.planet)) logic.push(`${ak.planet} is vargottama, the same sign in the birth chart and the Navamsa`);
+  if (has(body)) logic.push(`Nakshatra: ${body.nakshatra.name} pada ${body.nakshatra.pada}`);
+
+  paras.push(
+    `The Atmakaraka is the planet that travelled furthest into its sign, and in the Jaimini branch of Vedic astrology it is treated as the loudest theme in the life. Yours is ${ak.planet}, and ${PLANET_PLAIN[ak.planet]}. ` +
+    `So the thread that keeps returning for you is ${PLANET_MOTIVE[ak.planet]}.`
+  );
+
+  if (has(body)) {
+    const dg = dignityPlain(ak.planet, body.sign, body.dignity);
+    const rp = rulershipPhrase(chart, ak.planet);
+    paras.push(
+      `It sits in ${body.sign}${body.house ? `, in the area of ${housePlain(body.house)}` : ''}, so the theme is expressed ${signTendency(body.sign)} and tends to be worked out in that part of life. ` +
+      (rp ? `${rp}, which links those areas to the same thread. ` : '') +
+      (dg ? dg : '')
+    );
+    const nk = nakshatraCopy(body.nakshatra.name);
+    if (nk) {
+      paras.push(
+        `The nakshatra adds precision. ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, describes ${nk.essence}. The usable talent inside that is ${nk.gift}. The recurring cost is that ${nk.friction}, which is worth treating as maintenance rather than as a flaw.`
+      );
+    }
+  }
+
+  if (ak9) {
+    const vargottama = isVargottama(chart, d9, ak.planet);
+    paras.push(
+      `The Navamsa, or D9, is a divisional chart built by dividing each sign into nine parts. It is traditionally used to see whether something holds up over time rather than only showing well early. ` +
+      `In your Navamsa ${ak.planet} lands in ${ak9.sign}${ak9.dignity !== 'neutral' ? `, ${ak9.dignity} there` : ''}. ` +
+      (ak9.dignity === 'debilitated'
+        ? 'That combination usually describes an ability that matures late and improves specifically through the stretch where you assumed you were failing at it.'
+        : ak9.dignity === 'exalted' || ak9.dignity === 'own sign'
+          ? 'That combination describes an ability that keeps functioning when the outer circumstances of your life change.'
+          : 'That combination describes an ability that develops steadily rather than dramatically, and that rewards repetition more than inspiration.') +
+      (vargottama ? ' It also holds the same sign in both charts, which classical texts call vargottama and treat as unusually stable. In plain terms, this part of you does not change much depending on who is in the room.' : '')
+    );
+  }
+
+  takeaway = `The practical version is this: your strongest contribution runs through ${ak.planet}, meaning ${PLANET_MOTIVE[ak.planet]}. Choose work, projects and commitments that ask for that function directly. When you are using it, effort tends to convert into progress. When a situation gives you no room for it, you can perform well and still feel like the wrong person for the job.`;
+
+  return section('purpose', 'Purpose, Gifts and Talents', 'Atmakaraka and the Navamsa (D9)', logic, paras, takeaway);
 }
 
-/* 5. Money and wealth ---------------------------------------------------- */
+/* 6. Money and wealth ---------------------------------------------------- */
 
 function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
 
   const dhana = [2, 11, 9] as const;
   const lords: { house: number; sign: string; lord: VedicPlanet; body?: VedicBody }[] = [];
@@ -255,45 +488,55 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
   const occupants = [...bodiesInHouse(chart, 2), ...bodiesInHouse(chart, 11)];
   if (occupants.length) logic.push(`In the wealth houses: ${occupants.map(b => `${b.name} (house ${b.house})`).join(', ')}`);
   const jup2 = d2.byName.Jupiter;
-  const ven2 = d2.byName.Venus;
   if (jup2) logic.push(`Jupiter in ${VARGA_LABELS.D2.name}: ${jup2.sign}`);
-  if (ven2) logic.push(`Venus in ${VARGA_LABELS.D2.name}: ${ven2.sign}`);
-  logic.push('Houses 2, 11 and 9 are the classical dhana (wealth) houses. Verdicts below are labelled as classical readings, not predictions.');
+  logic.push('Houses 2, 11 and 9 are the classical dhana (wealth) houses: what you earn and hold, what you gain through networks, and what comes through knowledge and good fortune.');
 
   const second = lords.find(l => l.house === 2);
   const eleventh = lords.find(l => l.house === 11);
 
+  paras.push(
+    'In Vedic astrology money is read from a group of houses rather than one. The second house covers what you earn and hold, along with self-worth and speech. The eleventh covers gains, goals and networks. The ninth covers knowledge, mentors and good fortune. The rulers of those houses, and where they sit, describe the pattern your earning tends to follow.'
+  );
+
   if (second?.body) {
-    parts.push(`Your earning ruler is ${second.lord}, and it sits in house ${second.body.house ?? 2}. In plain terms, that is the route your money actually takes: ${moneyRoute(second.body.house)} The version that works less well for you is the standard path, applying into a hiring process where nobody has met you and the decision is made off paper.`);
+    const disp = dispositor(second.body);
+    paras.push(
+      `Your second house is ruled by ${second.lord}, and ${PLANET_PLAIN[second.lord]}. It sits in the area of ${housePlain(second.body.house)}. ` +
+      `${moneyPattern(second.body.house)} ` +
+      (disp ? `${second.body.sign} is ruled by ${disp}, so how well this works is also tied to the condition of ${disp} in your chart.` : '')
+    );
   } else if (second) {
-    parts.push(`Your earning ruler is ${second.lord} in ${second.sign}, so the way you handle earning looks like this: ${signStyle(second.sign)}.`);
+    paras.push(`Your second house is ruled by ${second.lord} in ${second.sign}, so you tend to handle earning and security ${signTendency(second.sign)}. House placement, which would make this more specific, needs an accurate birth time.`);
   }
+
   if (eleventh?.body) {
-    parts.push(`Increase, meaning bonuses, raises and money that arrives through other people, runs through ${eleventh.lord} in house ${eleventh.body.house ?? 11}: ${moneyRoute(eleventh.body.house)} So when you want more, do not work harder at the base income. Go widen that channel instead.`);
+    paras.push(
+      `Gains, meaning increases beyond your base income, are read from the eleventh house. Yours is ruled by ${eleventh.lord}, sitting in the area of ${housePlain(eleventh.body.house)}. ` +
+      `${moneyPattern(eleventh.body.house)} The useful implication is that growth is more likely to come from strengthening that channel than from working longer hours at the base.`
+    );
   }
 
   const strained = lords.find(l => l.body?.dignity === 'debilitated');
-  if (strained) {
-    parts.push(`One honest note: your house ${strained.house} lord ${strained.lord} is in ${strained.sign}, which classical texts read as weakened. In lived terms that usually means money comes later and by effort rather than early and by luck, and the drain is ${strained.house === 2 ? 'spending that quietly matches whatever you earn' : 'saying yes to people whose plans cost you more than they return'}.`);
+  if (strained && strained.body) {
+    paras.push(
+      `One honest note. The ruler of your ${strained.house}th house, ${strained.lord}, is debilitated in ${strained.sign}, meaning it is in the sign where it operates least comfortably. Classically this is read as a slower and more effortful route rather than a blocked one. In practice it often describes financial confidence that builds later and through experience, and a tendency to underestimate what you are worth in the meantime.`
+    );
   } else {
-    parts.push('None of your wealth-house rulers are in classically weakened signs, which reads as steady rather than dramatic. The money question for you is less about capacity and more about consistency.');
+    paras.push('None of your wealth house rulers are in signs classical texts read as weakened, which describes a steady rather than dramatic pattern. The question for you is consistency more than capacity.');
   }
-  parts.push('The practical move: pick the one income stream that matches the house above and give it two quarters of undivided attention before adding anything new. This system describes tendency and timing windows. It does not tell you a number, and any reading that promises you wealth by a date is selling something.');
 
-  return {
-    id: 'wealth',
-    title: 'Money and Wealth',
-    subtitle: 'Dhana houses and the Hora chart (D2)',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const takeaway = second?.body
+    ? `In real life: your money tends to follow the pattern above rather than the standard advice. Identify the one income channel that matches it and give it sustained attention before adding another. This system describes tendency and timing. It does not name a number, and any reading that promises wealth by a date is selling something.`
+    : 'In real life: this section describes the shape your earning tends to take, not an amount and not a schedule.';
+
+  return section('wealth', 'Money and Wealth', 'Dhana houses and the Hora chart (D2)', logic, paras, takeaway);
 }
 
-/* 6. Career -------------------------------------------------------------- */
+/* 7. Career -------------------------------------------------------------- */
 
 function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssignment[]): VedicSectionData {
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
 
   const tenth = houseLord(chart, 10);
   const amk = findKaraka(karakas, 'Amatyakaraka');
@@ -307,36 +550,51 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
   if (amk10) logic.push(`Amatyakaraka in ${VARGA_LABELS.D10.name}: ${amk10.sign}${amk10.house ? `, house ${amk10.house}` : ''}`);
   if (d10.lagnaSign) logic.push(`${VARGA_LABELS.D10.name} lagna: ${d10.lagnaSign}`);
 
+  paras.push(
+    'Career is read from three places at once: the tenth house and its ruler, which describe direction and responsibility, the Amatyakaraka, which is the second highest degree planet and is read as the function your working life runs through, and the Dashamsha or D10, a divisional chart used only for work and public role.'
+  );
+
   if (amk) {
-    parts.push(`Your career indicator is ${amk.planet}, which means the work that fits you is work that uses ${PLANET_ROLE[amk.planet]}.`);
+    paras.push(
+      `Your Amatyakaraka is ${amk.planet}, and ${PLANET_PLAIN[amk.planet]}. That points to work which genuinely uses that capacity. It describes the function, not a job title, so it can be satisfied in many different fields, and it is a useful test to run on any role you are considering.`
+    );
   }
-  if (tenthLordBody?.house) {
-    parts.push(`Your tenth house lord ${tenth!.lord} sits in house ${tenthLordBody.house}, so your reputation gets built through ${houseTheme(tenthLordBody.house)}, which is usually not the job title you would have picked on paper.`);
+  if (tenth && tenthLordBody?.house) {
+    const rp = rulershipPhrase(chart, tenth.lord);
+    paras.push(
+      `The tenth house covers career direction and public reputation. Yours is ruled by ${tenth.lord}, which sits in the area of ${housePlain(tenthLordBody.house)}. ` +
+      `That suggests your professional standing is built through that part of life rather than through a conventional ladder, and it is often not the route you would have picked on paper. ` +
+      (rp ? `${rp}, which is why those themes keep turning up in work contexts for you.` : '')
+    );
   } else if (tenth) {
-    parts.push(`Your tenth house is ruled by ${tenth.lord} in ${tenth.sign}, so the way you work is this: ${signStyle(tenth.sign)}.`);
+    paras.push(`Your tenth house is ruled by ${tenth.lord} in ${tenth.sign}, so you tend to work ${signTendency(tenth.sign)}.`);
   }
-  if (amk10) {
-    parts.push(`The Dashamsha is the career-only chart, and there your ${amk.planet} lands in ${amk10.sign}${amk10.house ? ` in house ${amk10.house}` : ''}, which points at an environment that ${signStyle(amk10.sign)}. Put plainly, you do well where ${amk10.dignity === 'debilitated' ? 'you are given time to get good rather than judged in the first year' : 'your specific method is the reason they hired you'}.`);
+  if (amk10 && amk) {
+    paras.push(
+      `In the Dashamsha your ${amk.planet} lands in ${amk10.sign}${amk10.house ? `, in the area of ${housePlain(amk10.house)}` : ''}, which describes the working environment that suits you: one that operates ${signTendency(amk10.sign)}. ` +
+      (amk10.dignity === 'debilitated'
+        ? 'It also suggests you develop into your professional strength over time rather than arriving fully formed, so situations that allow a learning curve suit you better than ones that judge you in the first year.'
+        : 'It also suggests your particular method is part of what makes you valuable, so roles that require you to work generically tend to underuse you.')
+    );
   }
   if (tenthOccupants.length) {
-    parts.push(`With ${tenthOccupants.map(b => b.name).join(' and ')} in the tenth, your work is visible whether or not you want it to be, and staying quietly competent in the background rarely works out for you.`);
+    paras.push(
+      `With ${list(tenthOccupants.map(b => b.name))} placed in the tenth house, work and visibility carry more weight in your chart than average. Tradition reads this as a life where public role is a main theme rather than a background one.`
+    );
   }
-  parts.push('The mismatch that burns you out is taking a role that pays well while using none of the above. When you notice the tiredness that sleep does not fix, that is usually the signal, not a work-ethic problem.');
 
-  return {
-    id: 'career',
-    title: 'Career and Work',
-    subtitle: 'Tenth house, Amatyakaraka and the Dashamsha (D10)',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const takeaway = amk
+    ? `In real life: the fit test is not the industry, it is whether the role asks for ${PLANET_MOTIVE[amk.planet]}. A well-paid position that never uses that capacity tends to feel wrong for reasons that are hard to explain, and a modest one that uses it constantly tends to hold your interest.`
+    : undefined;
+
+  return section('career', 'Career and Work', 'Tenth house, Amatyakaraka and the Dashamsha (D10)', logic, paras, takeaway);
 }
 
-/* 7. Partner and marriage ------------------------------------------------ */
+/* 8. Partner and marriage ------------------------------------------------ */
 
 function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssignment[], dashas: DashaPeriod[]): VedicSectionData {
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
 
   const dk = findKaraka(karakas, 'Darakaraka');
   const seventh = houseLord(chart, 7);
@@ -344,7 +602,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   const occupants = bodiesInHouse(chart, 7);
   const venus = chart.byName.Venus;
 
-  if (dk) logic.push(`Darakaraka (partner indicator): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest degree in the chart)`);
+  if (dk) logic.push(`Darakaraka (partnership indicator): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest degree in the chart)`);
   if (seventh) logic.push(`House 7 lord: ${seventh.lord} (${seventh.sign})${seventhLordBody?.house ? `, sitting in house ${seventhLordBody.house}` : ''}`);
   if (seventhLordBody) logic.push(`House 7 lord nakshatra: ${seventhLordBody.nakshatra.name} pada ${seventhLordBody.nakshatra.pada}`);
   if (occupants.length) logic.push(`In house 7: ${occupants.map(b => b.name).join(', ')}`);
@@ -352,42 +610,57 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   const dk9 = dk ? d9.byName[dk.planet] : undefined;
   if (dk9) logic.push(`Darakaraka in ${VARGA_LABELS.D9.name}: ${dk9.sign}${dk9.house ? `, house ${dk9.house}` : ''}`);
 
+  paras.push(
+    'Partnership is read from the seventh house and its ruler, from Venus, which describes what you value and enjoy in closeness, and from the Darakaraka, the planet at the lowest degree in the chart, read as the qualities that matter most in a close relationship. The Navamsa is then used to see what tends to hold over time.'
+  );
+
   if (dk) {
-    parts.push(`Your partner indicator is ${dk.planet} in ${dk.sign}, so the person tends to arrive carrying ${PLANET_ROLE[dk.planet]} into your life. In behavior that reads like the ${dk.sign} move: ${signStyle(dk.sign).replace(/^you /, '')}. What they avoid is the opposite move: sitting in ambiguity without acting on it.`);
+    paras.push(
+      `Your Darakaraka is ${dk.planet} in ${dk.sign}, and ${PLANET_PLAIN[dk.planet]}. Read as a partnership signal, that points to closeness where ${PLANET_MOTIVE[dk.planet]} is central: it is both what you tend to be drawn to in someone else and what you are asked to develop in yourself. Expressed ${signTendency(dk.sign)}, that quality can look like steadiness or like pressure depending on how consciously it is handled.`
+    );
   }
-  if (seventhLordBody?.house) {
-    parts.push(`Where and how you meet is read from the seventh lord, and yours sits in house ${seventhLordBody.house}. That points to meetings connected to ${houseTheme(seventhLordBody.house)} rather than to a scene you would go out looking in.`);
+  if (seventh && seventhLordBody?.house) {
+    paras.push(
+      `The ruler of your seventh house is ${seventh.lord}, sitting in the area of ${housePlain(seventhLordBody.house)}. That connects partnership to that part of your life, meaning relationships tend to become intertwined with those themes rather than existing separately from them. It describes a connection between areas, not a place or a person.`
+    );
   }
   if (occupants.length) {
-    parts.push(`With ${occupants.map(b => b.name).join(' and ')} sitting in the seventh, partnership is a main arena of your life rather than a side plot, and you tend to become noticeably different inside a relationship than outside one.`);
+    paras.push(
+      `With ${list(occupants.map(b => b.name))} in the seventh house, one-to-one relationship is a main arena in this chart rather than a side theme. Tradition reads this as someone who becomes noticeably different inside a close partnership than outside one, so who you partner with shapes more of your life than it does for most people.`
+    );
   }
-  if (dk9) {
-    parts.push(`The Navamsa is the marriage chart in this tradition, and there your ${dk.planet} is in ${dk9.sign}, which suggests the relationship that lasts is one that ${dk9.dignity === 'debilitated' ? 'starts unglamorously and gets better as both people stop performing' : 'holds together through shared practical commitment rather than intensity'}.`);
+  if (dk9 && dk) {
+    paras.push(
+      `In the Navamsa your ${dk.planet} sits in ${dk9.sign}. ` +
+      (dk9.dignity === 'debilitated'
+        ? 'That suggests relationships that improve as both people stop performing, and a partnership pattern that is more durable than it is impressive early on.'
+        : 'That suggests durability comes from shared practical commitment rather than from intensity alone.')
+    );
   }
+
   const partnerWindows = dashas
     .filter(p => (dk && p.lord === dk.planet) || (seventh && p.lord === seventh.lord) || p.lord === 'Venus')
     .filter(p => p.end.getFullYear() >= new Date().getFullYear())
     .slice(0, 3);
   if (partnerWindows.length) {
-    logic.push(`Partnership-flavored dasha windows: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)}`).join('; ')}`);
-    parts.push(`The windows when partnership themes get loud are the periods of ${partnerWindows.map(p => `${p.lord} (${formatDashaRange(p)})`).join(', ')}. Those are windows for the theme to activate, not appointments, and plenty happens between them.`);
+    logic.push(`Periods that emphasize partnership themes: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)}`).join('; ')}`);
+    paras.push(
+      `The periods when relationship themes are emphasized are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}`))}. Emphasis means the topic becomes louder, not that anything is scheduled, and plenty happens outside those windows.`
+    );
   }
-  parts.push('Classical texts are blunt about marriage timing. This app is not, on purpose, because a date you can be measured against turns a useful description into a countdown.');
 
-  return {
-    id: 'partner',
-    title: 'Partner and Marriage',
-    subtitle: 'Darakaraka, seventh house and the Navamsa (D9)',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const takeaway = dk
+    ? `In real life: this section describes what closeness asks of you, not who arrives or when. The recurring work is ${PLANET_MOTIVE[dk.planet]}, and relationships tend to go better when you develop that quality yourself instead of looking for someone to supply it.`
+    : undefined;
+
+  return section('partner', 'Partner and Marriage', 'Darakaraka, seventh house and the Navamsa (D9)', logic, paras, takeaway);
 }
 
-/* 8. Obstacles ----------------------------------------------------------- */
+/* 9. Obstacles ----------------------------------------------------------- */
 
 function obstacleSection(chart: VedicChart): VedicSectionData {
   const logic: string[] = [];
-  const parts: string[] = [];
+  const paras: string[] = [];
 
   const saturn = chart.byName.Saturn;
   const rahu = chart.byName.Rahu;
@@ -397,30 +670,37 @@ function obstacleSection(chart: VedicChart): VedicSectionData {
   if (has(rahu)) logic.push(`Rahu: ${bodyLine(rahu)}`);
   if (has(lagnaLordBody)) logic.push(`Lagna lord ${chart.lagnaLord}: ${bodyLine(lagnaLordBody)}`);
   const sixth = bodiesInHouse(chart, 6);
-  if (sixth.length) logic.push(`In house 6 (friction, work, health): ${sixth.map(b => b.name).join(', ')}`);
+  if (sixth.length) logic.push(`In house 6 (daily work, routine, problem solving): ${sixth.map(b => b.name).join(', ')}`);
 
   if (has(saturn)) {
-    parts.push(`Saturn shows where life makes you earn it, and yours is in ${saturn.sign}${saturn.house ? ` in house ${saturn.house}` : ''}. The recurring block shows up around ${houseTheme(saturn.house)}, and it is slow rather than dramatic: things there take longer for you than they seem to for other people.`);
-    parts.push(`The counter-move is specific. Pick the smallest repeatable version of that work and do it on a schedule you would be embarrassed to call ambitious. Saturn responds to repetition and does not respond at all to intensity.`);
+    const rp = rulershipPhrase(chart, saturn.name);
+    const dg = dignityPlain('Saturn', saturn.sign, saturn.dignity);
+    paras.push(
+      `${PLANET_PLAIN.Saturn}. Yours is in ${saturn.sign}${saturn.house ? `, in the area of ${housePlain(saturn.house)}` : ''}, which is the part of life where you are most likely to feel that things take longer for you than they appear to for other people. ` +
+      `Saturn placements describe delay and durability together, so the same area that resists early usually becomes an area of real competence later. ` +
+      (dg ? `${dg} ` : '') +
+      (rp ? `${rp}, so responsibility in those areas tends to arrive early or feel heavier than expected.` : '')
+    );
   }
   if (has(rahu) && rahu.house) {
-    parts.push(`Rahu in house ${rahu.house} is the other kind of obstacle, the one that comes from wanting fast. Around ${HOUSE_THEME[rahu.house]} you will be tempted to skip the boring middle, and that is exactly where the mess gets made.`);
+    paras.push(
+      `${PLANET_PLAIN.Rahu}. Yours is in the area of ${housePlain(rahu.house)}, which describes strong appetite in a place where you have limited experience. The typical tension is impatience with the unglamorous middle stage of a process, and that is usually where the avoidable mistakes happen.`
+    );
   }
   if (has(lagnaLordBody) && lagnaLordBody.dignity === 'debilitated') {
-    parts.push(`Your lagna lord ${chart.lagnaLord} is in a classically weakened sign, which traditionally reads as a body and confidence that need managing rather than pushing. The practical translation is that your energy is a resource with a budget, and spending it in advance is the pattern to break.`);
+    paras.push(
+      `The ruler of your rising sign, ${chart.lagnaLord}, is debilitated, meaning placed in the sign where it works least comfortably. Since that planet stands for you, tradition reads this as energy and confidence that need managing rather than pushing. The practical version is that your capacity is real but has a budget, and spending it in advance is the pattern worth breaking.`
+    );
   }
-  parts.push('No remedies to buy here, and no curse language. The obstacles in this reading are patterns you can see coming, which is the only thing that makes them workable.');
 
-  return {
-    id: 'obstacles',
-    title: 'Obstacles and How You Move Them',
-    subtitle: 'Saturn, Rahu and the lagna lord',
-    logic,
-    paragraph: parts.join(' '),
-  };
+  const takeaway = has(saturn)
+    ? `In real life: the counter-move for a Saturn area is not intensity, it is repetition. Pick the smallest version of the work you can sustain and keep it going on a schedule that feels almost too modest. For the Rahu area, the counter-move is finishing one thing before reaching for the next. These are patterns you can see coming, which is what makes them workable.`
+    : undefined;
+
+  return section('obstacles', 'Obstacles and How You Move Them', 'Saturn, Rahu and the lagna lord', logic, paras, takeaway);
 }
 
-/* 9. Vedic vs Western ---------------------------------------------------- */
+/* 10. Vedic vs Western ---------------------------------------------------- */
 
 function comparisonSection(chart: VedicChart): VedicSectionData {
   const shifted = chart.bodies.filter(b => b.sign !== b.tropicalSign);
@@ -430,30 +710,32 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
     `Ayanamsa applied: Lahiri, ${formatDegree(chart.ayanamsa)}`,
     `Signs that shift: ${shifted.length ? shifted.map(b => `${b.name} ${b.tropicalSign} to ${b.sign}`).join(', ') : 'none'}`,
     `Signs that hold: ${held.length ? held.map(b => b.name).join(', ') : 'none'}`,
-    'Western houses stay Placidus elsewhere in the app. This tab uses whole-sign houses, which is correct for Jyotish.',
+    'Western houses stay Placidus elsewhere in the app. This tab uses whole sign houses, which is standard for Jyotish.',
   ];
 
-  const parts: string[] = [];
-  parts.push(`Two systems, one sky. The placements themselves did not move, only the measuring stick did, so nothing you already know about your Western chart becomes wrong here.`);
+  const paras: string[] = [];
+  paras.push(
+    'Two systems, one sky. The planets did not move. The measuring stick changed, because the Western zodiac starts from the spring equinox and the Vedic zodiac starts from a fixed star reference. Nothing you already know about your Western chart becomes wrong here.'
+  );
   if (shifted.length) {
-    const shiftedNames = shifted.map(b => b.name).join(', ');
-    const heldNames = held.map(b => b.name).join(', ');
     const heldClause = held.length === 0
       ? 'nothing stays put'
       : held.length === 1
-        ? `${heldNames} stays put`
-        : `${heldNames} stay put`;
-    parts.push(`For you, ${shiftedNames} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. The ones that shifted are worth reading twice, because the two descriptions usually cover different parts of the same behavior rather than contradicting each other.`);
+        ? `${held[0].name} stays put`
+        : `${list(held.map(b => b.name))} stay put`;
+    paras.push(
+      `For you, ${list(shifted.map(b => b.name))} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. The ones that shifted are worth reading twice, since the two descriptions usually cover different aspects of the same behavior rather than contradicting each other.`
+    );
   } else {
-    parts.push('Unusually, everything on your chart lands in the same sign in both systems, which means the two readings will sound like each other.');
+    paras.push('Unusually, every body on your chart lands in the same sign in both systems, so the two readings will sound like each other.');
   }
-  parts.push('Use the Western chart for psychology and timing of transits, and use this tab for life chapters, purpose and the practical questions about money, work and partnership. They are answering different questions.');
 
-  return {
-    id: 'comparison',
-    title: 'Vedic and Western Side by Side',
-    subtitle: 'What changed, what held',
+  return section(
+    'comparison',
+    'Vedic and Western Side by Side',
+    'What changed, what held',
     logic,
-    paragraph: parts.join(' '),
-  };
+    paras,
+    'In real life: use the Western chart for psychological detail and transit timing, and use this tab for life periods, purpose and the practical questions about money, work and partnership. They answer different questions and do not need to agree.',
+  );
 }

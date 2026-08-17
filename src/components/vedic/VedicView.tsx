@@ -119,7 +119,12 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
       divisionalCharts: Object.fromEntries(
         Object.entries(vargas).map(([k, v]) => [k, { reads: v.reads, lagna: v.lagnaSign, placements: v.placements }])
       ),
-      sections: sections.map(s => ({ title: s.title, chartLogic: s.logic, reading: s.paragraph })),
+      sections: sections.map(s => ({
+        title: s.title,
+        chartLogic: s.logic,
+        reading: s.paragraphs,
+        whatThisMeansInRealLife: s.takeaway || null,
+      })),
       placementDeepDive: buildPlacementDeepDives(chart),
       signatureCombinations: findComboHits(chart),
     };
