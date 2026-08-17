@@ -738,7 +738,7 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
         ? `${held[0].name} stays put`
         : `${list(held.map(b => b.name))} stay put`;
     paras.push(
-      `For you, ${list(shifted.map(b => b.name))} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. The ones that shifted are worth reading twice, since the two descriptions usually cover different aspects of the same behavior rather than contradicting each other.`
+      `For you, ${list(shifted.map(b => b.name))} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. A shifted Sun is the one people misread most often. It does not mean you are secretly the new sign and were never the old one. A Vedic Sun is never read as a sign label by itself: it is read through its house, the houses it rules, its nakshatra, its sign condition, the planet that rules the sign it sits in, what it sits with, and the period you are in. The Western Sun sign keeps doing its own job under its own rules. Two lenses, same sky, different questions.`
     );
   } else {
     paras.push('Unusually, every body on your chart lands in the same sign in both systems, so the two readings will sound like each other.');
