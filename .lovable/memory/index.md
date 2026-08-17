@@ -106,6 +106,7 @@ Updated: now
 - [Vision Engine Extraction](mem://features/chart-import/vision-engine-extraction-standards) — parse-chart-image extracts full 37 bodies from Solar Return wheels and tables
 - [Ascendant Ruler Narrative Layers](mem://features/astrology/solar-return/ascendant-ruler-narrative-layers) — Plot (SR chart) vs Setting (Natal chart) dual-layer ruler interpretation
 - [Ask Tab PDF Export](mem://features/ask-tab/pdf-export-standards) — 32pt titles, merged single-document output for Ask Tab PDF reports
+- [Vedic Jyotish Tab](mem://features/vedic/jyotish-tab-standards) — Lahiri sidereal, whole-sign houses, 9 grahas, Vimshottari dasha, D2/D7/D9/D10/D12, nine felt-sense sections
 - [Navigation Persistence](mem://features/home/navigation-persistence) — Preserves viewMode via sessionStorage to prevent navigation resets
 - [Natal Astrocartography Engine](mem://features/ask-tab/natal-astrocartography-engine) — 120+ city relocation engine with dual-layer (Long-Term vs This Year) analysis
 - [AI Chart Consultation](mem://features/ask-tab/ai-chart-consultation) — Quick Topic prompts trigger high-depth, auto-submitted AI queries
