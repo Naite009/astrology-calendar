@@ -23,7 +23,7 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
     <div className="rounded-lg border border-border bg-card p-5 md:p-6">
       <h3 className="font-serif text-xl">Dasha Timeline</h3>
       <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1 mb-4">
-        120 years from birth · tap a period for its sub-periods
+        One full 120 year cycle from birth · later periods fall past a normal lifespan · tap a period for its sub-periods
       </p>
 
       <div className="space-y-2">
