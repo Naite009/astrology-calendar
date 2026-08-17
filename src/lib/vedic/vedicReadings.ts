@@ -157,13 +157,27 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
     );
   }
   if (has(sun)) {
+    const nkSun = nakshatraCopy(sun.nakshatra.name);
+    const rp = rulershipPhrase(chart, 'Sun');
+    const disp = dispositor(sun);
+    const withSun = sun.house
+      ? bodiesInHouse(chart, sun.house).filter(b => b.name !== 'Sun')
+      : [];
     paras.push(
-      `${PLANET_PLAIN.Sun}. Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, so you tend to express confidence and authority ${signTendency(sun.sign)}.`
+      `${PLANET_PLAIN.Sun}. In this system the Sun is never read as a personality label on its own, so the sign is only the first of several inputs. ` +
+      `Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, and the house matters more than the sign here: it says the area of life where you are meant to be visible and to carry responsibility. ` +
+      (rp ? `${rp}, so those departments answer to the same planet and tend to rise and fall together. ` : '') +
+      (nkSun ? `Inside ${sun.sign} the Sun sits in the lunar segment ${sun.nakshatra.name} pada ${sun.nakshatra.pada}, which narrows the flavor to something specific: ${nkSun.essence}. ` : '') +
+      (sun.dignity !== 'neutral' ? `By sign condition the Sun is ${sun.dignity}. ${dignityPlain('Sun', sun.sign, sun.dignity) || ''} ` : '') +
+      (disp ? `${sun.sign} is ruled by ${disp}, so the Sun reports to ${disp} here, and how ${disp} is placed changes how easily your authority lands. ` : '') +
+      (withSun.length ? `It shares that house with ${list(withSun.map(b => b.name))}, which blends those functions into how you show up. ` : '') +
+      `Read together with your lagna, your Moon and the period you are currently in, that is the actual Vedic Sun. The sign by itself is not.`
     );
   }
   paras.push(
-    'If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than from the equinox, and the current gap between the two is about twenty four degrees. Neither chart is wrong. They are measuring from different starting points. The houses here are whole sign: the rising sign is the entire first house, the next sign the entire second, and so on.'
+    'If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than from the equinox, and the current gap between the two is about twenty four degrees. Neither chart is wrong, and a sign change here does not mean you stopped being your Western sign or that you should now recognize yourself in the new one instead. They are two lenses on the same sky, and each one is read with its own rules. The houses here are whole sign: the rising sign is the entire first house, the next sign the entire second, and so on.'
   );
+
 
   return section(
     'snapshot',
@@ -724,7 +738,7 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
         ? `${held[0].name} stays put`
         : `${list(held.map(b => b.name))} stay put`;
     paras.push(
-      `For you, ${list(shifted.map(b => b.name))} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. The ones that shifted are worth reading twice, since the two descriptions usually cover different aspects of the same behavior rather than contradicting each other.`
+      `For you, ${list(shifted.map(b => b.name))} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. A shifted Sun is the one people misread most often. It does not mean you are secretly the new sign and were never the old one. A Vedic Sun is never read as a sign label by itself: it is read through its house, the houses it rules, its nakshatra, its sign condition, the planet that rules the sign it sits in, what it sits with, and the period you are in. The Western Sun sign keeps doing its own job under its own rules. Two lenses, same sky, different questions.`
     );
   } else {
     paras.push('Unusually, every body on your chart lands in the same sign in both systems, so the two readings will sound like each other.');
