@@ -435,7 +435,14 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
   const parts: string[] = [];
   parts.push(`Two systems, one sky. The placements themselves did not move, only the measuring stick did, so nothing you already know about your Western chart becomes wrong here.`);
   if (shifted.length) {
-    parts.push(`For you, ${shifted.map(b => b.name).join(', ')} change sign in this system, and ${held.length ? `${held.map(b => b.name).join(', ')} stay put` : 'nothing stays put'}. The ones that shifted are worth reading twice, because the two descriptions usually cover different parts of the same behavior rather than contradicting each other.`);
+    const shiftedNames = shifted.map(b => b.name).join(', ');
+    const heldNames = held.map(b => b.name).join(', ');
+    const heldClause = held.length === 0
+      ? 'nothing stays put'
+      : held.length === 1
+        ? `${heldNames} stays put`
+        : `${heldNames} stay put`;
+    parts.push(`For you, ${shiftedNames} ${shifted.length === 1 ? 'changes' : 'change'} sign in this system, and ${heldClause}. The ones that shifted are worth reading twice, because the two descriptions usually cover different parts of the same behavior rather than contradicting each other.`);
   } else {
     parts.push('Unusually, everything on your chart lands in the same sign in both systems, which means the two readings will sound like each other.');
   }
