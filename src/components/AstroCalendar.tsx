@@ -235,6 +235,9 @@ export const AstroCalendar = () => {
     if (viewMode === "natal-portrait") {
       return "Natal Portrait";
     }
+    if (viewMode === "vedic") {
+      return "Vedic Astrology";
+    }
     if (viewMode === "family") {
       return "👪 Parent ↔ Child";
     }
