@@ -706,6 +706,17 @@ export const AstroCalendar = () => {
                 👤 Natal Portrait
               </button>
               <button
+                onClick={() => setViewMode("vedic")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "vedic"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Vedic Astrology (Jyotish)"
+              >
+                🪔 Vedic
+              </button>
+              <button
                 onClick={() => setViewMode("moon-encyclopedia")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "moon-encyclopedia"
