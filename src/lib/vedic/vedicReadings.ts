@@ -16,7 +16,7 @@ import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './
 import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, CurrentDasha } from './vimshottariDasha';
 import { dashaCopy } from './interpretations/dashaCopy';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
-import { HOUSE_THEME, PLANET_ROLE, houseTheme, signStyle } from './interpretations/planetCopy';
+import { HOUSE_THEME, PLANET_ROLE, houseTheme, signStyle, moneyRoute } from './interpretations/planetCopy';
 import { dignityGloss } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
 
