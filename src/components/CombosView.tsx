@@ -33,6 +33,7 @@ import { patternMirrorCombos, THEMATIC_CATEGORIES, PatternMirrorCombo } from '@/
 import { PatternMirrorCard } from '@/components/PatternMirrorCard';
 import { LifePatternsTab } from '@/components/LifePatternsTab';
 import { ChartSelector } from '@/components/ChartSelector';
+import { getClassicalPlacementsForChart } from '@/lib/classicalPlacementStatements';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -551,13 +552,19 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       }
     }
     
+    // PERSON SCOPE: when a specific person is selected, every filter stays inside
+    // their own chart. Only "Collective Energies" shows the whole signature library.
+    if (selectedChart && results.length > 0) {
+      results = results.filter(combo => doesComboMatchChart(combo));
+    }
+
     // Apply aspect type filter if selected
     if (selectedAspectFilter && results.length > 0) {
       results = results.filter(combo => comboHasAspectType(combo, selectedAspectFilter));
     }
     
     return results;
-  }, [selectedFactors, selectedCategory, selectedChartId, chartMatchingCombinations, selectedAspectFilter, chartFactors]);
+  }, [selectedFactors, selectedCategory, selectedChartId, selectedChart, chartMatchingCombinations, selectedAspectFilter, chartFactors]);
 
   const renderFactorButton = (factor: string, symbol?: string) => {
     const isSelected = selectedFactors.includes(factor);
@@ -1096,9 +1103,13 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 includeGeneral={true}
                 generalLabel="✦ Collective Energies"
               />
-              {selectedChart && (
+              {selectedChart ? (
                 <span className="text-xs text-muted-foreground">
-                  Combinations in {selectedChart.name}'s chart are highlighted
+                  Showing only what is actually in {selectedChart.name}'s chart. Switch to Collective Energies to browse every signature.
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Collective view: browsing the full signature library, not one person's chart.
                 </span>
               )}
             </div>
@@ -1471,7 +1482,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">
                   {matchingCombinations.length > 0 
-                    ? selectedChartId && selectedFactors.length === 0 && !selectedCategory
+                    ? selectedChart
                       ? `${matchingCombinations.length} Combination${matchingCombinations.length > 1 ? 's' : ''} in ${selectedChart?.name}'s Chart`
                       : `${matchingCombinations.length} Matching Combination${matchingCombinations.length > 1 ? 's' : ''}`
                     : 'No Exact Matches Found'
