@@ -39,6 +39,7 @@ import { getMercuryRetroGuidance } from '@/lib/mercuryRetroGuidance';
 import { buildPersonalMercuryRxSentence } from '@/lib/mercuryRetroPersonal';
 import { buildPersonalDailyGuidance } from '@/lib/personalDailyGuidance';
 import { DATES_TO_AVOID_2026, BEST_DAYS_2026 } from '@/lib/electional2026Database';
+import { calculateEclipses, calculateElectionalDays } from '@/lib/electionalCalendar';
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TodayAtAGlance } from './dayDetail/TodayAtAGlance';
@@ -407,8 +408,25 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
       futureDate.setDate(today.getDate() + i);
       const dateKey = futureDate.toISOString().split('T')[0];
       
-      // Check RED/YELLOW dates (eclipses, major aspects) — only valid for 2026
-      if (futureDate.getFullYear() === 2026) {
+      // Check RED/YELLOW dates (eclipses, major aspects)
+      if (futureDate.getFullYear() !== 2026) {
+        // Any other year: compute electional flags live so the app rolls over automatically
+        try {
+          const computed = calculateElectionalDays(futureDate.getFullYear()).find(
+            d => d.date.getFullYear() === futureDate.getFullYear() &&
+                 d.date.getMonth() === futureDate.getMonth() &&
+                 d.date.getDate() === futureDate.getDate()
+          );
+          if (computed && (computed.rating === 'RED' || computed.rating === 'PURPLE')) {
+            events.push({
+              date: futureDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+              type: computed.category === 'eclipse' ? 'Eclipse' : computed.rating === 'PURPLE' ? 'Auspicious' : 'Major Transit',
+              description: computed.reason,
+              daysAway: i
+            });
+          }
+        } catch { /* ignore */ }
+      } else {
         const avoidData = DATES_TO_AVOID_2026.find(d => d.date === dateKey);
         if (avoidData && (avoidData.warning === 'RED' || avoidData.warning === 'PURPLE')) {
           events.push({
@@ -815,7 +833,14 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
           })()}
           eclipseContext={(() => {
             try {
-              const eclipses = DATES_TO_AVOID_2026.filter(d => d.reason.includes('Eclipse'));
+              const yr = date.getFullYear();
+              const eclipses = yr === 2026
+                ? DATES_TO_AVOID_2026.filter(d => d.reason.includes('Eclipse'))
+                : [...calculateEclipses(yr), ...calculateEclipses(yr - 1), ...calculateEclipses(yr + 1)].map(e => ({
+                    date: `${e.date.getFullYear()}-${String(e.date.getMonth() + 1).padStart(2, '0')}-${String(e.date.getDate()).padStart(2, '0')}`,
+                    reason: e.reason,
+                    why: e.why,
+                  }));
               const now = date.getTime();
               const nearby = eclipses.filter(e => {
                 const eDate = new Date(e.date + 'T12:00:00').getTime();

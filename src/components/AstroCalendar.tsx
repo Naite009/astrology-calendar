@@ -203,7 +203,7 @@ export const AstroCalendar = () => {
       return "Narrative";
     }
     if (viewMode === "transit-calendar") {
-      return "2026 Transit Calendar";
+      return `${currentDate.getFullYear()} Transit Calendar`;
     }
     if (viewMode === "hexagram") {
       return "I Ching Hexagram";
