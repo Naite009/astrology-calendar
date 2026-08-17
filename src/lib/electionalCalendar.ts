@@ -6,6 +6,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { longitudeToZodiac, getNodePositions, getChironPosition, isPlanetRetrograde, ExtendedZodiacPosition } from './astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { enrichElectionalDays } from './electionalGuidance';
 
 // Types
 export type ElectionalRating = 'RED' | 'YELLOW' | 'GREEN' | 'BLUE' | 'PURPLE';
@@ -521,8 +522,9 @@ export const calculateElectionalDays = (year: number): ElectionalDay[] => {
     ...calculateVenusIngresses(year)
   ];
   
-  // Sort by date
-  return allDays.sort((a, b) => a.date.getTime() - b.date.getTime());
+  // Sort by date, then enrich the written guidance so every year reads with the
+  // same depth as the hand-curated notes (why, workaround, how to use it).
+  return enrichElectionalDays(allDays.sort((a, b) => a.date.getTime() - b.date.getTime()));
 };
 
 // ============================================================================

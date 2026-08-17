@@ -844,7 +844,7 @@ const PlanAheadSection = ({
             className="border border-border bg-background px-3 py-2 text-sm rounded-sm focus:border-primary focus:outline-none"
           >
             {Array.from({ length: 7 }, (_, i) => new Date().getFullYear() + i - 1).map(y => (
-              <option key={y} value={y}>{y} {y === 2026 ? '(Enhanced Data)' : ''}</option>
+              <option key={y} value={y}>{y}</option>
             ))}
           </select>
         </div>
