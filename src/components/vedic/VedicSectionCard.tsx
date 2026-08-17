@@ -39,7 +39,20 @@ export const VedicSectionCard = ({ section, defaultOpenTable = false }: Props) =
         </div>
       )}
 
-      <p className="text-[15px] leading-[1.75] text-foreground/90">{section.paragraph}</p>
+      <div className="space-y-3">
+        {(section.paragraphs?.length ? section.paragraphs : [section.paragraph]).map((p, i) => (
+          <p key={i} className="text-[15px] leading-[1.75] text-foreground/90">{p}</p>
+        ))}
+      </div>
+
+      {section.takeaway && (
+        <div className="mt-5 rounded-md border-l-2 border-primary/50 bg-secondary/30 p-4">
+          <div className="mb-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
+            What this means in real life
+          </div>
+          <p className="text-[14px] leading-[1.7] text-foreground/90">{section.takeaway}</p>
+        </div>
+      )}
 
       {section.rows && section.rows.length > 0 && (
         <div className="mt-5">
