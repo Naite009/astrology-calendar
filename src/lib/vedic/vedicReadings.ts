@@ -21,7 +21,7 @@ import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, Curr
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
 import {
   PLANET_PLAIN, PLANET_MOTIVE, housePlain, signTendency, dignityPlain,
-  DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, NAKSHATRA_DEFINITION, DASHA_DEFINITION,
+  DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, DASHA_DEFINITION,
 } from './interpretations/plainMeaning';
 import { SIGN_LORDS } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
