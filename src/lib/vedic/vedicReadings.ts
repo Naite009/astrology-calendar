@@ -211,7 +211,6 @@ function purposeSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     if (ak.house) {
       parts.push(`Sitting in house ${ak.house}, it works itself out through ${HOUSE_THEME[ak.house]}, and it does that in a ${ak.sign} way, meaning ${signStyle(ak.sign)}.`);
     }
-    const ak9 = d9.byName[ak.planet];
     if (ak9) {
       const gloss = dignityGloss(ak9.dignity);
       parts.push(`The Navamsa is the pressure test, the chart that says whether something holds up over time rather than just showing up early. There your ${ak.planet} lands in ${ak9.sign} and ${gloss}, which tells you ${ak9.dignity === 'debilitated' ? 'this gift matures late and gets stronger specifically through the years you thought you were failing at it' : ak9.dignity === 'exalted' || ak9.dignity === 'own sign' ? 'this is the ability that keeps working when everything else about your life changes' : 'this ability develops steadily rather than dramatically, and it rewards repetition more than inspiration'}.`);
