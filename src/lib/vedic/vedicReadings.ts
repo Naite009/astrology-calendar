@@ -16,7 +16,7 @@ import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './
 import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, CurrentDasha } from './vimshottariDasha';
 import { dashaCopy } from './interpretations/dashaCopy';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
-import { HOUSE_THEME, PLANET_ROLE, houseTheme, signStyle } from './interpretations/planetCopy';
+import { HOUSE_THEME, PLANET_ROLE, houseTheme, signStyle, moneyRoute } from './interpretations/planetCopy';
 import { dignityGloss } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
 
@@ -264,13 +264,14 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
   const eleventh = lords.find(l => l.house === 11);
 
   if (second?.body) {
-    parts.push(`Money you earn and hold runs through ${second.lord}, and it sits in house ${second.body.house ?? 2}, so income tends to arrive through ${houseTheme(second.body.house)} rather than through the route you were told to take.`);
+    parts.push(`Your earning ruler is ${second.lord}, and it sits in house ${second.body.house ?? 2}. In plain terms, that is the route your money actually takes: ${moneyRoute(second.body.house)} The version that works less well for you is the standard path, applying into a hiring process where nobody has met you and the decision is made off paper.`);
   } else if (second) {
-    parts.push(`Money you earn and hold runs through ${second.lord} in ${second.sign}, so the way you handle earning looks like this: ${signStyle(second.sign)}.`);
+    parts.push(`Your earning ruler is ${second.lord} in ${second.sign}, so the way you handle earning looks like this: ${signStyle(second.sign)}.`);
   }
   if (eleventh?.body) {
-    parts.push(`Gains, bonuses and the money that shows up through other people run through ${eleventh.lord} in house ${eleventh.body.house ?? 11}, which means networks and groups connected to ${houseTheme(eleventh.body.house)} are where the increase actually comes from.`);
+    parts.push(`Increase, meaning bonuses, raises and money that arrives through other people, runs through ${eleventh.lord} in house ${eleventh.body.house ?? 11}: ${moneyRoute(eleventh.body.house)} So when you want more, do not work harder at the base income. Go widen that channel instead.`);
   }
+
   const strained = lords.find(l => l.body?.dignity === 'debilitated');
   if (strained) {
     parts.push(`One honest note: your house ${strained.house} lord ${strained.lord} is in ${strained.sign}, which classical texts read as weakened. In lived terms that usually means money comes later and by effort rather than early and by luck, and the drain is ${strained.house === 2 ? 'spending that quietly matches whatever you earn' : 'saying yes to people whose plans cost you more than they return'}.`);
