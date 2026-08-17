@@ -53,10 +53,11 @@ const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ de
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
 const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
+const VedicView = lazy(() => import("./vedic/VedicView").then(m => ({ default: m.VedicView })));
 const AspectsView = lazy(() => import("./AspectsView").then(m => ({ default: m.AspectsView })));
 
 
-type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family" | "aspects";
+type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family" | "aspects" | "vedic";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -233,6 +234,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "natal-portrait") {
       return "Natal Portrait";
+    }
+    if (viewMode === "vedic") {
+      return "Vedic Astrology";
     }
     if (viewMode === "family") {
       return "👪 Parent ↔ Child";
@@ -702,6 +706,17 @@ export const AstroCalendar = () => {
                 👤 Natal Portrait
               </button>
               <button
+                onClick={() => setViewMode("vedic")}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "vedic"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Vedic Astrology (Jyotish)"
+              >
+                🪔 Vedic
+              </button>
+              <button
                 onClick={() => setViewMode("moon-encyclopedia")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "moon-encyclopedia"
@@ -1158,6 +1173,15 @@ export const AstroCalendar = () => {
         {viewMode === "aspects" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <AspectsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "vedic" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <VedicView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
             />
