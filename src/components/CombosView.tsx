@@ -33,6 +33,7 @@ import { patternMirrorCombos, THEMATIC_CATEGORIES, PatternMirrorCombo } from '@/
 import { PatternMirrorCard } from '@/components/PatternMirrorCard';
 import { LifePatternsTab } from '@/components/LifePatternsTab';
 import { ChartSelector } from '@/components/ChartSelector';
+import { getClassicalPlacementsForChart } from '@/lib/classicalPlacementStatements';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -516,6 +517,20 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return allCombinations.filter(combo => doesComboMatchChart(combo));
   }, [selectedChart, chartFactors, allCombinations]);
 
+  // Classical single-placement statements (one planet in one sign) for the selected chart
+  const classicalPlacements = useMemo(() => {
+    if (!selectedChart) return [];
+    const positions = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'].map((planet) => {
+      const pos = getChartPos(planet);
+      return {
+        planet,
+        sign: pos?.sign || '',
+        house: getNatalPlanetHouse(planet, selectedChart) || undefined,
+      };
+    }).filter(p => p.sign);
+    return getClassicalPlacementsForChart(positions);
+  }, [selectedChart]);
+
   // Helper to check if combo involves a specific aspect type
   const comboHasAspectType = (combo: CombinationEntry, aspectType: string): boolean => {
     // Check if the combo factors directly include the aspect
@@ -551,13 +566,19 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       }
     }
     
+    // PERSON SCOPE: when a specific person is selected, every filter stays inside
+    // their own chart. Only "Collective Energies" shows the whole signature library.
+    if (selectedChart && results.length > 0) {
+      results = results.filter(combo => doesComboMatchChart(combo));
+    }
+
     // Apply aspect type filter if selected
     if (selectedAspectFilter && results.length > 0) {
       results = results.filter(combo => comboHasAspectType(combo, selectedAspectFilter));
     }
     
     return results;
-  }, [selectedFactors, selectedCategory, selectedChartId, chartMatchingCombinations, selectedAspectFilter, chartFactors]);
+  }, [selectedFactors, selectedCategory, selectedChartId, selectedChart, chartMatchingCombinations, selectedAspectFilter, chartFactors]);
 
   const renderFactorButton = (factor: string, symbol?: string) => {
     const isSelected = selectedFactors.includes(factor);
@@ -1096,9 +1117,13 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 includeGeneral={true}
                 generalLabel="✦ Collective Energies"
               />
-              {selectedChart && (
+              {selectedChart ? (
                 <span className="text-xs text-muted-foreground">
-                  Combinations in {selectedChart.name}'s chart are highlighted
+                  Showing only what is actually in {selectedChart.name}'s chart. Switch to Collective Energies to browse every signature.
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Collective view: browsing the full signature library, not one person's chart.
                 </span>
               )}
             </div>
@@ -1291,6 +1316,37 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         </TabsList>
 
         <TabsContent value="explore" className="mt-6 space-y-6">
+          {/* Classical single placements, only what this person actually has */}
+          {selectedChart && classicalPlacements.length > 0 && (
+            <Card className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Single Placements in {selectedChart.name}'s Chart
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  One planet, one sign, read the classical way. No aspects, no blending.
+                </p>
+              </CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-2">
+                {classicalPlacements.map((c) => (
+                  <div key={`${c.planet}-${c.sign}`} className="p-3 rounded-lg border border-border bg-secondary/30">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
+                        {getPlanetSymbol(c.planet)} {c.planet} in {SIGN_SYMBOLS[c.sign]} {c.sign}
+                      </Badge>
+                      {c.houseLabel && (
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">{c.houseLabel}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-foreground/90 leading-relaxed">{c.statement}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">{c.inPractice}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Category Filter Chips */}
           <Card className="border-border">
             <CardHeader className="pb-3">
@@ -1471,7 +1527,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">
                   {matchingCombinations.length > 0 
-                    ? selectedChartId && selectedFactors.length === 0 && !selectedCategory
+                    ? selectedChart
                       ? `${matchingCombinations.length} Combination${matchingCombinations.length > 1 ? 's' : ''} in ${selectedChart?.name}'s Chart`
                       : `${matchingCombinations.length} Matching Combination${matchingCombinations.length > 1 ? 's' : ''}`
                     : 'No Exact Matches Found'
@@ -1487,10 +1543,14 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 <Card className="border-dashed">
                   <CardContent className="py-8 text-center">
                     <p className="text-muted-foreground text-sm">
-                      No pre-written interpretation exists for this exact combination yet.
+                      {selectedChart
+                        ? `${selectedChart.name}'s chart does not carry any of the signatures in this filter.`
+                        : 'No pre-written interpretation exists for this exact combination yet.'}
                     </p>
                     <p className="text-muted-foreground text-xs mt-2">
-                      Try selecting different factors or fewer factors to find matches.
+                      {selectedChart
+                        ? 'Nothing is being invented here. Switch to Collective Energies to read the signatures anyway.'
+                        : 'Try selecting different factors or fewer factors to find matches.'}
                     </p>
                   </CardContent>
                 </Card>
