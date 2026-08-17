@@ -22,8 +22,11 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
   return (
     <div className="rounded-lg border border-border bg-card p-5 md:p-6">
       <h3 className="font-serif text-xl">Dasha Timeline</h3>
-      <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1 mb-4">
-        One full 120 year cycle from birth · later periods fall past a normal lifespan · tap a period for its sub-periods
+      <p className="mt-1 text-sm leading-relaxed text-foreground/85">
+        This is not a calendar of when you are allowed to have love, money, family, or success. Those parts of life can happen in every period. The planet named here only shows which kind of growth is taking the lead.
+      </p>
+      <p className="mb-4 mt-2 text-xs text-muted-foreground">
+        A Venus period at age 96 does not mean love begins at 96. Relationship timing uses your full chart, especially Venus, the 7th house, the D9 marriage chart, and shorter sub-periods together.
       </p>
 
       <div className="space-y-2">
@@ -57,7 +60,7 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
               {open === key && (
                 <div className="border-t border-border/60 px-3 py-3">
                   <p className="mb-3 text-[13px] leading-relaxed text-foreground/85">
-                    Asks {copy.asks}. Gives {copy.gives}. Watch for {copy.trap}.
+                    During this chapter, {p.lord} puts more emphasis on this part of life. It asks {copy.asks}. It may bring {copy.gives}. Watch for {copy.trap}.
                   </p>
                   <div className="space-y-1">
                     {(p.sub || []).map(s => {
