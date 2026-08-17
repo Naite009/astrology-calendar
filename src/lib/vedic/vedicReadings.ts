@@ -21,7 +21,7 @@ import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, Curr
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
 import {
   PLANET_PLAIN, PLANET_MOTIVE, housePlain, signTendency, dignityPlain,
-  DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, NAKSHATRA_DEFINITION, DASHA_DEFINITION,
+  DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, DASHA_DEFINITION,
 } from './interpretations/plainMeaning';
 import { SIGN_LORDS } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
@@ -138,22 +138,22 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
   logic.push(`Ayanamsa: Lahiri, ${formatDegree(chart.ayanamsa)}. Houses: whole sign.`);
 
   const paras: string[] = [];
-  paras.push(
-    'Three words before the reading starts, so nothing below needs decoding. The lagna is the rising sign, the sign coming up in the east at your birth, and it sets the whole house structure. ' +
-    NAKSHATRA_DEFINITION + ' Whole sign houses simply means the rising sign is the entire first house, the next sign the entire second, and so on.'
-  );
 
   if (chart.lagnaSign) {
     paras.push(
-      `You have ${chart.lagnaSign} rising, so people meet that quality first: you tend to approach new situations ${signTendency(chart.lagnaSign)}. ` +
-      `The ruler of ${chart.lagnaSign} is ${chart.lagnaLord}, and in Vedic astrology the condition of that one planet colors everything else, because it stands for you.`
+      `Your lagna, the sign rising in the east at the moment you were born, is ${chart.lagnaSign}. In Vedic astrology the lagna is more than a rising sign: it sets the whole house structure, so the quality people meet first and the way you enter new situations comes from here. You tend to approach new situations ${signTendency(chart.lagnaSign)}. ` +
+      `The ruler of ${chart.lagnaSign} is ${chart.lagnaLord}, and the condition of that one planet colors everything else, because it stands for you.`
+    );
+  } else {
+    paras.push(
+      'Your lagna is the sign rising in the east at birth, and it sets the whole house structure. An accurate birth time is needed to pin it down, so the sign-level material below still holds even though the house picture is not fixed.'
     );
   }
   if (has(moon)) {
     const nk = nakshatraCopy(moon.nakshatra.name);
     paras.push(
       `${PLANET_PLAIN.Moon}. Yours is in ${moon.sign}${moon.house ? `, in the house of ${housePlain(moon.house)}` : ''}, so emotionally you tend to operate ${signTendency(moon.sign)}. ` +
-      (nk ? `Inside that sign it sits in ${moon.nakshatra.name}, which narrows it further: ${nk.essence}.` : '')
+      (nk ? `Each sign is further divided into 27 lunar segments called nakshatras, a finer flavor inside the sign, and yours sits in ${moon.nakshatra.name}. That narrows the feeling further: ${nk.essence}.` : '')
     );
   }
   if (has(sun)) {
@@ -162,7 +162,7 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
     );
   }
   paras.push(
-    'If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than from the equinox, and the current gap between the two is about twenty four degrees. Neither chart is wrong. They are measuring from different starting points.'
+    'If these signs look one back from the chart you already know, that is expected. This system measures from the fixed stars rather than from the equinox, and the current gap between the two is about twenty four degrees. Neither chart is wrong. They are measuring from different starting points. The houses here are whole sign: the rising sign is the entire first house, the next sign the entire second, and so on.'
   );
 
   return section(
