@@ -168,7 +168,7 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
       `Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, and the house matters more than the sign here: it says the area of life where you are meant to be visible and to carry responsibility. ` +
       (rp ? `${rp}, so those departments answer to the same planet and tend to rise and fall together. ` : '') +
       (nkSun ? `Inside ${sun.sign} the Sun sits in the lunar segment ${sun.nakshatra.name} pada ${sun.nakshatra.pada}, which narrows the flavor to something specific: ${nkSun.essence}. ` : '') +
-      (sun.dignity !== 'neutral' ? `By sign condition the Sun is ${sun.dignity}, ${dignityPlain(sun.dignity)}. ` : '') +
+      (sun.dignity !== 'neutral' ? `By sign condition the Sun is ${sun.dignity}. ${dignityPlain('Sun', sun.sign, sun.dignity) || ''} ` : '') +
       (disp ? `${sun.sign} is ruled by ${disp}, so the Sun reports to ${disp} here, and how ${disp} is placed changes how easily your authority lands. ` : '') +
       (withSun.length ? `It shares that house with ${list(withSun.map(b => b.name))}, which blends those functions into how you show up. ` : '') +
       `Read together with your lagna, your Moon and the period you are currently in, that is the actual Vedic Sun. The sign by itself is not.`
