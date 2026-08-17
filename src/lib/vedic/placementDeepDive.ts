@@ -37,13 +37,7 @@ function lordshipLine(chart: VedicChart, body: VedicBody): string | null {
     .filter(([, lord]) => lord === body.name)
     .map(([sign]) => sign);
   if (!ruled.length) return null;
-  const houses = ruled
-    .map(sign => {
-      const h = chart.bodies.length ? null : null;
-      return { sign, h };
-    });
-  void houses;
-  // Whole-sign: house number of each ruled sign, counted from the lagna.
+
   const signsList = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
     'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   const lagnaIdx = signsList.indexOf(chart.lagnaSign);
