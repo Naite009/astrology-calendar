@@ -1035,6 +1035,40 @@ Keep the tone deep, insightful, and practically applicable.`
         </div>
       )}
 
+      {/* Quick jump: write this month's New Moon intentions */}
+      {activeChart && newMoons && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                🌑 New Moon intentions for this cycle
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                New Moon in {interpretation.sign} on{' '}
+                {newMoons.previous.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. You are on day{' '}
+                {daysIntoCycle + 1} of {Math.max(1, Math.round((newMoons.next.date.getTime() - newMoons.previous.date.getTime()) / 86400000))}. Next New Moon:{' '}
+                {newMoons.next.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                const el = document.getElementById('intentions-section');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  const field = el.querySelector('textarea');
+                  setTimeout(() => (field as HTMLTextAreaElement | null)?.focus(), 600);
+                }
+              }}
+              className="shrink-0"
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Write my intentions
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lunar Cycle Header */}
       <Card className="bg-background border">
         <CardHeader className="pb-2">
