@@ -503,6 +503,49 @@ export const LunarWorkbookSection = ({
                 <p className="text-xs text-muted-foreground italic">{signData.intentionWords.join(' · ')}</p>
               </div>
             )}
+
+            {/* ── How to write an intention (collapsible, sign-specific) ── */}
+            {(() => {
+              const practice = getSignPractice(cycleSign);
+              const w = signData?.intentionWords ?? [];
+              const houseTopic = natalContext?.newMoonHouse
+                ? HOUSE_TOPICS[parseInt(natalContext.newMoonHouse, 10)] ?? ''
+                : '';
+              const exA = w[0] && houseTopic
+                ? `I am bringing more ${w[0]} into my ${houseTopic}.`
+                : w[0] ? `I am choosing ${w[0]} over ${w[1] ?? 'the old habit'}.` : 'I am choosing courage over the old habit.';
+              const exB = w[2] && houseTopic
+                ? `I allow ${w[2]} to shape how I show up at home.`
+                : w[2] ? `I allow ${w[2]} to lead this month.` : 'I allow honesty to lead this month.';
+              const spark = practice?.prompts?.[0] ?? 'What feels emotionally true right now?';
+              return (
+                <Collapsible className="rounded-lg border border-border/40 bg-muted/30">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-foreground">
+                    <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5 text-primary" /> How do I write an intention?</span>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="px-3 pb-3 pt-1 space-y-2.5 text-xs text-muted-foreground leading-relaxed">
+                    <p>
+                      An intention is a <span className="text-foreground font-medium">felt direction for the month</span>, not a goal or a to-do.
+                      Name the inner shift you want, phrased as if it is already moving: <em>"I am..."</em> or <em>"I allow..."</em> or <em>"I choose..."</em>.
+                    </p>
+                    <div className="rounded-md bg-background/60 border border-border/40 p-2.5 space-y-1">
+                      <p className="text-[10px] uppercase tracking-wide text-primary/80 font-semibold">Examples for {cycleSign}</p>
+                      <p className="italic text-foreground/80">"{exA}"</p>
+                      <p className="italic text-foreground/80">"{exB}"</p>
+                    </div>
+                    <div className="rounded-md bg-background/60 border border-border/40 p-2.5">
+                      <p className="text-[10px] uppercase tracking-wide text-primary/80 font-semibold mb-1">Spark question</p>
+                      <p className="italic text-foreground/80">{spark}</p>
+                    </div>
+                    <p className="text-[11px]">
+                      If it does not feel true yet, leave it blank and come back in a day or two. The right words often arrive after the feeling does.
+                    </p>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })()}
+
             <JournalField label="What wants to be worked with this cycle?" placeholder="What emotional theme feels alive now?"
               value={journal?.new_moon_feelings} onChange={v => updateField('new_moon_feelings', v)} icon={<Heart className="h-4 w-4 text-primary" />} />
             <JournalField label="Draft intention" placeholder="Write when emotionally clear. Allow the words to develop over 1–3 days if needed..."
