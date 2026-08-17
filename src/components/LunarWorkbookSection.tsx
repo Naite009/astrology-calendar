@@ -484,7 +484,7 @@ export const LunarWorkbookSection = ({
       />
 
       {/* ═══ 5 · New Moon Seed / Intention (always available, this is the monthly ritual) ═══ */}
-      {true && (
+      {(
         <Card id="intentions-section" className="border-border/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
