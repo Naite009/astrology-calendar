@@ -53,6 +53,7 @@ const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ de
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
 const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
+const VedicView = lazy(() => import("./vedic/VedicView").then(m => ({ default: m.VedicView })));
 const AspectsView = lazy(() => import("./AspectsView").then(m => ({ default: m.AspectsView })));
 
 
