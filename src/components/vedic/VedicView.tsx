@@ -169,7 +169,7 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             <VedicSectionCard key={s.id} section={s} />
           ))}
 
-          <DashaTimeline periods={reading.dashas} current={reading.current} />
+          <DashaTimeline periods={reading.dashas} current={reading.current} birthMoment={vedic.birthMoment} />
 
           {reading.sections.slice(2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
