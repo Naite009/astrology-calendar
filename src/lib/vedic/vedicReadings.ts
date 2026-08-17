@@ -352,7 +352,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (dk9) logic.push(`Darakaraka in ${VARGA_LABELS.D9.name}: ${dk9.sign}${dk9.house ? `, house ${dk9.house}` : ''}`);
 
   if (dk) {
-    parts.push(`Your partner indicator is ${dk.planet} in ${dk.sign}, so the person tends to arrive carrying ${PLANET_ROLE[dk.planet]} into your life. In behavior that reads as someone who ${signStyle(dk.sign).replace(/^you /, '')}, and what they avoid is the opposite move: sitting in ambiguity without acting on it.`);
+    parts.push(`Your partner indicator is ${dk.planet} in ${dk.sign}, so the person tends to arrive carrying ${PLANET_ROLE[dk.planet]} into your life. In behavior that reads like the ${dk.sign} move: ${signStyle(dk.sign).replace(/^you /, '')}. What they avoid is the opposite move: sitting in ambiguity without acting on it.`);
   }
   if (seventhLordBody?.house) {
     parts.push(`Where and how you meet is read from the seventh lord, and yours sits in house ${seventhLordBody.house}. That points to meetings connected to ${houseTheme(seventhLordBody.house)} rather than to a scene you would go out looking in.`);
