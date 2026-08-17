@@ -76,7 +76,8 @@ export function buildVimshottari(moonSiderealLongitude: number, birthMoment: Dat
     sub: buildSubPeriods(firstLord, firstStart, firstTotal),
   });
 
-  for (let i = 1; i < order.length + 3; i++) {
+  // Exactly one full 120-year cycle. Anything past that is beyond a lifetime.
+  for (let i = 1; i < order.length; i++) {
     const lord = order[i % order.length];
     const years = DASHA_YEARS[lord];
     const end = addYears(cursor, years);
