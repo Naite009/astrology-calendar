@@ -1038,7 +1038,12 @@ Keep the tone deep, insightful, and practically applicable.`
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
             aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
-            feltSense: buildFeltSense(planet, planetData.sign, ac.name),
+            feltSense: buildFeltSense(
+              planet,
+              planetData.sign,
+              ac.name,
+              planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null),
+            ),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
           });
