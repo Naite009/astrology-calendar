@@ -63,6 +63,24 @@ const PHASE_MESSAGING: Record<string, { message: string; energy: string }> = {
 
 const ordinal = (n: number) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 
+export interface IntentionExample {
+  title: string;
+  basis?: string;
+  intention: string;
+}
+
+// Examples are persisted as JSON. Older cycles may hold plain markdown, so fall back gracefully.
+const parseExamples = (raw: string): IntentionExample[] => {
+  try {
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed) ? parsed : parsed?.examples;
+    if (Array.isArray(list)) {
+      return list.filter((e: IntentionExample) => e?.intention);
+    }
+  } catch { /* not JSON, older markdown format */ }
+  return [];
+};
+
 /* ─────────── types ─────────── */
 
 interface KeyPhaseDates {
@@ -87,6 +105,10 @@ interface LunarWorkbookSectionProps {
     natalPlanets?: string;
     newMoonHouse?: string;
     natalAspects?: string;
+    natalAspectsDetailed?: string;
+    rulerContext?: string;
+    skyContext?: string;
+    phaseDates?: string;
   };
   activationData?: SRActivationData | null;
 }
@@ -114,9 +136,53 @@ export const LunarWorkbookSection = ({
   const [isGeneratingIntentions, setIsGeneratingIntentions] = useState(false);
   const [interpretingCard, setInterpretingCard] = useState<'tarot' | 'oracle' | null>(null);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [isGeneratingExamples, setIsGeneratingExamples] = useState(false);
+  const [examples, setExamples] = useState<IntentionExample[]>([]);
+  const [workingCopy, setWorkingCopy] = useState('');
 
   const { journal, isLoading, isSaving, pastJournals, updateField, saveJournal } =
     useLunarJournal(chartId, cycleStartDate, cycleSign);
+
+  // Restore previously generated examples (stored as JSON in ai_suggested_intentions)
+  useEffect(() => {
+    const raw = journal?.ai_suggested_intentions;
+    if (!raw || examples.length > 0) return;
+    setExamples(parseExamples(raw));
+  }, [journal?.ai_suggested_intentions, examples.length]);
+
+  const handleGenerateExamples = async () => {
+    setIsGeneratingExamples(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-intentions', {
+        body: {
+          mode: 'examples',
+          cycleSign,
+          cycleDegree,
+          chartName,
+          natalPlanets: natalContext?.natalPlanets,
+          newMoonHouse: natalContext?.newMoonHouse,
+          natalAspects: natalContext?.natalAspects,
+          natalAspectsDetailed: natalContext?.natalAspectsDetailed,
+          rulerContext: natalContext?.rulerContext,
+          skyContext: natalContext?.skyContext,
+          phaseDates: natalContext?.phaseDates,
+          whatIsSurfacing: journal?.what_is_surfacing || journal?.new_moon_feelings,
+          intentionWords: signData?.intentionWords,
+        },
+      });
+      if (error) throw error;
+      const list: IntentionExample[] = Array.isArray(data?.examples) ? data.examples : [];
+      if (list.length === 0) throw new Error('empty');
+      setExamples(list);
+      saveJournal({ ai_suggested_intentions: JSON.stringify({ examples: list }) });
+      toast.success('Three intentions written for this cycle');
+    } catch {
+      toast.error('Could not write the examples. Try again in a moment.');
+    } finally {
+      setIsGeneratingExamples(false);
+    }
+  };
+
 
   const houseNum = natalContext?.newMoonHouse ? parseInt(natalContext.newMoonHouse, 10) : null;
   const signPractice = getSignPractice(cycleSign);
@@ -545,6 +611,92 @@ export const LunarWorkbookSection = ({
                 </Collapsible>
               );
             })()}
+
+            {/* ── 3 written examples, built from the whole chart picture ── */}
+            <div id="intention-examples" className="rounded-lg border border-primary/20 bg-primary/[0.04] p-3 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-xs font-medium text-primary flex items-center gap-1.5">
+                    <Feather className="h-3.5 w-3.5" /> 3 intentions written for you
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                    Built from this New Moon's sign and degree, its ruler, the aspects it makes in the sky,
+                    the house it falls in for you, and the contacts it makes to your own chart.
+                    Copy one into the box below and change any word you want.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleGenerateExamples} disabled={isGeneratingExamples} className="shrink-0">
+                  {isGeneratingExamples
+                    ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Writing</>
+                    : <><Wand2 className="h-3 w-3 mr-1" /> {examples.length ? 'Rewrite' : 'Write examples'}</>}
+                </Button>
+              </div>
+
+              {examples.length === 0 && !isGeneratingExamples && (
+                <p className="text-[11px] text-muted-foreground italic">
+                  No examples yet for this cycle. Press write examples and three full intentions will appear here.
+                </p>
+              )}
+
+              {examples.map((ex, i) => (
+                <div key={i} className="rounded-md border border-border/50 bg-background p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px]">{i + 1}</Badge>
+                    <p className="text-xs font-medium text-foreground">{ex.title || `Option ${i + 1}`}</p>
+                  </div>
+                  {ex.basis && (
+                    <p className="text-[10px] text-muted-foreground/90 leading-relaxed">
+                      <span className="uppercase tracking-wide text-primary/80 font-semibold">Chart basis: </span>{ex.basis}
+                    </p>
+                  )}
+                  <p className="text-xs text-foreground/90 leading-relaxed italic">{ex.intention}</p>
+                  <div className="flex flex-wrap gap-2 pt-0.5">
+                    <Button size="sm" variant="secondary" className="h-7 text-[11px]"
+                      onClick={() => {
+                        setWorkingCopy(ex.intention);
+                        toast.success('Copied into the edit box below');
+                        document.getElementById('intention-working-copy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}>
+                      Copy and edit
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-[11px]"
+                      onClick={() => { navigator.clipboard?.writeText(ex.intention); toast.success('Copied to clipboard'); }}>
+                      Copy text
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {/* editable working copy → saves as the real intention */}
+              <div id="intention-working-copy" className="space-y-2">
+                <label className="text-xs font-medium flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Edit box (make it yours, then save)
+                </label>
+                <Textarea
+                  value={workingCopy}
+                  onChange={(e) => setWorkingCopy(e.target.value)}
+                  placeholder="Copy an example above, then rewrite it in your own words. Saving puts it in your draft intention."
+                  className="min-h-[110px] bg-background border-border/40 focus:border-primary/40 resize-none text-sm leading-relaxed"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" className="h-7 text-[11px]" disabled={!workingCopy.trim()}
+                    onClick={() => {
+                      updateField('new_moon_intentions', workingCopy.trim());
+                      saveJournal({ new_moon_intentions: workingCopy.trim(), intention_status: 'ready' });
+                      toast.success('Saved as your intention for this cycle');
+                    }}>
+                    <Save className="h-3 w-3 mr-1" /> Save as my intention
+                  </Button>
+                  {journal?.new_moon_intentions && (
+                    <Button size="sm" variant="ghost" className="h-7 text-[11px]"
+                      onClick={() => setWorkingCopy(journal.new_moon_intentions || '')}>
+                      Load my current draft
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
 
             <JournalField label="What wants to be worked with this cycle?" placeholder="What emotional theme feels alive now?"
               value={journal?.new_moon_feelings} onChange={v => updateField('new_moon_feelings', v)} icon={<Heart className="h-4 w-4 text-primary" />} />

@@ -1014,7 +1014,7 @@ Keep the tone deep, insightful, and practically applicable.`
     if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
-    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number }> = [];
+    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number; natalHouse: number | null }> = [];
     
     Object.entries(activeChart.planets).forEach(([planet, data]) => {
       const planetData = data as { sign: string; degree: number; minutes?: number; house?: number };
@@ -1032,20 +1032,17 @@ Keep the tone deep, insightful, and practically applicable.`
       for (const ac of aspectChecks) {
         const orbVal = Math.abs(diff - ac.angle);
         if (orbVal <= getEffectiveOrbFn('Moon', planet, ac.key)) {
+          const natalHouse = planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null);
           aspects.push({
             planet,
             aspect: ac.name,
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
             aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
-            feltSense: buildFeltSense(
-              planet,
-              planetData.sign,
-              ac.name,
-              planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null),
-            ),
+            feltSense: buildFeltSense(planet, planetData.sign, ac.name, natalHouse),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
+            natalHouse,
           });
           break;
         }
@@ -1959,7 +1956,33 @@ Keep the tone deep, insightful, and practically applicable.`
             })(),
             natalAspects: natalAspects.length > 0 
               ? natalAspects.map(a => `${a.aspect} ${a.planet}`).join(', ') 
-              : undefined
+              : undefined,
+            natalAspectsDetailed: natalAspects.length > 0
+              ? natalAspects
+                  .slice(0, 6)
+                  .map(a => `New Moon ${a.aspect.toLowerCase()} natal ${a.planet} at ${Math.floor(a.natalDegree)}° ${a.natalSign}${a.natalHouse ? ` in house ${a.natalHouse}` : ''} (orb ${a.orb.toFixed(1)}°)`)
+                  .join('; ')
+              : undefined,
+            rulerContext: `${interpretation.ruler} in ${interpretation.rulerSign}${interpretation.rulerRetrograde ? ' retrograde' : ''}`,
+            skyContext: [
+              interpretation.conjunctions.length > 0
+                ? `Conjunct the New Moon: ${interpretation.conjunctions.map(c => `${c.name} at ${c.degree.toFixed(1)}° ${c.sign}`).join(', ')}`
+                : null,
+              interpretation.aspects.length > 0
+                ? `Aspects to the New Moon in the sky: ${interpretation.aspects.map(a => `${a.aspectType.toLowerCase()} ${a.planet} (orb ${a.orb.toFixed(1)}°)`).join(', ')}`
+                : null,
+              interpretation.hasStellium
+                ? `Concentration of bodies in ${interpretation.stelliumSign}: ${interpretation.stelliumPlanets.join(', ')}`
+                : null,
+              `Element ${interpretation.element}, modality ${interpretation.modality}`,
+            ].filter(Boolean).join('. ') || undefined,
+            phaseDates: keyPhases
+              ? [
+                  keyPhases.firstQuarter ? `First Quarter ${keyPhases.firstQuarter.date.toLocaleDateString()} in ${keyPhases.firstQuarter.sign}` : null,
+                  keyPhases.fullMoon ? `Full Moon ${keyPhases.fullMoon.date.toLocaleDateString()} in ${keyPhases.fullMoon.sign}` : null,
+                  keyPhases.lastQuarter ? `Last Quarter ${keyPhases.lastQuarter.date.toLocaleDateString()} in ${keyPhases.lastQuarter.sign}` : null,
+                ].filter(Boolean).join('; ')
+              : undefined,
           }}
           activationData={srActivationData}
         />

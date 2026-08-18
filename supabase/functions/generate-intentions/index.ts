@@ -11,14 +11,20 @@ serve(async (req) => {
   }
 
   try {
-    const { 
+    const {
+      mode,
       cycleSign,
       cycleDegree,
       chartName,
       natalPlanets,
       newMoonHouse,
       natalAspects,
-      intentionWords
+      natalAspectsDetailed,
+      skyContext,
+      rulerContext,
+      phaseDates,
+      whatIsSurfacing,
+      intentionWords,
     } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -27,42 +33,62 @@ serve(async (req) => {
     }
 
     const hasNatalContext = chartName && (natalPlanets || newMoonHouse);
+    const isExamples = mode === 'examples';
 
-    const systemPrompt = `You are a soul-centered astrologer who helps people craft meaningful, personalized intentions for lunar cycles. Your guidance is warm, practical, and deeply rooted in astrological symbolism.
+    const baseVoice = `NON-NEGOTIABLE VOICE RULES:
+- Never use em dashes. Use commas, periods, colons or parentheses.
+- No chitchat openers, no hype, no addressing the person by name, no "Hey you", no "Let's talk about".
+- Plain language a 12 year old could follow. No jargon inside the intention text itself (no "square", "trine", "12th house" wording in the intention paragraph).
+- Never invent facts about the person's life. Describe situations that are plausible for the placements you were given, and phrase them as openings, not predictions.
+- Every sentence must describe something the person would FEEL, DO or NOTICE.`;
 
-CRITICAL: When natal chart data is provided, use the EXACT house positions shown in parentheses (e.g., "Venus: 15° Taurus (House 2)"). Do NOT infer houses from zodiac signs. Sign ≠ House. The houses have been calculated from actual birth chart cusps.
+    const systemPrompt = isExamples
+      ? `You are a working astrologer who writes New Moon intentions. You calculate like an astrologer and explain like a human.
 
-HYBRID CLARITY RULE: For each intention, follow this sequence: (1) Start with a real-life action or situation. (2) Describe how it feels to do it. (3) Briefly explain why it matters now. Do not use abstract phrases like "align with abundance" or "embrace transformation." Instead: "start the conversation you've been putting off — it feels scary because you're not sure how they'll react, but this moon cycle supports honest words over comfortable silence." The person should think "yes, I know exactly what that means in my life."`;
+You will be given: the New Moon sign and degree, its ruler and that ruler's condition, the aspects the New Moon makes in the sky, the house the New Moon falls in for this person, that person's natal placements with their exact houses, and the aspects the New Moon makes to their natal chart (with the natal house of each contacted planet).
 
-    let userPrompt = `Generate 3-4 soul-centered intention suggestions for the ${cycleSign} New Moon at ${cycleDegree}°.
+Use ALL of it. Sign tells you the style, house tells you the arena, aspects tell you the pressure and the support, the ruler tells you how the cycle unfolds over the month.
 
-`;
+CRITICAL: use the EXACT house numbers given. Sign is not house. Never infer a house from a sign.
 
-    if (hasNatalContext) {
-      userPrompt += `This is a PERSONALIZED reading for ${chartName}.
-${newMoonHouse ? `The New Moon falls in their ${newMoonHouse}th House.` : ''}
-${natalAspects ? `Natal aspects to this New Moon: ${natalAspects}` : ''}
-${natalPlanets ? `Their natal chart includes: ${natalPlanets}` : ''}
+${baseVoice}
 
-`;
-    }
+Each example intention must:
+- Be one paragraph, roughly 60 to 110 words.
+- Open with an "I am" / "I allow" / "I choose" / "I am letting" line that is specific, not generic.
+- Then name the concrete real-life arena it belongs to (the house arena you were given), in ordinary words.
+- Then name the friction or the support honestly (from the aspects you were given), described as how it will feel, not as astrology terms.
+- Then close with one small repeatable action for the month.
+- Be clearly DIFFERENT from the other two: one grounded in the New Moon's own house arena, one grounded in the tightest natal contact, one grounded in the ruler's condition and how the month unfolds.
 
-    if (intentionWords && intentionWords.length > 0) {
-      userPrompt += `Suggested intention words for this sign: ${intentionWords.join(', ')}
+Return ONLY valid JSON, no markdown fence, in this exact shape:
+{"examples":[{"title":"3 to 5 word label","basis":"one short line of the astrology behind it, plain notation allowed here","intention":"the paragraph"}]}
+Exactly 3 items.`
+      : `You are a soul-centered astrologer who helps people craft meaningful, personalized intentions for lunar cycles.
 
-`;
-    }
+CRITICAL: When natal chart data is provided, use the EXACT house positions shown in parentheses. Sign is not house.
 
-    userPrompt += `Format your response as a numbered list of 3-4 specific, actionable intentions. Each should be:
-- Written as an "I am" or "I embrace" or "I allow" statement
-- Specific to the ${cycleSign} energy and themes
-${hasNatalContext ? `- Personalized for ${chartName}'s chart activation` : ''}
-- Practical yet spiritually meaningful
+${baseVoice}`;
 
-Example format:
-1. I embrace [specific intention related to sign themes]...
-2. I allow [specific intention]...
-3. I am open to [specific intention]...`;
+    const context = `NEW MOON: ${cycleSign} ${cycleDegree}°
+${rulerContext ? `RULER OF THIS NEW MOON: ${rulerContext}` : ''}
+${skyContext ? `WHAT THE NEW MOON IS DOING IN THE SKY: ${skyContext}` : ''}
+${phaseDates ? `HOW THE MONTH UNFOLDS: ${phaseDates}` : ''}
+${newMoonHouse ? `FOR THIS PERSON THE NEW MOON FALLS IN HOUSE ${newMoonHouse} (use this arena, not the sign).` : ''}
+${natalAspectsDetailed ? `NEW MOON CONTACTS TO THEIR NATAL CHART (tightest first, with the natal house of each planet): ${natalAspectsDetailed}` : natalAspects ? `NEW MOON CONTACTS TO THEIR NATAL CHART: ${natalAspects}` : ''}
+${natalPlanets ? `THEIR FULL NATAL PLACEMENTS WITH HOUSES: ${natalPlanets}` : ''}
+${whatIsSurfacing ? `WHAT THEY ALREADY WROTE IS SURFACING FOR THEM (reflect it, do not repeat it back word for word): ${whatIsSurfacing}` : ''}
+${intentionWords?.length ? `USABLE ${cycleSign} INTENTION WORDS: ${intentionWords.join(', ')}` : ''}`;
+
+    const userPrompt = isExamples
+      ? `${context}
+
+Write exactly 3 example intentions this person can copy and edit. Follow the JSON shape exactly.`
+      : `Generate 3-4 intention suggestions for the ${cycleSign} New Moon at ${cycleDegree}°.
+
+${context}
+
+Format as a numbered list. Each written as an "I am" / "I allow" / "I choose" statement, specific and practical.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -98,9 +124,33 @@ Example format:
     }
 
     const data = await response.json();
-    const suggestions = data.choices?.[0]?.message?.content || "";
+    let content: string = data.choices?.[0]?.message?.content || "";
+    content = content.replace(/—/g, ", ");
 
-    return new Response(JSON.stringify({ suggestions }), {
+    if (isExamples) {
+      const cleaned = content.replace(/^```(?:json)?/i, '').replace(/```$/,'').trim();
+      let examples: unknown = null;
+      try {
+        const parsed = JSON.parse(cleaned);
+        examples = Array.isArray(parsed) ? parsed : parsed?.examples;
+      } catch {
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          try { examples = JSON.parse(match[0])?.examples; } catch { /* ignore */ }
+        }
+      }
+      if (!Array.isArray(examples) || examples.length === 0) {
+        return new Response(JSON.stringify({ error: "Could not parse examples", raw: content }), {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ examples }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ suggestions: content }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
