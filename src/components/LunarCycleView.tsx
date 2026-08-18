@@ -810,6 +810,23 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
+  // Concrete ways a New Moon can show up in each house. These are possibilities,
+  // not claims about what has already happened in the person's life.
+  const HOUSE_NEW_MOON_FOCUS: Record<number, string> = {
+    1: 'This month puts you and your next move at the center. You may decide how you want to present yourself, change something about your appearance or daily pace, set a firmer boundary, or begin something under your own name instead of waiting for permission.',
+    2: 'This month puts your money and security choices on the table. You may set a price, ask for better pay, change how you save or spend, decide what is worth keeping, or stop accepting an arrangement that costs more than it gives back.',
+    3: 'This month puts a conversation, plan, or piece of information in motion. You may need to send the message, ask the direct question, learn a practical skill, handle paperwork, or change how you communicate with a sibling, neighbor, or someone you see often.',
+    4: 'This month puts home and family decisions in front of you. You may change something in your living space, set a boundary with a relative, deal with an old family issue, decide where you belong, or create more privacy and stability at home.',
+    5: 'This month asks what you want to make, enjoy, or give your heart to. You may begin a creative project, make more room for pleasure, take a romantic risk, change how you show up with a child, or choose something because you truly want it rather than because it is useful.',
+    6: 'This month puts your actual days under review. You may change a work routine, book an appointment, deal with a task you keep postponing, ask for help, or build a schedule that your body and energy can realistically sustain.',
+    7: 'This month puts one important relationship or agreement in focus. You may define the relationship, renegotiate what each person is responsible for, address a conflict directly, begin a partnership, or decide that an arrangement is no longer fair to both people.',
+    8: 'This month brings a private or shared matter to the table. You may need to discuss debt, taxes, inheritance, shared bills, trust, sex, grief, or who holds the power in an agreement. The choice is likely to require honesty about something that is usually kept quiet.',
+    9: 'This month challenges the direction of your thinking and your future. You may commit to study, teaching, travel, publishing, a legal process, or a belief you are ready to live by. You may also decide that an old explanation no longer fits what you now know.',
+    10: 'This month puts your work and public direction on the table. You may pursue a role, accept more responsibility, change how visible you are, make a decision about your reputation, or stop carrying a goal that no longer fits the life you want.',
+    11: 'This month puts your people and your future plans in focus. You may join or leave a group, change a friendship, ask your network for support, choose which long-range goal deserves your time, or notice that the future you planned no longer feels like yours.',
+    12: 'This month begins quietly and may not be visible to anyone else yet. You may step back from noise, end a private habit, make room for sleep or grief, begin therapy or a spiritual practice, or admit something to yourself before you are ready to discuss it with anyone else.',
+  };
+
   // How a natal placement actually behaves because of the house it sits in.
   // This is the "where it happens and how visible it is" layer.
   const NATAL_HOUSE_BEHAVIOR: Record<number, string> = {
@@ -1095,10 +1112,10 @@ Keep the tone deep, insightful, and practically applicable.`
     const nmHouseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
     const houseTag = newMoonHouse ? `house ${newMoonHouse}${nmHouseArea ? ` (${nmHouseArea})` : ''}` : 'the house it falls in for you';
 
-    // RANK 1 — the house. This is the subject of the month, so it leads.
+    // RANK 1 — the house. Lead with recognizable choices, not an abstract life category.
     if (newMoonHouse) {
       out.push(
-        `This New Moon falls in your ${houseTag}, so that is the actual subject of the month. It is not a mood, it is that part of your life asking for a decision.`,
+        `This New Moon falls in your house ${newMoonHouse}. ${HOUSE_NEW_MOON_FOCUS[newMoonHouse]}`,
       );
     }
 
