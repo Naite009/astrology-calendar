@@ -810,6 +810,40 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
+  // How a natal placement actually behaves because of the house it sits in.
+  // This is the "where it happens and how visible it is" layer.
+  const NATAL_HOUSE_BEHAVIOR: Record<number, string> = {
+    1: 'sits in your 1st house, so it runs right out front. People meet this part of you first, and it shows in your face, your pace, and your first reaction before you have edited anything.',
+    2: 'sits in your 2nd house, so it shows up around money, ownership, and what you are willing to be paid for. It moves slowly and it wants something concrete to hold at the end.',
+    3: 'sits in your 3rd house, so it lives in the everyday: texts, errands, siblings, short trips, the conversation in the car. It works through many small exchanges rather than one big moment.',
+    4: 'sits in your 4th house, so it works privately, at home, with family, and in your own history. Most of the movement happens where nobody sees it, and it lands emotionally before it lands logically.',
+    5: 'sits in your 5th house, so it comes out through making things, playing, flirting, and being with kids. It needs an audience of one and it goes flat when it feels like an obligation.',
+    6: 'sits in your 6th house, so it shows up in routine, work tasks, health, and the daily list. It improves by repetition, and it will nag you through your body when you ignore it.',
+    7: 'sits in your 7th house, so it activates through one specific other person. You tend to meet this part of yourself inside a partnership, a client, or a conflict, rather than alone.',
+    8: 'sits in your 8th house, so it works underneath: shared money, other people\'s decisions, intimacy, and the things you do not say out loud. It surfaces in private and it goes deep fast.',
+    9: 'sits in your 9th house, so it moves through belief, study, travel, and the search for meaning. It wants a bigger frame around the situation before it will commit to a step.',
+    10: 'sits in your 10th house, so it plays out in public: your work, your title, who is watching, and what people expect of you. It rarely stays personal for long.',
+    11: 'sits in your 11th house, so it moves through groups, friendships, and future plans. It gets going when other people are involved, and it thinks in terms of years rather than days.',
+    12: 'sits in your 12th house, so it works behind the scenes, in private, and often before you can name it. You feel it first as mood, fatigue, dreams, or a quiet knowing, and you may not recognize it as yours until later. It rarely announces itself, so it is easy to miss unless you slow down and check inward.',
+  };
+
+  // How a New Moon in a given sign tends to arrive.
+  const NEW_MOON_SIGN_ARRIVAL: Record<string, string> = {
+    Aries: 'arrives fast and wants a first move, not a plan',
+    Taurus: 'arrives slowly and wants something steady you can keep',
+    Gemini: 'arrives as information, questions, and conversations',
+    Cancer: 'arrives as feeling and a pull toward safety and home',
+    Leo: 'arrives as a wish to be seen doing something you actually enjoy',
+    Virgo: 'arrives as a list, a correction, and a wish to get it right',
+    Libra: 'arrives through other people and a wish for things to be fair',
+    Scorpio: 'arrives quietly and goes straight to what you have been avoiding',
+    Sagittarius: 'arrives as restlessness and a wish for more room',
+    Capricorn: 'arrives as responsibility and the long view',
+    Aquarius: 'arrives as a break in the pattern and a wish to do it your own way',
+    Pisces: 'arrives as mood, imagination, and a softening of the edges',
+  };
+
+
   // For each natal Moon sign, describe how that person tends to react to FIVE distinct kinds of theme-work.
   // The personal line per theme picks the right reaction based on what the theme is actually asking for.
   // 'action' = themes asking for movement/initiative/starting | 'release' = themes asking to let go/end something
