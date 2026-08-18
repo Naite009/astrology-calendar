@@ -1061,6 +1061,70 @@ Keep the tone deep, insightful, and practically applicable.`
   }
   
   const natalAspects = getNatalAspects();
+
+  // ── Theme anchors: each theme gets a DIFFERENT piece of the actual chart, not the same
+  // natal-Moon sentence over and over. Order of priority is the astrology that is actually
+  // strongest: planets sitting on the New Moon in the sky, then the New Moon's house, then
+  // the tightest contacts to natal planets, then the sign it happens in.
+  const SKY_COMPANION_EFFECT: Record<string, string> = {
+    Sun: 'the reset is about identity, not side projects, so whatever starts here has your name on it',
+    Mercury: 'plans, messages and paperwork are part of the start, so say it and write it down early',
+    Venus: 'money, taste and one relationship are tied into the start, so what you value gets decided here',
+    Mars: 'you get heat and impatience, so the first move happens sooner than feels comfortable',
+    Jupiter: 'the opening is bigger than you expect, and the risk is taking on more than you can staff',
+    Saturn: 'the fresh start comes with a rule, a delay, or a real responsibility attached, so it feels serious and slower than a normal New Moon, and what you build here is meant to hold',
+    Uranus: 'the start does not go to plan, and the version that works is the one you did not schedule',
+    Neptune: 'the picture is blurry on purpose, so commit to a direction and not to details you cannot see yet',
+    Pluto: 'something has to end for this to begin, and the ending is not negotiable',
+    Chiron: 'the old sore spot in this area gets touched, and doing it anyway is the point',
+    'North Node': 'this pulls you toward unfamiliar ground, and comfort is not the measure of whether it is right',
+    'South Node': 'the pull is backward into the familiar version, so notice what you are repeating',
+  };
+
+  const themeAnchors: string[] = (() => {
+    if (!activeChart) return [];
+    const out: string[] = [];
+    const nmHouseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
+    const houseTag = newMoonHouse ? `house ${newMoonHouse}${nmHouseArea ? ` (${nmHouseArea})` : ''}` : 'the house it falls in for you';
+
+    // 1. Planets conjunct or aspecting the New Moon in the sky, tightest first.
+    const skyAspects = [...(interpretation.aspects || [])].sort((a, b) => a.orb - b.orb);
+    for (const a of skyAspects.slice(0, 3)) {
+      const effect = SKY_COMPANION_EFFECT[a.planet];
+      if (!effect) continue;
+      const word = a.aspectType.toLowerCase();
+      out.push(
+        `In your chart this New Moon happens in ${houseTag}, and ${a.planet} is ${word} it (orb ${a.orb.toFixed(1)}°), so ${effect}.`,
+      );
+    }
+
+    // 2. The house itself, described as the arena the theme has to play out in.
+    if (newMoonHouse) {
+      out.push(
+        `This one restarts ${nmHouseArea || 'that area'} for you specifically (${houseTag}), so this theme is not a mood, it is that part of your life asking for a decision.`,
+      );
+    }
+
+    // 3. Tightest contacts to your own planets, each used once.
+    for (const na of natalAspects.slice(0, 3)) {
+      const houseBit = na.natalHouse ? `, house ${na.natalHouse}` : '';
+      const push = ['Conjunction', 'Square', 'Opposition'].includes(na.aspect);
+      out.push(
+        `It lands ${na.aspect.toLowerCase()} your natal ${na.planet} in ${na.natalSign}${houseBit} (orb ${na.orb.toFixed(1)}°), so ${push ? `this theme arrives as pressure on how you use your ${na.planet}, and it will not wait for you to feel ready` : `you get a usable opening through your ${na.planet}, but nothing forces it, you have to take the small step`}.`,
+      );
+    }
+
+    // 4. The sign, last, because it is the most general fact.
+    const arrival = NEW_MOON_SIGN_ARRIVAL[interpretation.sign];
+    if (arrival) {
+      out.push(
+        `It ${arrival}, and in ${houseTag} that is where you will notice it first.`,
+      );
+    }
+    return out;
+  })();
+  
+
   
   return (
     <div className="space-y-6">
@@ -1263,19 +1327,24 @@ Keep the tone deep, insightful, and practically applicable.`
               <CardContent className="space-y-4">
                 {signLunationData.themes.map((theme, i) => {
                   const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
-                  const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
-                  // Build a chart-specific line UNIQUE to this theme by classifying what it asks for
-                  // and pairing it with how this person's natal Moon typically meets that exact kind of work.
+                  // Each theme gets a DIFFERENT piece of the real chart (sky companions to the New Moon,
+                  // its house, its contacts to your planets, then its sign). The natal Moon reaction is a
+                  // reaction style, not the headline, so it is only added once and only when the Moon is
+                  // actually part of this lunation.
                   let personalLine: string | null = null;
-                  if (activeChart && houseArea && newMoonHouse) {
+                  if (activeChart && themeAnchors.length > 0) {
+                    const anchor = themeAnchors[i % themeAnchors.length];
+                    const moonIsInvolved =
+                      natalAspects.some((a) => a.planet === 'Moon') ||
+                      (natalMoon?.house != null && natalMoon.house === newMoonHouse);
                     const workType = classifyTheme(theme.title, theme.description);
-                    if (natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]) {
-                      const reaction = MOON_SIGN_REACTIONS[natalMoon.sign][workType];
-                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}). With your natal Moon in ${natalMoon.sign}, ${reaction}`;
-                    } else {
-                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}) — that's the specific life area where this theme has to play out for you, not in the abstract.`;
-                    }
+                    const reaction =
+                      i === 0 && moonIsInvolved && natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]
+                        ? ` Your natal Moon in ${natalMoon.sign} is in this, so ${MOON_SIGN_REACTIONS[natalMoon.sign][workType]}`
+                        : '';
+                    personalLine = `${anchor}${reaction}`;
                   }
+
                   return (
                     <div key={i} className="p-4 bg-secondary/30 rounded-lg">
                       <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
