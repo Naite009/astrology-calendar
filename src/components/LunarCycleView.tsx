@@ -860,6 +860,74 @@ Keep the tone deep, insightful, and practically applicable.`
     Pisces: 'arrives as mood, imagination, and a softening of the edges',
   };
 
+  // The sign supplies the flavour, but the HOUSE supplies the subject. When we know the
+  // person's chart, the three themes are rewritten into the arena the New Moon actually
+  // falls in, so the question at the top matches the reading underneath it.
+  const HOUSE_THEME_ANGLES: Record<number, Array<{ title: string; body: string }>> = {
+    1: [
+      { title: 'Decide how you show up', body: 'What do you want people to meet first this month? Choose the version of yourself you are willing to lead with, then act like it once in public.' },
+      { title: 'Say the thing in your own name', body: 'Stop waiting to be picked. Start one thing without permission, even small, and let it carry your name on it.' },
+      { title: 'Protect your own pace', body: 'One boundary, said plainly, keeps this from turning into everyone else\'s schedule.' },
+    ],
+    2: [
+      { title: 'Name your number', body: 'What is this worth, and what are you actually willing to accept? Put a real figure on it instead of leaving it vague.' },
+      { title: 'Ask, or change the terms', body: 'Request the better rate, adjust a subscription, or renegotiate an arrangement that quietly costs you more than it returns.' },
+      { title: 'Keep what earns its keep', body: 'Sort what genuinely supports you from what you keep out of habit. Security is built by subtraction as often as by addition.' },
+    ],
+    3: [
+      { title: 'Send the message', body: 'Which conversation have you been rehearsing instead of having? Write it plainly and send it this month.' },
+      { title: 'Ask the direct question', body: 'You are missing one piece of information. Ask the person who has it rather than guessing your way around it.' },
+      { title: 'Learn the practical piece', body: 'A skill, a document, a system. Small, useful learning moves this further than a big idea does.' },
+    ],
+    4: [
+      { title: 'Change something at home', body: 'What in your living situation is asking for a decision? Space, privacy, who is welcome, how it is run.' },
+      { title: 'Set the family line', body: 'Say the honest thing to the relative, or stop absorbing a pattern that started before you did.' },
+      { title: 'Build the base back', body: 'Rest, food, order at home. This month asks you to make your foundation something you can stand on.' },
+    ],
+    5: [
+      { title: 'Make the thing', body: 'What do you actually want to create or enjoy, apart from whether it is useful? Start it this month.' },
+      { title: 'Take the risk you want', body: 'A romantic move, a shared piece of work, a real hour with your kid. Choose it because you want it, not to prove something.' },
+      { title: 'Guard the joy hour', body: 'Book the time in advance. Pleasure disappears first when the calendar fills up.' },
+    ],
+    6: [
+      { title: 'Fix the day, not the year', body: 'Which part of your routine keeps breaking? Change that one, and let the rest follow.' },
+      { title: 'Handle the postponed task', body: 'The appointment, the form, the thing you have moved forward three times. Do it and close the loop.' },
+      { title: 'Build a schedule your body can hold', body: 'Ask for help or reduce the load. A plan your energy cannot sustain is not a plan.' },
+    ],
+    7: [
+      { title: 'Define the relationship', body: 'Which agreement is unclear? Say out loud what you expect, and hear what the other person expects.' },
+      { title: 'Address it directly', body: 'The conflict you have been managing quietly is the work this month. Bring it up before it hardens.' },
+      { title: 'Check the balance', body: 'Who is carrying what? Fairness has to be measurable, not assumed.' },
+    ],
+    8: [
+      { title: 'Open the closed subject', body: 'Shared money, debt, trust, intimacy, or grief. Which one have you agreed with yourself not to mention?' },
+      { title: 'Tell the whole truth', body: 'A partial version keeps this stuck. Say the part you were going to leave out.' },
+      { title: 'Look at who holds the power', body: 'Notice where control actually sits in the arrangement, then decide whether you accept that.' },
+    ],
+    9: [
+      { title: 'Choose the direction', body: 'Study, travel, teaching, publishing, a legal or long-range decision. Which one are you willing to commit to?' },
+      { title: 'Drop the outdated explanation', body: 'An old belief no longer matches what you have learned. Say so, at least to yourself.' },
+      { title: 'Take a real step, not a plan', body: 'Book it, register, apply. Meaning becomes yours only when it costs you something concrete.' },
+    ],
+    10: [
+      { title: 'Decide about the role', body: 'What do you want your working life to look like from here? Pursue the role, ask for the title, or turn down the one that does not fit.' },
+      { title: 'Choose how visible you are', body: 'Step forward where you have been quiet, or step back from exposure that is costing you more than it earns.' },
+      { title: 'Put down the old goal', body: 'One ambition may belong to an earlier version of you. Retiring it is as much a beginning as starting something new.' },
+    ],
+    11: [
+      { title: 'Choose your people', body: 'Which group or friendship deserves your time this month, and which one has quietly ended?' },
+      { title: 'Ask the network', body: 'Say what you need out loud to the people who could actually help. This house works through others.' },
+      { title: 'Pick one future goal', body: 'Name the long-range plan that is still genuinely yours, and let the rest wait.' },
+    ],
+    12: [
+      { title: 'Start it privately', body: 'This one is not for an audience yet. Begin quietly and let it develop before you explain it.' },
+      { title: 'End the private habit', body: 'Something you do alone is draining this. Stopping it is the beginning here.' },
+      { title: 'Make room to rest', body: 'Sleep, solitude, therapy, prayer, grief. The progress this month looks like nothing from outside.' },
+    ],
+  };
+
+
+
 
   // For each natal Moon sign, describe how that person tends to react to FIVE distinct kinds of theme-work.
   // The personal line per theme picks the right reaction based on what the theme is actually asking for.
@@ -1378,6 +1446,8 @@ Keep the tone deep, insightful, and practically applicable.`
                   <span className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
                     Themes of This {interpretation.sign} New Moon
+                    {activeChart && newMoonHouse ? ` in Your House ${newMoonHouse}` : ''}
+
                   </span>
                   {sectionsOpen.themes ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </CardTitle>
@@ -1387,17 +1457,22 @@ Keep the tone deep, insightful, and practically applicable.`
               <CardContent className="space-y-4">
                 {signLunationData.themes.map((theme, i) => {
                   const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
-                  // Each theme gets a DIFFERENT piece of the real chart (sky companions to the New Moon,
-                  // its house, its contacts to your planets, then its sign). The natal Moon reaction is a
-                  // reaction style, not the headline, so it is only added once and only when the Moon is
-                  // actually part of this lunation.
+                  // The house is the subject, so when we know the chart the headline and the
+                  // question are rewritten into that arena. The sign only supplies the flavour.
+                  const houseAngle =
+                    activeChart && newMoonHouse ? HOUSE_THEME_ANGLES[newMoonHouse]?.[i] : undefined;
+                  const arrival = NEW_MOON_SIGN_ARRIVAL[interpretation.sign];
+                  const shownTitle = houseAngle ? houseAngle.title : theme.title;
+                  const shownBody = houseAngle
+                    ? `${houseAngle.body}${i === 0 && arrival ? ` In ${interpretation.sign} it ${arrival}, so that is the tone, not the topic.` : ''}`
+                    : theme.description;
                   let personalLine: string | null = null;
                   if (activeChart && themeAnchors.length > 0) {
                     const anchor = themeAnchors[i % themeAnchors.length];
                     const moonIsInvolved =
                       natalAspects.some((a) => a.planet === 'Moon') ||
                       (natalMoon?.house != null && natalMoon.house === newMoonHouse);
-                    const workType = classifyTheme(theme.title, theme.description);
+                    const workType = classifyTheme(shownTitle, shownBody);
                     const reaction =
                       i === 0 && moonIsInvolved && natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]
                         ? ` Your natal Moon in ${natalMoon.sign} is in this, so ${MOON_SIGN_REACTIONS[natalMoon.sign][workType]}`
@@ -1407,8 +1482,8 @@ Keep the tone deep, insightful, and practically applicable.`
 
                   return (
                     <div key={i} className="p-4 bg-secondary/30 rounded-lg">
-                      <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
-                      <p className="text-sm text-foreground/80">{theme.description}</p>
+                      <h4 className="font-medium text-foreground mb-2">{shownTitle}</h4>
+                      <p className="text-sm text-foreground/80">{shownBody}</p>
                       {personalLine && (
                         <p className="text-xs text-primary/90 mt-2 pt-2 border-t border-border/50 italic">
                           {personalLine}
@@ -1417,9 +1492,11 @@ Keep the tone deep, insightful, and practically applicable.`
                     </div>
                   );
                 })}
+
                 <p className="text-sm text-muted-foreground italic">
-                  Begin with integrity, plant seeds step by step, trust that you don't need to know the whole plan yet — what is no longer working is meant to dissolve.
+                  Begin with integrity, plant seeds step by step, and trust that you do not need the whole plan yet. What is no longer working is meant to dissolve.
                 </p>
+
               </CardContent>
             </CollapsibleContent>
           </Card>
