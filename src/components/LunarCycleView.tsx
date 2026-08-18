@@ -1494,8 +1494,9 @@ Keep the tone deep, insightful, and practically applicable.`
                 })}
 
                 <p className="text-sm text-muted-foreground italic">
-                  Begin with integrity, plant seeds step by step, trust that you don't need to know the whole plan yet — what is no longer working is meant to dissolve.
+                  Begin with integrity, plant seeds step by step, and trust that you do not need the whole plan yet. What is no longer working is meant to dissolve.
                 </p>
+
               </CardContent>
             </CollapsibleContent>
           </Card>
