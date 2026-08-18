@@ -620,10 +620,12 @@ export const LunarWorkbookSection = ({
                     <Feather className="h-3.5 w-3.5" /> 3 intentions written for you
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
-                    Built from this New Moon's sign and degree, its ruler, the aspects it makes in the sky,
-                    the house it falls in for you, and the contacts it makes to your own chart.
-                    Copy one into the box below and change any word you want.
+                    Each one is built from a different part of the chart: one from the house this New Moon lands in for you,
+                    one from its closest contact to your own planets, and one from its ruler and how the month unfolds.
+                    They are not competing options. Use one on its own, or stack two or three into a single intention
+                    with "Add to my intention" and then edit the wording until it sounds like you.
                   </p>
+
                 </div>
                 <Button variant="outline" size="sm" onClick={handleGenerateExamples} disabled={isGeneratingExamples} className="shrink-0">
                   {isGeneratingExamples
@@ -657,8 +659,17 @@ export const LunarWorkbookSection = ({
                         toast.success('Copied into the edit box below');
                         document.getElementById('intention-working-copy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}>
-                      Copy and edit
+                      Use this one
                     </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-[11px]"
+                      onClick={() => {
+                        setWorkingCopy((prev) => (prev.trim() ? `${prev.trim()}\n\n${ex.intention}` : ex.intention));
+                        toast.success('Added to your intention below');
+                        document.getElementById('intention-working-copy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}>
+                      Add to my intention
+                    </Button>
+
                     <Button size="sm" variant="ghost" className="h-7 text-[11px]"
                       onClick={() => { navigator.clipboard?.writeText(ex.intention); toast.success('Copied to clipboard'); }}>
                       Copy text
@@ -675,7 +686,7 @@ export const LunarWorkbookSection = ({
                 <Textarea
                   value={workingCopy}
                   onChange={(e) => setWorkingCopy(e.target.value)}
-                  placeholder="Copy an example above, then rewrite it in your own words. Saving puts it in your draft intention."
+                  placeholder="Pull in one example, or stack two or three, then rewrite it in your own words. Saving puts it in your draft intention."
                   className="min-h-[110px] bg-background border-border/40 focus:border-primary/40 resize-none text-sm leading-relaxed"
                 />
                 <div className="flex flex-wrap gap-2">
