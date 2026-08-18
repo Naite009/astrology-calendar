@@ -1455,17 +1455,22 @@ Keep the tone deep, insightful, and practically applicable.`
               <CardContent className="space-y-4">
                 {signLunationData.themes.map((theme, i) => {
                   const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
-                  // Each theme gets a DIFFERENT piece of the real chart (sky companions to the New Moon,
-                  // its house, its contacts to your planets, then its sign). The natal Moon reaction is a
-                  // reaction style, not the headline, so it is only added once and only when the Moon is
-                  // actually part of this lunation.
+                  // The house is the subject, so when we know the chart the headline and the
+                  // question are rewritten into that arena. The sign only supplies the flavour.
+                  const houseAngle =
+                    activeChart && newMoonHouse ? HOUSE_THEME_ANGLES[newMoonHouse]?.[i] : undefined;
+                  const arrival = NEW_MOON_SIGN_ARRIVAL[interpretation.sign];
+                  const shownTitle = houseAngle ? houseAngle.title : theme.title;
+                  const shownBody = houseAngle
+                    ? `${houseAngle.body}${i === 0 && arrival ? ` In ${interpretation.sign} it ${arrival}, so that is the tone, not the topic.` : ''}`
+                    : theme.description;
                   let personalLine: string | null = null;
                   if (activeChart && themeAnchors.length > 0) {
                     const anchor = themeAnchors[i % themeAnchors.length];
                     const moonIsInvolved =
                       natalAspects.some((a) => a.planet === 'Moon') ||
                       (natalMoon?.house != null && natalMoon.house === newMoonHouse);
-                    const workType = classifyTheme(theme.title, theme.description);
+                    const workType = classifyTheme(shownTitle, shownBody);
                     const reaction =
                       i === 0 && moonIsInvolved && natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]
                         ? ` Your natal Moon in ${natalMoon.sign} is in this, so ${MOON_SIGN_REACTIONS[natalMoon.sign][workType]}`
@@ -1475,8 +1480,8 @@ Keep the tone deep, insightful, and practically applicable.`
 
                   return (
                     <div key={i} className="p-4 bg-secondary/30 rounded-lg">
-                      <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
-                      <p className="text-sm text-foreground/80">{theme.description}</p>
+                      <h4 className="font-medium text-foreground mb-2">{shownTitle}</h4>
+                      <p className="text-sm text-foreground/80">{shownBody}</p>
                       {personalLine && (
                         <p className="text-xs text-primary/90 mt-2 pt-2 border-t border-border/50 italic">
                           {personalLine}
@@ -1485,6 +1490,7 @@ Keep the tone deep, insightful, and practically applicable.`
                     </div>
                   );
                 })}
+
                 <p className="text-sm text-muted-foreground italic">
                   Begin with integrity, plant seeds step by step, trust that you don't need to know the whole plan yet — what is no longer working is meant to dissolve.
                 </p>
