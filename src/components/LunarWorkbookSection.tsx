@@ -620,10 +620,12 @@ export const LunarWorkbookSection = ({
                     <Feather className="h-3.5 w-3.5" /> 3 intentions written for you
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
-                    Built from this New Moon's sign and degree, its ruler, the aspects it makes in the sky,
-                    the house it falls in for you, and the contacts it makes to your own chart.
-                    Copy one into the box below and change any word you want.
+                    Each one is built from a different part of the chart: one from the house this New Moon lands in for you,
+                    one from its closest contact to your own planets, and one from its ruler and how the month unfolds.
+                    They are not competing options. Use one on its own, or stack two or three into a single intention
+                    with "Add to my intention" and then edit the wording until it sounds like you.
                   </p>
+
                 </div>
                 <Button variant="outline" size="sm" onClick={handleGenerateExamples} disabled={isGeneratingExamples} className="shrink-0">
                   {isGeneratingExamples
