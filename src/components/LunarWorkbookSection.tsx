@@ -659,8 +659,17 @@ export const LunarWorkbookSection = ({
                         toast.success('Copied into the edit box below');
                         document.getElementById('intention-working-copy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }}>
-                      Copy and edit
+                      Use this one
                     </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-[11px]"
+                      onClick={() => {
+                        setWorkingCopy((prev) => (prev.trim() ? `${prev.trim()}\n\n${ex.intention}` : ex.intention));
+                        toast.success('Added to your intention below');
+                        document.getElementById('intention-working-copy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}>
+                      Add to my intention
+                    </Button>
+
                     <Button size="sm" variant="ghost" className="h-7 text-[11px]"
                       onClick={() => { navigator.clipboard?.writeText(ex.intention); toast.success('Copied to clipboard'); }}>
                       Copy text
