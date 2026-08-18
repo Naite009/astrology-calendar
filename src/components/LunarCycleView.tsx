@@ -1327,19 +1327,24 @@ Keep the tone deep, insightful, and practically applicable.`
               <CardContent className="space-y-4">
                 {signLunationData.themes.map((theme, i) => {
                   const natalMoon = activeChart?.planets?.Moon as { sign?: string; house?: number } | undefined;
-                  const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
-                  // Build a chart-specific line UNIQUE to this theme by classifying what it asks for
-                  // and pairing it with how this person's natal Moon typically meets that exact kind of work.
+                  // Each theme gets a DIFFERENT piece of the real chart (sky companions to the New Moon,
+                  // its house, its contacts to your planets, then its sign). The natal Moon reaction is a
+                  // reaction style, not the headline, so it is only added once and only when the Moon is
+                  // actually part of this lunation.
                   let personalLine: string | null = null;
-                  if (activeChart && houseArea && newMoonHouse) {
+                  if (activeChart && themeAnchors.length > 0) {
+                    const anchor = themeAnchors[i % themeAnchors.length];
+                    const moonIsInvolved =
+                      natalAspects.some((a) => a.planet === 'Moon') ||
+                      (natalMoon?.house != null && natalMoon.house === newMoonHouse);
                     const workType = classifyTheme(theme.title, theme.description);
-                    if (natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]) {
-                      const reaction = MOON_SIGN_REACTIONS[natalMoon.sign][workType];
-                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}). With your natal Moon in ${natalMoon.sign}, ${reaction}`;
-                    } else {
-                      personalLine = `For you, ${activeChart.name}: this lands in ${houseArea} (House ${newMoonHouse}) — that's the specific life area where this theme has to play out for you, not in the abstract.`;
-                    }
+                    const reaction =
+                      i === 0 && moonIsInvolved && natalMoon?.sign && MOON_SIGN_REACTIONS[natalMoon.sign]
+                        ? ` Your natal Moon in ${natalMoon.sign} is in this, so ${MOON_SIGN_REACTIONS[natalMoon.sign][workType]}`
+                        : '';
+                    personalLine = `${anchor}${reaction}`;
                   }
+
                   return (
                     <div key={i} className="p-4 bg-secondary/30 rounded-lg">
                       <h4 className="font-medium text-foreground mb-2">{theme.title}</h4>
