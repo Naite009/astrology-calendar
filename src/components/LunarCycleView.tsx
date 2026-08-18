@@ -1446,6 +1446,8 @@ Keep the tone deep, insightful, and practically applicable.`
                   <span className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
                     Themes of This {interpretation.sign} New Moon
+                    {activeChart && newMoonHouse ? ` in Your House ${newMoonHouse}` : ''}
+
                   </span>
                   {sectionsOpen.themes ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </CardTitle>
