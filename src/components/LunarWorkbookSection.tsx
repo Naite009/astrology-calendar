@@ -87,6 +87,10 @@ interface LunarWorkbookSectionProps {
     natalPlanets?: string;
     newMoonHouse?: string;
     natalAspects?: string;
+    natalAspectsDetailed?: string;
+    rulerContext?: string;
+    skyContext?: string;
+    phaseDates?: string;
   };
   activationData?: SRActivationData | null;
 }
