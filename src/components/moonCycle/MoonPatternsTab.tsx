@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { CycleWeatherPanel } from "./CycleWeatherPanel";
 
 interface MoonPatternsTabProps {
   userNatalChart: NatalChart | null;
@@ -178,8 +179,12 @@ export const MoonPatternsTab = ({ userNatalChart, savedCharts }: MoonPatternsTab
 
   const trackedCount = entries.filter((e) => e.mood != null).length;
 
+  const activeChartId = userNatalChart?.id || savedCharts[0]?.id;
+
   if (trackedCount < 3) {
     return (
+      <div className="space-y-4">
+      <CycleWeatherPanel chartId={activeChartId} />
       <Card className="bg-background border">
         <CardContent className="p-8 text-center">
           <p className="text-lg font-serif mb-2">🔮 Not Enough Data Yet</p>
@@ -192,11 +197,14 @@ export const MoonPatternsTab = ({ userNatalChart, savedCharts }: MoonPatternsTab
           </p>
         </CardContent>
       </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <CycleWeatherPanel chartId={activeChartId} />
+
       {/* Metric Selector */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(METRIC_LABELS).map(([key, label]) => (
