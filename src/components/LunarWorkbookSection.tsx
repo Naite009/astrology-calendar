@@ -708,6 +708,32 @@ export const LunarWorkbookSection = ({
               </div>
             </div>
 
+            {/* ── Kept for the whole cycle: the vibe of this New Moon ── */}
+            {examples.length > 0 && (
+              <div className="rounded-lg border border-amber-400/30 bg-gradient-to-br from-amber-500/[0.09] via-primary/[0.05] to-transparent p-3 space-y-2">
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> Saved for this cycle: the vibe of this New Moon
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  These stay here for the whole cycle even after you save your own wording, so you can come back
+                  and reread the mood the sky was pointing at.
+                </p>
+                <div className="space-y-2">
+                  {examples.map((ex, i) => (
+                    <div key={`keep-${i}`} className="rounded-md bg-background/60 border border-amber-400/20 p-2.5 space-y-1">
+                      <p className="text-[11px] font-medium text-foreground/90">{ex.title || `Option ${i + 1}`}</p>
+                      {ex.basis && (
+                        <p className="text-[10px] text-muted-foreground/90 leading-relaxed">{ex.basis}</p>
+                      )}
+                      <p className="text-[11px] text-foreground/80 leading-relaxed italic">{ex.intention}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+
+
 
             <JournalField label="What wants to be worked with this cycle?" placeholder="What emotional theme feels alive now?"
               value={journal?.new_moon_feelings} onChange={v => updateField('new_moon_feelings', v)} icon={<Heart className="h-4 w-4 text-primary" />} />
