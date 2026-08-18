@@ -1081,31 +1081,63 @@ Keep the tone deep, insightful, and practically applicable.`
     'South Node': 'the pull is backward into the familiar version, so notice what you are repeating',
   };
 
+  // ── Traditional reading hierarchy for a lunation, enforced in order:
+  //   1. the house it falls in for this person (the arena, always first)
+  //   2. bodies conjunct the lunation in the sky (conjunctions inside 5° outrank everything else)
+  //   3. the ruler of the lunation's sign, and where that ruler sits for this person
+  //   4. contacts to natal planets, tightest orb first
+  //   5. the sign of the lunation (style only, never the headline)
+  //   6. node / eclipse proximity as a stakes flag
+  //   7. the natal Moon: reaction style only, added downstream and only when involved
   const themeAnchors: string[] = (() => {
     if (!activeChart) return [];
     const out: string[] = [];
     const nmHouseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
     const houseTag = newMoonHouse ? `house ${newMoonHouse}${nmHouseArea ? ` (${nmHouseArea})` : ''}` : 'the house it falls in for you';
 
-    // 1. Planets conjunct or aspecting the New Moon in the sky, tightest first.
-    const skyAspects = [...(interpretation.aspects || [])].sort((a, b) => a.orb - b.orb);
+    // RANK 1 — the house. This is the subject of the month, so it leads.
+    if (newMoonHouse) {
+      out.push(
+        `This New Moon falls in your ${houseTag}, so that is the actual subject of the month. It is not a mood, it is that part of your life asking for a decision.`,
+      );
+    }
+
+    // RANK 2 — bodies sitting on the lunation. Conjunctions inside 5° come before looser aspects.
+    const skyAspects = [...(interpretation.aspects || [])].sort((a, b) => {
+      const rank = (x: typeof a) => (x.aspectType.toLowerCase() === 'conjunction' && x.orb <= 5 ? 0 : 1);
+      return rank(a) - rank(b) || a.orb - b.orb;
+    });
     for (const a of skyAspects.slice(0, 3)) {
       const effect = SKY_COMPANION_EFFECT[a.planet];
       if (!effect) continue;
       const word = a.aspectType.toLowerCase();
+      const tight = word === 'conjunction' && a.orb <= 5;
       out.push(
-        `In your chart this New Moon happens in ${houseTag}, and ${a.planet} is ${word} it (orb ${a.orb.toFixed(1)}°), so ${effect}.`,
+        `${a.planet} is ${word} this New Moon (orb ${a.orb.toFixed(1)}°)${tight ? ', close enough that it changes what kind of start this is' : ''}, so ${effect}, and it plays out in your ${houseTag}.`,
       );
     }
 
-    // 2. The house itself, described as the arena the theme has to play out in.
-    if (newMoonHouse) {
+    // RANK 3 — the ruler of the lunation's sign: where the follow-through actually lands.
+    if (interpretation.ruler) {
+      const rulerNatal = (activeChart.planets as Record<string, { sign?: string; house?: number } | undefined>)?.[interpretation.ruler];
+      const transitHouse = (() => {
+        if (!activeChart.houseCusps || !interpretation.rulerSign) return null;
+        const mid = ZODIAC_SIGNS.indexOf(interpretation.rulerSign) * 30 + 15;
+        if (mid < 15) return null;
+        return calculateNatalHouse(mid, activeChart.houseCusps);
+      })();
+      const transitBit = transitHouse
+        ? ` Right now it is moving through ${interpretation.rulerSign}, which crosses your house ${transitHouse} (${HOUSE_LIFE_AREA[transitHouse]}), so that is the second arena pulled into this${interpretation.rulerRetrograde ? ', and it is retrograde, so the follow-through doubles back before it finishes' : ''}.`
+        : '';
+      const natalBit = rulerNatal?.sign
+        ? ` In your own chart that same planet sits in ${rulerNatal.sign}${rulerNatal.house ? `, house ${rulerNatal.house}` : ''}, which is the habit it will use to carry this out.`
+        : '';
       out.push(
-        `This one restarts ${nmHouseArea || 'that area'} for you specifically (${houseTag}), so this theme is not a mood, it is that part of your life asking for a decision.`,
+        `${interpretation.ruler} runs this New Moon, because it rules ${interpretation.sign}.${transitBit}${natalBit}`.trim(),
       );
     }
 
-    // 3. Tightest contacts to your own planets, each used once.
+    // RANK 4 — tightest contacts to your own planets, each used once.
     for (const na of natalAspects.slice(0, 3)) {
       const houseBit = na.natalHouse ? `, house ${na.natalHouse}` : '';
       const push = ['Conjunction', 'Square', 'Opposition'].includes(na.aspect);
@@ -1114,15 +1146,26 @@ Keep the tone deep, insightful, and practically applicable.`
       );
     }
 
-    // 4. The sign, last, because it is the most general fact.
+    // RANK 6 — node or eclipse proximity raises the stakes, so it outranks the plain sign note.
+    const nodeHit = skyAspects.find(
+      (a) => (a.planet === 'North Node' || a.planet === 'South Node') && a.aspectType.toLowerCase() === 'conjunction' && a.orb <= 12,
+    );
+    if (nodeHit) {
+      out.push(
+        `This lunation is ${nodeHit.orb.toFixed(1)}° from the ${nodeHit.planet}, which is eclipse territory, so anything that starts or ends in your ${houseTag} this month tends to stick rather than blow over.`,
+      );
+    }
+
+    // RANK 5 — the sign, last, because it is the style and not the subject.
     const arrival = NEW_MOON_SIGN_ARRIVAL[interpretation.sign];
     if (arrival) {
       out.push(
-        `It ${arrival}, and in ${houseTag} that is where you will notice it first.`,
+        `The ${interpretation.sign} flavour is the style of the reset, not the subject: it ${arrival}, and your ${houseTag} is where you will notice it first.`,
       );
     }
     return out;
   })();
+
   
 
   
