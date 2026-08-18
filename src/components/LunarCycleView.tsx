@@ -1014,7 +1014,7 @@ Keep the tone deep, insightful, and practically applicable.`
     if (!activeChart || !interpretation) return [];
     
     const newMoonDegree = interpretation.degree + (ZODIAC_SIGNS.indexOf(interpretation.sign) * 30);
-    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number }> = [];
+    const aspects: Array<{ planet: string; aspect: string; orb: number; planetIdentity: string; aspectInfo: { symbol: string; what: string }; feltSense: string; natalSign: string; natalDegree: number; natalHouse: number | null }> = [];
     
     Object.entries(activeChart.planets).forEach(([planet, data]) => {
       const planetData = data as { sign: string; degree: number; minutes?: number; house?: number };
