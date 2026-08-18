@@ -1032,20 +1032,17 @@ Keep the tone deep, insightful, and practically applicable.`
       for (const ac of aspectChecks) {
         const orbVal = Math.abs(diff - ac.angle);
         if (orbVal <= getEffectiveOrbFn('Moon', planet, ac.key)) {
+          const natalHouse = planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null);
           aspects.push({
             planet,
             aspect: ac.name,
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
             aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
-            feltSense: buildFeltSense(
-              planet,
-              planetData.sign,
-              ac.name,
-              planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null),
-            ),
+            feltSense: buildFeltSense(planet, planetData.sign, ac.name, natalHouse),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
+            natalHouse,
           });
           break;
         }
