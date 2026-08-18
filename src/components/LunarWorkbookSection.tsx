@@ -63,6 +63,24 @@ const PHASE_MESSAGING: Record<string, { message: string; energy: string }> = {
 
 const ordinal = (n: number) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 
+export interface IntentionExample {
+  title: string;
+  basis?: string;
+  intention: string;
+}
+
+// Examples are persisted as JSON. Older cycles may hold plain markdown, so fall back gracefully.
+const parseExamples = (raw: string): IntentionExample[] => {
+  try {
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed) ? parsed : parsed?.examples;
+    if (Array.isArray(list)) {
+      return list.filter((e: IntentionExample) => e?.intention);
+    }
+  } catch { /* not JSON, older markdown format */ }
+  return [];
+};
+
 /* ─────────── types ─────────── */
 
 interface KeyPhaseDates {
