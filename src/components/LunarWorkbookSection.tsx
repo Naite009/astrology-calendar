@@ -118,9 +118,53 @@ export const LunarWorkbookSection = ({
   const [isGeneratingIntentions, setIsGeneratingIntentions] = useState(false);
   const [interpretingCard, setInterpretingCard] = useState<'tarot' | 'oracle' | null>(null);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [isGeneratingExamples, setIsGeneratingExamples] = useState(false);
+  const [examples, setExamples] = useState<IntentionExample[]>([]);
+  const [workingCopy, setWorkingCopy] = useState('');
 
   const { journal, isLoading, isSaving, pastJournals, updateField, saveJournal } =
     useLunarJournal(chartId, cycleStartDate, cycleSign);
+
+  // Restore previously generated examples (stored as JSON in ai_suggested_intentions)
+  useEffect(() => {
+    const raw = journal?.ai_suggested_intentions;
+    if (!raw || examples.length > 0) return;
+    setExamples(parseExamples(raw));
+  }, [journal?.ai_suggested_intentions, examples.length]);
+
+  const handleGenerateExamples = async () => {
+    setIsGeneratingExamples(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-intentions', {
+        body: {
+          mode: 'examples',
+          cycleSign,
+          cycleDegree,
+          chartName,
+          natalPlanets: natalContext?.natalPlanets,
+          newMoonHouse: natalContext?.newMoonHouse,
+          natalAspects: natalContext?.natalAspects,
+          natalAspectsDetailed: natalContext?.natalAspectsDetailed,
+          rulerContext: natalContext?.rulerContext,
+          skyContext: natalContext?.skyContext,
+          phaseDates: natalContext?.phaseDates,
+          whatIsSurfacing: journal?.what_is_surfacing || journal?.new_moon_feelings,
+          intentionWords: signData?.intentionWords,
+        },
+      });
+      if (error) throw error;
+      const list: IntentionExample[] = Array.isArray(data?.examples) ? data.examples : [];
+      if (list.length === 0) throw new Error('empty');
+      setExamples(list);
+      saveJournal({ ai_suggested_intentions: JSON.stringify({ examples: list }) });
+      toast.success('Three intentions written for this cycle');
+    } catch {
+      toast.error('Could not write the examples. Try again in a moment.');
+    } finally {
+      setIsGeneratingExamples(false);
+    }
+  };
+
 
   const houseNum = natalContext?.newMoonHouse ? parseInt(natalContext.newMoonHouse, 10) : null;
   const signPractice = getSignPractice(cycleSign);
