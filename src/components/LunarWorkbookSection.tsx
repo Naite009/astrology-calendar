@@ -686,7 +686,7 @@ export const LunarWorkbookSection = ({
                 <Textarea
                   value={workingCopy}
                   onChange={(e) => setWorkingCopy(e.target.value)}
-                  placeholder="Copy an example above, then rewrite it in your own words. Saving puts it in your draft intention."
+                  placeholder="Pull in one example, or stack two or three, then rewrite it in your own words. Saving puts it in your draft intention."
                   className="min-h-[110px] bg-background border-border/40 focus:border-primary/40 resize-none text-sm leading-relaxed"
                 />
                 <div className="flex flex-wrap gap-2">
