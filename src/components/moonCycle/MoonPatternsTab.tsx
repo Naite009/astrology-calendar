@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { CycleWeatherPanel } from "./CycleWeatherPanel";
+import { NewMoonCalendar } from "./NewMoonCalendar";
+import { getCurrentNewMoon } from "@/lib/newMoonCycles";
 
 interface MoonPatternsTabProps {
   userNatalChart: NatalChart | null;
@@ -60,6 +62,8 @@ export const MoonPatternsTab = ({ userNatalChart, savedCharts }: MoonPatternsTab
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState("mood");
+  const [selectedNewMoon, setSelectedNewMoon] = useState<Date>(() => getCurrentNewMoon());
+  const [calendarYear, setCalendarYear] = useState<number>(() => getCurrentNewMoon().getFullYear());
 
   useEffect(() => {
     const load = async () => {
@@ -179,12 +183,26 @@ export const MoonPatternsTab = ({ userNatalChart, savedCharts }: MoonPatternsTab
 
   const trackedCount = entries.filter((e) => e.mood != null).length;
 
-  const activeChartId = userNatalChart?.id || savedCharts[0]?.id;
+  const activeChart = userNatalChart || savedCharts[0] || null;
+  const activeChartId = activeChart?.id;
+
+  const cycleBlocks = (
+    <>
+      <CycleWeatherPanel chartId={activeChartId} natalChart={activeChart} newMoonDate={selectedNewMoon} />
+      <NewMoonCalendar
+        year={calendarYear}
+        onYearChange={setCalendarYear}
+        selectedDate={selectedNewMoon}
+        onSelectDate={setSelectedNewMoon}
+        natalChart={activeChart}
+      />
+    </>
+  );
 
   if (trackedCount < 3) {
     return (
       <div className="space-y-4">
-      <CycleWeatherPanel chartId={activeChartId} />
+      {cycleBlocks}
       <Card className="bg-background border">
         <CardContent className="p-8 text-center">
           <p className="text-lg font-serif mb-2">🔮 Not Enough Data Yet</p>
@@ -203,7 +221,7 @@ export const MoonPatternsTab = ({ userNatalChart, savedCharts }: MoonPatternsTab
 
   return (
     <div className="space-y-4">
-      <CycleWeatherPanel chartId={activeChartId} />
+      {cycleBlocks}
 
       {/* Metric Selector */}
       <div className="flex flex-wrap gap-2">
