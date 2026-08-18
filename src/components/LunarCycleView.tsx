@@ -984,7 +984,8 @@ Keep the tone deep, insightful, and practically applicable.`
     const nmSign = interpretation?.sign;
 
     // Layer 1: your natal planet, by sign and by house
-    const layer1 = `Your natal ${planet} in ${natalSign}${natalHouse ? ` in the ${natalHouse}th house` : ''} (${signFeel || 'its natal expression'}) ${natalHouseBehavior || 'operates in its own corner of your chart.'}`;
+    const houseOrdinal = (n: number) => `${n}${['th', 'st', 'nd', 'rd'][(n % 100 - 20) % 10] || ['th', 'st', 'nd', 'rd'][n] || 'th'}`;
+    const layer1 = `Your natal ${planet} in ${natalSign}${natalHouse ? ` in the ${houseOrdinal(natalHouse)} house` : ''} (${signFeel || 'its natal expression'}) ${natalHouseBehavior || 'operates in its own corner of your chart.'}`;
 
     // Layer 2: where and how this New Moon lands for you
     const layer2 = `This New Moon${nmSign ? ` in ${nmSign}` : ''} ${nmArrival || 'sets a new cycle in motion'}, and for you it lands in ${nmHouseArea || 'the area it rules in your chart'}${newMoonHouse ? ` (house ${newMoonHouse})` : ''}.`;
