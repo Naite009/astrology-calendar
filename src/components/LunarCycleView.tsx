@@ -810,6 +810,40 @@ Keep the tone deep, insightful, and practically applicable.`
     12: 'your solitude, dreams, hidden life, and spiritual practice',
   };
 
+  // How a natal placement actually behaves because of the house it sits in.
+  // This is the "where it happens and how visible it is" layer.
+  const NATAL_HOUSE_BEHAVIOR: Record<number, string> = {
+    1: 'sits in your 1st house, so it runs right out front. People meet this part of you first, and it shows in your face, your pace, and your first reaction before you have edited anything.',
+    2: 'sits in your 2nd house, so it shows up around money, ownership, and what you are willing to be paid for. It moves slowly and it wants something concrete to hold at the end.',
+    3: 'sits in your 3rd house, so it lives in the everyday: texts, errands, siblings, short trips, the conversation in the car. It works through many small exchanges rather than one big moment.',
+    4: 'sits in your 4th house, so it works privately, at home, with family, and in your own history. Most of the movement happens where nobody sees it, and it lands emotionally before it lands logically.',
+    5: 'sits in your 5th house, so it comes out through making things, playing, flirting, and being with kids. It needs an audience of one and it goes flat when it feels like an obligation.',
+    6: 'sits in your 6th house, so it shows up in routine, work tasks, health, and the daily list. It improves by repetition, and it will nag you through your body when you ignore it.',
+    7: 'sits in your 7th house, so it activates through one specific other person. You tend to meet this part of yourself inside a partnership, a client, or a conflict, rather than alone.',
+    8: 'sits in your 8th house, so it works underneath: shared money, other people\'s decisions, intimacy, and the things you do not say out loud. It surfaces in private and it goes deep fast.',
+    9: 'sits in your 9th house, so it moves through belief, study, travel, and the search for meaning. It wants a bigger frame around the situation before it will commit to a step.',
+    10: 'sits in your 10th house, so it plays out in public: your work, your title, who is watching, and what people expect of you. It rarely stays personal for long.',
+    11: 'sits in your 11th house, so it moves through groups, friendships, and future plans. It gets going when other people are involved, and it thinks in terms of years rather than days.',
+    12: 'sits in your 12th house, so it works behind the scenes, in private, and often before you can name it. You feel it first as mood, fatigue, dreams, or a quiet knowing, and you may not recognize it as yours until later. It rarely announces itself, so it is easy to miss unless you slow down and check inward.',
+  };
+
+  // How a New Moon in a given sign tends to arrive.
+  const NEW_MOON_SIGN_ARRIVAL: Record<string, string> = {
+    Aries: 'arrives fast and wants a first move, not a plan',
+    Taurus: 'arrives slowly and wants something steady you can keep',
+    Gemini: 'arrives as information, questions, and conversations',
+    Cancer: 'arrives as feeling and a pull toward safety and home',
+    Leo: 'arrives as a wish to be seen doing something you actually enjoy',
+    Virgo: 'arrives as a list, a correction, and a wish to get it right',
+    Libra: 'arrives through other people and a wish for things to be fair',
+    Scorpio: 'arrives quietly and goes straight to what you have been avoiding',
+    Sagittarius: 'arrives as restlessness and a wish for more room',
+    Capricorn: 'arrives as responsibility and the long view',
+    Aquarius: 'arrives as a break in the pattern and a wish to do it your own way',
+    Pisces: 'arrives as mood, imagination, and a softening of the edges',
+  };
+
+
   // For each natal Moon sign, describe how that person tends to react to FIVE distinct kinds of theme-work.
   // The personal line per theme picks the right reaction based on what the theme is actually asking for.
   // 'action' = themes asking for movement/initiative/starting | 'release' = themes asking to let go/end something
@@ -938,29 +972,43 @@ Keep the tone deep, insightful, and practically applicable.`
 
   const newMoonHouse = getNewMoonHouse();
 
-  // Build a specific, somatic felt-sense sentence for this exact planet+sign+aspect+house combo
-  const buildFeltSense = (planet: string, natalSign: string, aspectType: string): string => {
+  // Build a layered felt-sense: natal planet by sign AND house, the New Moon by sign AND house,
+  // then how the two houses talk to each other, then the move to make.
+  const buildFeltSense = (planet: string, natalSign: string, aspectType: string, natalHouse: number | null): string => {
     const signFeel = PLANET_SIGN_FEEL[planet]?.[natalSign];
     const verb = ASPECT_VERB[aspectType];
-    const houseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
+    const nmHouseArea = newMoonHouse ? HOUSE_LIFE_AREA[newMoonHouse] : null;
+    const natalHouseArea = natalHouse ? HOUSE_LIFE_AREA[natalHouse] : null;
+    const natalHouseBehavior = natalHouse ? NATAL_HOUSE_BEHAVIOR[natalHouse] : null;
+    const nmArrival = interpretation ? NEW_MOON_SIGN_ARRIVAL[interpretation.sign] : null;
+    const nmSign = interpretation?.sign;
 
-    // Somatic response varies by aspect type
-    const somaticByAspect: Record<string, string> = {
-      Conjunction: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) is directly activated — you'll feel its themes as if someone turned up the volume on this part of your life. It's not background noise this cycle; it IS the cycle.`,
-      Sextile: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'receives a quiet invitation from'} this New Moon. You'll notice subtle openings — a conversation that leads somewhere, a small opportunity that feels easy to say yes to. It won't push you; you have to notice it and reach for it. Think of it as a door slightly ajar in the area of ${houseArea || 'this New Moon\'s themes'}.`,
-      Square: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'creates friction with'} this New Moon. You'll feel this as tension in your body — restlessness, irritation, or a nagging sense that something needs to change around ${houseArea || 'this cycle\'s themes'}. The discomfort is the point. It's pushing you to act on what you've been avoiding.`,
-      Trine: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.active || 'flows naturally into'} this New Moon. You'll feel this as ease — things related to ${houseArea || 'this cycle\'s themes'} click into place without force. Your ${planet} gifts are available to you effortlessly. The only risk is coasting — consciously use this flow.`,
-      Opposition: `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${verb?.passive || 'mirrors against'} this New Moon. You may feel pulled between your ${planet} needs and the demands of ${houseArea || 'this cycle\'s themes'}. Other people may embody your ${planet} energy for you — watch what triggers you in others, because it's your own unintegrated ${planet} qualities reflected back.`,
+    // Layer 1: your natal planet, by sign and by house
+    const layer1 = `Your natal ${planet} in ${natalSign} (${signFeel || 'its natal expression'}) ${natalHouseBehavior || 'operates in its own corner of your chart.'}`;
+
+    // Layer 2: where and how this New Moon lands for you
+    const layer2 = `This New Moon${nmSign ? ` in ${nmSign}` : ''} ${nmArrival || 'sets a new cycle in motion'}, and for you it lands in ${nmHouseArea || 'the area it rules in your chart'}${newMoonHouse ? ` (house ${newMoonHouse})` : ''}.`;
+
+    // Layer 3: the contact itself, described as a conversation between the two houses
+    const bridge = natalHouse && newMoonHouse
+      ? (natalHouse === newMoonHouse
+        ? `Both sit in the same house, so this is one single area of life getting all the attention at once.`
+        : `So the ask is a handoff: something starting in ${nmHouseArea || 'that area'} has to be handled through ${natalHouseArea || 'the part of you this planet runs'}.`)
+      : '';
+
+    const contactByAspect: Record<string, string> = {
+      Conjunction: `The New Moon sits right on it, so this part of you is not background this month, it is the whole story. ${bridge} Expect it to feel loud in the way that house usually feels for you${natalHouse === 12 ? ', which means loud on the inside and mostly invisible to everyone else' : ''}.`,
+      Sextile: `The New Moon ${verb?.passive || 'sends it a quiet invitation'}. Nothing forces you. You get small openings, a conversation that goes somewhere, an easy yes, and you have to notice and reach. ${bridge} ${natalHouse === 12 ? 'Because this planet works from your 12th house, the opening will not look like an opportunity at first. It shows up as a hunch, a dream, a private sentence you would not say out loud yet, or something you notice while alone. Write it down the day it happens, because by the next morning you will have talked yourself out of it.' : `Because it runs through ${natalHouseArea || 'that part of your life'}, the opening arrives in that lane rather than in a dramatic way.`}`,
+      Square: `The New Moon ${verb?.passive || 'grinds against it'}. You feel it as restlessness or irritation, a sense that something has to change. ${bridge} The friction is between what ${nmHouseArea || 'this cycle'} is asking for and how you normally handle things through ${natalHouseArea || 'this planet'}${natalHouse === 12 ? ', and since that is private territory, the pressure shows up as tiredness, poor sleep, or a mood you cannot trace' : ''}.`,
+      Trine: `The New Moon ${verb?.active || 'flows into it'}, so things in ${nmHouseArea || 'this area'} move without force. ${bridge} The risk is coasting${natalHouse === 12 ? ', especially here, because 12th house ease can slide into avoidance and you will call it going with the flow' : ', because easy support only counts if you actually use it this month'}.`,
+      Opposition: `The New Moon sits across from it, so you feel pulled between ${nmHouseArea || 'this cycle\'s demands'} and how you operate through ${natalHouseArea || 'this planet'}. ${bridge} Other people will act out the side you are not owning, so notice what irritates you in them this month${natalHouse === 12 ? ', because from the 12th house your own side of it stays hidden from you the longest' : ''}.`,
     };
 
-    let felt = somaticByAspect[aspectType] || `Your natal ${planet} in ${natalSign} is activated by this New Moon.`;
+    const layer3 = contactByAspect[aspectType] || `The New Moon makes contact with it, so this part of you is active this cycle.`;
 
-    if (houseArea && aspectType === 'Conjunction') {
-      felt += ` This lands in ${houseArea} — that's the life domain where ${planet}'s energy becomes your seed intention.`;
-    }
-
-    return felt;
+    return `${layer1} ${layer2} ${layer3}`.replace(/\s+/g, ' ').trim();
   };
+
 
   const getNatalAspects = () => {
     if (!activeChart || !interpretation) return [];
@@ -990,7 +1038,12 @@ Keep the tone deep, insightful, and practically applicable.`
             orb: orbVal,
             planetIdentity: PLANET_IDENTITY[planet] || `${planet} — a point in your chart activated by this lunation.`,
             aspectInfo: ASPECT_WHAT[ac.name] || { symbol: '', what: '' },
-            feltSense: buildFeltSense(planet, planetData.sign, ac.name),
+            feltSense: buildFeltSense(
+              planet,
+              planetData.sign,
+              ac.name,
+              planetData.house ?? (activeChart.houseCusps ? calculateNatalHouse(planetDegree, activeChart.houseCusps) : null),
+            ),
             natalSign: planetData.sign,
             natalDegree: planetData.degree,
           });
