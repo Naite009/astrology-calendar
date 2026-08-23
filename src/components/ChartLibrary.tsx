@@ -1672,9 +1672,19 @@ export const ChartLibrary = ({
                     </button>
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic mb-4">
+                <p className="text-[10px] text-muted-foreground italic mb-3">
                   Click "Calculate" to auto-fill main planets including Ascendant (requires recognized city). ℞ indicates retrograde.
                 </p>
+                <div className="mb-4 rounded-sm border border-primary/20 bg-primary/5 p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-primary mb-1">You only need the basics</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Enter the 10 core planets, the Ascendant, the house cusps, North Node and Chiron. On save, everything else
+                    (South Node, Lilith, Ceres, Pallas, Juno, Vesta, Eris, Vertex, Part of Fortune, and house cusps if you skip them)
+                    is calculated from the birth date, time and place, so every tab and report stays complete. Anything you type in
+                    by hand is always kept exactly as entered.
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   {CORE_PLANETS.map(planet => renderPlanetRow(planet))}
                 </div>
