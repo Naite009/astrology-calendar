@@ -33,7 +33,7 @@ import {
   type TransitAspect,
 } from './transitAspects';
 import { getPersonalizedTransitInterpretation } from './personalizedTransitInterpretations';
-import { findFixedStarActivations, findActiveFixedStarsToday, type FixedStarHit } from './fixedStars';
+import { findFixedStarActivations, findActiveFixedStarsToday, topFixedStarContacts, type FixedStarHit } from './fixedStars';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const SIGNS = [
@@ -1118,9 +1118,9 @@ function whatMattersHTML(
 
 function fixedStarsHTML(date: Date, chart: NatalChart | null): string {
   if (!chart) return '';
-  const hits = findFixedStarActivations(chart);
+  const hits = topFixedStarContacts(chart, 8);
   if (!hits.length) {
-    return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">No major fixed star is within orb of your natal points.</div>`;
+    return `<div style="background:${COLOR.card};border:1px solid ${COLOR.border};border-radius:6px;padding:14px;font-size:13px;color:${COLOR.muted}">No fixed star is within orb of your natal points, by conjunction, opposition or square.</div>`;
   }
 
   // Today's transit longitudes for "lit up today" markers (1° from natal point).
@@ -1139,8 +1139,7 @@ function fixedStarsHTML(date: Date, chart: NatalChart | null): string {
     findActiveFixedStarsToday(chart, tLon).map(h => `${h.star}|${h.point}`),
   );
 
-  const top = hits.slice(0, 8); // tightest 8 are plenty
-  const rows = top.map((h: FixedStarHit, i) => {
+  const rows = hits.map((h, i) => {
     const isActive = activeToday.has(`${h.star}|${h.point}`);
     const badge = isActive
       ? `<span style="display:inline-block;margin-left:8px;padding:2px 7px;font-size:10px;letter-spacing:0.06em;background:${COLOR.accentSoft};color:${COLOR.accent};border-radius:3px;font-family:${SANS};vertical-align:middle">LIT TODAY</span>`
@@ -1149,10 +1148,10 @@ function fixedStarsHTML(date: Date, chart: NatalChart | null): string {
       <tr>
         <td style="vertical-align:top;padding:14px 18px;${i > 0 ? `border-top:1px solid ${COLOR.border};` : ''}">
           <div style="font-size:14px;color:${COLOR.text};font-weight:600;line-height:1.45">
-            ${escapeHtml(h.star)} on your ${escapeHtml(h.point)}${badge}
+            ${escapeHtml(h.star)} ${escapeHtml(h.symbol)} your ${escapeHtml(h.point)}${badge}
           </div>
           <div style="font-size:11px;color:${COLOR.faint};margin-top:3px;font-family:${SANS};letter-spacing:0.04em">
-            star ${escapeHtml(h.starPosition)} · natal ${escapeHtml(h.natalPosition)} · ${h.orb}° orb
+            ${escapeHtml(h.aspect)} · star ${escapeHtml(h.starPosition)} · natal ${escapeHtml(h.natalPosition)} · ${h.orb}° orb
           </div>
           <div style="font-size:13px;color:${COLOR.muted};line-height:1.6;margin-top:6px">${escapeHtml(h.interpretation)}</div>
         </td>

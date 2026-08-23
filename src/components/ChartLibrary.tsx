@@ -1694,7 +1694,7 @@ export const ChartLibrary = ({
                       birthLocation={formData.birthLocation}
                       timezoneOffset={formData.timezoneOffset}
                       planets={formData.planets as any}
-                      onApplyValue={(body, position) => {
+                      onApplyValue={(body, position, opts) => {
                         setFormData(prev => ({
                           ...prev,
                           planets: {
@@ -1708,8 +1708,9 @@ export const ChartLibrary = ({
                             },
                           },
                         }));
-                        toast.success(`${body} set to the ephemeris value.`);
+                        if (!opts?.silent) toast.success(`${body} set to the ephemeris value.`);
                       }}
+
                     />
                   </div>
                 )}

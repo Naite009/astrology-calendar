@@ -32,6 +32,9 @@ export interface FixedStar {
   j2000Lon: number;
   /** One-line interpretive theme (the star's traditional nature). */
   theme: string;
+  /** 'major' = famous star. 'notable' = lesser known, still real when contacted. */
+  tier?: 'major' | 'notable';
+
 }
 
 /**
@@ -113,7 +116,35 @@ export const FIXED_STARS: FixedStar[] = [
   { name: 'Achernar',     j2000Lon:  15.32 + 330, theme: 'river\'s end; success in religion, public life, philosophy.' }, // 15°19' Pis
   { name: 'Markab',       j2000Lon:  23.50 + 330, theme: 'Pegasus saddle; honor and wealth from steady work; danger from fire or weapons.' }, // 23°30' Pis
   { name: 'Scheat',       j2000Lon:  29.40 + 330, theme: 'extreme misfortune through water if unconscious; depth of vision if integrated.' }, // 29°24' Pis
+
+  // ── Second tier: less famous, but they turn into headlines the moment a
+  // planet sits on them. These are the ones astrology sites suddenly talk
+  // about ("why is Algol square my Mars"), so they are tracked too.
+  { name: 'Sheratan',      j2000Lon:   3.97 + 30,  theme: 'the ram\'s horn; blunt force, bodily courage, injury from haste.', tier: 'notable' },   // 3°58' Tau
+  { name: 'Mesarthim',     j2000Lon:   3.35 + 30,  theme: 'first point of the old zodiac; new starts, exposure, being first.', tier: 'notable' }, // 3°21' Tau
+  { name: 'Ankaa',         j2000Lon:  15.35,       theme: 'phoenix; rebuilding after collapse, long memory, ash-to-flight.', tier: 'notable' },   // 15°21' Ari
+  { name: 'Alhena',        j2000Lon:   8.92 + 90,  theme: 'the proud foot; a wound in the feet or gait, and a mission carried anyway.', tier: 'notable' }, // 8°55' Can
+  { name: 'Wasat',         j2000Lon:  18.50 + 90,  theme: 'the middle; chemistry, poison, and the go-between role in conflicts.', tier: 'notable' }, // 18°30' Can
+  { name: 'Dubhe',         j2000Lon:  15.18 + 120, theme: 'the Bear\'s back; enduring destructive pressure, quiet retaliation.', tier: 'notable' }, // 15°11' Leo
+  { name: 'Merak',         j2000Lon:  19.43 + 120, theme: 'restless drive for command; hates being told what to do.', tier: 'notable' },          // 19°26' Leo
+  { name: 'Phecda',        j2000Lon:   0.63 + 150, theme: 'the Bear\'s thigh; stubborn endurance, hidden ruthlessness under manners.', tier: 'notable' }, // 0°38' Vir
+  { name: 'Alioth',        j2000Lon:   8.92 + 150, theme: 'the tail\'s start; brutally honest judgment, refusal to flatter.', tier: 'notable' },  // 8°55' Vir
+  { name: 'Alkes',         j2000Lon:  13.55 + 150, theme: 'the cup; holding others\' emotions, service that empties you if unchecked.', tier: 'notable' }, // 13°33' Vir
+  { name: 'Mizar',         j2000Lon:  15.70 + 150, theme: 'the horse and rider; sudden destruction, and the skill to see it coming.', tier: 'notable' }, // 15°42' Vir
+  { name: 'Cor Caroli',    j2000Lon:  24.82 + 150, theme: 'the king\'s heart; loyalty tested in public, honors after a hard stand.', tier: 'notable' }, // 24°49' Vir
+  { name: 'Alkaid',        j2000Lon:  26.93 + 150, theme: 'the mourners; grief carried for a group, the one who names the loss.', tier: 'notable' }, // 26°56' Vir
+  { name: 'Zaniah',        j2000Lon:   4.97 + 180, theme: 'refinement, order, gentle scholarship; harmony in small precise things.', tier: 'notable' }, // 4°58' Lib
+  { name: 'Seginus',       j2000Lon:  17.55 + 180, theme: 'the herdsman\'s shoulder; loss through friends, gift for organizing people.', tier: 'notable' }, // 17°33' Lib
+  { name: 'Ras Algethi',   j2000Lon:  16.13 + 240, theme: 'Hercules\' head; enormous stamina, the labors taken on voluntarily.', tier: 'notable' }, // 16°08' Sag
+  { name: 'Kaus Australis',j2000Lon:   5.33 + 270, theme: 'the archer\'s bow; aim, promises, the drawn tension before release.', tier: 'notable' }, // 5°20' Cap
+  { name: 'Nunki',         j2000Lon:  12.38 + 270, theme: 'the herald; official messages, truth-telling that changes a room.', tier: 'notable' }, // 12°23' Cap
+  { name: 'Rukbat',        j2000Lon:  16.57 + 270, theme: 'the archer\'s knee; steady footing under strain, endurance over speed.', tier: 'notable' }, // 16°34' Cap
+  { name: 'Albaldah',      j2000Lon:  21.27 + 270, theme: 'the city; reputation among many, dealing with crowds and institutions.', tier: 'notable' }, // 21°16' Cap
+  { name: 'Terebellum',    j2000Lon:  25.83 + 270, theme: 'success shadowed by regret; getting the thing at a real cost.', tier: 'notable' }, // 25°50' Cap
+  { name: 'Deneb Algedi',  j2000Lon:  23.55 + 300, theme: 'the lawgiver; justice, judgment, benevolence with an edge.', tier: 'notable' }, // 23°33' Aqu
+  { name: 'Alderamin',     j2000Lon:  12.70 + 330, theme: 'the king\'s right arm; authority handled with restraint, or not at all.', tier: 'notable' }, // 12°42' Pis
 ];
+
 
 /** Apply precession from J2000 to the birth year (sidereal → tropical drift). */
 export function precessedLongitude(j2000Lon: number, birthYear: number): number {
@@ -144,6 +175,8 @@ function orbFor(point: string): number | null {
   switch (point) {
     case 'Ascendant':
     case 'Midheaven':
+    case 'Descendant':
+    case 'IC':
       return 2.0;
     case 'Sun':
     case 'Moon':
@@ -156,15 +189,31 @@ function orbFor(point: string): number | null {
     case 'Saturn':
       return 1.0;
     case 'NorthNode':
+    case 'SouthNode':
       return 1.0;
+    // Slow bodies and derived points. They stay in, because a star exactly on
+    // Pluto or Chiron is a real signature, but the orb is tight so the list
+    // never fills up with noise.
+    case 'Uranus':
+    case 'Neptune':
+    case 'Pluto':
+    case 'Chiron':
+      return 1.0;
+    case 'Lilith':
+    case 'PartOfFortune':
+    case 'Vertex':
+      return 0.75;
     default:
       return null;
   }
 }
 
+
 const POINT_LABEL: Record<string, string> = {
   Ascendant: 'Ascendant',
   Midheaven: 'Midheaven',
+  Descendant: 'Descendant',
+  IC: 'IC',
   Sun: 'Sun',
   Moon: 'Moon',
   Mercury: 'Mercury',
@@ -172,8 +221,17 @@ const POINT_LABEL: Record<string, string> = {
   Mars: 'Mars',
   Jupiter: 'Jupiter',
   Saturn: 'Saturn',
+  Uranus: 'Uranus',
+  Neptune: 'Neptune',
+  Pluto: 'Pluto',
+  Chiron: 'Chiron',
   NorthNode: 'North Node',
+  SouthNode: 'South Node',
+  Lilith: 'Black Moon Lilith',
+  PartOfFortune: 'Part of Fortune',
+  Vertex: 'Vertex',
 };
+
 
 export interface FixedStarHit {
   star: string;
@@ -211,7 +269,23 @@ function gatherNatalPoints(chart: NatalChart): Array<{ key: string; lon: number;
     if (!isNaN(lon)) out.push({ key: 'Midheaven', lon, pretty: `${mc.deg}°${String(mc.min).padStart(2,'0')}' ${mc.sign}` });
   }
 
-  const eligible: Array<keyof typeof p> = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','NorthNode'];
+  // Descendant and IC, so a star on the 7th or 4th cusp is not silently lost.
+  const opposite = (cusp: { sign: string; degree: number; minutes?: number } | undefined, key: string) => {
+    if (!cusp) return;
+    const lon = pointLongitude(cusp.sign, cusp.degree, cusp.minutes || 0);
+    if (isNaN(lon)) return;
+    const f = fromLongitude(lon);
+    out.push({ key, lon, pretty: `${f.deg}°${String(f.min).padStart(2, '0')}' ${f.sign}` });
+  };
+  opposite(chart.houseCusps?.house7 as any, 'Descendant');
+  opposite(chart.houseCusps?.house4 as any, 'IC');
+
+  const eligible: Array<keyof typeof p> = [
+    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+    'Uranus','Neptune','Pluto','Chiron','NorthNode','SouthNode',
+    'Lilith','PartOfFortune','Vertex',
+  ];
+
   for (const key of eligible) {
     const pos = p[key];
     if (!pos) continue;
@@ -318,4 +392,159 @@ export function findActiveFixedStarsToday(
     }
   }
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hard-aspect star contacts
+//
+// A star does not only matter when a planet sits exactly on it. Algol square
+// Mars, or Regulus opposite the Moon, behaves like a real signature too: the
+// star's nature keeps colliding with that planet instead of merging with it.
+// Conjunctions stay primary and keep the traditional orbs. Oppositions and
+// squares use half the conjunction orb, so the list stays short and honest.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type StarAspect = 'conjunction' | 'opposition' | 'square';
+
+const ASPECT_ANGLE: Record<StarAspect, number> = {
+  conjunction: 0,
+  opposition: 180,
+  square: 90,
+};
+
+const ASPECT_SYMBOL: Record<StarAspect, string> = {
+  conjunction: '☌',
+  opposition: '☍',
+  square: '□',
+};
+
+export interface FixedStarContact extends FixedStarHit {
+  aspect: StarAspect;
+  symbol: string;
+  /** 0–100. Tighter orb, more famous star and more personal point score higher. */
+  prominence: number;
+  starTier: 'major' | 'notable';
+}
+
+/** Points whose contact hits hardest, used for the prominence score. */
+const POINT_WEIGHT: Record<string, number> = {
+  Ascendant: 1.0, Midheaven: 1.0, Sun: 1.0, Moon: 1.0,
+  Descendant: 0.8, IC: 0.8,
+  Mercury: 0.85, Venus: 0.85, Mars: 0.85,
+  Jupiter: 0.75, Saturn: 0.75,
+  'North Node': 0.75, 'South Node': 0.6,
+  Uranus: 0.55, Neptune: 0.55, Pluto: 0.6, Chiron: 0.6,
+  'Black Moon Lilith': 0.5, 'Part of Fortune': 0.5, Vertex: 0.5,
+};
+
+const ASPECT_WEIGHT: Record<StarAspect, number> = {
+  conjunction: 1.0,
+  opposition: 0.7,
+  square: 0.65,
+};
+
+const ASPECT_PHRASE: Record<StarAspect, string> = {
+  conjunction: 'sits right on',
+  opposition: 'sits directly across from',
+  square: 'sits at right angles to',
+};
+
+const ASPECT_DYNAMIC: Record<StarAspect, string> = {
+  conjunction: 'The star and the planet act as one thing, so the theme feels like part of you rather than something happening to you.',
+  opposition: 'The theme tends to arrive through other people and situations rather than from inside you, and it asks to be balanced instead of absorbed.',
+  square: 'The theme shows up as friction. It repeatedly interrupts that planet until you deal with it on purpose.',
+};
+
+const POINT_FLAVOR: Record<string, string> = {
+  Ascendant: 'the body and the way you arrive in a room',
+  Midheaven: 'your public role and how the world reads you',
+  Descendant: 'partnership and the kind of people you attract',
+  IC: 'home, family roots, and what happens privately',
+  Sun: 'your core sense of self and life direction',
+  Moon: 'your emotional baseline and what feels safe',
+  Mercury: 'how you think and speak',
+  Venus: 'what you love and how you relate',
+  Mars: 'your drive and how you fight for what you want',
+  Jupiter: 'your beliefs and where you expand',
+  Saturn: 'your discipline and where life tests you over time',
+  Uranus: 'where you break pattern',
+  Neptune: 'where you dissolve boundaries and where you can be fooled',
+  Pluto: 'where power and control get worked out',
+  Chiron: 'the old wound you end up qualified to treat in others',
+  'North Node': 'the direction your life keeps asking you to grow',
+  'South Node': 'the familiar setting you fall back into under stress',
+  'Black Moon Lilith': 'what you refuse to apologize for',
+  'Part of Fortune': 'where things go well when you stop forcing them',
+  Vertex: 'fated meetings and turning-point events',
+};
+
+/**
+ * Every star contact in the chart, conjunctions plus hard aspects, sorted by
+ * prominence. This is the thorough view: nothing eligible is filtered out for
+ * being obscure, only for being out of orb.
+ */
+export function findFixedStarContacts(chart: NatalChart): FixedStarContact[] {
+  if (!chart) return [];
+  const year = birthYearFromChart(chart);
+  const points = gatherNatalPoints(chart);
+  const out: FixedStarContact[] = [];
+
+  for (const star of FIXED_STARS) {
+    const starLon = precessedLongitude(star.j2000Lon, year);
+    const f = fromLongitude(starLon);
+    const starPretty = `${f.deg}°${String(f.min).padStart(2, '0')}' ${f.sign}`;
+    const tier = star.tier ?? 'major';
+
+    for (const pt of points) {
+      const baseOrb = orbFor(pt.key);
+      if (baseOrb == null) continue;
+      const label = POINT_LABEL[pt.key] || pt.key;
+
+      let sep = Math.abs(starLon - pt.lon);
+      if (sep > 180) sep = 360 - sep;
+
+      for (const aspect of ['conjunction', 'opposition', 'square'] as StarAspect[]) {
+        const allowed = aspect === 'conjunction' ? baseOrb : baseOrb / 2;
+        const orb = Math.abs(sep - ASPECT_ANGLE[aspect]);
+        if (orb > allowed) continue;
+
+        const tightness = 1 - orb / allowed;              // 1 = exact
+        const tierWeight = tier === 'major' ? 1 : 0.85;
+        const prominence = Math.round(
+          100 * tightness * (POINT_WEIGHT[label] ?? 0.5) * ASPECT_WEIGHT[aspect] * tierWeight,
+        );
+
+        out.push({
+          star: star.name,
+          theme: star.theme,
+          point: label,
+          orb: Math.round(orb * 100) / 100,
+          starPosition: starPretty,
+          natalPosition: pt.pretty,
+          aspect,
+          symbol: ASPECT_SYMBOL[aspect],
+          prominence,
+          starTier: tier,
+          interpretation:
+            `${star.name} at ${starPretty} ${ASPECT_PHRASE[aspect]} your ${label} at ${pt.pretty} ` +
+            `(orb ${(Math.round(orb * 100) / 100).toFixed(2)}°). The star's nature is ${star.theme} ` +
+            `Here it lands on ${POINT_FLAVOR[label] || 'that part of the chart'}. ${ASPECT_DYNAMIC[aspect]}`,
+        });
+      }
+    }
+  }
+
+  out.sort((a, b) => b.prominence - a.prominence || a.orb - b.orb);
+  return out;
+}
+
+/**
+ * The short list worth putting in front of a person: the strongest contacts,
+ * with any rare-but-tight star kept even if a famous star outranks it.
+ */
+export function topFixedStarContacts(chart: NatalChart, limit = 8): FixedStarContact[] {
+  const all = findFixedStarContacts(chart);
+  const top = all.slice(0, limit);
+  const rareTight = all.find(c => c.starTier === 'notable' && c.orb <= 0.5 && !top.includes(c));
+  return rareTight ? [...top.slice(0, Math.max(1, limit - 1)), rareTight] : top;
 }

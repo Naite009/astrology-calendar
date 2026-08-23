@@ -8,8 +8,10 @@ import type { NatalChart } from "@/hooks/useNatalChart";
 import {
   FIXED_STARS,
   precessedLongitude,
+  findFixedStarContacts,
   type FixedStar,
 } from "@/lib/fixedStars";
+
 import { toAbsoluteLongitude } from "@/lib/houseForLongitude";
 import type { PersonalReading, AspectHit } from "./divineFeminine";
 
@@ -102,63 +104,60 @@ export const personalizeFixedStar = (
   const starLon = precessedLongitude(star.j2000Lon, year);
   const starPos = fmt(starLon);
 
-  const hits: Array<{ point: string; orb: number; pos: string }> = [];
-  for (const key of Object.keys(POINT_ORB)) {
-    const lon = pointLon(chart, key);
-    if (lon == null) continue;
-    let diff = Math.abs(starLon - lon);
-    if (diff > 180) diff = 360 - diff;
-    if (diff <= POINT_ORB[key]) {
-      hits.push({
-        point: POINT_LABEL[key],
-        orb: Math.round(diff * 100) / 100,
-        pos: fmt(lon),
-      });
-    }
-  }
-  hits.sort((a, b) => a.orb - b.orb);
+  // Conjunctions AND hard aspects, across every eligible point in the chart.
+  // A square from Algol to Mars is a real signature, so it is reported here
+  // instead of being dropped for not being an exact conjunction.
+  const contacts = findFixedStarContacts(chart).filter((c) => c.star === starName);
 
   const placement = `${starPos} (precessed to ${year})`;
 
-  if (!hits.length) {
+  if (!contacts.length) {
     return {
       title,
       placement,
       aspects: [],
       reading:
-        `${starName} sits at ${starPos} in the sky. In your chart, none of the eligible natal points (Ascendant, Midheaven, Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, or North Node) fall within the tight orb this star needs to activate — so ${starName}'s theme (${star.theme}) runs as background sky rather than a personal signature.`,
+        `${starName} sits at ${starPos} in the sky. In your chart, nothing lands close enough to it, by conjunction, opposition or square, for the star to switch on. Its theme (${star.theme}) runs as background sky for you rather than a personal signature.`,
       doThis:
         "This one isn't a personal signature for you. Read it as sky context, not as a headline about you.",
       cadence: FIXED_STAR_CADENCE,
     };
   }
 
-  const primary = hits[0];
-  const flavor = POINT_FLAVOR[primary.point] || "";
+  const primary = contacts[0];
   const reading =
-    `${starName} sits at ${starPos}, and in your chart it lands right on your ${primary.point} at ${primary.pos} (orb ${primary.orb}°). ` +
-    `Its nature — ${star.theme} — imprints directly onto ${flavor}. ` +
-    (hits.length > 1
-      ? `It also touches your ${hits.slice(1).map((h) => `${h.point} (orb ${h.orb}°)`).join(" and ")}, which widens the reach of the theme.`
-      : `Because no other natal point is inside the orb, this is a clean one-point signature rather than a diffuse influence.`);
+    `${primary.interpretation}` +
+    (contacts.length > 1
+      ? ` It also contacts your ${contacts
+          .slice(1)
+          .map((c) => `${c.point} by ${c.aspect} (orb ${c.orb}°)`)
+          .join(", and your ")}, which widens the reach of the theme.`
+      : ` No other point in your chart is inside orb, so this is a single clean signature rather than a diffuse influence.`);
 
-  const aspects: AspectHit[] = hits.map((h) => ({
-    natalBody: h.point,
-    aspect: "conjunction",
-    orb: h.orb,
-    symbol: "☌",
+  const aspects: AspectHit[] = contacts.map((c) => ({
+    natalBody: c.point,
+    aspect: c.aspect,
+    orb: c.orb,
+    symbol: c.symbol,
   }));
+
+  const doThis =
+    primary.aspect === "conjunction"
+      ? `Own this. When situations touch ${primary.point.toLowerCase()} themes for you, remember that ${starName}'s signature is part of what you're carrying, and act from it on purpose instead of by accident.`
+      : primary.aspect === "square"
+        ? `Watch for the friction point. When your ${primary.point.toLowerCase()} keeps getting interrupted by the same kind of situation, that is this contact, and naming it takes most of the charge out of it.`
+        : `Watch where this arrives through other people. When someone else carries ${starName}'s theme at you, the work is balancing it rather than absorbing it or fighting it.`;
 
   return {
     title,
     placement,
     aspects,
     reading,
-    doThis:
-      `Own this. When situations touch ${primary.point.toLowerCase()} themes for you, remember that ${starName}'s signature is part of what you're carrying, and act from it on purpose instead of by accident.`,
+    doThis,
     cadence: FIXED_STAR_CADENCE,
   };
 };
+
 
 export interface FixedStarCard {
   key: string;      // star name
