@@ -137,6 +137,36 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const meta: ExportMeta = useMemo(
+    () => ({
+      name: chart.name,
+      birthDate: chart.birthDate,
+      birthTime: chart.birthTime,
+      birthLocation: chart.birthLocation,
+    }),
+    [chart.name, chart.birthDate, chart.birthTime, chart.birthLocation],
+  );
+
+  const contract = useMemo(
+    () => (data ? buildStrengthContract(chart, data.summary) : null),
+    [chart, data],
+  );
+
+  const exportSections: ExportSection[] = useMemo(
+    () =>
+      data
+        ? SECTION_META.flatMap(({ key, label, sub }) => {
+            const sec = data[key];
+            return sec
+              ? [{ key: String(key), label, sub, interpretation: sec.interpretation, question: sec.question }]
+              : [];
+          })
+        : [],
+    [data],
+  );
+
+
+
   // Build deterministic payload from chart
   const payload = useMemo(() => {
     const signals = computeAllSignals(chart);
