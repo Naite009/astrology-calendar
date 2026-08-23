@@ -156,8 +156,25 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
       oneMinuteSummary: overview?.oneMinute.paragraphs || [],
       placementDeepDive: buildPlacementDeepDives(chart),
       signatureCombinations: findComboHits(chart),
+      birthPanchanga: reading.birthPanchanga,
+      planetConditions: reading.conditions.map(c => ({
+        graha: c.body, sign: c.sign, house: c.house, dignity: c.dignity,
+        conditionIndex: c.index, band: c.band,
+        components: c.components,
+      })),
+      yogas: reading.yogas,
+      arudhaPadas: reading.arudhas,
+      currentTransits: reading.gochara
+        ? { transits: reading.gochara.transits, sadeSati: reading.gochara.sadeSati, dashaLordTransit: reading.gochara.dashaLordTransit }
+        : null,
+      grahaDrishti: reading.drishti,
+      signExchanges: reading.signExchanges,
+      allDivisionalCharts: Object.fromEntries(
+        Object.entries(reading.allVargas).map(([k, v]) => [k, { reads: v?.reads, lagna: v?.lagnaSign, placements: v?.placements }])
+      ),
     };
   }, [reading, overview]);
+
 
   if (!activeChart) {
     return (
