@@ -7,7 +7,18 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { computeAllSignals } from "@/lib/narrativeAnalysisEngine";
-import { ChevronDown, ChevronUp, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Sparkles, RefreshCw, FileDown, Braces, ShieldCheck } from "lucide-react";
+import { buildStrengthContract } from "@/lib/soulStrengthContract";
+import {
+  exportSectionPdf,
+  exportSectionJson,
+  exportContractPdf,
+  exportContractJson,
+  exportFullPdf,
+  exportFullJson,
+  type ExportSection,
+  type ExportMeta,
+} from "@/lib/soulAgreementsExport";
 
 const SIGN_RULERS: Record<string, string> = {
   Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
