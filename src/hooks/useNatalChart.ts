@@ -380,24 +380,32 @@ const readSavedChartsWithRecovery = (): NatalChart[] => {
   return [];
 };
 
-// ── Pronoun auto-seed by first name ──────────────────────────────────────────
+// ── Pronoun auto-seed by exact name ──────────────────────────────────────────
 // One-time backfill so the Family Portrait can render "she/her" / "he/him"
 // for the user's known profiles without manual selection. Only applies when
 // the chart has NO pronouns yet, so user edits via Chart Library always win.
+//
+// Matching is on the FULL name, never the first name alone. A chart saved
+// without a last name ("Shannon") is a different person from "Shannon Havens",
+// so it gets its own entry and never inherits anyone else's data.
 const PRONOUN_SEED: Record<string, ProfilePronouns> = (() => {
   const she: ProfilePronouns = { subject: "she", object: "her", possessive: "her", reflexive: "herself" };
   const he:  ProfilePronouns = { subject: "he",  object: "him", possessive: "his", reflexive: "himself" };
   const map: Record<string, ProfilePronouns> = {};
-  ["lauren", "erica", "hannah", "margie", "nicki", "shannon"].forEach(n => (map[n] = she));
-  ["ben", "max", "ike", "nate"].forEach(n => (map[n] = he));
+  [
+    "lauren newman", "nicki newman", "erica broder", "hannah greenstein",
+    "margie havens", "shannon havens", "shannon",
+  ].forEach(n => (map[n] = she));
+  ["ben levin", "max levin", "ike levin", "nate newman"].forEach(n => (map[n] = he));
   return map;
 })();
 const applyAutoSeededPronouns = <T extends NatalChart | null>(chart: T): T => {
   if (!chart || chart.pronouns?.subject) return chart;
-  const first = (chart.name ?? "").trim().split(/\s+/)[0]?.toLowerCase();
-  const seeded = first ? PRONOUN_SEED[first] : undefined;
+  const fullName = (chart.name ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+  const seeded = fullName ? PRONOUN_SEED[fullName] : undefined;
   return seeded ? ({ ...chart, pronouns: seeded } as T) : chart;
 };
+
 
 // ── South Node integrity ─────────────────────────────────────────────────────
 // The South Node is ALWAYS the exact opposite point of the North Node: same
