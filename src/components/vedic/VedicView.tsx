@@ -187,6 +187,10 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             </span>
           </div>
 
+          {overview && (
+            <VedicOverview chart={reading.chart} oneMinute={overview.oneMinute} themes={overview.themes} />
+          )}
+
           {reading.sections.slice(0, 2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
@@ -204,15 +208,24 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           {/* Divisional charts reference */}
           <div className="rounded-lg border border-border bg-card p-5 md:p-6">
             <h3 className="font-serif text-xl">Your Divisional Charts</h3>
-            <p className="mb-4 mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+            <p className="mb-1 mt-1 text-xs uppercase tracking-widest text-muted-foreground">
               The vargas behind the readings above
             </p>
+            <p className="mb-4 text-sm leading-relaxed text-foreground/85">{VARGA_NOTE}</p>
             <div className="grid gap-3 md:grid-cols-2">
               {(['D9', 'D10', 'D12', 'D2', 'D7'] as const).map(k => (
                 <VargaGrid key={k} varga={reading.vargas[k]} />
               ))}
             </div>
           </div>
+
+          <div className="rounded-md border border-border bg-secondary/25 p-4 text-[12px] leading-relaxed text-muted-foreground">
+            How to hold all of this: these are symbolic patterns and tendencies, not verdicts. This tab never predicts
+            death, illness, divorce, accidents or financial ruin, and it never reads one placement on its own. Anything
+            described here is only stated when several independent parts of the chart point the same way, and you can open
+            the evidence for each one.
+          </div>
+
         </div>
       )}
     </div>
