@@ -459,19 +459,14 @@ export const calculateAscendant = (
   
   const y = Math.cos(ramcRad);
   const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
-  
+
+  // atan2 already returns the rising degree in the correct quadrant.
+  // Any extra 180 degree "adjustment" would return the Descendant instead.
   let ascLon = Math.atan2(y, x) * 180 / Math.PI;
-  
-  // Adjust quadrant based on RAMC
-  if (ramcDeg >= 0 && ramcDeg < 180) {
-    ascLon = ascLon + 180;
-  }
-  if (ramcDeg >= 180 && ramcDeg < 360) {
-    ascLon = ascLon + 360;
-  }
-  
+
   // Normalize to 0-360
   ascLon = ((ascLon % 360) + 360) % 360;
+
   
   return getDetailedPosition(ascLon);
 };
