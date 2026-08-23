@@ -23,6 +23,12 @@ import { VARGA_NOTE } from '@/lib/vedic/divisionalCharts';
 import { buildVedicThemes, buildOneMinute } from '@/lib/vedic/themeSynthesis';
 import { PlacementDeepDiveCard } from './PlacementDeepDive';
 import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
+import { PanchangaCard } from './PanchangaCard';
+import { PlanetConditionCard } from './PlanetConditionCard';
+import { YogaCard } from './YogaCard';
+import { ArudhaCard } from './ArudhaCard';
+import { GocharaCard } from './GocharaCard';
+import { VargaBrowser } from './VargaBrowser';
 
 interface Props {
   userNatalChart: NatalChart | null;
