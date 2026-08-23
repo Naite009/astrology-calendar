@@ -308,6 +308,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
       if (!agreements?.family || !agreements?.summary) throw new Error("Malformed response");
       setData(agreements);
       try { localStorage.setItem(cacheKey(chart.id), JSON.stringify(agreements)); } catch {/* quota */}
+      void persistToCloud(agreements);
     } catch (e: any) {
       console.error("soul-agreements failed:", e);
       setError(e?.message || "Failed to generate");
