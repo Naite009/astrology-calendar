@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { autoFillChartBodies } from '@/lib/chartAutoFill';
 
 export interface NatalPlanetPosition {
   sign: string;
@@ -439,13 +440,14 @@ export const useNatalChart = () => {
   // Initialize state with rolling backup recovery
   const [userNatalChart, setUserNatalChart] = useState<NatalChart | null>(() => {
     const c = readWithRollingBackups<NatalChart | null>('userNatalChart', null, isValidChart);
-    return normalizeSouthNode(applyAutoSeededPronouns(normalizeAscendantFromHouse1(c)));
+    return autoFillChartBodies(normalizeSouthNode(applyAutoSeededPronouns(normalizeAscendantFromHouse1(c))));
   });
   const [savedCharts, setSavedCharts] = useState<NatalChart[]>(() => {
     const raw = readSavedChartsWithRecovery()
       .map(normalizeAscendantFromHouse1)
       .map(applyAutoSeededPronouns)
-      .map(normalizeSouthNode);
+      .map(normalizeSouthNode)
+      .map(autoFillChartBodies);
     // Deduplicate by normalized name on load, keeping entries with more planet data
     // Also filter out solar return charts and HD-only charts
     const seen = new Map<string, NatalChart>();
@@ -530,7 +532,7 @@ export const useNatalChart = () => {
   const replaceSavedCharts = (charts: NatalChart[]) => {
     const validCharts = charts
       .filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'))
-      .map((c) => normalizeAscendantFromHouse1(c));
+      .map((c) => autoFillChartBodies(normalizeAscendantFromHouse1(c)));
     saveWithRollingBackups('savedCharts', validCharts);
     setSavedCharts(validCharts);
   };
@@ -542,7 +544,7 @@ export const useNatalChart = () => {
       return;
     }
 
-    const normalized = normalizeAscendantFromHouse1(chart);
+    const normalized = autoFillChartBodies(normalizeAscendantFromHouse1(chart));
     saveWithRollingBackups('userNatalChart', normalized);
     setUserNatalChart(normalized);
   };
@@ -554,7 +556,7 @@ export const useNatalChart = () => {
       return chart;
     }
 
-    const newChart = { ...chart, id: Date.now().toString() };
+    const newChart = autoFillChartBodies({ ...chart, id: Date.now().toString() });
     const updated = [...savedCharts, newChart];
 
     replaceSavedCharts(updated);
