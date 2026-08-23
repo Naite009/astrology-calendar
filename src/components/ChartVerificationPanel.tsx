@@ -107,31 +107,24 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
           )}
           {missing.length > 0 && (
             <Badge variant="outline" className="border-amber-500/40 text-amber-700">
-              {missing.length} not read
+              {missing.length} filling in
+            </Badge>
+          )}
+          {autoFilledCount > 0 && (
+            <Badge variant="outline" className="border-sky-500/40 text-sky-700">
+              {autoFilledCount} added from the ephemeris
             </Badge>
           )}
         </div>
 
-        {onApplyValue && missing.some(r => r.computed) && (
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 flex flex-wrap items-center gap-2">
-            <span className="text-[11px] text-muted-foreground flex-1 min-w-[12rem]">
-              {missing.filter(r => r.computed).length} bodies were not read from the file. The ephemeris
-              has all of them, so nothing needs to be typed in by hand.
-            </span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 px-2 text-[11px] border-amber-500/40"
-              onClick={() => {
-                missing.forEach(r => {
-                  if (r.computed) onApplyValue(r.body, r.computed);
-                });
-              }}
-            >
-              Fill all {missing.filter(r => r.computed).length} from ephemeris
-            </Button>
-          </div>
+        {autoFilledCount > 0 && (
+          <p className="rounded-md border border-sky-500/30 bg-sky-500/5 px-3 py-2 text-[11px] text-muted-foreground">
+            Anything the file did not contain was calculated and filled in automatically, so the chart is
+            complete. Values that were read from your file or typed by hand are never replaced.
+          </p>
         )}
+
+
 
 
         <div className="divide-y divide-border rounded-md border border-border overflow-hidden">
