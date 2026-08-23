@@ -76,7 +76,7 @@ export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] 
           ? null
           : 'House placement needs an accurate birth time before it can be named.',
       nakshatraLine: nk
-        ? `Inside ${body.sign} it sits in ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, which narrows it further. This placement is traditionally associated with ${nk.essence}. The usable side is ${nk.gift}.`
+        ? `Inside ${body.sign} it sits in ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, which narrows it further. Traditionally this pada is described this way: ${nk.essence}. The usable side is ${nk.gift}.`
         : null,
       dignityLine: body.dignity !== 'neutral'
         ? (() => {

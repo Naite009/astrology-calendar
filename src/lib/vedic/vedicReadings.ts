@@ -14,6 +14,7 @@
  * dignity, nakshatras, karakas, dasha, divisional charts), plain output on top.
  */
 
+import { ordinal } from '@/lib/solarReturnConstants';
 import { VedicChart, VedicBody, houseLord, bodiesInHouse, formatDegree } from './siderealChart';
 import { buildVarga, VargaChart, isVargottama, VARGA_LABELS, VARGA_NOTE, VargaKey, ALL_VARGAS } from './divisionalCharts';
 import { buildConditions, PlanetCondition } from './strength';
@@ -595,7 +596,7 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
   const strained = lords.find(l => l.body?.dignity === 'debilitated');
   if (strained && strained.body) {
     paras.push(
-      `One honest note. The ruler of your ${strained.house}th house, ${strained.lord}, is debilitated in ${strained.body.sign}, the sign it actually occupies, meaning it sits where classical texts say it operates least comfortably. Classically this is read as a slower and more effortful route rather than a blocked one. In practice it often describes financial confidence that builds later and through experience, and a tendency to underestimate what you are worth in the meantime.`
+      `One honest note. The ruler of your ${ordinal(strained.house)} house, ${strained.lord}, is debilitated in ${strained.body.sign}, the sign it actually occupies, meaning it sits where classical texts say it operates least comfortably. Classically this is read as a slower and more effortful route rather than a blocked one. In practice it often describes financial confidence that builds later and through experience, and a tendency to underestimate what you are worth in the meantime.`
     );
   } else {
     paras.push('None of your wealth house rulers are in signs classical texts read as weakened, which describes a steady rather than dramatic pattern. The question for you is consistency more than capacity.');
