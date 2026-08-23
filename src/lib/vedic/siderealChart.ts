@@ -66,7 +66,9 @@ export function buildBirthMoment(chart: NatalChart): Date {
   const [y, m, d] = (chart.birthDate || '2000-01-01').split('-').map(Number);
   const [hh, mm] = (chart.birthTime || '12:00').split(':').map(Number);
   const offset = typeof chart.timezoneOffset === 'number' ? chart.timezoneOffset : 0;
-  return new Date(Date.UTC(y || 2000, (m || 1) - 1, d || 1, (hh || 12) - offset, mm || 0));
+  // Half-hour zones (+05:30, +07:30) need the offset in minutes, because
+  // Date.UTC truncates a fractional hour argument.
+  return new Date(Date.UTC(y || 2000, (m || 1) - 1, d || 1, hh || 12, (mm || 0) - Math.round(offset * 60)));
 }
 
 export function buildVedicChart(chart: NatalChart): VedicChart | null {
