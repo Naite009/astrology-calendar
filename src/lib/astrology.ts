@@ -719,9 +719,10 @@ export const calculateNatalChart = (
   
   // Convert local time to UTC by subtracting the timezone offset
   // If someone was born at 10:00 AM in EST (-5), that's 15:00 UTC
-  const utcHours = hours - finalOffset;
-  
-  const date = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
+  // Offsets can be fractional (+05:30 India, +07:30 old Singapore). Date.UTC
+  // truncates a fractional hour argument, so shift the minutes instead.
+  const offsetMinutes = Math.round(finalOffset * 60);
+  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes - offsetMinutes, 0));
   
   const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
     try {
