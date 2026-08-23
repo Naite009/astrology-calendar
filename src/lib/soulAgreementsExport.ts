@@ -376,12 +376,13 @@ export function exportContractJson(meta: ExportMeta, contract: StrengthContract)
   });
 }
 
-export function exportFullPdf(
+/** Builds the full-reading document. Exported for layout testing. */
+export function buildFullPdfDoc(
   meta: ExportMeta,
   sections: ExportSection[],
   summary: ExportSummary,
   contract: StrengthContract,
-) {
+): jsPDF {
   const doc = new Doc();
   cover(doc, meta, "A reflective reading of the long-standing patterns in your chart");
 
@@ -426,7 +427,18 @@ export function exportFullPdf(
   renderContract(doc, contract);
 
   doc.footers(meta.name);
-  doc.d.save(`${slug(meta.name)}-soul-agreements-full-${today()}.pdf`);
+  return doc.d;
+}
+
+export function exportFullPdf(
+  meta: ExportMeta,
+  sections: ExportSection[],
+  summary: ExportSummary,
+  contract: StrengthContract,
+) {
+  buildFullPdfDoc(meta, sections, summary, contract).save(
+    `${slug(meta.name)}-soul-agreements-full-${today()}.pdf`,
+  );
 }
 
 export function exportFullJson(
