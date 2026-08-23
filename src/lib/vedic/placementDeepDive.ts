@@ -89,7 +89,7 @@ export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] 
                   : ' No cancellation condition applies here, so the classical reading stands, and the function tends to be built through experience rather than arriving ready-made.')
               : (a.qualifiers.length
                   ? ` The strength is real but qualified. ${a.qualifiers[0]}`
-                  : ' Nothing in the chart limits it: no difficult-house placement, no malefic glance, no combustion.');
+                  : ' Nothing in the chart limits it: no difficult-house placement, no malefic drishti, no combustion.');
             return `${base}${extra} ${a.dispositorLine}`;
           })()
         : null,
