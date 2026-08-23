@@ -513,6 +513,14 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
     return generateNatalPortrait(selectedChart);
   }, [selectedChart]);
 
+  const exportMeta: ExportMeta = useMemo(() => ({
+    name: selectedChart?.name || 'Chart',
+    birthDate: selectedChart?.birthDate ? formatDateMMDDYYYY(selectedChart.birthDate) : undefined,
+    birthTime: selectedChart?.birthTime,
+    birthLocation: selectedChart?.birthLocation,
+  }), [selectedChart]);
+
+
   if (!allCharts.length) {
     return (
       <div className="text-center py-20 text-muted-foreground">
