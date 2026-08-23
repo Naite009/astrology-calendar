@@ -57,7 +57,9 @@ export const birthMomentOf = (chart: NatalChart): Date | null => {
   if (!y || !m || !d) return null;
   const [hh, mm] = (chart.birthTime || '12:00').split(':').map(Number);
   const offset = typeof chart.timezoneOffset === 'number' ? chart.timezoneOffset : 0;
-  return new Date(Date.UTC(y, m - 1, d, (hh || 0) - offset, mm || 0));
+  // Offsets can be fractional (+05:30, +07:30), and Date.UTC truncates a
+  // fractional hour argument, so convert the whole offset to minutes first.
+  return new Date(Date.UTC(y, m - 1, d, hh || 0, (mm || 0) - Math.round(offset * 60)));
 };
 
 /** Bodies this module can fill in when they are missing. */

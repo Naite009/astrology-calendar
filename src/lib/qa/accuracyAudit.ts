@@ -152,7 +152,9 @@ export function buildReferenceChart(person: ReferencePerson): NatalChart {
 const utcMoment = (person: ReferencePerson, offset: number): Date => {
   const [y, m, d] = person.birthDate.split('-').map(Number);
   const [hh, mm] = person.birthTime.split(':').map(Number);
-  return new Date(Date.UTC(y, m - 1, d, (hh || 0) - offset, mm || 0));
+  // Fractional offsets must go through the minutes argument: Date.UTC
+  // truncates a fractional hour and would silently drop 30 minutes.
+  return new Date(Date.UTC(y, m - 1, d, hh || 0, (mm || 0) - Math.round(offset * 60)));
 };
 
 /** Grade one reference person's chart math. */
