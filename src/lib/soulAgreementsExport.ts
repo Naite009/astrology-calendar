@@ -150,10 +150,10 @@ export function buildFullPdfDoc(
     });
 
   sections.forEach((s) => {
-    doc.d.addPage();
-    doc.y = MARGIN;
+    doc.newPage();
     renderSection(doc, s);
   });
+
 
   doc.newPage();
   renderSummary(doc, summary);
