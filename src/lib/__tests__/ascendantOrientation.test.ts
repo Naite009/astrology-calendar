@@ -26,10 +26,9 @@ describe('Ascendant orientation', () => {
     const asc = calculateAscendant(date, 40.8859, -74.0435);
     const houses = calculatePlacidusHouses(date, 40.8859, -74.0435);
     const diff = Math.abs(lonOf(asc) - lonOf(houses.house1));
-    expect(Math.min(diff, 360 - diff)).toBeLessThan 
-      ? expect(Math.min(diff, 360 - diff)).toBeLessThan(1)
-      : undefined;
+    expect(Math.min(diff, 360 - diff)).toBeLessThan(1);
   });
+
 
   it('rises roughly opposite the Sun at local midnight', () => {
     const chart = calculateNatalChart('2026-08-23', '00:00', 0, 'New York, NY (US)') as any;
