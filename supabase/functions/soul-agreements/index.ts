@@ -1215,7 +1215,10 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           ],
           response_format: { type: "json_object" },
           temperature: 0.4,
-          max_tokens: 7000,
+          // 9 long sections + summary routinely exceed 7k tokens; the old cap
+          // truncated the JSON mid-string and every parse attempt failed, so the
+          // UI spun until the fallback landed. Give the model real headroom.
+          max_tokens: 32000,
         }),
       });
 
@@ -1225,8 +1228,13 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       }
 
       const data = await resp.json();
+      const finish = data?.choices?.[0]?.finish_reason;
+      if (finish && finish !== "stop") {
+        console.warn(`[soul-agreements] finish_reason=${finish} (output may be truncated)`);
+      }
       return data?.choices?.[0]?.message?.content ?? "{}";
     };
+
 
     const normalizeAgreements = (value: any) => {
       const fallback = makeFallbackAgreements({ chartName, placements, houses, aspects });
@@ -1434,6 +1442,48 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       return result;
     };
 
+    /**
+     * Salvage a JSON object that was cut off mid-generation: close an open
+     * string, drop a trailing partial key/value, and close every open
+     * brace/bracket. Returns null when nothing usable can be recovered.
+     */
+    const repairTruncatedJson = (block: string): any | null => {
+      let inString = false;
+      let escaped = false;
+      const stack: string[] = [];
+      let lastSafe = -1; // index just after the last completed value inside a container
+      for (let i = 0; i < block.length; i++) {
+        const ch = block[i];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (ch === "\\") escaped = true;
+          else if (ch === '"') inString = false;
+          continue;
+        }
+        if (ch === '"') inString = true;
+        else if (ch === "{" || ch === "[") stack.push(ch === "{" ? "}" : "]");
+        else if (ch === "}" || ch === "]") stack.pop();
+        else if (ch === "," && stack.length) lastSafe = i;
+      }
+      let candidate = block;
+      if (inString || stack.length) {
+        if (lastSafe === -1) return null;
+        candidate = block.slice(0, lastSafe);
+        // recompute closers for the truncated candidate
+        const closers: string[] = [];
+        let s = false, e = false;
+        for (const ch of candidate) {
+          if (s) { if (e) e = false; else if (ch === "\\") e = true; else if (ch === '"') s = false; continue; }
+          if (ch === '"') s = true;
+          else if (ch === "{") closers.push("}");
+          else if (ch === "[") closers.push("]");
+          else if (ch === "}" || ch === "]") closers.pop();
+        }
+        candidate += closers.reverse().join("");
+      }
+      try { return JSON.parse(candidate); } catch { return null; }
+    };
+
     const tryParse = (s: string) => {
       // 1. raw
       try { return JSON.parse(s); } catch {}
@@ -1457,6 +1507,14 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           try { return JSON.parse(repaired); } catch {}
         }
       }
+      // 5. truncated output — salvage the sections that did complete
+      if (first !== -1) {
+        const salvaged = repairTruncatedJson(noFences.slice(first));
+        if (salvaged && typeof salvaged === "object") {
+          console.warn("[soul-agreements] recovered truncated JSON; missing sections use fallback copy");
+          return salvaged;
+        }
+      }
       throw new Error("Unparseable AI JSON");
     };
 
@@ -1466,6 +1524,7 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       try {
         content = await fetchGeneratedContent();
         if (containsForbiddenBody(content)) {
+
           console.warn(`[soul-agreements] rejected generation ${attempt}: forbidden body in raw output`);
           continue;
         }
