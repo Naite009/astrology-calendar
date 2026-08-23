@@ -18,7 +18,7 @@ interface ChartVerificationPanelProps {
   timezoneOffset?: number | null;
   planets?: Record<string, VerifyPosition | undefined>;
   /** Optional: let the user copy a single ephemeris value into the form. */
-  onApplyValue?: (body: string, position: VerifyPosition) => void;
+  onApplyValue?: (body: string, position: VerifyPosition, opts?: { silent?: boolean }) => void;
 }
 
 const STATUS_STYLE: Record<string, { icon: React.ReactNode; text: string; row: string }> = {
