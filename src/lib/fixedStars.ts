@@ -175,6 +175,8 @@ function orbFor(point: string): number | null {
   switch (point) {
     case 'Ascendant':
     case 'Midheaven':
+    case 'Descendant':
+    case 'IC':
       return 2.0;
     case 'Sun':
     case 'Moon':
@@ -187,11 +189,25 @@ function orbFor(point: string): number | null {
     case 'Saturn':
       return 1.0;
     case 'NorthNode':
+    case 'SouthNode':
       return 1.0;
+    // Slow bodies and derived points. They stay in, because a star exactly on
+    // Pluto or Chiron is a real signature, but the orb is tight so the list
+    // never fills up with noise.
+    case 'Uranus':
+    case 'Neptune':
+    case 'Pluto':
+    case 'Chiron':
+      return 1.0;
+    case 'Lilith':
+    case 'PartOfFortune':
+    case 'Vertex':
+      return 0.75;
     default:
       return null;
   }
 }
+
 
 const POINT_LABEL: Record<string, string> = {
   Ascendant: 'Ascendant',
