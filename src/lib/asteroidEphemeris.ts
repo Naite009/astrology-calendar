@@ -2,6 +2,9 @@
 // Data derived from NASA JPL Horizons and Swiss Ephemeris reference data
 // Positions given as ecliptic longitude in degrees at 00:00 UTC on the 1st of each month
 
+import { slowBodyLongitude, type SlowBody } from './ephemeris/slowBodies';
+
+
 // ============================================================================
 // ERIS EPHEMERIS - 559 year orbital period
 // Eris entered Aries in 1926 and stays there until ~2048
