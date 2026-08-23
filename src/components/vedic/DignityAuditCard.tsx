@@ -70,7 +70,7 @@ export const DignityAuditCard = ({ audits }: { audits: DignityAudit[] }) => {
               {a.mitigations.length > 0 && (
                 <div>
                   <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    Neecha bhanga, conditions that cancel or soften the debility
+                    Neecha bhanga, conditions traditionally read as softening this debility (schools weigh them differently)
                   </p>
                   <ul className="mt-1 list-disc space-y-1 pl-5">
                     {a.mitigations.map((m, i) => <li key={i}>{m}</li>)}
