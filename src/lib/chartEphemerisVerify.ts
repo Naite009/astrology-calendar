@@ -8,7 +8,43 @@
  * or flags (scan value disagrees with the ephemeris).
  */
 
-import { calculateNatalChart, getCoordinatesFromLocation, detectTimezoneFromLocation } from './astrology';
+import {
+  calculateNatalChart,
+  getCoordinatesFromLocation,
+  detectTimezoneFromLocation,
+  calculateAscendant,
+  calculateVertex,
+  calculatePartOfFortune,
+} from './astrology';
+
+/**
+ * Region-level coordinates for places the city table does not know
+ * (e.g. "NJ", "New Jersey"). Angles computed from these are approximate,
+ * so the report labels them as such instead of claiming verification.
+ */
+const REGION_COORDINATES: Array<{ terms: string[]; lat: number; lon: number }> = [
+  { terms: ['new jersey', ' nj', ',nj', 'newark', 'jersey city', 'paterson', 'trenton', 'edison', 'toms river', 'morristown', 'hackensack', 'princeton'], lat: 40.5, lon: -74.4 },
+  { terms: ['new york state', ' ny', ',ny', 'albany', 'buffalo', 'rochester', 'syracuse', 'long island'], lat: 40.9, lon: -73.8 },
+  { terms: ['connecticut', ' ct', ',ct', 'hartford', 'stamford', 'new haven'], lat: 41.6, lon: -72.7 },
+  { terms: ['pennsylvania', ' pa', ',pa', 'allentown', 'harrisburg', 'scranton'], lat: 40.3, lon: -76.9 },
+  { terms: ['massachusetts', ' ma', ',ma', 'worcester', 'springfield ma'], lat: 42.3, lon: -71.8 },
+  { terms: ['maryland', ' md', ',md', 'rockville', 'annapolis'], lat: 39.0, lon: -76.8 },
+  { terms: ['virginia', ' va', ',va', 'richmond', 'norfolk', 'arlington'], lat: 37.5, lon: -77.4 },
+  { terms: ['new hampshire', 'vermont', 'maine', 'rhode island', 'providence'], lat: 43.5, lon: -71.6 },
+  { terms: ['florida', ' fl', ',fl'], lat: 28.5, lon: -81.4 },
+  { terms: ['ohio', ' oh', ',oh'], lat: 40.0, lon: -82.9 },
+  { terms: ['texas', ' tx', ',tx'], lat: 31.0, lon: -97.5 },
+  { terms: ['california', ' ca', ',ca'], lat: 36.8, lon: -119.4 },
+  { terms: ['illinois', ' il', ',il'], lat: 40.0, lon: -89.0 },
+];
+
+const fallbackCoordinates = (location: string): { lat: number; lon: number } | null => {
+  const l = ` ${location.toLowerCase().trim()} `;
+  for (const region of REGION_COORDINATES) {
+    if (region.terms.some((t) => l.includes(t))) return { lat: region.lat, lon: region.lon };
+  }
+  return null;
+};
 
 const SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
