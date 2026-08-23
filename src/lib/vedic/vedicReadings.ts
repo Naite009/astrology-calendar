@@ -718,14 +718,25 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     );
   }
 
+  // A timing line is only useful if it lands inside a plausible stretch of this
+  // life. Mahadashas that begin in someone's nineties are technically correct
+  // and practically meaningless, so they are filtered out rather than printed.
+  const nowYear = new Date().getFullYear();
+  const birthYear = chart.birthMoment.getUTCFullYear();
+  const ageAt = (d: Date) => d.getUTCFullYear() - birthYear;
   const partnerWindows = dashas
     .filter(p => (dk && p.lord === dk.planet) || (seventh && p.lord === seventh.lord) || p.lord === 'Venus')
-    .filter(p => p.end.getFullYear() >= new Date().getFullYear())
+    .filter(p => p.end.getFullYear() >= nowYear)
+    .filter(p => ageAt(p.start) <= 75 && p.start.getFullYear() <= nowYear + 30)
     .slice(0, 3);
   if (partnerWindows.length) {
-    logic.push(`Periods that emphasize partnership themes: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)}`).join('; ')}`);
+    logic.push(`Periods that emphasize partnership themes, limited to windows inside a usable age range: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)} (age ${ageAt(p.start)} to ${ageAt(p.end)})`).join('; ')}`);
     paras.push(
-      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
+      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}, roughly age ${ageAt(p.start)} to ${ageAt(p.end)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
+    );
+  } else {
+    paras.push(
+      'No partnership-flavoured major period falls inside a usable stretch of this life, so no timing window is claimed here. Naming a period that begins in someone\u2019s nineties would be arithmetically true and practically useless. The sub-periods inside your current major period are the honest place to look for near-term emphasis.'
     );
   }
 
