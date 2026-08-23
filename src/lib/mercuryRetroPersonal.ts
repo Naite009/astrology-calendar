@@ -99,7 +99,7 @@ export interface PersonalRetroImpact {
   guidance?: MercuryRetroSignGuidance;
   houseNumber: number | null;
   houseArena: string | null;
-  houseLabel: string | null; // "3rd house — conversations, siblings…"
+  houseLabel: string | null; // "3rd house: conversations, siblings and so on"
   natalHits: string[]; // natal bodies in that sign
 }
 
@@ -134,7 +134,7 @@ export const getPersonalRetroImpact = (
     houseArena,
     houseLabel:
       houseNumber != null
-        ? `${ordinal(houseNumber)} house — ${houseArena}`
+        ? `${ordinal(houseNumber)} house: ${houseArena}`
         : null,
     natalHits,
   };
@@ -142,7 +142,7 @@ export const getPersonalRetroImpact = (
 
 /**
  * One-paragraph personal Mercury retrograde sentence for daily guidance.
- * Reads: "Mercury retrograde is in Cancer, transiting your 4th house — home,
+ * Reads: "Mercury retrograde is in Cancer, transiting your 4th house: home,
  * family, your emotional foundation. It's reworking your natal Moon in Cancer.
  * Do this: <sign-specific action>."
  */

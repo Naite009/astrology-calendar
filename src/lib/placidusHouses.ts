@@ -53,152 +53,111 @@ const longitudeToPosition = (longitude: number): { sign: string; degree: number;
   };
 };
 
-// Calculate Ascendant
+// Mean obliquity of the ecliptic for the date (Laskar), in degrees.
+const obliquityOfDate = (jd: number): number => {
+  const t = julianCenturies(jd);
+  const sec = 21.448 - t * (46.8150 + t * (0.00059 - t * 0.001813));
+  return 23 + (26 + sec / 60) / 60;
+};
+
+// Ecliptic longitude of the point on the ecliptic with this right ascension.
+const raToEclipticLongitude = (raDeg: number, obliquity: number): number => {
+  const ra = raDeg * DEG_TO_RAD;
+  const obl = obliquity * DEG_TO_RAD;
+  let lon = Math.atan2(Math.sin(ra), Math.cos(ra) * Math.cos(obl)) * RAD_TO_DEG;
+  lon = ((lon % 360) + 360) % 360;
+  // atan2 loses the half-turn, so keep the longitude in the same half of the
+  // sky as the right ascension it came from.
+  const raNorm = ((raDeg % 360) + 360) % 360;
+  if (Math.abs(((lon - raNorm + 540) % 360) - 180) > 90) lon = (lon + 180) % 360;
+  return lon;
+};
+
+// Calculate Ascendant from local sidereal time.
 const calculateAscendant = (lst: number, latitude: number, obliquity: number): number => {
   const lstRad = lst * DEG_TO_RAD;
   const latRad = latitude * DEG_TO_RAD;
   const obliqRad = obliquity * DEG_TO_RAD;
-  
-  // Standard formula for Ascendant (the rising degree, not its opposite)
+
+  // Standard formula for the rising degree (not its opposite).
   const y = Math.cos(lstRad);
   const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(lstRad));
-  
+
   let asc = Math.atan2(y, x) * RAD_TO_DEG;
-  
-  // Normalize to 0-360
   asc = ((asc % 360) + 360) % 360;
-  
   return asc;
 };
 
-// Calculate MC (Medium Coeli / Midheaven)
-const calculateMC = (lst: number, obliquity: number): number => {
-  const lstRad = lst * DEG_TO_RAD;
-  const obliqRad = obliquity * DEG_TO_RAD;
-  
-  let mc = Math.atan2(Math.sin(lstRad), Math.cos(lstRad) * Math.cos(obliqRad)) * RAD_TO_DEG;
-  
-  // MC should be in the upper hemisphere
-  if (mc < 0) mc += 360;
-  
-  // Adjust based on LST quadrant
-  if (lst >= 0 && lst < 90) {
-    // MC in Q1
-  } else if (lst >= 90 && lst < 180) {
-    mc = mc < 90 ? mc + 180 : mc;
-  } else if (lst >= 180 && lst < 270) {
-    mc = mc < 180 ? mc + 180 : mc;
-  } else {
-    mc = mc < 270 ? mc + 180 : mc;
-  }
-  
-  return ((mc % 360) + 360) % 360;
-};
+// Calculate MC (Medium Coeli / Midheaven): the ecliptic degree on the meridian.
+const calculateMC = (lst: number, obliquity: number): number =>
+  raToEclipticLongitude(lst, obliquity);
 
-// Placidus cusp calculation using semi-arc method
-// This is the complex part that makes Placidus different from other systems
-const calculatePlacidusHouseCusp = (
-  houseNumber: number,
-  mc: number,
-  asc: number,
-  lst: number,
+/**
+ * Placidus intermediate cusps by true semi-arc trisection.
+ *
+ * Each of cusps 11, 12, 2 and 3 sits at a fixed fraction of its own
+ * semi-diurnal or semi-nocturnal arc, measured from the meridian:
+ *
+ *   RA(11) = RAMC + (90 + AD) / 3          RA(12) = RAMC + 2 (90 + AD) / 3
+ *   RA(2)  = RAMC + 180 - 2 (90 - AD) / 3  RA(3)  = RAMC + 180 - (90 - AD) / 3
+ *
+ * where AD is the ascensional difference of the cusp itself, so the equation
+ * has to be solved by iteration. The remaining cusps are the oppositions.
+ * At AD = 0 (equator) this collapses to even 30 degree steps, which is the
+ * check that the fractions are the right way round.
+ */
+const placidusIntermediateCusp = (
+  houseNumber: 11 | 12 | 2 | 3,
+  ramc: number,
   latitude: number,
-  obliquity: number
-): number => {
-  // Houses 1 and 10 are always ASC and MC
-  if (houseNumber === 1) return asc;
-  if (houseNumber === 10) return mc;
-  
-  // Houses 4 and 7 are opposite to 10 and 1
-  if (houseNumber === 4) return (mc + 180) % 360;
-  if (houseNumber === 7) return (asc + 180) % 360;
-  
+  obliquity: number,
+): number | null => {
   const latRad = latitude * DEG_TO_RAD;
   const obliqRad = obliquity * DEG_TO_RAD;
-  
-  // Determine which quadrant and fraction
-  let fraction: number;
-  let startRA: number;
-  let endRA: number;
-  
-  // RAMC (Right Ascension of MC)
-  const ramc = lst;
-  
-  // Calculate semi-arcs
-  // The Placidus system divides the semi-arc of the ecliptic into three equal parts
-  
-  if (houseNumber === 11 || houseNumber === 12 || houseNumber === 2 || houseNumber === 3) {
-    // Eastern houses (above horizon to MC, or below horizon to IC)
-    if (houseNumber === 11) fraction = 1/3;
-    else if (houseNumber === 12) fraction = 2/3;
-    else if (houseNumber === 2) fraction = 1/3;
-    else fraction = 2/3; // house 3
-    
-    if (houseNumber === 11 || houseNumber === 12) {
-      // Above horizon, between ASC and MC
-      startRA = asc;
-      endRA = mc;
-    } else {
-      // Below horizon, between IC and ASC
-      startRA = (mc + 180) % 360;
-      endRA = asc;
+  const offset = { 11: 30, 12: 60, 2: 120, 3: 150 }[houseNumber];
+
+  let ra = ramc + offset;
+  for (let i = 0; i < 30; i++) {
+    const raRad = ra * DEG_TO_RAD;
+    // Declination of the ecliptic point at this right ascension.
+    const dec = Math.atan(Math.tan(obliqRad) * Math.sin(raRad));
+    const sinAD = Math.tan(dec) * Math.tan(latRad);
+    // Circumpolar: the cusp has no rising arc, so Placidus is undefined here.
+    if (Math.abs(sinAD) >= 1) return null;
+    const ad = Math.asin(sinAD) * RAD_TO_DEG;
+
+    let next: number;
+    if (houseNumber === 11) next = ramc + (90 + ad) / 3;
+    else if (houseNumber === 12) next = ramc + (2 * (90 + ad)) / 3;
+    else if (houseNumber === 2) next = ramc + 180 - (2 * (90 - ad)) / 3;
+    else next = ramc + 180 - (90 - ad) / 3;
+
+    if (Math.abs(next - ra) < 1e-9) {
+      ra = next;
+      break;
     }
-  } else {
-    // Western houses (5, 6, 8, 9)
-    if (houseNumber === 5) fraction = 2/3;
-    else if (houseNumber === 6) fraction = 1/3;
-    else if (houseNumber === 8) fraction = 1/3;
-    else fraction = 2/3; // house 9
-    
-    if (houseNumber === 8 || houseNumber === 9) {
-      // Above horizon, between MC and DSC
-      startRA = mc;
-      endRA = (asc + 180) % 360;
-    } else {
-      // Below horizon, between DSC and IC
-      startRA = (asc + 180) % 360;
-      endRA = (mc + 180) % 360;
-    }
+    ra = next;
   }
-  
-  // Handle wrap-around
-  let arcLength = endRA - startRA;
-  if (arcLength < 0) arcLength += 360;
-  if (arcLength > 180) arcLength = 360 - arcLength;
-  
-  // Calculate the cusp position
-  let cuspRA = startRA + fraction * arcLength;
-  if (cuspRA >= 360) cuspRA -= 360;
-  if (cuspRA < 0) cuspRA += 360;
-  
-  // Convert RA to ecliptic longitude using iterative method
-  // This is a simplified approximation - true Placidus requires iteration
-  const cuspRArad = cuspRA * DEG_TO_RAD;
-  
-  // Calculate declination at this RA point
-  const declination = Math.asin(Math.sin(obliqRad) * Math.sin(cuspRArad));
-  
-  // Convert RA and Dec to ecliptic longitude
-  let eclLon = Math.atan2(
-    Math.sin(cuspRArad) * Math.cos(obliqRad) + Math.tan(declination) * Math.sin(obliqRad),
-    Math.cos(cuspRArad)
-  ) * RAD_TO_DEG;
-  
-  // Normalize to 0-360
-  eclLon = ((eclLon % 360) + 360) % 360;
-  
-  // Adjust for hemisphere
-  if (houseNumber === 11 || houseNumber === 12) {
-    // Should be between ASC and MC
-    while (eclLon < asc - 90) eclLon += 180;
-    while (eclLon > mc + 90) eclLon -= 180;
-  } else if (houseNumber === 2 || houseNumber === 3) {
-    // Should be between IC and ASC
-    const ic = (mc + 180) % 360;
-    while (eclLon < ic - 90) eclLon += 180;
-  }
-  
-  return ((eclLon % 360) + 360) % 360;
+
+  return raToEclipticLongitude(ra, obliquity);
+};
+
+/** Porphyry fallback: trisect each ecliptic quadrant. Used above the polar circle. */
+const porphyryCusps = (asc: number, mc: number): number[] => {
+  const cusps: number[] = [];
+  const arc = (from: number, to: number) => ((to - from) % 360 + 360) % 360;
+  const q1 = arc(mc, asc); // MC to Ascendant, houses 11 and 12
+  const q2 = arc(asc, (mc + 180) % 360); // Ascendant to IC, houses 2 and 3
+  cusps[1] = asc;
+  cusps[10] = mc;
+  cusps[4] = (mc + 180) % 360;
+  cusps[7] = (asc + 180) % 360;
+  cusps[11] = (mc + q1 / 3) % 360;
+  cusps[12] = (mc + (2 * q1) / 3) % 360;
+  cusps[2] = (asc + q2 / 3) % 360;
+  cusps[3] = (asc + (2 * q2) / 3) % 360;
+  for (const h of [11, 12, 2, 3]) cusps[(h + 6) > 12 ? h - 6 : h + 6] = (cusps[h] + 180) % 360;
+  return cusps;
 };
 
 // Main function to calculate all Placidus house cusps
@@ -224,22 +183,41 @@ export const calculatePlacidusHouses = (
   latitude: number,
   longitude: number
 ): PlacidusHouses => {
-  // Get Julian Day
   const jd = dateToJD(date);
-  
-  // Calculate Local Sidereal Time
   const lst = localSiderealTime(jd, longitude);
-  
-  // Calculate ASC and MC
-  const asc = calculateAscendant(lst, latitude, OBLIQUITY);
-  const mc = calculateMC(lst, OBLIQUITY);
-  
-  // Calculate all 12 house cusps
+  const obliquity = obliquityOfDate(jd);
+
+  const asc = calculateAscendant(lst, latitude, obliquity);
+  const mc = calculateMC(lst, obliquity);
+
+  // Placidus proper, with a Porphyry fallback for latitudes where a cusp
+  // never rises (above roughly 66 degrees) so the chart still has 12 houses.
   const cusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    cusps[i] = calculatePlacidusHouseCusp(i, mc, asc, lst, latitude, OBLIQUITY);
+  cusps[1] = asc;
+  cusps[10] = mc;
+  cusps[4] = (mc + 180) % 360;
+  cusps[7] = (asc + 180) % 360;
+
+  let usedPorphyry = false;
+  for (const h of [11, 12, 2, 3] as const) {
+    const value = placidusIntermediateCusp(h, lst, latitude, obliquity);
+    if (value === null) {
+      usedPorphyry = true;
+      break;
+    }
+    cusps[h] = value;
   }
-  
+
+  if (usedPorphyry) {
+    const fallback = porphyryCusps(asc, mc);
+    for (let i = 1; i <= 12; i++) cusps[i] = fallback[i];
+  } else {
+    cusps[5] = (cusps[11] + 180) % 360;
+    cusps[6] = (cusps[12] + 180) % 360;
+    cusps[8] = (cusps[2] + 180) % 360;
+    cusps[9] = (cusps[3] + 180) % 360;
+  }
+
   return {
     house1: longitudeToPosition(cusps[1]),
     house2: longitudeToPosition(cusps[2]),

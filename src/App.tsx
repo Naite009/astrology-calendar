@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import QaAccuracy from "./pages/QaAccuracy";
 import { startSessionKeepAlive } from "./lib/sessionKeepAlive";
 
 // Boot the forever-retrying refresh + IndexedDB session backup as early as
@@ -64,6 +65,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            {/* Hidden QA scorecard, not linked from the app UI. */}
+            <Route path="/qa/accuracy" element={<QaAccuracy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

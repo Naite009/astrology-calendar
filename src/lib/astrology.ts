@@ -632,35 +632,50 @@ const US_TIMEZONE_REGIONS: Record<string, { standard: number; daylight: number; 
   'honolulu': { standard: -10, daylight: -10, abbrevStandard: 'HST', abbrevDaylight: 'HST' }, // Hawaii doesn't observe DST
 };
 
-// Check if a date falls within US Daylight Saving Time
-// US DST: 2nd Sunday of March to 1st Sunday of November (since 2007)
-// Before 2007: 1st Sunday of April to last Sunday of October
+// Whether a US date fell inside daylight saving time, following the real
+// history rather than today's rule. Getting this wrong shifts every position
+// in the chart by an hour, so the eras are spelled out.
+//
+//   before 1918      no daylight saving
+//   1918-1919        last Sunday March to last Sunday October
+//   1920-1941        no federal daylight saving (local patchwork, assume standard)
+//   Feb 1942-Sep 1945 year-round "War Time"
+//   1946-1966        no federal rule (local patchwork, assume standard)
+//   1967-1973        last Sunday April to last Sunday October
+//   1974             6 January to last Sunday November (energy crisis)
+//   1975             23 February to last Sunday October (energy crisis)
+//   1976-1986        last Sunday April to last Sunday October
+//   1987-2006        first Sunday April to last Sunday October
+//   2007 onward      second Sunday March to first Sunday November
 export const isUSDaylightSavingTime = (date: Date): boolean => {
   const year = date.getFullYear();
   const month = date.getMonth();
   const day = date.getDate();
-  
-  if (year >= 2007) {
-    // Current rules: 2nd Sunday of March to 1st Sunday of November
-    const marchSecondSunday = getNthSundayOfMonth(year, 2, 2); // March, 2nd Sunday
-    const novemberFirstSunday = getNthSundayOfMonth(year, 10, 1); // November, 1st Sunday
-    
-    const dateNum = month * 100 + day;
-    const dstStart = 2 * 100 + marchSecondSunday;
-    const dstEnd = 10 * 100 + novemberFirstSunday;
-    
-    return dateNum >= dstStart && dateNum < dstEnd;
-  } else {
-    // Old rules: 1st Sunday of April to last Sunday of October
-    const aprilFirstSunday = getNthSundayOfMonth(year, 3, 1); // April, 1st Sunday
-    const octoberLastSunday = getLastSundayOfMonth(year, 9); // October, last Sunday
-    
-    const dateNum = month * 100 + day;
-    const dstStart = 3 * 100 + aprilFirstSunday;
-    const dstEnd = 9 * 100 + octoberLastSunday;
-    
-    return dateNum >= dstStart && dateNum < dstEnd;
+  const dateNum = month * 100 + day;
+  const window = (startMonth: number, startDay: number, endMonth: number, endDay: number) =>
+    dateNum >= startMonth * 100 + startDay && dateNum < endMonth * 100 + endDay;
+
+  if (year < 1918) return false;
+  if (year <= 1919) {
+    return window(2, getLastSundayOfMonth(year, 2), 9, getLastSundayOfMonth(year, 9));
   }
+  if (year < 1942) return false;
+  if (year === 1942) return dateNum >= 1 * 100 + 9;   // War Time from 9 February
+  if (year <= 1944) return true;                       // War Time all year
+  if (year === 1945) return dateNum < 8 * 100 + 30;    // ended 30 September
+  if (year <= 1966) return false;
+  if (year <= 1973) {
+    return window(3, getNthSundayOfMonth(year, 3, 1), 9, getLastSundayOfMonth(year, 9));
+  }
+  if (year === 1974) return window(0, 6, 10, getLastSundayOfMonth(year, 10));
+  if (year === 1975) return window(1, 23, 9, getLastSundayOfMonth(year, 9));
+  if (year <= 1986) {
+    return window(3, getLastSundayOfMonth(year, 3), 9, getLastSundayOfMonth(year, 9));
+  }
+  if (year <= 2006) {
+    return window(3, getNthSundayOfMonth(year, 3, 1), 9, getLastSundayOfMonth(year, 9));
+  }
+  return window(2, getNthSundayOfMonth(year, 2, 2), 10, getNthSundayOfMonth(year, 10, 1));
 };
 
 const getNthSundayOfMonth = (year: number, month: number, n: number): number => {
@@ -719,9 +734,10 @@ export const calculateNatalChart = (
   
   // Convert local time to UTC by subtracting the timezone offset
   // If someone was born at 10:00 AM in EST (-5), that's 15:00 UTC
-  const utcHours = hours - finalOffset;
-  
-  const date = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
+  // Offsets can be fractional (+05:30 India, +07:30 old Singapore). Date.UTC
+  // truncates a fractional hour argument, so shift the minutes instead.
+  const offsetMinutes = Math.round(finalOffset * 60);
+  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes - offsetMinutes, 0));
   
   const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
     try {
