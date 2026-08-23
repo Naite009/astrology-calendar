@@ -17,14 +17,14 @@ export const KARAKA_ORDER = [
 export type KarakaName = typeof KARAKA_ORDER[number];
 
 export const KARAKA_MEANING: Record<KarakaName, string> = {
-  Atmakaraka: 'the soul indicator, what your life keeps insisting you deal with',
-  Amatyakaraka: 'the career indicator, the work the soul hires out to',
+  Atmakaraka: 'in Jaimini astrology, the planet with the highest relevant degree, traditionally treated as a major recurring developmental theme. Think of it as a subject life keeps asking you to study.',
+  Amatyakaraka: 'an important capacity used in work and contribution. One of the tools you use to do something meaningful in the world.',
   Bhratrikaraka: 'siblings, courage and the people beside you',
   Matrikaraka: 'mother, care and how you were held',
   Pitrikaraka: 'father, authority and guidance',
   Putrakaraka: 'children, students and creative output',
   Gnatikaraka: 'obstacles, illness and the friction you grow through',
-  Darakaraka: 'the partner indicator, what a spouse brings into your life',
+  Darakaraka: 'one indicator used for close partnership, and for the qualities encountered or developed through important one-to-one relationships.',
 };
 
 export interface KarakaAssignment {

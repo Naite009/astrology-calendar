@@ -3,7 +3,7 @@
  *
  * Supported: D2 Hora (wealth), D7 Saptamsha (children and lineage),
  * D9 Navamsa (soul, marriage, durability), D10 Dashamsha (career),
- * D12 Dwadashamsha (parents and inherited lines, read for past-life themes).
+ * D12 Dwadashamsha (parents, ancestry, lineage and inherited family patterns).
  *
  * All divisions use classical rules. Nothing here is estimated.
  */
@@ -14,12 +14,42 @@ import { VedicChart } from './siderealChart';
 
 export type VargaKey = 'D2' | 'D7' | 'D9' | 'D10' | 'D12';
 
-export const VARGA_LABELS: Record<VargaKey, { name: string; reads: string }> = {
-  D2: { name: 'Hora (D2)', reads: 'wealth and resources' },
-  D7: { name: 'Saptamsha (D7)', reads: 'children, lineage and what you pass on' },
-  D9: { name: 'Navamsa (D9)', reads: 'soul, partnership and staying power' },
-  D10: { name: 'Dashamsha (D10)', reads: 'career and public work' },
-  D12: { name: 'Dwadashamsha (D12)', reads: 'parents, inherited patterns and prior-life themes' },
+export const VARGA_LABELS: Record<VargaKey, { name: string; reads: string; plain: string }> = {
+  D2: {
+    name: 'Hora (D2)',
+    reads: 'resources, wealth patterns and material support',
+    plain: 'A magnifying chart for resources and wealth patterns.',
+  },
+  D7: {
+    name: 'Saptamsha (D7)',
+    reads: 'children, lineage and what gets passed on',
+    plain: 'A magnifying chart for children and what continues after you.',
+  },
+  D9: {
+    name: 'Navamsa (D9)',
+    reads: 'partnership, dharma, maturation and what holds up over time',
+    plain: 'A magnifying chart for partnership, maturation and what develops over time. It is not simply a marriage chart and not a soul chart.',
+  },
+  D10: {
+    name: 'Dashamsha (D10)',
+    reads: 'career, responsibility, public role and professional development',
+    plain: 'A magnifying chart for work and public role.',
+  },
+  D12: {
+    name: 'Dwadashamsha (D12)',
+    reads: 'parents, ancestry, lineage and inherited family patterns',
+    plain: 'A magnifying chart for parents, ancestry and inherited family patterns.',
+  },
+};
+
+/** Shown on every divisional chart so nobody reads a varga as a second personality. */
+export const VARGA_NOTE =
+  'This chart is not interpreted as a completely separate personality chart. It is used to examine a particular area of the main birth chart in greater detail.';
+
+export const D1_LABEL = {
+  name: 'Rashi (D1)',
+  reads: 'the overall life pattern',
+  plain: 'The main birth chart, the overall life pattern.',
 };
 
 const isOdd = (signIdx: number) => signIdx % 2 === 0; // Aries is index 0 and is odd in Jyotish
