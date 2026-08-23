@@ -595,7 +595,7 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
   const strained = lords.find(l => l.body?.dignity === 'debilitated');
   if (strained && strained.body) {
     paras.push(
-      `One honest note. The ruler of your ${strained.house}th house, ${strained.lord}, is debilitated in ${strained.sign}, meaning it is in the sign where it operates least comfortably. Classically this is read as a slower and more effortful route rather than a blocked one. In practice it often describes financial confidence that builds later and through experience, and a tendency to underestimate what you are worth in the meantime.`
+      `One honest note. The ruler of your ${strained.house}th house, ${strained.lord}, is debilitated in ${strained.body.sign}, the sign it actually occupies, meaning it sits where classical texts say it operates least comfortably. Classically this is read as a slower and more effortful route rather than a blocked one. In practice it often describes financial confidence that builds later and through experience, and a tendency to underestimate what you are worth in the meantime.`
     );
   } else {
     paras.push('None of your wealth house rulers are in signs classical texts read as weakened, which describes a steady rather than dramatic pattern. The question for you is consistency more than capacity.');
@@ -682,7 +682,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   const occupants = bodiesInHouse(chart, 7);
   const venus = chart.byName.Venus;
 
-  if (dk) logic.push(`Darakaraka (one indicator for close partnership): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest degree in the chart)`);
+  if (dk) logic.push(`Darakaraka (one indicator for close partnership): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest effective degree of the eight ranked karakas)`);
   if (seventh) logic.push(`House 7 lord: ${seventh.lord} (${seventh.sign})${seventhLordBody?.house ? `, sitting in house ${seventhLordBody.house}` : ''}`);
   if (seventhLordBody) logic.push(`House 7 lord nakshatra: ${seventhLordBody.nakshatra.name} pada ${seventhLordBody.nakshatra.pada}`);
   if (occupants.length) logic.push(`In house 7: ${occupants.map(b => b.name).join(', ')}`);
@@ -691,7 +691,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (dk9) logic.push(`Darakaraka in ${VARGA_LABELS.D9.name}: ${dk9.sign}${dk9.house ? `, house ${dk9.house}` : ''}`);
 
   paras.push(
-    'Close one-to-one relationships are an important arena of development in every chart, and this section describes what that arena tends to ask for. It applies to romantic partnership and marriage, and equally to other important one-to-one bonds, business partnerships and close collaborative relationships. Partnership is read from the seventh house and its ruler, from Venus, which describes what you value and enjoy in closeness, and from the Darakaraka, the planet at the lowest degree in the chart, read as the qualities that matter most in a close relationship. The Navamsa is then used to see what tends to hold over time.'
+    'Close one-to-one relationships are an important arena of development in every chart, and this section describes what that arena tends to ask for. It applies to romantic partnership and marriage, and equally to other important one-to-one bonds, business partnerships and close collaborative relationships. Partnership is read from the seventh house and its ruler, from Venus, which describes what you value and enjoy in closeness, and from the Darakaraka, the last of the eight ranked karaka planets by degree, read as the qualities that matter most in a close relationship. The Navamsa is then used to see what tends to hold over time.'
   );
 
   if (dk) {
@@ -718,14 +718,25 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     );
   }
 
+  // A timing line is only useful if it lands inside a plausible stretch of this
+  // life. Mahadashas that begin in someone's nineties are technically correct
+  // and practically meaningless, so they are filtered out rather than printed.
+  const nowYear = new Date().getFullYear();
+  const birthYear = chart.birthMoment.getUTCFullYear();
+  const ageAt = (d: Date) => d.getUTCFullYear() - birthYear;
   const partnerWindows = dashas
     .filter(p => (dk && p.lord === dk.planet) || (seventh && p.lord === seventh.lord) || p.lord === 'Venus')
-    .filter(p => p.end.getFullYear() >= new Date().getFullYear())
+    .filter(p => p.end.getFullYear() >= nowYear)
+    .filter(p => ageAt(p.start) <= 75 && p.start.getFullYear() <= nowYear + 30)
     .slice(0, 3);
   if (partnerWindows.length) {
-    logic.push(`Periods that emphasize partnership themes: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)}`).join('; ')}`);
+    logic.push(`Periods that emphasize partnership themes, limited to windows inside a usable age range: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)} (age ${ageAt(p.start)} to ${ageAt(p.end)})`).join('; ')}`);
     paras.push(
-      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
+      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}, roughly age ${ageAt(p.start)} to ${ageAt(p.end)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
+    );
+  } else {
+    paras.push(
+      'No partnership-flavoured major period falls inside a usable stretch of this life, so no timing window is claimed here. Naming a period that begins in someone\u2019s nineties would be arithmetically true and practically useless. The sub-periods inside your current major period are the honest place to look for near-term emphasis.'
     );
   }
 
@@ -790,7 +801,7 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
     `Ayanamsa applied: Lahiri, ${formatDegree(chart.ayanamsa)}`,
     `Signs that shift: ${shifted.length ? shifted.map(b => `${b.name} ${b.tropicalSign} to ${b.sign}`).join(', ') : 'none'}`,
     `Signs that hold: ${held.length ? held.map(b => b.name).join(', ') : 'none'}`,
-    'Western houses stay Placidus elsewhere in the app. This tab uses whole sign houses, which is standard for Jyotish.',
+    'Western houses stay Placidus elsewhere in the app. This tab uses whole sign houses, the house system this reading is built on. Jyotish also uses other systems, including Sripati and the bhava chalit chart, and practitioners differ on which to lead with.',
   ];
 
   const paras: string[] = [];

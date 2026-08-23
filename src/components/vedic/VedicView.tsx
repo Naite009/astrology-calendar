@@ -14,6 +14,7 @@ import { ChartSelector } from '@/components/ChartSelector';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { buildVedicChart, formatDegree } from '@/lib/vedic/siderealChart';
 import { buildVedicReading } from '@/lib/vedic/vedicReadings';
+import { KARAKA_METHOD_NOTE } from '@/lib/vedic/karakas';
 import { formatAyanamsa } from '@/lib/vedic/ayanamsa';
 import { VedicSectionCard } from './VedicSectionCard';
 import { DashaTimeline } from './DashaTimeline';
@@ -30,6 +31,10 @@ import { YogaCard } from './YogaCard';
 import { ArudhaCard } from './ArudhaCard';
 import { GocharaCard } from './GocharaCard';
 import { VargaBrowser } from './VargaBrowser';
+import { KarakaCard } from './KarakaCard';
+import { ZodiacBridgeCard } from './ZodiacBridgeCard';
+import { DignityAuditCard } from './DignityAuditCard';
+import { auditDignities } from '@/lib/vedic/dignityMitigation';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -95,6 +100,11 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
     }
   }, [reading, activeChart]);
 
+  const dignityAudits = useMemo(
+    () => (reading ? auditDignities(reading.chart, reading.vargas.D9) : []),
+    [reading]
+  );
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const jsonData = useMemo(() => {
@@ -128,6 +138,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         westernSign: b.tropicalSign,
       })),
       karakas,
+      karakaMethod: KARAKA_METHOD_NOTE,
+      dignityInContext: dignityAudits,
       currentDasha: current
         ? {
             mahadasha: current.maha.lord,
@@ -174,7 +186,7 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         Object.entries(reading.allVargas).map(([k, v]) => [k, { reads: v?.reads, lagna: v?.lagnaSign, placements: v?.placements }])
       ),
     };
-  }, [reading, overview]);
+  }, [reading, overview, dignityAudits]);
 
 
   if (!activeChart) {
@@ -234,6 +246,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             </span>
           </div>
 
+          <ZodiacBridgeCard chart={reading.chart} />
+
           {overview && (
             <VedicOverview chart={reading.chart} oneMinute={overview.oneMinute} themes={overview.themes} />
           )}
@@ -247,6 +261,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           ))}
 
           <PlanetConditionCard conditions={reading.conditions} />
+          <DignityAuditCard audits={dignityAudits} />
+          <KarakaCard karakas={reading.karakas} name={reading.chart.name} />
           {reading.ashtakavarga && <AshtakavargaCard report={reading.ashtakavarga} />}
 
           <YogaCard yogas={reading.yogas} name={reading.chart.name} />

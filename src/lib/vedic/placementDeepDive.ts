@@ -14,6 +14,7 @@ import { PLANET_IN_SIGN, PLANET_IN_HOUSE, CLASSIC_COMBOS, VSign } from './interp
 import { PLANET_ROLE } from './interpretations/planetCopy';
 import { housePlain as houseTheme } from './interpretations/plainMeaning';
 import { interpretive } from './interpretations/hedge';
+import { auditDignities } from './dignityMitigation';
 
 export interface PlacementDeepDive {
   planet: VedicPlanet;
@@ -52,6 +53,9 @@ function lordshipLine(chart: VedicChart, body: VedicBody): string | null {
 
 export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] {
   const out: PlacementDeepDive[] = [];
+  // Dignity is never reported on its own: the cancellation and qualifying
+  // conditions travel with it.
+  const audits = auditDignities(chart);
 
   for (const planet of ORDER) {
     const body = chart.byName[planet];
@@ -75,7 +79,19 @@ export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] 
         ? `Inside ${body.sign} it sits in ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, which narrows it further. This placement is traditionally associated with ${nk.essence}. The usable side is ${nk.gift}.`
         : null,
       dignityLine: body.dignity !== 'neutral'
-        ? `Classically ${planet} is ${body.dignity} in ${body.sign}, which reads as: it ${dignityGloss(body.dignity)}.`
+        ? (() => {
+            const a = audits.find(x => x.planet === planet);
+            const base = `Classically ${planet} is ${body.dignity} in ${body.sign}, which reads as: it ${dignityGloss(body.dignity)}.`;
+            if (!a) return base;
+            const extra = a.dignity === 'debilitated'
+              ? (a.mitigations.length
+                  ? ` That is not the whole picture. ${a.mitigations[0]} Conditions like that are what Jyotish calls neecha bhanga, a modification of the debility, so this should not be read as a flat weakness.`
+                  : ' No cancellation condition applies here, so the classical reading stands, and the function tends to be built through experience rather than arriving ready-made.')
+              : (a.qualifiers.length
+                  ? ` The strength is real but qualified. ${a.qualifiers[0]}`
+                  : ' Nothing in the chart limits it: no difficult-house placement, no malefic glance, no combustion.');
+            return `${base}${extra} ${a.dispositorLine}`;
+          })()
         : null,
       lordshipLine: lordshipLine(chart, body),
     });
