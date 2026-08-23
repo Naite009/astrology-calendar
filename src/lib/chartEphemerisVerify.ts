@@ -272,8 +272,9 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     const tight = TIGHT_BODIES.includes(body);
     // Tolerances: entered values are usually rounded to whole minutes, and a
     // scan can round degrees, so a few arc-minutes is agreement, not error.
-    const verifyLimit = tight ? 12 : 90;
-    const closeLimit = tight ? 60 : 240;
+    const approxAngle = needsAnglesBody && coordsApproximate;
+    const verifyLimit = approxAngle ? 0 : tight ? 12 : 90;
+    const closeLimit = approxAngle ? 600 : tight ? 60 : 240;
     const status: VerifyStatus =
       enteredPos.sign !== computedPos.sign && delta > closeLimit
         ? 'mismatch'
