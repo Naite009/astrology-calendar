@@ -7,18 +7,15 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NatalChart } from "@/hooks/useNatalChart";
 import { computeAllSignals } from "@/lib/narrativeAnalysisEngine";
-import { ChevronDown, ChevronUp, Loader2, Sparkles, RefreshCw, FileDown, Braces, ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Sparkles, RefreshCw, ShieldCheck } from "lucide-react";
 import { buildStrengthContract } from "@/lib/soulStrengthContract";
 import {
-  exportSectionPdf,
-  exportSectionJson,
-  exportContractPdf,
-  exportContractJson,
   exportFullPdf,
   exportFullJson,
   type ExportSection,
   type ExportMeta,
 } from "@/lib/soulAgreementsExport";
+import { ReadingExportButtons } from "@/components/ReadingExportButtons";
 
 const SIGN_RULERS: Record<string, string> = {
   Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
@@ -364,10 +361,6 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
               {SECTION_META.map(({ key, label, sub }) => {
                 const sec = data[key];
                 if (!sec) return null;
-                const exportSection: ExportSection = {
-                  key: String(key), label, sub,
-                  interpretation: sec.interpretation, question: sec.question,
-                };
                 return (
                   <div key={key} className="p-4 bg-secondary/30 rounded-sm border-l-2 border-primary">
                     <div className="mb-2">
@@ -380,20 +373,6 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                     <div className="mt-3 pt-3 border-t border-border/50">
                       <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Recognition Check</p>
                       <p className="text-[12px] text-foreground/90 whitespace-pre-line">{sec.question}</p>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => exportSectionPdf(meta, exportSection)}
-                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                      >
-                        <FileDown size={11} /> PDF
-                      </button>
-                      <button
-                        onClick={() => exportSectionJson(meta, exportSection)}
-                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-sm border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                      >
-                        <Braces size={11} /> JSON
-                      </button>
                     </div>
                   </div>
                 );
@@ -477,45 +456,21 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The commitment</p>
                     <p className="text-[12px] text-foreground italic leading-relaxed">{contract.commitment}</p>
                   </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => exportContractPdf(meta, contract)}
-                      className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-sm border border-primary/40 text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                    >
-                      <FileDown size={11} /> PDF
-                    </button>
-                    <button
-                      onClick={() => exportContractJson(meta, contract)}
-                      className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-sm border border-primary/40 text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                    >
-                      <Braces size={11} /> JSON
-                    </button>
-                  </div>
                 </div>
               )}
 
-              {/* Full reading download */}
+              {/* Whole-section download */}
               {contract && data.summary && (
                 <div className="p-4 rounded-sm border border-border bg-secondary/20">
-                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Download the full reading</p>
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Download Soul Agreements</p>
                   <p className="text-[11px] text-muted-foreground mb-3">
-                    Every section in story order, the summary, and the Strength-Based Contract, formatted as a client-ready document.
+                    Every agreement in story order, the summary, and the Strength-Based Contract, formatted as a client-ready document.
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => exportFullPdf(meta, exportSections, data.summary, contract)}
-                      className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-sm bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-                    >
-                      <FileDown size={12} /> Full reading PDF
-                    </button>
-                    <button
-                      onClick={() => exportFullJson(meta, exportSections, data.summary, contract)}
-                      className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-sm border border-border text-foreground hover:border-primary hover:text-primary transition-colors"
-                    >
-                      <Braces size={12} /> Full reading JSON
-                    </button>
-                  </div>
+                  <ReadingExportButtons
+                    emphasis
+                    onPdf={() => exportFullPdf(meta, exportSections, data.summary, contract)}
+                    onJson={() => exportFullJson(meta, exportSections, data.summary, contract)}
+                  />
                 </div>
               )}
 
