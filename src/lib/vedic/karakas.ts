@@ -31,9 +31,19 @@ export interface KarakaAssignment {
   karaka: KarakaName;
   planet: VedicPlanet;
   degree: number;
+  /** Degree actually used for ranking. Rahu is reverse counted as 30 minus its degree. */
+  effectiveDegree: number;
+  reverseCounted: boolean;
   sign: string;
   house: number | null;
 }
+
+/**
+ * The method note shown next to the ranking, so nobody has to guess why Rahu
+ * appears higher than its printed degree.
+ */
+export const KARAKA_METHOD_NOTE =
+  'This app uses the eight karaka method: the seven classical grahas plus Rahu. Ketu is excluded, as is standard in this method. Ranking is by degrees travelled inside the sign, highest first. Rahu is counted in reverse, so its effective degree is thirty minus its actual degree, because it always moves backwards through the zodiac. Some schools use a seven karaka method without Rahu, which can shift the assignments, so the method is named here rather than assumed.';
 
 export function computeKarakas(chart: VedicChart): KarakaAssignment[] {
   const eligible: VedicPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu'];
