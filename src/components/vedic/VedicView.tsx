@@ -220,9 +220,17 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             <VedicOverview chart={reading.chart} oneMinute={overview.oneMinute} themes={overview.themes} />
           )}
 
+          {reading.birthPanchanga && (
+            <PanchangaCard panchanga={reading.birthPanchanga} name={reading.chart.name} />
+          )}
+
           {reading.sections.slice(0, 2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
+
+          <PlanetConditionCard conditions={reading.conditions} />
+
+          <YogaCard yogas={reading.yogas} name={reading.chart.name} />
 
           {deepDive && deepDive.dives.length > 0 && (
             <PlacementDeepDiveCard dives={deepDive.dives} combos={deepDive.combos} name={reading.chart.name} />
@@ -230,9 +238,15 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
 
           <DashaTimeline periods={reading.dashas} current={reading.current} birthMoment={reading.chart.birthMoment} />
 
+          {reading.gochara && reading.chart.byName.Moon && (
+            <GocharaCard gochara={reading.gochara} moonSign={reading.chart.byName.Moon.sign} />
+          )}
+
           {reading.sections.slice(2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
+
+          <ArudhaCard arudhas={reading.arudhas} name={reading.chart.name} />
 
           {/* Divisional charts reference */}
           <div className="rounded-lg border border-border bg-card p-5 md:p-6">
@@ -247,6 +261,9 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
               ))}
             </div>
           </div>
+
+          <VargaBrowser vargas={reading.allVargas} exactBirthTime={!!activeChart.birthTime} />
+
 
           <div className="rounded-md border border-border bg-secondary/25 p-4 text-[12px] leading-relaxed text-muted-foreground">
             How to hold all of this: these are symbolic patterns and tendencies, not verdicts. This tab never predicts
