@@ -102,6 +102,8 @@ export interface VargaChart {
   key: VargaKey;
   label: string;
   reads: string;
+  /** Beginner-facing one-liner for what this magnifying chart is for. */
+  plain: string;
   lagnaSign: string | null;
   placements: VargaPlacement[];
   byName: Partial<Record<VedicPlanet, VargaPlacement>>;
@@ -130,6 +132,7 @@ export function buildVarga(chart: VedicChart, key: VargaKey): VargaChart {
     key,
     label: VARGA_LABELS[key].name,
     reads: VARGA_LABELS[key].reads,
+    plain: VARGA_LABELS[key].plain,
     lagnaSign,
     placements,
     byName,
