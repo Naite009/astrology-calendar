@@ -211,16 +211,76 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
     };
   }, [chart]);
 
-  // Load cached
+  // Load saved reading: local cache first (instant), then cloud (permanent)
   useEffect(() => {
+    let cancelled = false;
     setData(null);
     setError(null);
     localStorage.removeItem(`soulAgreements_v1_${chart.id}`);
+
+    let hasLocal = false;
     try {
       const raw = localStorage.getItem(cacheKey(chart.id));
-      if (raw) setData(sanitizeAgreements(JSON.parse(raw)));
+      if (raw) {
+        setData(sanitizeAgreements(JSON.parse(raw)));
+        hasLocal = true;
+      }
     } catch {/* ignore */}
+
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const userId = auth?.user?.id;
+        if (!userId) return;
+
+        const { data: row } = await supabase
+          .from("soul_agreements")
+          .select("agreements")
+          .eq("user_id", userId)
+          .eq("chart_id", chart.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        const cloud = (row as any)?.agreements as SoulAgreements | undefined;
+        if (cloud?.family) {
+          const clean = sanitizeAgreements(cloud);
+          setData(clean);
+          try { localStorage.setItem(cacheKey(chart.id), JSON.stringify(clean)); } catch {/* quota */}
+          return;
+        }
+
+        // Reading exists on this device but not in the cloud yet: back it up.
+        if (hasLocal) {
+          try {
+            const raw = localStorage.getItem(cacheKey(chart.id));
+            if (raw) await persistToCloud(JSON.parse(raw));
+          } catch {/* ignore */}
+        }
+      } catch {/* offline is fine, local cache still works */}
+    })();
+
+    return () => { cancelled = true; };
   }, [chart.id]);
+
+  const persistToCloud = async (agreements: SoulAgreements) => {
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id;
+      if (!userId) return;
+      await supabase.from("soul_agreements").upsert(
+        {
+          user_id: userId,
+          chart_id: chart.id,
+          chart_name: chart.name,
+          agreements: agreements as any,
+        } as never,
+        { onConflict: "user_id,chart_id" },
+      );
+    } catch (e) {
+      console.warn("soul-agreements cloud save failed", e);
+    }
+  };
 
   const summaryComplete = (s?: SoulAgreements["summary"]) => {
     if (!s) return false;
@@ -248,6 +308,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
       if (!agreements?.family || !agreements?.summary) throw new Error("Malformed response");
       setData(agreements);
       try { localStorage.setItem(cacheKey(chart.id), JSON.stringify(agreements)); } catch {/* quota */}
+      void persistToCloud(agreements);
     } catch (e: any) {
       console.error("soul-agreements failed:", e);
       setError(e?.message || "Failed to generate");
@@ -458,11 +519,17 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 </div>
               )}
 
+              <p className="text-[10px] text-muted-foreground">
+                Saved to your account. This reading stays here every time you open the app.
+              </p>
+
               <button
-                onClick={generate}
+                onClick={() => {
+                  if (window.confirm("This replaces the saved reading for this chart. Generate a new one?")) generate();
+                }}
                 className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
               >
-                <RefreshCw size={11} /> Refresh reading
+                <RefreshCw size={11} /> Regenerate reading
               </button>
             </div>
           )}
