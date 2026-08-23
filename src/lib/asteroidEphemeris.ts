@@ -2,6 +2,9 @@
 // Data derived from NASA JPL Horizons and Swiss Ephemeris reference data
 // Positions given as ecliptic longitude in degrees at 00:00 UTC on the 1st of each month
 
+import { slowBodyLongitude, type SlowBody } from './ephemeris/slowBodies';
+
+
 // ============================================================================
 // ERIS EPHEMERIS - 559 year orbital period
 // Eris entered Aries in 1926 and stays there until ~2048
@@ -559,6 +562,23 @@ export const getAccurateAsteroidPosition = (
   body: 'chiron' | 'lilith' | 'ceres' | 'pallas' | 'juno' | 'vesta' | 'eris',
   date: Date
 ): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde: boolean } => {
+  // Real JPL Horizons samples for 1920-2060 come first. The legacy anchor plus
+  // orbital-period extrapolation below is only a fallback outside that window.
+  if (body !== 'lilith') {
+    const lon = slowBodyLongitude(body as SlowBody, date);
+    if (lon !== null) {
+      const dayBefore = slowBodyLongitude(body as SlowBody, new Date(date.getTime() - 86400000));
+      let retro = false;
+      if (dayBefore !== null) {
+        let diff = lon - dayBefore;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        retro = diff < 0;
+      }
+      return { ...longitudeToPosition(lon), isRetrograde: retro };
+    }
+  }
+
   const ephemerisMap: Record<string, { data: Record<string, number>; period: number }> = {
     chiron: { data: CHIRON_EPHEMERIS, period: 50.7 },
     lilith: { data: LILITH_EPHEMERIS, period: 8.85 },
@@ -578,6 +598,7 @@ export const getAccurateAsteroidPosition = (
   
   return { ...position, isRetrograde: retro };
 };
+
 
 // Exported helper for direct longitude lookup (used by astrology.ts fallback)
 export const interpolateAsteroidLongitude = (

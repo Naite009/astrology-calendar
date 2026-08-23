@@ -1,6 +1,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
 import { getAccurateAsteroidPosition } from './asteroidEphemeris';
+import { trueNodeLongitude } from './ephemeris/slowBodies';
 import { calculatePlacidusHouses, getCoordinatesFromLocation as getExtendedCoordinates, PlacidusHouses } from './placidusHouses';
 import { getEffectiveOrb as getOrbForPair } from './aspectOrbs';
 // Zodiac signs mapping
@@ -192,12 +193,18 @@ export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; s
 
 // Get detailed North Node position for natal chart
 export const getDetailedNodePosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
+  // True node (the Moon's instantaneous orbital plane), which is what chart
+  // services print as "Node". The mean node below is only a fallback.
+  const trueNode = trueNodeLongitude(date);
+  if (trueNode !== null) return getDetailedPosition(trueNode);
+
   const jd = date.getTime() / 86400000 + 2440587.5;
   const T = (jd - 2451545.0) / 36525;
   const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
   const normalizedNode = ((omega % 360) + 360) % 360;
   return getDetailedPosition(normalizedNode);
 };
+
 
 // Calculate Chiron position using ephemeris lookup table (accurate interpolated data)
 export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
@@ -459,19 +466,14 @@ export const calculateAscendant = (
   
   const y = Math.cos(ramcRad);
   const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
-  
+
+  // atan2 already returns the rising degree in the correct quadrant.
+  // Any extra 180 degree "adjustment" would return the Descendant instead.
   let ascLon = Math.atan2(y, x) * 180 / Math.PI;
-  
-  // Adjust quadrant based on RAMC
-  if (ramcDeg >= 0 && ramcDeg < 180) {
-    ascLon = ascLon + 180;
-  }
-  if (ramcDeg >= 180 && ramcDeg < 360) {
-    ascLon = ascLon + 360;
-  }
-  
+
   // Normalize to 0-360
   ascLon = ((ascLon % 360) + 360) % 360;
+
   
   return getDetailedPosition(ascLon);
 };
@@ -500,21 +502,16 @@ export const calculateVertex = (
   const ramcRad = ramcDeg * Math.PI / 180;
   
   // Calculate anti-Ascendant (western horizon intersection)
+  // Antivertex is the rising degree computed with the colatitude.
+  // The Vertex is its opposite point, on the western side of the chart.
   const y = Math.cos(ramcRad);
   const x = -(Math.sin(obliqRad) * Math.tan(colatRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
-  
-  let vtxLon = Math.atan2(y, x) * 180 / Math.PI;
-  
-  // Adjust for western hemisphere (opposite the Ascendant calculation)
-  if (ramcDeg >= 0 && ramcDeg < 180) {
-    vtxLon = vtxLon + 180;
-  }
-  if (ramcDeg >= 180 && ramcDeg < 360) {
-    vtxLon = vtxLon + 360;
-  }
-  
+
+  let vtxLon = Math.atan2(y, x) * 180 / Math.PI + 180;
+
   // Normalize
   vtxLon = ((vtxLon % 360) + 360) % 360;
+
   
   return getDetailedPosition(vtxLon);
 };
