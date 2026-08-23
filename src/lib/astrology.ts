@@ -430,15 +430,25 @@ export const CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
 // Get coordinates from location string
 export const getCoordinatesFromLocation = (location: string): { lat: number; lon: number } | null => {
   const lowerLocation = location.toLowerCase();
-  
+
+  // Prefer the longest matching city name so "new york" never wins over a
+  // more specific entry contained in the same string.
+  let best: { lat: number; lon: number } | null = null;
+  let bestLength = 0;
   for (const [city, coords] of Object.entries(CITY_COORDINATES)) {
-    if (lowerLocation.includes(city)) {
-      return coords;
+    if (lowerLocation.includes(city) && city.length > bestLength) {
+      best = coords;
+      bestLength = city.length;
     }
   }
-  
-  return null;
+
+  // Fall back to the larger shared table (same longest-match rule inside).
+  const extended = getExtendedCoordinates(location);
+  if (extended && bestLength === 0) return extended;
+
+  return best ?? extended ?? null;
 };
+
 
 // Calculate Ascendant using sidereal time
 export const calculateAscendant = (
