@@ -212,6 +212,8 @@ function orbFor(point: string): number | null {
 const POINT_LABEL: Record<string, string> = {
   Ascendant: 'Ascendant',
   Midheaven: 'Midheaven',
+  Descendant: 'Descendant',
+  IC: 'IC',
   Sun: 'Sun',
   Moon: 'Moon',
   Mercury: 'Mercury',
@@ -219,8 +221,17 @@ const POINT_LABEL: Record<string, string> = {
   Mars: 'Mars',
   Jupiter: 'Jupiter',
   Saturn: 'Saturn',
+  Uranus: 'Uranus',
+  Neptune: 'Neptune',
+  Pluto: 'Pluto',
+  Chiron: 'Chiron',
   NorthNode: 'North Node',
+  SouthNode: 'South Node',
+  Lilith: 'Black Moon Lilith',
+  PartOfFortune: 'Part of Fortune',
+  Vertex: 'Vertex',
 };
+
 
 export interface FixedStarHit {
   star: string;
