@@ -18,6 +18,9 @@ import { formatAyanamsa } from '@/lib/vedic/ayanamsa';
 import { VedicSectionCard } from './VedicSectionCard';
 import { DashaTimeline } from './DashaTimeline';
 import { VargaGrid } from './VargaGrid';
+import { VedicOverview } from './VedicOverview';
+import { VARGA_NOTE } from '@/lib/vedic/divisionalCharts';
+import { buildVedicThemes, buildOneMinute } from '@/lib/vedic/themeSynthesis';
 import { PlacementDeepDiveCard } from './PlacementDeepDive';
 import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
 
@@ -74,6 +77,17 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
     }
   }, [reading]);
 
+  const overview = useMemo(() => {
+    if (!reading) return null;
+    try {
+      const themes = buildVedicThemes(reading.chart, reading.vargas, reading.karakas, activeChart);
+      return { themes, oneMinute: buildOneMinute(reading.chart, themes, reading.karakas) };
+    } catch (e) {
+      console.error('[Vedic] synthesis failed', e);
+      return null;
+    }
+  }, [reading, activeChart]);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const jsonData = useMemo(() => {
@@ -125,10 +139,19 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         reading: s.paragraphs,
         whatThisMeansInRealLife: s.takeaway || null,
       })),
+      repeatingThemes: (overview?.themes || []).map(t => ({
+        theme: t.label,
+        plain: t.plain,
+        state: t.state,
+        vedicEvidence: t.vedic,
+        westernEvidence: t.western,
+        synthesis: t.synthesis,
+      })),
+      oneMinuteSummary: overview?.oneMinute.paragraphs || [],
       placementDeepDive: buildPlacementDeepDives(chart),
       signatureCombinations: findComboHits(chart),
     };
-  }, [reading]);
+  }, [reading, overview]);
 
   if (!activeChart) {
     return (
