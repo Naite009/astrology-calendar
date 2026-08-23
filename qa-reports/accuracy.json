@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T13:53:12.919Z",
+  "generatedAt": "2026-08-23T13:54:06.389Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -18,91 +18,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 322.326,
+            "expected": 353.9374,
             "actual": 353.94305555555553,
-            "deltaArcmin": 1897.0233333333306,
+            "deltaArcmin": 0.33933333332697657,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 324.1448,
+            "expected": 248.9129,
             "actual": 248.91305555555556,
-            "deltaArcmin": 4513.904666666665,
+            "deltaArcmin": 0.009333333334780036,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 296.9311,
+            "expected": 326.8908,
             "actual": 326.8958333333333,
-            "deltaArcmin": 1797.883999999998,
+            "deltaArcmin": 0.30200000000149885,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 9.0122,
+            "expected": 312.1374,
             "actual": 312.1422222222222,
-            "deltaArcmin": 3412.198666666669,
+            "deltaArcmin": 0.28933333333043265,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 228.4361,
+            "expected": 41.7519,
             "actual": 41.75555555555555,
-            "deltaArcmin": 10399.167333333335,
+            "deltaArcmin": 0.2193333333298142,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 285.9833,
+            "expected": 109.8845,
             "actual": 109.88138888888888,
-            "deltaArcmin": 10566.114666666668,
+            "deltaArcmin": 0.18666666666831588,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 351.2857,
+            "expected": 231.0103,
             "actual": 231.00722222222223,
-            "deltaArcmin": 7216.7086666666655,
+            "deltaArcmin": 0.1846666666665442,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 35.9733,
+            "expected": 113.7271,
             "actual": 113.72333333333333,
-            "deltaArcmin": 4665.002000000002,
+            "deltaArcmin": 0.22600000000238651,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 168.2655,
+            "expected": 207.7246,
             "actual": 207.71694444444444,
-            "deltaArcmin": 2367.0866666666643,
+            "deltaArcmin": 0.45933333333778137,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 117.1205,
+            "expected": 144.9057,
             "actual": 144.9011111111111,
-            "deltaArcmin": 1666.8366666666634,
+            "deltaArcmin": 0.2753333333316732,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 77.8132,
+            "expected": 303.5963,
             "actual": 303.60055555555556,
-            "deltaArcmin": 8052.758666666667,
+            "deltaArcmin": 0.2553333333344199,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -170,10 +170,10 @@
             "detail": "expected -5h, app used -5h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref01",
@@ -339,91 +339,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 146.0902,
+            "expected": 102.432,
             "actual": 102.4375,
-            "deltaArcmin": 2619.161999999999,
+            "deltaArcmin": 0.32999999999901775,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 51.593,
+            "expected": 95.6772,
             "actual": 95.67750000000001,
-            "deltaArcmin": 2645.0699999999997,
+            "deltaArcmin": 0.01800000000230284,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 127.6818,
+            "expected": 123.1086,
             "actual": 123.11416666666666,
-            "deltaArcmin": 274.058,
+            "deltaArcmin": 0.33400000000256114,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 191.2165,
+            "expected": 141.6198,
             "actual": 141.62416666666667,
-            "deltaArcmin": 2975.5399999999963,
+            "deltaArcmin": 0.262000000000171,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 186.412,
+            "expected": 161.6605,
             "actual": 161.66333333333333,
-            "deltaArcmin": 1484.9199999999973,
+            "deltaArcmin": 0.1700000000005275,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 203.2357,
+            "expected": 106.5499,
             "actual": 106.55472222222222,
-            "deltaArcmin": 5800.858666666668,
+            "deltaArcmin": 0.28933333333043265,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 122.1467,
+            "expected": 147.6017,
             "actual": 147.6052777777778,
-            "deltaArcmin": 1527.5146666666683,
+            "deltaArcmin": 0.21466666666583478,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 81.1478,
+            "expected": 222.4333,
             "actual": 222.42999999999998,
-            "deltaArcmin": 8476.931999999999,
+            "deltaArcmin": 0.19800000000486762,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 186.8539,
+            "expected": 256.2555,
             "actual": 256.24694444444447,
-            "deltaArcmin": 4163.582666666667,
+            "deltaArcmin": 0.5133333333310475,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 131.8593,
+            "expected": 193.9279,
             "actual": 193.92944444444444,
-            "deltaArcmin": 3724.2086666666673,
+            "deltaArcmin": 0.09266666666690071,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 198.883,
+            "expected": 39.0494,
             "actual": 39.04277777777778,
-            "deltaArcmin": 9590.413333333334,
+            "deltaArcmin": 0.3973333333306073,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -491,10 +491,10 @@
             "detail": "expected -7h, app used -7h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref02",
@@ -660,91 +660,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 353.9374,
+            "expected": 241.1696,
             "actual": 241.17527777777778,
-            "deltaArcmin": 6765.727333333336,
+            "deltaArcmin": 0.34066666666831225,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 248.9129,
+            "expected": 55.7366,
             "actual": 55.73694444444445,
-            "deltaArcmin": 10009.442666666666,
+            "deltaArcmin": 0.020666666664510558,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 326.8909,
+            "expected": 236.5608,
             "actual": 236.56666666666666,
-            "deltaArcmin": 5419.453999999996,
+            "deltaArcmin": 0.35199999999804277,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 312.1374,
+            "expected": 209.6109,
             "actual": 209.6161111111111,
-            "deltaArcmin": 6151.2773333333325,
+            "deltaArcmin": 0.31266666666397214,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 41.7518,
+            "expected": 3.9709,
             "actual": 3.9694444444444446,
-            "deltaArcmin": 2266.941333333334,
+            "deltaArcmin": 0.08733333333566407,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 109.8845,
+            "expected": 61.0304,
             "actual": 61.02444444444444,
-            "deltaArcmin": 2931.603333333337,
+            "deltaArcmin": 0.3573333333361006,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 231.0104,
+            "expected": 271.1275,
             "actual": 271.1327777777778,
-            "deltaArcmin": 2407.3426666666674,
+            "deltaArcmin": 0.31666666666751553,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 113.7271,
+            "expected": 269.4694,
             "actual": 269.4730555555555,
-            "deltaArcmin": 9344.75733333333,
+            "deltaArcmin": 0.2193333333298142,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 207.7247,
+            "expected": 278.535,
             "actual": 278.53861111111115,
-            "deltaArcmin": 4248.834666666667,
+            "deltaArcmin": 0.21666666666760648,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 144.9064,
+            "expected": 223.2522,
             "actual": 223.25805555555556,
-            "deltaArcmin": 4701.099333333334,
+            "deltaArcmin": 0.35133333333760675,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 303.596,
+            "expected": 96.2069,
             "actual": 96.20583333333333,
-            "deltaArcmin": 9156.589999999998,
+            "deltaArcmin": 0.06400000000212458,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -812,10 +812,10 @@
             "detail": "expected -6h, app used -6h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref03",
@@ -988,91 +988,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 35.7369,
+            "expected": 70.6099,
             "actual": 70.61527777777778,
-            "deltaArcmin": 2092.702666666665,
+            "deltaArcmin": 0.3226666666660094,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 265.1998,
+            "expected": 261.1552,
             "actual": 261.15527777777777,
-            "deltaArcmin": 242.67133333333277,
+            "deltaArcmin": 0.004666666663979413,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 8.6821,
+            "expected": 66.247,
             "actual": 66.25333333333333,
-            "deltaArcmin": 3454.2740000000003,
+            "deltaArcmin": 0.3800000000023829,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 73.9445,
+            "expected": 26.0323,
             "actual": 26.037222222222223,
-            "deltaArcmin": 2874.43666666667,
+            "deltaArcmin": 0.29533333333574774,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 99.2699,
+            "expected": 249.7839,
             "actual": 249.78083333333333,
-            "deltaArcmin": 9030.656,
+            "deltaArcmin": 0.18399999999928696,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 239.7778,
+            "expected": 176.2237,
             "actual": 176.2227777777778,
-            "deltaArcmin": 3813.3013333333315,
+            "deltaArcmin": 0.055333333334601775,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 276.9819,
+            "expected": 33.8832,
             "actual": 33.886944444444445,
-            "deltaArcmin": 7014.302666666667,
+            "deltaArcmin": 0.22466666666787205,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 132.2412,
+            "expected": 179.8842,
             "actual": 179.88083333333333,
-            "deltaArcmin": 2858.378,
+            "deltaArcmin": 0.2020000000015898,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 215.5923,
+            "expected": 236.9736,
             "actual": 236.96305555555554,
-            "deltaArcmin": 1282.2453333333328,
+            "deltaArcmin": 0.6326666666677738,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 151.7423,
+            "expected": 172.4092,
             "actual": 172.40805555555556,
-            "deltaArcmin": 1239.9453333333304,
+            "deltaArcmin": 0.06866666666610399,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 327.0048,
+            "expected": 6.2495,
             "actual": 6.245,
-            "deltaArcmin": 2354.4119999999975,
+            "deltaArcmin": 0.27000000000043656,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -1140,10 +1140,10 @@
             "detail": "expected +1h, app used +1h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref04",
@@ -1302,91 +1302,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 68.3058,
+            "expected": 289.4492,
             "actual": 289.455,
-            "deltaArcmin": 8331.048000000003,
+            "deltaArcmin": 0.3479999999944994,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 245.1986,
+            "expected": 125.5019,
             "actual": 125.50194444444445,
-            "deltaArcmin": 7181.799333333336,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 91.4067,
+            "expected": 280.9524,
             "actual": 280.9577777777778,
-            "deltaArcmin": 10226.935333333333,
+            "deltaArcmin": 0.3226666666660094,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 24.6287,
+            "expected": 336.2123,
             "actual": 336.21666666666664,
-            "deltaArcmin": 2904.7220000000007,
+            "deltaArcmin": 0.2619999999933498,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 132.8168,
+            "expected": 106.9691,
             "actual": 106.96277777777777,
-            "deltaArcmin": 1551.241333333337,
+            "deltaArcmin": 0.37933333333512564,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 307.1263,
+            "expected": 194.1119,
             "actual": 194.11055555555555,
-            "deltaArcmin": 6780.9446666666645,
+            "deltaArcmin": 0.08066666666309175,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 299.5268,
+            "expected": 317.2932,
             "actual": 317.29833333333335,
-            "deltaArcmin": 1066.2919999999986,
+            "deltaArcmin": 0.3079999999999927,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 142.0702,
+            "expected": 288.1861,
             "actual": 288.1902777777778,
-            "deltaArcmin": 8767.204666666668,
+            "deltaArcmin": 0.25066666667044046,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 219.193,
+            "expected": 288.6849,
             "actual": 288.6911111111111,
-            "deltaArcmin": 4169.886666666669,
+            "deltaArcmin": 0.3726666666625533,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 155.5793,
+            "expected": 234.8554,
             "actual": 234.85944444444445,
-            "deltaArcmin": 4756.808666666666,
+            "deltaArcmin": 0.24266666666335368,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 336.6366,
+            "expected": 142.5735,
             "actual": 142.57166666666666,
-            "deltaArcmin": 9956.104,
+            "deltaArcmin": 0.11000000000194632,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -1454,10 +1454,10 @@
             "detail": "expected +1h, app used +1h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref05",
@@ -1623,91 +1623,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 253.0132,
+            "expected": 266.9085,
             "actual": 266.9144444444444,
-            "deltaArcmin": 834.0746666666632,
+            "deltaArcmin": 0.3566666666620222,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 167.5547,
+            "expected": 312.1351,
             "actual": 312.1352777777778,
-            "deltaArcmin": 8674.834666666666,
+            "deltaArcmin": 0.01066666666247329,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 232.6376,
+            "expected": 274.6551,
             "actual": 274.6613888888889,
-            "deltaArcmin": 2521.427333333336,
+            "deltaArcmin": 0.37733333333335395,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 259.5549,
+            "expected": 260.5128,
             "actual": 260.51888888888885,
-            "deltaArcmin": 57.83933333333607,
+            "deltaArcmin": 0.365333333329545,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 180.8417,
+            "expected": 337.1975,
             "actual": 337.1986111111111,
-            "deltaArcmin": 9381.414666666667,
+            "deltaArcmin": 0.06666666667115351,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 124.1519,
+            "expected": 102.4194,
             "actual": 102.41472222222222,
-            "deltaArcmin": 1304.2306666666673,
+            "deltaArcmin": 0.28066666666290985,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 352.9856,
+            "expected": 70.2604,
             "actual": 70.25833333333334,
-            "deltaArcmin": 4636.364000000001,
+            "deltaArcmin": 0.12400000000070577,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 174.1393,
+            "expected": 321.8942,
             "actual": 321.8952777777778,
-            "deltaArcmin": 8865.358666666667,
+            "deltaArcmin": 0.0646666666625606,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 232.6783,
+            "expected": 307.0108,
             "actual": 307.0186111111111,
-            "deltaArcmin": 4460.418666666665,
+            "deltaArcmin": 0.4686666666657402,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 170.5589,
+            "expected": 255.5477,
             "actual": 255.55333333333334,
-            "deltaArcmin": 5099.666000000001,
+            "deltaArcmin": 0.3379999999992833,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 351.6722,
+            "expected": 270.7355,
             "actual": 270.7427777777778,
-            "deltaArcmin": 4855.765333333334,
+            "deltaArcmin": 0.4366666666646779,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -1775,10 +1775,10 @@
             "detail": "expected +11h, app used +11h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref06",
@@ -1930,91 +1930,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 70.6099,
+            "expected": 185.0542,
             "actual": 185.05972222222223,
-            "deltaArcmin": 6866.989333333333,
+            "deltaArcmin": 0.3313333333335322,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 261.1552,
+            "expected": 225.4991,
             "actual": 225.49916666666667,
-            "deltaArcmin": 2139.3619999999987,
+            "deltaArcmin": 0.004000000003543391,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 66.247,
+            "expected": 174.9101,
             "actual": 174.91583333333335,
-            "deltaArcmin": 6520.13,
+            "deltaArcmin": 0.3440000000045984,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 26.0323,
+            "expected": 212.8651,
             "actual": 212.87,
-            "deltaArcmin": 10389.737999999998,
+            "deltaArcmin": 0.2940000000012333,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 249.7839,
+            "expected": 265.0695,
             "actual": 265.0708333333333,
-            "deltaArcmin": 917.2159999999985,
+            "deltaArcmin": 0.08000000000265572,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 176.2238,
+            "expected": 274.4293,
             "actual": 274.42861111111114,
-            "deltaArcmin": 5892.288666666665,
+            "deltaArcmin": 0.041333333329021116,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 33.8832,
+            "expected": 224.0361,
             "actual": 224.04055555555556,
-            "deltaArcmin": 10190.558666666666,
+            "deltaArcmin": 0.26733333333140763,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 179.8842,
+            "expected": 250.2362,
             "actual": 250.23777777777775,
-            "deltaArcmin": 4221.214666666667,
+            "deltaArcmin": 0.0946666666686724,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 236.9736,
+            "expected": 268.7446,
             "actual": 268.7427777777778,
-            "deltaArcmin": 1906.1506666666696,
+            "deltaArcmin": 0.10933333333468909,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 172.4098,
+            "expected": 210.9967,
             "actual": 211.0025,
-            "deltaArcmin": 2315.562000000002,
+            "deltaArcmin": 0.3480000000013206,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 6.2494,
+            "expected": 68.4417,
             "actual": 68.43361111111112,
-            "deltaArcmin": 3731.0526666666656,
+            "deltaArcmin": 0.48533333333352857,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -2082,10 +2082,10 @@
             "detail": "expected -3h, app used -3h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref07",
@@ -2272,91 +2272,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 194.6833,
+            "expected": 12.9192,
             "actual": 12.904166666666667,
-            "deltaArcmin": 10693.252,
+            "deltaArcmin": 0.9020000000009532,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 200.6941,
+            "expected": 173.5272,
             "actual": 173.26166666666666,
-            "deltaArcmin": 1645.9460000000036,
+            "deltaArcmin": 15.932000000000244,
             "limit": 8,
-            "status": "fail"
+            "status": "close"
           },
           {
             "body": "Mercury",
-            "expected": 207.5227,
+            "expected": 18.2984,
             "actual": 18.261388888888888,
-            "deltaArcmin": 10244.321333333333,
+            "deltaArcmin": 2.220666666669331,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 152.8902,
+            "expected": 58.7872,
             "actual": 58.770833333333336,
-            "deltaArcmin": 5647.162,
+            "deltaArcmin": 0.9819999999967877,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 184.4592,
+            "expected": 6.801,
             "actual": 6.790555555555556,
-            "deltaArcmin": 10660.118666666667,
+            "deltaArcmin": 0.62666666666928,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 271.3244,
+            "expected": 286.0709,
             "actual": 286.0702777777778,
-            "deltaArcmin": 884.7526666666658,
+            "deltaArcmin": 0.037333333332298935,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 80.5732,
+            "expected": 359.3971,
             "actual": 359.39972222222224,
-            "deltaArcmin": 4870.408666666664,
+            "deltaArcmin": 0.15733333333628252,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 198.4478,
+            "expected": 304.0391,
             "actual": 304.03861111111115,
-            "deltaArcmin": 6335.448666666671,
+            "deltaArcmin": 0.029333333332033362,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 243.2689,
+            "expected": 297.552,
             "actual": 297.555,
-            "deltaArcmin": 3257.166000000002,
+            "deltaArcmin": 0.17999999999574356,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 182.3951,
+            "expected": 242.9044,
             "actual": 242.90166666666667,
-            "deltaArcmin": 3630.394000000001,
+            "deltaArcmin": 0.16400000000203363,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 15.0991,
+            "expected": 191.0377,
             "actual": 191.0425,
-            "deltaArcmin": 10556.604,
+            "deltaArcmin": 0.2879999999959182,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -2424,10 +2424,10 @@
             "detail": "expected +5.5h, app used +5.5h"
           }
         ],
-        "passCount": 1,
-        "closeCount": 0,
-        "failCount": 13,
-        "score": 0.3333333333333333
+        "passCount": 11,
+        "closeCount": 1,
+        "failCount": 2,
+        "score": 0.8333333333333334
       },
       "reading": {
         "id": "ref08",
@@ -2579,91 +2579,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 102.432,
+            "expected": 194.6833,
             "actual": 194.6888888888889,
-            "deltaArcmin": 5535.413333333335,
+            "deltaArcmin": 0.3353333333370756,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 95.6773,
+            "expected": 200.6944,
             "actual": 200.69444444444446,
-            "deltaArcmin": 6301.028666666667,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 123.1085,
+            "expected": 207.5227,
             "actual": 207.52833333333334,
-            "deltaArcmin": 5065.189999999999,
+            "deltaArcmin": 0.3379999999992833,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 141.6198,
+            "expected": 152.8902,
             "actual": 152.89416666666665,
-            "deltaArcmin": 676.4619999999991,
+            "deltaArcmin": 0.23799999999937427,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 161.6605,
+            "expected": 184.4591,
             "actual": 184.46444444444444,
-            "deltaArcmin": 1368.2366666666621,
+            "deltaArcmin": 0.3206666666642377,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 106.5499,
+            "expected": 271.3244,
             "actual": 271.32694444444445,
-            "deltaArcmin": 9886.622666666668,
+            "deltaArcmin": 0.1526666666654819,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 147.6017,
+            "expected": 80.5732,
             "actual": 80.57083333333333,
-            "deltaArcmin": 4021.8520000000035,
+            "deltaArcmin": 0.1420000000030086,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 222.4333,
+            "expected": 198.4478,
             "actual": 198.4525,
-            "deltaArcmin": 1438.8480000000027,
+            "deltaArcmin": 0.2819999999974243,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 256.2555,
+            "expected": 243.2688,
             "actual": 243.2686111111111,
-            "deltaArcmin": 779.2133333333322,
+            "deltaArcmin": 0.011333333336551732,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 193.9277,
+            "expected": 182.3943,
             "actual": 182.40055555555557,
-            "deltaArcmin": 691.6286666666633,
+            "deltaArcmin": 0.37533333333158225,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 39.0494,
+            "expected": 15.0992,
             "actual": 15.103333333333333,
-            "deltaArcmin": 1436.7639999999983,
+            "deltaArcmin": 0.24800000000141154,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -2731,10 +2731,10 @@
             "detail": "expected +9h, app used +9h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref09",
@@ -2928,91 +2928,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 116.9892,
+            "expected": 68.3058,
             "actual": 68.31138888888889,
-            "deltaArcmin": 2920.66866666667,
+            "deltaArcmin": 0.3353333333302544,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 199.3139,
+            "expected": 245.1984,
             "actual": 245.1988888888889,
-            "deltaArcmin": 2753.099333333332,
+            "deltaArcmin": 0.029333333332033362,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 105.6516,
+            "expected": 91.4067,
             "actual": 91.41166666666668,
-            "deltaArcmin": 854.395999999997,
+            "deltaArcmin": 0.29799999999795546,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 78.8664,
+            "expected": 24.6286,
             "actual": 24.633055555555558,
-            "deltaArcmin": 3254.000666666668,
+            "deltaArcmin": 0.26733333333140763,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 184.9847,
+            "expected": 132.8167,
             "actual": 132.81916666666666,
-            "deltaArcmin": 3129.931999999999,
+            "deltaArcmin": 0.14800000000150249,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 159.2477,
+            "expected": 307.1263,
             "actual": 307.12305555555554,
-            "deltaArcmin": 8872.521333333332,
+            "deltaArcmin": 0.19466666666858146,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 172.8896,
+            "expected": 299.5268,
             "actual": 299.5227777777778,
-            "deltaArcmin": 7597.990666666665,
+            "deltaArcmin": 0.24133333332883922,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 231.55,
+            "expected": 142.0701,
             "actual": 142.07194444444445,
-            "deltaArcmin": 5368.683333333333,
+            "deltaArcmin": 0.11066666666920355,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 260.3753,
+            "expected": 219.1929,
             "actual": 219.18444444444444,
-            "deltaArcmin": 2471.4513333333343,
+            "deltaArcmin": 0.5073333333325536,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 199.0867,
+            "expected": 155.5785,
             "actual": 155.57972222222222,
-            "deltaArcmin": 2610.418666666669,
+            "deltaArcmin": 0.0733333333300834,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 47.7249,
+            "expected": 336.6369,
             "actual": 336.63694444444445,
-            "deltaArcmin": 4265.2773333333325,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -3080,10 +3080,10 @@
             "detail": "expected +1h, app used +1h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref10",
@@ -3242,91 +3242,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 185.0542,
+            "expected": 325.5644,
             "actual": 325.5702777777778,
-            "deltaArcmin": 8430.964666666669,
+            "deltaArcmin": 0.3526666666721212,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 225.4991,
+            "expected": 328.4204,
             "actual": 328.42083333333335,
-            "deltaArcmin": 6175.304000000001,
+            "deltaArcmin": 0.026000000002568413,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 174.9102,
+            "expected": 305.7754,
             "actual": 305.78027777777777,
-            "deltaArcmin": 7852.204666666665,
+            "deltaArcmin": 0.2926666666667188,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 212.8651,
+            "expected": 333.6026,
             "actual": 333.60833333333335,
-            "deltaArcmin": 7244.594000000002,
+            "deltaArcmin": 0.3440000000045984,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 265.0695,
+            "expected": 124.087,
             "actual": 124.08222222222221,
-            "deltaArcmin": 8459.236666666666,
+            "deltaArcmin": 0.28666666666822493,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 274.4293,
+            "expected": 336.3455,
             "actual": 336.35055555555556,
-            "deltaArcmin": 3715.275333333333,
+            "deltaArcmin": 0.3033333333360133,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 224.0361,
+            "expected": 183.7773,
             "actual": 183.7711111111111,
-            "deltaArcmin": 2415.899333333332,
+            "deltaArcmin": 0.37133333333486007,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 250.2362,
+            "expected": 354.8626,
             "actual": 354.8675,
-            "deltaArcmin": 6277.878000000001,
+            "deltaArcmin": 0.2940000000012333,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 268.7446,
+            "expected": 326.1372,
             "actual": 326.1475,
-            "deltaArcmin": 3444.173999999999,
+            "deltaArcmin": 0.6179999999949359,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 210.9976,
+            "expected": 274.7319,
             "actual": 274.73555555555555,
-            "deltaArcmin": 3824.2773333333344,
+            "deltaArcmin": 0.2193333333298142,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 68.4418,
+            "expected": 326.0447,
             "actual": 326.04611111111114,
-            "deltaArcmin": 6143.741333333332,
+            "deltaArcmin": 0.08466666666663514,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -3394,10 +3394,10 @@
             "detail": "expected +2h, app used +2h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref11",
@@ -3556,91 +3556,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 241.1696,
+            "expected": 146.0902,
             "actual": 146.05555555555557,
-            "deltaArcmin": 5706.842666666664,
+            "deltaArcmin": 2.0786666666663223,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 55.7368,
+            "expected": 51.5929,
             "actual": 51.0075,
-            "deltaArcmin": 283.757999999998,
+            "deltaArcmin": 35.12400000000298,
             "limit": 8,
             "status": "fail"
           },
           {
             "body": "Mercury",
-            "expected": 236.5607,
+            "expected": 127.6818,
             "actual": 127.65305555555557,
-            "deltaArcmin": 6534.458666666669,
+            "deltaArcmin": 1.7246666666665078,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 209.6107,
+            "expected": 191.2166,
             "actual": 191.17527777777778,
-            "deltaArcmin": 1106.125333333332,
+            "deltaArcmin": 2.4793333333332157,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 3.9708,
+            "expected": 186.412,
             "actual": 186.38944444444445,
-            "deltaArcmin": 10654.881333333333,
+            "deltaArcmin": 1.3533333333316477,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 61.0304,
+            "expected": 203.2357,
             "actual": 203.23055555555555,
-            "deltaArcmin": 8532.009333333333,
+            "deltaArcmin": 0.30866666666724996,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 271.1275,
+            "expected": 122.1467,
             "actual": 122.14611111111111,
-            "deltaArcmin": 8938.883333333333,
+            "deltaArcmin": 0.03533333333052724,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 269.4694,
+            "expected": 81.1478,
             "actual": 81.14972222222222,
-            "deltaArcmin": 10300.819333333333,
+            "deltaArcmin": 0.11533333333318296,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 278.535,
+            "expected": 186.8538,
             "actual": 186.8563888888889,
-            "deltaArcmin": 5500.716666666672,
+            "deltaArcmin": 0.15533333333451083,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 223.2511,
+            "expected": 131.859,
             "actual": 131.8636111111111,
-            "deltaArcmin": 5483.249333333335,
+            "deltaArcmin": 0.27666666666618767,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 96.2069,
+            "expected": 198.883,
             "actual": 198.87805555555556,
-            "deltaArcmin": 6160.2693333333345,
+            "deltaArcmin": 0.296666666663441,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -3708,10 +3708,10 @@
             "detail": "expected -7h, app used -6h"
           }
         ],
-        "passCount": 1,
+        "passCount": 11,
         "closeCount": 0,
-        "failCount": 13,
-        "score": 0.2857142857142857
+        "failCount": 3,
+        "score": 0.7619047619047619
       },
       "reading": {
         "id": "ref12",
@@ -3891,91 +3891,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 289.4492,
+            "expected": 1.1412,
             "actual": 1.1466666666666667,
-            "deltaArcmin": 4301.847999999998,
+            "deltaArcmin": 0.32799999999724605,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 125.5019,
+            "expected": 61.967,
             "actual": 61.96666666666667,
-            "deltaArcmin": 3812.113999999997,
+            "deltaArcmin": 0.019999999997253326,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 280.9524,
+            "expected": 356.5159,
             "actual": 356.52194444444444,
-            "deltaArcmin": 4534.1726666666655,
+            "deltaArcmin": 0.36266666666733727,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 336.2123,
+            "expected": 34.5979,
             "actual": 34.602222222222224,
-            "deltaArcmin": 3503.3953333333284,
+            "deltaArcmin": 0.25933333333114206,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 106.9691,
+            "expected": 222.1204,
             "actual": 222.11722222222224,
-            "deltaArcmin": 6908.887333333334,
+            "deltaArcmin": 0.19066666666503806,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 194.1119,
+            "expected": 8.6478,
             "actual": 8.654722222222222,
-            "deltaArcmin": 10472.569333333331,
+            "deltaArcmin": 0.4153333333329101,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 317.2932,
+            "expected": 32.2656,
             "actual": 32.269999999999996,
-            "deltaArcmin": 4498.607999999995,
+            "deltaArcmin": 0.2640000000019427,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 288.1861,
+            "expected": 315.3476,
             "actual": 315.3486111111111,
-            "deltaArcmin": 1629.7506666666686,
+            "deltaArcmin": 0.06066666666583842,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 288.6849,
+            "expected": 303.8058,
             "actual": 303.81111111111113,
-            "deltaArcmin": 907.5726666666696,
+            "deltaArcmin": 0.3186666666692872,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 234.8555,
+            "expected": 250.4769,
             "actual": 250.475,
-            "deltaArcmin": 937.170000000001,
+            "deltaArcmin": 0.1139999999986685,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 142.5734,
+            "expected": 243.8567,
             "actual": 243.85277777777776,
-            "deltaArcmin": 6076.762666666666,
+            "deltaArcmin": 0.23533333333034534,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -4043,10 +4043,10 @@
             "detail": "expected -10h, app used -10h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref13",
@@ -4212,91 +4212,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 12.9192,
+            "expected": 98.6999,
             "actual": 98.70527777777778,
-            "deltaArcmin": 5147.1646666666675,
+            "deltaArcmin": 0.3226666666660094,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 173.5272,
+            "expected": 28.9084,
             "actual": 28.90888888888889,
-            "deltaArcmin": 8677.098666666665,
+            "deltaArcmin": 0.029333333332033362,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 18.2984,
+            "expected": 123.139,
             "actual": 123.14416666666668,
-            "deltaArcmin": 6290.746000000001,
+            "deltaArcmin": 0.3100000000017644,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 58.7872,
+            "expected": 122.6236,
             "actual": 122.62888888888888,
-            "deltaArcmin": 3830.5013333333327,
+            "deltaArcmin": 0.31733333333477276,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 6.801,
+            "expected": 12.4918,
             "actual": 12.491666666666665,
-            "deltaArcmin": 341.4399999999978,
+            "deltaArcmin": 0.008000000000265572,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 286.0709,
+            "expected": 189.8529,
             "actual": 189.8511111111111,
-            "deltaArcmin": 5773.187333333331,
+            "deltaArcmin": 0.10733333333291739,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 359.3971,
+            "expected": 117.9518,
             "actual": 117.95722222222223,
-            "deltaArcmin": 7113.60733333333,
+            "deltaArcmin": 0.32533333333503833,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 304.0391,
+            "expected": 340.6702,
             "actual": 340.6666666666667,
-            "deltaArcmin": 2197.654,
+            "deltaArcmin": 0.21199999999680585,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 297.552,
+            "expected": 317.1714,
             "actual": 317.17111111111114,
-            "deltaArcmin": 1177.1466666666674,
+            "deltaArcmin": 0.01733333333504561,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 242.9046,
+            "expected": 262.757,
             "actual": 262.75138888888887,
-            "deltaArcmin": 1190.8073333333346,
+            "deltaArcmin": 0.33666666667159006,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 191.0376,
+            "expected": 301.7861,
             "actual": 301.785,
-            "deltaArcmin": 6644.844000000002,
+            "deltaArcmin": 0.06599999999707507,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -4364,10 +4364,10 @@
             "detail": "expected -5h, app used -5h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref14",
@@ -4526,91 +4526,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 1.1412,
+            "expected": 116.9892,
             "actual": 116.995,
-            "deltaArcmin": 6951.227999999999,
+            "deltaArcmin": 0.3480000000013206,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 61.9669,
+            "expected": 199.3141,
             "actual": 199.31444444444446,
-            "deltaArcmin": 8240.852666666668,
+            "deltaArcmin": 0.020666666664510558,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 356.516,
+            "expected": 105.6516,
             "actual": 105.65805555555556,
-            "deltaArcmin": 6548.523333333333,
+            "deltaArcmin": 0.3873333333353912,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 34.5979,
+            "expected": 78.8665,
             "actual": 78.8711111111111,
-            "deltaArcmin": 2656.3926666666657,
+            "deltaArcmin": 0.27666666666618767,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 222.1204,
+            "expected": 184.9847,
             "actual": 184.98666666666665,
-            "deltaArcmin": 2228.0240000000003,
+            "deltaArcmin": 0.11800000000221189,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 8.6477,
+            "expected": 159.2478,
             "actual": 159.25222222222223,
-            "deltaArcmin": 9036.271333333332,
+            "deltaArcmin": 0.26533333333645714,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 32.2655,
+            "expected": 172.8897,
             "actual": 172.89166666666665,
-            "deltaArcmin": 8437.57,
+            "deltaArcmin": 0.11800000000221189,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 315.3476,
+            "expected": 231.55,
             "actual": 231.54638888888888,
-            "deltaArcmin": 5028.072666666667,
+            "deltaArcmin": 0.21666666666760648,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 303.8058,
+            "expected": 260.3753,
             "actual": 260.36694444444447,
-            "deltaArcmin": 2606.3313333333303,
+            "deltaArcmin": 0.5013333333272385,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 250.4767,
+            "expected": 199.0874,
             "actual": 199.08972222222224,
-            "deltaArcmin": 3083.218666666662,
+            "deltaArcmin": 0.13933333333397968,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 243.8567,
+            "expected": 47.725,
             "actual": 47.719166666666666,
-            "deltaArcmin": 9831.748000000003,
+            "deltaArcmin": 0.3500000000030923,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -4678,10 +4678,10 @@
             "detail": "expected +3h, app used +3h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref15",
@@ -4861,91 +4861,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 266.9085,
+            "expected": 217.7115,
             "actual": 217.71694444444444,
-            "deltaArcmin": 2951.4933333333374,
+            "deltaArcmin": 0.3266666666695528,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 312.1352,
+            "expected": 309.1416,
             "actual": 309.14166666666665,
-            "deltaArcmin": 179.61199999999735,
+            "deltaArcmin": 0.004000000003543391,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 274.6551,
+            "expected": 199.2534,
             "actual": 199.25916666666666,
-            "deltaArcmin": 4523.756000000001,
+            "deltaArcmin": 0.3459999999995489,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 260.5128,
+            "expected": 219.2193,
             "actual": 219.225,
-            "deltaArcmin": 2477.2680000000037,
+            "deltaArcmin": 0.3419999999960055,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 337.1975,
+            "expected": 273.5427,
             "actual": 273.54638888888894,
-            "deltaArcmin": 3819.066666666663,
+            "deltaArcmin": 0.2213333333384071,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 102.4194,
+            "expected": 140.3267,
             "actual": 140.3275,
-            "deltaArcmin": 2274.4859999999994,
+            "deltaArcmin": 0.048000000001593435,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 70.2604,
+            "expected": 233.7839,
             "actual": 233.78944444444446,
-            "deltaArcmin": 9811.742666666669,
+            "deltaArcmin": 0.3326666666680467,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 321.8942,
+            "expected": 13.6039,
             "actual": 13.59888888888889,
-            "deltaArcmin": 3102.281333333333,
+            "deltaArcmin": 0.3006666666669844,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 307.0108,
+            "expected": 334.8706,
             "actual": 334.87305555555554,
-            "deltaArcmin": 1671.7353333333313,
+            "deltaArcmin": 0.14733333333424525,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 255.5477,
+            "expected": 281.3658,
             "actual": 281.36833333333334,
-            "deltaArcmin": 1549.2380000000026,
+            "deltaArcmin": 0.15199999999822467,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 270.7355,
+            "expected": 343.3629,
             "actual": 343.36083333333335,
-            "deltaArcmin": 4357.52,
+            "deltaArcmin": 0.12400000000070577,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -5013,10 +5013,10 @@
             "detail": "expected +4h, app used +4h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref16",
@@ -5203,91 +5203,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 98.6999,
+            "expected": 35.7369,
             "actual": 35.7425,
-            "deltaArcmin": 3777.4440000000004,
+            "deltaArcmin": 0.3359999999975116,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 28.9085,
+            "expected": 265.1998,
             "actual": 265.2,
-            "deltaArcmin": 7422.510000000001,
+            "deltaArcmin": 0.011999999996987754,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 123.1389,
+            "expected": 8.6821,
             "actual": 8.6875,
-            "deltaArcmin": 6867.084000000003,
+            "deltaArcmin": 0.32400000000052387,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 122.6236,
+            "expected": 73.9445,
             "actual": 73.94861111111112,
-            "deltaArcmin": 2920.49933333333,
+            "deltaArcmin": 0.24666666666689707,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 12.4916,
+            "expected": 99.2699,
             "actual": 99.2725,
-            "deltaArcmin": 5206.853999999998,
+            "deltaArcmin": 0.15600000000176806,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 189.8528,
+            "expected": 239.7778,
             "actual": 239.77444444444447,
-            "deltaArcmin": 2995.2986666666698,
+            "deltaArcmin": 0.20133333333433256,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 117.9518,
+            "expected": 276.982,
             "actual": 276.97777777777776,
-            "deltaArcmin": 9541.558666666666,
+            "deltaArcmin": 0.2533333333394694,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 340.6701,
+            "expected": 132.2412,
             "actual": 132.24166666666665,
-            "deltaArcmin": 9094.293999999998,
+            "deltaArcmin": 0.0279999999975189,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 317.1714,
+            "expected": 215.5923,
             "actual": 215.5836111111111,
-            "deltaArcmin": 6095.267333333333,
+            "deltaArcmin": 0.521333333331313,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 262.7569,
+            "expected": 151.7421,
             "actual": 151.74027777777778,
-            "deltaArcmin": 6660.99733333333,
+            "deltaArcmin": 0.10933333333468909,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 301.7865,
+            "expected": 327.0049,
             "actual": 327.01,
-            "deltaArcmin": 1513.4100000000035,
+            "deltaArcmin": 0.30599999999822103,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -5355,10 +5355,10 @@
             "detail": "expected -4h, app used -4h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref17",
@@ -5524,91 +5524,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 325.5644,
+            "expected": 253.0132,
             "actual": 252.99805555555554,
-            "deltaArcmin": 4353.980666666666,
+            "deltaArcmin": 0.9086666666667043,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 328.4207,
+            "expected": 167.5544,
             "actual": 167.25944444444445,
-            "deltaArcmin": 9669.675333333329,
+            "deltaArcmin": 17.697333333335337,
             "limit": 8,
-            "status": "fail"
+            "status": "close"
           },
           {
             "body": "Mercury",
-            "expected": 305.7753,
+            "expected": 232.6375,
             "actual": 232.61972222222224,
-            "deltaArcmin": 4389.334666666668,
+            "deltaArcmin": 1.0666666666634228,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 333.6024,
+            "expected": 259.5549,
             "actual": 259.53472222222223,
-            "deltaArcmin": 4444.060666666669,
+            "deltaArcmin": 1.210666666661382,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 124.0867,
+            "expected": 180.8415,
             "actual": 180.8325,
-            "deltaArcmin": 3404.748000000002,
+            "deltaArcmin": 0.5400000000008731,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 336.3454,
+            "expected": 124.1519,
             "actual": 124.14777777777779,
-            "deltaArcmin": 8868.142666666667,
+            "deltaArcmin": 0.2473333333341543,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 183.7771,
+            "expected": 352.9854,
             "actual": 352.98361111111114,
-            "deltaArcmin": 10152.390666666668,
+            "deltaArcmin": 0.10733333333291739,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 354.8625,
+            "expected": 174.1392,
             "actual": 174.13833333333332,
-            "deltaArcmin": 10756.550000000003,
+            "deltaArcmin": 0.051999999998315616,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 326.1372,
+            "expected": 232.6782,
             "actual": 232.6786111111111,
-            "deltaArcmin": 5607.515333333336,
+            "deltaArcmin": 0.02466666666805395,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 274.732,
+            "expected": 170.5577,
             "actual": 170.55833333333334,
-            "deltaArcmin": 6250.420000000002,
+            "deltaArcmin": 0.03799999999955617,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 326.0452,
+            "expected": 351.6725,
             "actual": 351.6677777777778,
-            "deltaArcmin": 1537.3546666666675,
+            "deltaArcmin": 0.2833333333319388,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -5676,10 +5676,10 @@
             "detail": "expected +7.5h, app used +7.5h"
           }
         ],
-        "passCount": 1,
-        "closeCount": 0,
-        "failCount": 13,
-        "score": 0.3333333333333333
+        "passCount": 11,
+        "closeCount": 1,
+        "failCount": 2,
+        "score": 0.8333333333333334
       },
       "reading": {
         "id": "ref18",
@@ -5852,91 +5852,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 217.7115,
+            "expected": 135.4924,
             "actual": 135.49805555555554,
-            "deltaArcmin": 4932.806666666667,
+            "deltaArcmin": 0.3393333333337978,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 309.1416,
+            "expected": 232.8048,
             "actual": 232.805,
-            "deltaArcmin": 4580.195999999998,
+            "deltaArcmin": 0.011999999996987754,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 199.2534,
+            "expected": 116.6695,
             "actual": 116.67444444444445,
-            "deltaArcmin": 4954.737333333334,
+            "deltaArcmin": 0.296666666663441,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 219.2193,
+            "expected": 133.8524,
             "actual": 133.85805555555555,
-            "deltaArcmin": 5121.674666666666,
+            "deltaArcmin": 0.3393333333337978,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 273.5427,
+            "expected": 143.7103,
             "actual": 143.71583333333334,
-            "deltaArcmin": 7789.611999999999,
+            "deltaArcmin": 0.33200000000078944,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 140.3267,
+            "expected": 254.5214,
             "actual": 254.52055555555557,
-            "deltaArcmin": 6851.631333333336,
+            "deltaArcmin": 0.05066666666380115,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 233.784,
+            "expected": 285.1899,
             "actual": 285.18444444444447,
-            "deltaArcmin": 3084.0266666666685,
+            "deltaArcmin": 0.3273333333299888,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 13.6039,
+            "expected": 36.6093,
             "actual": 36.60916666666667,
-            "deltaArcmin": 1380.3160000000003,
+            "deltaArcmin": 0.008000000000265572,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 334.8706,
+            "expected": 348.157,
             "actual": 348.15638888888884,
-            "deltaArcmin": 797.1473333333324,
+            "deltaArcmin": 0.0366666666650417,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 281.3658,
+            "expected": 291.3142,
             "actual": 291.3088888888889,
-            "deltaArcmin": 596.5853333333371,
+            "deltaArcmin": 0.3186666666692872,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 343.3628,
+            "expected": 5.5529,
             "actual": 5.550277777777778,
-            "deltaArcmin": 1331.2486666666655,
+            "deltaArcmin": 0.15733333333628252,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -6004,10 +6004,10 @@
             "detail": "expected -4h, app used -4h"
           }
         ],
-        "passCount": 3,
+        "passCount": 14,
         "closeCount": 0,
-        "failCount": 11,
-        "score": 0.42857142857142855
+        "failCount": 0,
+        "score": 0.9523809523809523
       },
       "reading": {
         "id": "ref19",
@@ -6166,91 +6166,91 @@
         "bodies": [
           {
             "body": "Sun",
-            "expected": 135.4924,
+            "expected": 322.326,
             "actual": 322.33194444444445,
-            "deltaArcmin": 10389.627333333336,
+            "deltaArcmin": 0.3566666666620222,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Moon",
-            "expected": 232.8043,
+            "expected": 324.145,
             "actual": 324.1452777777778,
-            "deltaArcmin": 5480.4586666666655,
+            "deltaArcmin": 0.016666666667788377,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mercury",
-            "expected": 116.6697,
+            "expected": 296.9311,
             "actual": 296.93666666666667,
-            "deltaArcmin": 10783.981999999998,
+            "deltaArcmin": 0.33400000000256114,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Venus",
-            "expected": 133.8523,
+            "expected": 9.0123,
             "actual": 9.016666666666667,
-            "deltaArcmin": 7490.138000000002,
+            "deltaArcmin": 0.262000000000171,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Mars",
-            "expected": 143.7101,
+            "expected": 228.436,
             "actual": 228.43583333333333,
-            "deltaArcmin": 5083.544,
+            "deltaArcmin": 0.010000000002037268,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Jupiter",
-            "expected": 254.5214,
+            "expected": 285.9833,
             "actual": 285.98833333333334,
-            "deltaArcmin": 1888.0160000000024,
+            "deltaArcmin": 0.30200000000149885,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Saturn",
-            "expected": 285.1899,
+            "expected": 351.2856,
             "actual": 351.2894444444445,
-            "deltaArcmin": 3965.9726666666675,
+            "deltaArcmin": 0.23066666666636593,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Uranus",
-            "expected": 36.6092,
+            "expected": 35.9733,
             "actual": 35.97638888888889,
-            "deltaArcmin": 37.96866666666574,
+            "deltaArcmin": 0.18533333333380142,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Neptune",
-            "expected": 348.1568,
+            "expected": 168.2654,
             "actual": 168.2613888888889,
-            "deltaArcmin": 10793.724666666667,
+            "deltaArcmin": 0.2406666666684032,
             "limit": 6,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Pluto",
-            "expected": 291.3142,
+            "expected": 117.1205,
             "actual": 117.11555555555555,
-            "deltaArcmin": 10451.918666666665,
+            "deltaArcmin": 0.2966666666702622,
             "limit": 8,
-            "status": "fail"
+            "status": "pass"
           },
           {
             "body": "Chiron",
-            "expected": 5.5535,
+            "expected": 77.8131,
             "actual": 77.81055555555555,
-            "deltaArcmin": 4335.423333333333,
+            "deltaArcmin": 0.1526666666654819,
             "limit": 60,
-            "status": "fail",
+            "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
           },
           {
@@ -6318,10 +6318,10 @@
             "detail": "expected +1h, app used +1h"
           }
         ],
-        "passCount": 2,
+        "passCount": 13,
         "closeCount": 1,
-        "failCount": 11,
-        "score": 0.40476190476190477
+        "failCount": 0,
+        "score": 0.9285714285714286
       },
       "reading": {
         "id": "ref20",
@@ -6468,12 +6468,12 @@
   "totals": {
     "peopleCount": 20,
     "bodyChecks": 280,
-    "bodyPass": 53,
-    "bodyClose": 1,
-    "bodyFail": 226,
+    "bodyPass": 270,
+    "bodyClose": 3,
+    "bodyFail": 7,
     "invariantChecks": 140,
     "invariantPass": 119,
-    "mathScore": 0.4107142857142857,
+    "mathScore": 0.9297619047619048,
     "readingBlocks": 260,
     "lintErrors": 104,
     "lintWarnings": 2,

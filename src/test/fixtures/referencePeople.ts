@@ -48,7 +48,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -74.006,
     approximateTime: false,
     why: "US Eastern winter time, pre-dawn birth, 1950s",
-    expected: { Sun: 322.326, Moon: 324.1448, Mercury: 296.9311, Venus: 9.0122, Mars: 228.4361, Jupiter: 285.9833, Saturn: 351.2857, Uranus: 35.9733, Neptune: 168.2655, Pluto: 117.1205, Chiron: 77.8132, NorthNode: 271.5377, Ascendant: 275.824, Midheaven: 210.2153 },
+    expected: { Sun: 353.9374, Moon: 248.9129, Mercury: 326.8908, Venus: 312.1374, Mars: 41.7519, Jupiter: 109.8845, Saturn: 231.0103, Uranus: 113.7271, Neptune: 207.7246, Pluto: 144.9057, Chiron: 303.5963, NorthNode: 271.5377, Ascendant: 275.824, Midheaven: 210.2153 },
   },
   {
     id: "ref02",
@@ -63,7 +63,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -118.2437,
     approximateTime: false,
     why: "US Pacific daylight time, exact noon",
-    expected: { Sun: 146.0902, Moon: 51.593, Mercury: 127.6818, Venus: 191.2165, Mars: 186.412, Jupiter: 203.2357, Saturn: 122.1467, Uranus: 81.1478, Neptune: 186.8539, Pluto: 131.8593, Chiron: 198.883, NorthNode: 180.7692, Ascendant: 179.3146, Midheaven: 89.254 },
+    expected: { Sun: 102.432, Moon: 95.6772, Mercury: 123.1086, Venus: 141.6198, Mars: 161.6605, Jupiter: 106.5499, Saturn: 147.6017, Uranus: 222.4333, Neptune: 256.2555, Pluto: 193.9279, Chiron: 39.0494, NorthNode: 180.7692, Ascendant: 179.3146, Midheaven: 89.254 },
   },
   {
     id: "ref03",
@@ -78,7 +78,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -87.6298,
     approximateTime: false,
     why: "23:59 birth, one minute from a date rollover",
-    expected: { Sun: 353.9374, Moon: 248.9129, Mercury: 326.8909, Venus: 312.1374, Mars: 41.7518, Jupiter: 109.8845, Saturn: 231.0104, Uranus: 113.7271, Neptune: 207.7247, Pluto: 144.9064, Chiron: 303.596, NorthNode: 339.8383, Ascendant: 160.0674, Midheaven: 66.4106 },
+    expected: { Sun: 241.1696, Moon: 55.7366, Mercury: 236.5608, Venus: 209.6109, Mars: 3.9709, Jupiter: 61.0304, Saturn: 271.1275, Uranus: 269.4694, Neptune: 278.535, Pluto: 223.2522, Chiron: 96.2069, NorthNode: 339.8383, Ascendant: 160.0674, Midheaven: 66.4106 },
   },
   {
     id: "ref04",
@@ -93,7 +93,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -0.1278,
     approximateTime: false,
     why: "British Standard Time year (1968-1971, UK stayed on +1 all year)",
-    expected: { Sun: 35.7369, Moon: 265.1998, Mercury: 8.6821, Venus: 73.9445, Mars: 99.2699, Jupiter: 239.7778, Saturn: 276.9819, Uranus: 132.2412, Neptune: 215.5923, Pluto: 151.7423, Chiron: 327.0048, NorthNode: 356.602, Ascendant: 113.9692, Midheaven: 356.1492 },
+    expected: { Sun: 70.6099, Moon: 261.1552, Mercury: 66.247, Venus: 26.0323, Mars: 249.7839, Jupiter: 176.2237, Saturn: 33.8832, Uranus: 179.8842, Neptune: 236.9736, Pluto: 172.4092, Chiron: 6.2495, NorthNode: 356.602, Ascendant: 113.9692, Midheaven: 356.1492 },
   },
   {
     id: "ref05",
@@ -108,7 +108,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 2.3522,
     approximateTime: false,
     why: "Central European winter, evening birth",
-    expected: { Sun: 68.3058, Moon: 245.1986, Mercury: 91.4067, Venus: 24.6287, Mars: 132.8168, Jupiter: 307.1263, Saturn: 299.5268, Uranus: 142.0702, Neptune: 219.193, Pluto: 155.5793, Chiron: 336.6366, NorthNode: 259.9603, Ascendant: 116.6193, Midheaven: 3.0823 },
+    expected: { Sun: 289.4492, Moon: 125.5019, Mercury: 280.9524, Venus: 336.2123, Mars: 106.9691, Jupiter: 194.1119, Saturn: 317.2932, Uranus: 288.1861, Neptune: 288.6849, Pluto: 234.8554, Chiron: 142.5735, NorthNode: 259.9603, Ascendant: 116.6193, Midheaven: 3.0823 },
   },
   {
     id: "ref06",
@@ -123,7 +123,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 151.2093,
     approximateTime: false,
     why: "Southern hemisphere with daylight saving in December",
-    expected: { Sun: 253.0132, Moon: 167.5547, Mercury: 232.6376, Venus: 259.5549, Mars: 180.8417, Jupiter: 124.1519, Saturn: 352.9856, Uranus: 174.1393, Neptune: 232.6783, Pluto: 170.5589, Chiron: 351.6722, NorthNode: 87.0624, Ascendant: 263.5089, Midheaven: 154.2684 },
+    expected: { Sun: 266.9085, Moon: 312.1351, Mercury: 274.6551, Venus: 260.5128, Mars: 337.1975, Jupiter: 102.4194, Saturn: 70.2604, Uranus: 321.8942, Neptune: 307.0108, Pluto: 255.5477, Chiron: 270.7355, NorthNode: 87.0624, Ascendant: 263.5089, Midheaven: 154.2684 },
   },
   {
     id: "ref07",
@@ -138,7 +138,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -58.3816,
     approximateTime: false,
     why: "Southern hemisphere, South America, no DST",
-    expected: { Sun: 70.6099, Moon: 261.1552, Mercury: 66.247, Venus: 26.0323, Mars: 249.7839, Jupiter: 176.2238, Saturn: 33.8832, Uranus: 179.8842, Neptune: 236.9736, Pluto: 172.4098, Chiron: 6.2494, NorthNode: 60.1819, Ascendant: 35.256, Midheaven: 309.8895 },
+    expected: { Sun: 185.0542, Moon: 225.4991, Mercury: 174.9101, Venus: 212.8651, Mars: 265.0695, Jupiter: 274.4293, Saturn: 224.0361, Uranus: 250.2362, Neptune: 268.7446, Pluto: 210.9967, Chiron: 68.4417, NorthNode: 60.1819, Ascendant: 35.256, Midheaven: 309.8895 },
   },
   {
     id: "ref08",
@@ -153,7 +153,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 72.8777,
     approximateTime: false,
     why: "Half-hour zone (+05:30)",
-    expected: { Sun: 194.6833, Moon: 200.6941, Mercury: 207.5227, Venus: 152.8902, Mars: 184.4592, Jupiter: 271.3244, Saturn: 80.5732, Uranus: 198.4478, Neptune: 243.2689, Pluto: 182.3951, Chiron: 15.0991, NorthNode: 197.5441, Ascendant: 137.0182, Midheaven: 46.3441 },
+    expected: { Sun: 12.9192, Moon: 173.5272, Mercury: 18.2984, Venus: 58.7872, Mars: 6.801, Jupiter: 286.0709, Saturn: 359.3971, Uranus: 304.0391, Neptune: 297.552, Pluto: 242.9044, Chiron: 191.0377, NorthNode: 197.5441, Ascendant: 137.0182, Midheaven: 46.3441 },
   },
   {
     id: "ref09",
@@ -168,7 +168,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 139.6503,
     approximateTime: false,
     why: "Far eastern zone (+09), 1970s",
-    expected: { Sun: 102.432, Moon: 95.6773, Mercury: 123.1085, Venus: 141.6198, Mars: 161.6605, Jupiter: 106.5499, Saturn: 147.6017, Uranus: 222.4333, Neptune: 256.2555, Pluto: 193.9277, Chiron: 39.0494, NorthNode: 291.756, Ascendant: 197.6236, Midheaven: 109.6318 },
+    expected: { Sun: 194.6833, Moon: 200.6944, Mercury: 207.5227, Venus: 152.8902, Mars: 184.4591, Jupiter: 271.3244, Saturn: 80.5732, Uranus: 198.4478, Neptune: 243.2688, Pluto: 182.3943, Chiron: 15.0992, NorthNode: 291.756, Ascendant: 197.6236, Midheaven: 109.6318 },
   },
   {
     id: "ref10",
@@ -183,7 +183,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 18.0686,
     approximateTime: false,
     why: "Midnight birth, Sweden before it adopted DST",
-    expected: { Sun: 116.9892, Moon: 199.3139, Mercury: 105.6516, Venus: 78.8664, Mars: 184.9847, Jupiter: 159.2477, Saturn: 172.8896, Uranus: 231.55, Neptune: 260.3753, Pluto: 199.0867, Chiron: 47.7249, NorthNode: 151.4569, Ascendant: 299.7719, Midheaven: 251.811 },
+    expected: { Sun: 68.3058, Moon: 245.1984, Mercury: 91.4067, Venus: 24.6286, Mars: 132.8167, Jupiter: 307.1263, Saturn: 299.5268, Uranus: 142.0701, Neptune: 219.1929, Pluto: 155.5785, Chiron: 336.6369, NorthNode: 151.4569, Ascendant: 299.7719, Midheaven: 251.811 },
   },
   {
     id: "ref11",
@@ -198,7 +198,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 28.0473,
     approximateTime: false,
     why: "Southern hemisphere Africa, modern date",
-    expected: { Sun: 185.0542, Moon: 225.4991, Mercury: 174.9102, Venus: 212.8651, Mars: 265.0695, Jupiter: 274.4293, Saturn: 224.0361, Uranus: 250.2362, Neptune: 268.7446, Pluto: 210.9976, Chiron: 68.4418, NorthNode: 289.2807, Ascendant: 35.6476, Midheaven: 307.6706 },
+    expected: { Sun: 325.5644, Moon: 328.4204, Mercury: 305.7754, Venus: 333.6026, Mars: 124.087, Jupiter: 336.3455, Saturn: 183.7773, Uranus: 354.8626, Neptune: 326.1372, Pluto: 274.7319, Chiron: 326.0447, NorthNode: 289.2807, Ascendant: 35.6476, Midheaven: 307.6706 },
   },
   {
     id: "ref12",
@@ -213,7 +213,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -104.9903,
     approximateTime: false,
     why: "1946, no DST in Colorado that year",
-    expected: { Sun: 241.1696, Moon: 55.7368, Mercury: 236.5607, Venus: 209.6107, Mars: 3.9708, Jupiter: 61.0304, Saturn: 271.1275, Uranus: 269.4694, Neptune: 278.535, Pluto: 223.2511, Chiron: 96.2069, NorthNode: 77.2617, Ascendant: 202.5297, Midheaven: 116.1972 },
+    expected: { Sun: 146.0902, Moon: 51.5929, Mercury: 127.6818, Venus: 191.2166, Mars: 186.412, Jupiter: 203.2357, Saturn: 122.1467, Uranus: 81.1478, Neptune: 186.8538, Pluto: 131.859, Chiron: 198.883, NorthNode: 77.2617, Ascendant: 202.5297, Midheaven: 116.1972 },
   },
   {
     id: "ref13",
@@ -228,7 +228,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -157.8583,
     approximateTime: false,
     why: "Hawaii (-10), no DST",
-    expected: { Sun: 289.4492, Moon: 125.5019, Mercury: 280.9524, Venus: 336.2123, Mars: 106.9691, Jupiter: 194.1119, Saturn: 317.2932, Uranus: 288.1861, Neptune: 288.6849, Pluto: 234.8555, Chiron: 142.5734, NorthNode: 140.1511, Ascendant: 190.6339, Midheaven: 100.4986 },
+    expected: { Sun: 1.1412, Moon: 61.967, Mercury: 356.5159, Venus: 34.5979, Mars: 222.1204, Jupiter: 8.6478, Saturn: 32.2656, Uranus: 315.3476, Neptune: 303.8058, Pluto: 250.4769, Chiron: 243.8567, NorthNode: 140.1511, Ascendant: 190.6339, Midheaven: 100.4986 },
   },
   {
     id: "ref14",
@@ -243,7 +243,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -99.1332,
     approximateTime: false,
     why: "Mexico daylight saving, very early morning",
-    expected: { Sun: 12.9192, Moon: 173.5272, Mercury: 18.2984, Venus: 58.7872, Mars: 6.801, Jupiter: 286.0709, Saturn: 359.3971, Uranus: 304.0391, Neptune: 297.552, Pluto: 242.9046, Chiron: 191.0376, NorthNode: 18.7713, Ascendant: 65.2109, Midheaven: 323.0901 },
+    expected: { Sun: 98.6999, Moon: 28.9084, Mercury: 123.139, Venus: 122.6236, Mars: 12.4918, Jupiter: 189.8529, Saturn: 117.9518, Uranus: 340.6702, Neptune: 317.1714, Pluto: 262.757, Chiron: 301.7861, NorthNode: 18.7713, Ascendant: 65.2109, Midheaven: 323.0901 },
   },
   {
     id: "ref15",
@@ -258,7 +258,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 37.6173,
     approximateTime: false,
     why: "Moscow 1980, before Soviet summer time began in 1981",
-    expected: { Sun: 1.1412, Moon: 61.9669, Mercury: 356.516, Venus: 34.5979, Mars: 222.1204, Jupiter: 8.6477, Saturn: 32.2655, Uranus: 315.3476, Neptune: 303.8058, Pluto: 250.4767, Chiron: 243.8567, NorthNode: 141.2789, Ascendant: 233.0035, Midheaven: 169.2234 },
+    expected: { Sun: 116.9892, Moon: 199.3141, Mercury: 105.6516, Venus: 78.8665, Mars: 184.9847, Jupiter: 159.2478, Saturn: 172.8897, Uranus: 231.55, Neptune: 260.3753, Pluto: 199.0874, Chiron: 47.725, NorthNode: 141.2789, Ascendant: 233.0035, Midheaven: 169.2234 },
   },
   {
     id: "ref16",
@@ -273,7 +273,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 55.2708,
     approximateTime: false,
     why: "Gulf zone (+04), modern date",
-    expected: { Sun: 266.9085, Moon: 312.1352, Mercury: 274.6551, Venus: 260.5128, Mars: 337.1975, Jupiter: 102.4194, Saturn: 70.2604, Uranus: 321.8942, Neptune: 307.0108, Pluto: 255.5477, Chiron: 270.7355, NorthNode: 198.2086, Ascendant: 255.833, Midheaven: 175.6012 },
+    expected: { Sun: 217.7115, Moon: 309.1416, Mercury: 199.2534, Venus: 219.2193, Mars: 273.5427, Jupiter: 140.3267, Saturn: 233.7839, Uranus: 13.6039, Neptune: 334.8706, Pluto: 281.3658, Chiron: 343.3629, NorthNode: 198.2086, Ascendant: 255.833, Midheaven: 175.6012 },
   },
   {
     id: "ref17",
@@ -288,7 +288,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -79.3832,
     approximateTime: false,
     why: "Daylight saving changeover day in Toronto, 1959",
-    expected: { Sun: 98.6999, Moon: 28.9085, Mercury: 123.1389, Venus: 122.6236, Mars: 12.4916, Jupiter: 189.8528, Saturn: 117.9518, Uranus: 340.6701, Neptune: 317.1714, Pluto: 262.7569, Chiron: 301.7865, NorthNode: 191.9255, Ascendant: 140.7967, Midheaven: 41.2692 },
+    expected: { Sun: 35.7369, Moon: 265.1998, Mercury: 8.6821, Venus: 73.9445, Mars: 99.2699, Jupiter: 239.7778, Saturn: 276.982, Uranus: 132.2412, Neptune: 215.5923, Pluto: 151.7421, Chiron: 327.0049, NorthNode: 191.9255, Ascendant: 140.7967, Midheaven: 41.2692 },
   },
   {
     id: "ref18",
@@ -303,7 +303,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 103.8198,
     approximateTime: false,
     why: "Singapore on +07:30, the zone it used until 1982",
-    expected: { Sun: 325.5644, Moon: 328.4207, Mercury: 305.7753, Venus: 333.6024, Mars: 124.0867, Jupiter: 336.3454, Saturn: 183.7771, Uranus: 354.8625, Neptune: 326.1372, Pluto: 274.732, Chiron: 326.0452, NorthNode: 44.7204, Ascendant: 125.8577, Midheaven: 40.1828 },
+    expected: { Sun: 253.0132, Moon: 167.5544, Mercury: 232.6375, Venus: 259.5549, Mars: 180.8415, Jupiter: 124.1519, Saturn: 352.9854, Uranus: 174.1392, Neptune: 232.6782, Pluto: 170.5577, Chiron: 351.6725, NorthNode: 44.7204, Ascendant: 125.8577, Midheaven: 40.1828 },
   },
   {
     id: "ref19",
@@ -318,7 +318,7 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: -80.1918,
     approximateTime: false,
     why: "Recent US Eastern daylight birth",
-    expected: { Sun: 217.7115, Moon: 309.1416, Mercury: 199.2534, Venus: 219.2193, Mars: 273.5427, Jupiter: 140.3267, Saturn: 233.784, Uranus: 13.6039, Neptune: 334.8706, Pluto: 281.3658, Chiron: 343.3628, NorthNode: 105.9584, Ascendant: 91.5196, Midheaven: 348.6724 },
+    expected: { Sun: 135.4924, Moon: 232.8048, Mercury: 116.6695, Venus: 133.8524, Mars: 143.7103, Jupiter: 254.5214, Saturn: 285.1899, Uranus: 36.6093, Neptune: 348.157, Pluto: 291.3142, Chiron: 5.5529, NorthNode: 105.9584, Ascendant: 91.5196, Midheaven: 348.6724 },
   },
   {
     id: "ref20",
@@ -333,6 +333,6 @@ export const REFERENCE_PEOPLE: ReferencePerson[] = [
     lon: 13.405,
     approximateTime: true,
     why: "1937 Berlin with an unknown birth time (noon assumed)",
-    expected: { Sun: 135.4924, Moon: 232.8043, Mercury: 116.6697, Venus: 133.8523, Mars: 143.7101, Jupiter: 254.5214, Saturn: 285.1899, Uranus: 36.6092, Neptune: 348.1568, Pluto: 291.3142, Chiron: 5.5535, NorthNode: 261.3426, Ascendant: 84.2171, Midheaven: 317.0381 },
+    expected: { Sun: 322.326, Moon: 324.145, Mercury: 296.9311, Venus: 9.0123, Mars: 228.436, Jupiter: 285.9833, Saturn: 351.2856, Uranus: 35.9733, Neptune: 168.2654, Pluto: 117.1205, Chiron: 77.8131, NorthNode: 261.3426, Ascendant: 84.2171, Midheaven: 317.0381 },
   },
 ];
