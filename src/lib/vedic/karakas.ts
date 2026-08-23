@@ -62,6 +62,8 @@ export function computeKarakas(chart: VedicChart): KarakaAssignment[] {
     karaka: KARAKA_ORDER[i],
     planet: entry.name,
     degree: entry.body.degree,
+    effectiveDegree: entry.effective,
+    reverseCounted: entry.name === 'Rahu',
     sign: entry.body.sign,
     house: entry.body.house,
   }));
