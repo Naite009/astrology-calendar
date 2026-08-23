@@ -13,6 +13,7 @@ import { dignityGloss, SIGN_LORDS } from './vedicDignity';
 import { PLANET_IN_SIGN, PLANET_IN_HOUSE, CLASSIC_COMBOS, VSign } from './interpretations/placementCopy';
 import { PLANET_ROLE } from './interpretations/planetCopy';
 import { housePlain as houseTheme } from './interpretations/plainMeaning';
+import { interpretive } from './interpretations/hedge';
 
 export interface PlacementDeepDive {
   planet: VedicPlanet;
@@ -56,8 +57,8 @@ export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] 
     const body = chart.byName[planet];
     if (!body) continue;
 
-    const signCopy = PLANET_IN_SIGN[planet]?.[body.sign as VSign] || null;
-    const houseCopy = body.house ? PLANET_IN_HOUSE[planet]?.[body.house] || null : null;
+    const signCopy = interpretive(PLANET_IN_SIGN[planet]?.[body.sign as VSign]) || null;
+    const houseCopy = body.house ? interpretive(PLANET_IN_HOUSE[planet]?.[body.house]) || null : null;
     const nk = nakshatraCopy(body.nakshatra.name);
 
     out.push({
@@ -71,7 +72,7 @@ export function buildPlacementDeepDives(chart: VedicChart): PlacementDeepDive[] 
           ? null
           : 'House placement needs an accurate birth time before it can be named.',
       nakshatraLine: nk
-        ? `Inside ${body.sign} it sits in ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, which narrows it further: ${nk.essence}. The usable side is ${nk.gift}.`
+        ? `Inside ${body.sign} it sits in ${body.nakshatra.name} pada ${body.nakshatra.pada}, ruled by ${body.nakshatra.lord}, which narrows it further. This placement is traditionally associated with ${nk.essence}. The usable side is ${nk.gift}.`
         : null,
       dignityLine: body.dignity !== 'neutral'
         ? `Classically ${planet} is ${body.dignity} in ${body.sign}, which reads as: it ${dignityGloss(body.dignity)}.`
@@ -90,5 +91,5 @@ export function findComboHits(chart: VedicChart): ComboHit[] {
   };
   return CLASSIC_COMBOS.filter(c => {
     try { return c.test(get); } catch { return false; }
-  }).map(c => ({ label: c.label, text: c.text }));
+  }).map(c => ({ label: c.label, text: interpretive(c.text) }));
 }

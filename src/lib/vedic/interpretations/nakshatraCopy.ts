@@ -53,7 +53,7 @@ export const NAKSHATRA_COPY: Record<string, NakshatraCopy> = {
     friction: 'you give first and count later, and you can end up quietly waiting for care you never actually asked for',
   },
   Ashlesha: {
-    essence: 'you read people fast and accurately, including what they are hiding, and you keep most of that reading to yourself',
+    essence: 'being highly alert to subtext, motives, emotional complexity and what may not be openly expressed, while keeping most of that reading private',
     gift: 'strategic intelligence, emotional accuracy, the ability to survive complicated situations',
     friction: 'you hold on tightly when you feel unsafe, and closeness can start to feel like something to manage rather than enjoy',
   },
