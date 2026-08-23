@@ -113,7 +113,35 @@ export const FIXED_STARS: FixedStar[] = [
   { name: 'Achernar',     j2000Lon:  15.32 + 330, theme: 'river\'s end; success in religion, public life, philosophy.' }, // 15°19' Pis
   { name: 'Markab',       j2000Lon:  23.50 + 330, theme: 'Pegasus saddle; honor and wealth from steady work; danger from fire or weapons.' }, // 23°30' Pis
   { name: 'Scheat',       j2000Lon:  29.40 + 330, theme: 'extreme misfortune through water if unconscious; depth of vision if integrated.' }, // 29°24' Pis
+
+  // ── Second tier: less famous, but they turn into headlines the moment a
+  // planet sits on them. These are the ones astrology sites suddenly talk
+  // about ("why is Algol square my Mars"), so they are tracked too.
+  { name: 'Sheratan',      j2000Lon:   3.97 + 30,  theme: 'the ram\'s horn; blunt force, bodily courage, injury from haste.', tier: 'notable' },   // 3°58' Tau
+  { name: 'Mesarthim',     j2000Lon:   3.35 + 30,  theme: 'first point of the old zodiac; new starts, exposure, being first.', tier: 'notable' }, // 3°21' Tau
+  { name: 'Ankaa',         j2000Lon:  15.35,       theme: 'phoenix; rebuilding after collapse, long memory, ash-to-flight.', tier: 'notable' },   // 15°21' Ari
+  { name: 'Alhena',        j2000Lon:   8.92 + 90,  theme: 'the proud foot; a wound in the feet or gait, and a mission carried anyway.', tier: 'notable' }, // 8°55' Can
+  { name: 'Wasat',         j2000Lon:  18.50 + 90,  theme: 'the middle; chemistry, poison, and the go-between role in conflicts.', tier: 'notable' }, // 18°30' Can
+  { name: 'Dubhe',         j2000Lon:  15.18 + 120, theme: 'the Bear\'s back; enduring destructive pressure, quiet retaliation.', tier: 'notable' }, // 15°11' Leo
+  { name: 'Merak',         j2000Lon:  19.43 + 120, theme: 'restless drive for command; hates being told what to do.', tier: 'notable' },          // 19°26' Leo
+  { name: 'Phecda',        j2000Lon:   0.63 + 150, theme: 'the Bear\'s thigh; stubborn endurance, hidden ruthlessness under manners.', tier: 'notable' }, // 0°38' Vir
+  { name: 'Alioth',        j2000Lon:   8.92 + 150, theme: 'the tail\'s start; brutally honest judgment, refusal to flatter.', tier: 'notable' },  // 8°55' Vir
+  { name: 'Alkes',         j2000Lon:  13.55 + 150, theme: 'the cup; holding others\' emotions, service that empties you if unchecked.', tier: 'notable' }, // 13°33' Vir
+  { name: 'Mizar',         j2000Lon:  15.70 + 150, theme: 'the horse and rider; sudden destruction, and the skill to see it coming.', tier: 'notable' }, // 15°42' Vir
+  { name: 'Cor Caroli',    j2000Lon:  24.82 + 150, theme: 'the king\'s heart; loyalty tested in public, honors after a hard stand.', tier: 'notable' }, // 24°49' Vir
+  { name: 'Alkaid',        j2000Lon:  26.93 + 150, theme: 'the mourners; grief carried for a group, the one who names the loss.', tier: 'notable' }, // 26°56' Vir
+  { name: 'Zaniah',        j2000Lon:   4.97 + 180, theme: 'refinement, order, gentle scholarship; harmony in small precise things.', tier: 'notable' }, // 4°58' Lib
+  { name: 'Seginus',       j2000Lon:  17.55 + 180, theme: 'the herdsman\'s shoulder; loss through friends, gift for organizing people.', tier: 'notable' }, // 17°33' Lib
+  { name: 'Ras Algethi',   j2000Lon:  16.13 + 240, theme: 'Hercules\' head; enormous stamina, the labors taken on voluntarily.', tier: 'notable' }, // 16°08' Sag
+  { name: 'Kaus Australis',j2000Lon:   5.33 + 270, theme: 'the archer\'s bow; aim, promises, the drawn tension before release.', tier: 'notable' }, // 5°20' Cap
+  { name: 'Nunki',         j2000Lon:  12.38 + 270, theme: 'the herald; official messages, truth-telling that changes a room.', tier: 'notable' }, // 12°23' Cap
+  { name: 'Rukbat',        j2000Lon:  16.57 + 270, theme: 'the archer\'s knee; steady footing under strain, endurance over speed.', tier: 'notable' }, // 16°34' Cap
+  { name: 'Albaldah',      j2000Lon:  21.27 + 270, theme: 'the city; reputation among many, dealing with crowds and institutions.', tier: 'notable' }, // 21°16' Cap
+  { name: 'Terebellum',    j2000Lon:  25.83 + 270, theme: 'success shadowed by regret; getting the thing at a real cost.', tier: 'notable' }, // 25°50' Cap
+  { name: 'Deneb Algedi',  j2000Lon:  23.55 + 300, theme: 'the lawgiver; justice, judgment, benevolence with an edge.', tier: 'notable' }, // 23°33' Aqu
+  { name: 'Alderamin',     j2000Lon:  12.70 + 330, theme: 'the king\'s right arm; authority handled with restraint, or not at all.', tier: 'notable' }, // 12°42' Pis
 ];
+
 
 /** Apply precession from J2000 to the birth year (sidereal → tropical drift). */
 export function precessedLongitude(j2000Lon: number, birthYear: number): number {
