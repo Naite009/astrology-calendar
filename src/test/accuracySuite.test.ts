@@ -79,7 +79,7 @@ describe('reading voice rules', () => {
   it('never uses an em dash in generated copy', () => {
     const hits = report.people.flatMap((p) =>
       p.reading.lints.flatMap((l) =>
-        l.findings.filter((f) => f.rule === 'no-em-dash').map((f) => `${p.name} ${l.source}: ${f.excerpt}`),
+        l.findings.filter((f) => f.rule === 'no-em-dash').map((f) => `${p.math.name} ${l.source}: ${f.excerpt}`),
       ),
     );
     expect(hits).toEqual([]);
@@ -88,7 +88,7 @@ describe('reading voice rules', () => {
   it('has no writing errors anywhere', () => {
     const errors = report.people.flatMap((p) =>
       p.reading.lints.flatMap((l) =>
-        l.findings.filter((f) => f.severity === 'error').map((f) => `${p.name} ${l.source} [${f.rule}] ${f.message}`),
+        l.findings.filter((f) => f.severity === 'error').map((f) => `${p.math.name} ${l.source} [${f.rule}] ${f.message}`),
       ),
     );
     expect(errors).toEqual([]);
