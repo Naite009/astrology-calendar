@@ -236,7 +236,7 @@ Return ONLY the JSON object.`;
         },
         body: JSON.stringify({
           // Use a stronger multimodal model for higher OCR + table accuracy.
-          model: "google/gemini-2.5-pro",
+          model: "google/gemini-3.7-flash",
           messages: [
             {
               role: "user",

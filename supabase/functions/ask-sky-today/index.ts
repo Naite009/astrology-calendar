@@ -106,7 +106,7 @@ Write the reading now using ONLY the sky data above.`;
         "Lovable-API-Key": apiKey,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "google/gemini-3.1-pro-preview",
         messages: [
           { role: "system", content: system },
           { role: "user", content: userPrompt },
