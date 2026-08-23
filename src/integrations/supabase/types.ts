@@ -647,6 +647,36 @@ export type Database = {
         }
         Relationships: []
       }
+      soul_agreements: {
+        Row: {
+          agreements: Json
+          chart_id: string
+          chart_name: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agreements: Json
+          chart_id: string
+          chart_name?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agreements?: Json
+          chart_id?: string
+          chart_name?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
