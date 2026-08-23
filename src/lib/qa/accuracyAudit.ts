@@ -164,7 +164,7 @@ export function auditPersonMath(person: ReferencePerson): PersonMathAudit {
   const moment = utcMoment(person, resolvedOffset ?? person.utcOffsetHours);
   const midheaven = (() => {
     try {
-      const cusps = calculatePlacidusHouseCusps(moment, person.lat, person.lon) as Record<string, { sign: string; degree: number; minutes: number }>;
+      const cusps = calculatePlacidusHouseCusps(moment, person.lat, person.lon) as unknown as Record<string, { sign: string; degree: number; minutes: number }>;
       return absLongitude(cusps.house10);
     } catch {
       return null;
