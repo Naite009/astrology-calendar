@@ -132,8 +132,20 @@ export function buildGochara(
 
   const NAME_MAP: Partial<Record<string, VedicPlanet>> = {
     Sun: 'Sun', Moon: 'Moon', Mercury: 'Mercury', Venus: 'Venus', Mars: 'Mars',
-    Jupiter: 'Jupiter', Saturn: 'Saturn', 'North Node': 'Rahu', 'True Node': 'Rahu',
+    Jupiter: 'Jupiter', Saturn: 'Saturn',
+    NorthNode: 'Rahu', 'North Node': 'Rahu', 'True Node': 'Rahu',
   };
+
+  const SIGN_ORDER = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+  /** Positions are stored as sign plus degree, so rebuild the tropical longitude. */
+  const toLongitude = (p: { sign?: string; degree?: number; minutes?: number; seconds?: number }): number => {
+    const idx = SIGN_ORDER.indexOf(p.sign || '');
+    if (idx === -1) return 0;
+    return idx * 30 + (p.degree || 0) + (p.minutes || 0) / 60 + (p.seconds || 0) / 3600;
+  };
+
 
   const build = (graha: VedicPlanet, tropicalLon: number, retro: boolean): GocharaTransit => {
     const lon = norm360(tropicalLon - ayan);
