@@ -2,6 +2,7 @@
 // Uses natural zodiac (Aries rising, equal 30° houses) for collective/educational view
 
 import * as Astronomy from 'astronomy-engine';
+import { trueNodeLongitude } from './ephemeris/slowBodies';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const ZODIAC_SIGNS = [
