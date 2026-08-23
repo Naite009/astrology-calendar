@@ -91,11 +91,11 @@ const PHASE_INSTRUCTION: Record<PhaseKey, { verb: string; write: string }> = {
 const SIGN_MOOD: Record<string, string> = {
   Aries: "sharp, fast, a little impatient",
   Taurus: "slower, more sensory, wanting to settle",
-  Gemini: "chatty, curious, a little scattered",
+  Gemini: "chatty and curious, with your attention jumping between three things at once",
   Cancer: "tender, family-adjacent, close to the skin",
   Leo: "warmer, more visible, wanting to be seen",
   Virgo: "detail-focused, tidy, ready to fix",
-  Libra: "relational, comparing, weighing fairness",
+  Libra: "tuned to other people, checking who is getting the short end",
   Scorpio: "quieter and deeper, everything more loaded",
   Sagittarius: "restless, big-picture, ready to escape the room",
   Capricorn: "more serious, more responsible, quietly heavy",
@@ -152,7 +152,7 @@ export const buildPersonalDailyGuidance = (params: {
   if (!chart) {
     return {
       reflection:
-        `The Moon is in ${moonSign} today — ${mood} — moving through a ${phase} rhythm. ` +
+        `The Moon is in ${moonSign} today, ${mood}, moving through a ${phase} rhythm. ` +
         `That combination asks you to ${phaseData.verb} the part of life this sign tends to touch. ` +
         `Notice where the day tugs on you.`,
       journalPrompt: `Write about ${phaseData.write} the ${moonSign} part of your life right now.`,
@@ -170,7 +170,7 @@ export const buildPersonalDailyGuidance = (params: {
 
   // Sentence 1: what today's Moon actually is for THIS chart.
   const s1 = houseInfo
-    ? `Today's ${moonSign} Moon is transiting your ${ordinal(house!)} house — ${houseInfo.arena}. That's where the day lands for you.`
+    ? `Today's ${moonSign} Moon is transiting your ${ordinal(house!)} house: ${houseInfo.arena}. That's where the day lands for you.`
     : `Today's ${moonSign} Moon is coloring your day ${mood}.`;
 
   // Sentence 2: contact language if we have a tight Moon aspect.
@@ -202,10 +202,10 @@ const ordinal = (n: number): string => {
 
 const moodedInstruction = (aspect: string, arena: string): string => {
   const a = aspect.toLowerCase();
-  if (a === "conjunction") return `expect ${arena} to feel amplified — pay attention to what wants to be said`;
-  if (a === "opposition") return `expect ${arena} to show up as a pull between two sides — don't force resolution today`;
-  if (a === "square")     return `expect ${arena} to press on you — the friction is asking for a real choice, not a compromise`;
-  if (a === "trine")      return `${arena} should flow more easily today — use the opening while it's here`;
+  if (a === "conjunction") return `expect ${arena} to feel amplified, so pay attention to what wants to be said`;
+  if (a === "opposition") return `expect ${arena} to show up as a pull between two sides, so don't force resolution today`;
+  if (a === "square")     return `expect ${arena} to press on you, and the friction is asking for a real choice, not a compromise`;
+  if (a === "trine")      return `${arena} should flow more easily today, so use the opening while it's here`;
   if (a === "sextile")    return `${arena} is offering you an opportunity, but only if you take the small deliberate step`;
   return `stay tuned to ${arena}`;
 };
