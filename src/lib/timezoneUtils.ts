@@ -353,8 +353,16 @@ export function lookupTimezone(location: string, birthDate?: string): TimezoneRe
       }
     }
   }
-  
+
+  // State-level fallback, so a small town the city map never heard of still
+  // resolves the right zone (and the right historical DST rule for the date).
+  if (!match) {
+    const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
+    if (zone) match = { timezone: zone.timezone } as typeof match;
+  }
+
   if (!match) return null;
+
   
   // Calculate the actual offset for the given date
   // Parse the date string carefully to avoid timezone issues
