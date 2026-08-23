@@ -139,7 +139,10 @@ export interface NatalChart {
   transits?: TransitChart;
   // Date the progressions/transits were calculated for (if visible on chart)
   progressionDate?: string;
+  // Bodies/cusps that were calculated from the birth data rather than typed in.
+  derivedBodies?: string[];
 }
+
 
 // Versioned backup keys
 const BACKUP_VERSIONS = ['__backup_v1', '__backup_v2', '__backup_v3'];
