@@ -1,6 +1,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
 import { getAccurateAsteroidPosition } from './asteroidEphemeris';
+import { trueNodeLongitude } from './ephemeris/slowBodies';
 import { calculatePlacidusHouses, getCoordinatesFromLocation as getExtendedCoordinates, PlacidusHouses } from './placidusHouses';
 import { getEffectiveOrb as getOrbForPair } from './aspectOrbs';
 // Zodiac signs mapping
