@@ -260,7 +260,29 @@ export const calculatePlacidusHouses = (
 
 // Extended city coordinates database
 export const EXTENDED_CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  // New Jersey (common birth cities, so angles are exact rather than state-level)
+  'hackensack': { lat: 40.8859, lon: -74.0435 },
+  'newark': { lat: 40.7357, lon: -74.1724 },
+  'jersey city': { lat: 40.7178, lon: -74.0431 },
+  'paterson': { lat: 40.9168, lon: -74.1718 },
+  'trenton': { lat: 40.2171, lon: -74.7429 },
+  'elizabeth': { lat: 40.6639, lon: -74.2107 },
+  'edison': { lat: 40.5187, lon: -74.4121 },
+  'morristown': { lat: 40.7968, lon: -74.4815 },
+  'ridgewood': { lat: 40.9793, lon: -74.1165 },
+  'englewood': { lat: 40.8929, lon: -73.9726 },
+  'teaneck': { lat: 40.8976, lon: -74.0160 },
+  'montclair': { lat: 40.8259, lon: -74.2090 },
+  'new brunswick': { lat: 40.4862, lon: -74.4518 },
+  'camden': { lat: 39.9259, lon: -75.1196 },
+  'atlantic city': { lat: 39.3643, lon: -74.4229 },
+  'long branch': { lat: 40.3043, lon: -73.9924 },
+  'toms river': { lat: 39.9537, lon: -74.1979 },
+  'livingston': { lat: 40.7959, lon: -74.3149 },
+  'summit': { lat: 40.7156, lon: -74.3646 },
+  'princeton': { lat: 40.3573, lon: -74.6672 },
   // US Cities - Major metros
+
   'new york': { lat: 40.7128, lon: -74.0060 },
   'brooklyn': { lat: 40.6782, lon: -73.9442 },
   'manhattan': { lat: 40.7831, lon: -73.9712 },
