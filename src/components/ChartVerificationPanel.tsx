@@ -58,11 +58,30 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
   onApplyValue,
 }) => {
   const [showAll, setShowAll] = useState(false);
+  const [autoFilledCount, setAutoFilledCount] = useState(0);
 
   const report = useMemo(
     () => verifyChartAgainstEphemeris({ birthDate, birthTime, birthLocation, timezoneOffset, planets }),
     [birthDate, birthTime, birthLocation, timezoneOffset, planets],
   );
+
+  // Auto-fill: anything the scan never read gets the calculated value applied
+  // straight away, so the chart is never left incomplete waiting on a click.
+  // Entered values are untouched; only 'missing' rows are written.
+  const filledRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!onApplyValue) return;
+    const toFill = report.results.filter(
+      r => r.status === 'missing' && r.computed && !filledRef.current.has(r.body),
+    );
+    if (!toFill.length) return;
+    toFill.forEach(r => {
+      filledRef.current.add(r.body);
+      onApplyValue(r.body, r.computed!, { silent: true });
+    });
+    setAutoFilledCount(filledRef.current.size);
+  }, [report, onApplyValue]);
+
 
   if (report.blockedReason) {
     return (
