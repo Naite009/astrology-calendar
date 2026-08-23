@@ -456,7 +456,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The commitment</p>
                     <p className="text-[12px] text-foreground italic leading-relaxed">{contract.commitment}</p>
                   </div>
-
+                </div>
               )}
 
               {/* Whole-section download */}
