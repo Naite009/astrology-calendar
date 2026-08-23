@@ -27,8 +27,10 @@ Updated: now
 - After any fix: ONE confirmation generation on the failing chart. Pass = confirmed. Fail = stop and read code. Never run repeated generations hoping for a clean pass.
 
 - Chart entry only needs 10 planets + Asc + cusps + North Node + Chiron; the rest is auto-derived on save. See [Minimal entry auto-fill](mem://features/charts/minimal-entry-autofill).
+- Ascendant/Placidus/Vertex formulas must never add a 180 degree adjustment, and Chiron/asteroids come from the JPL tables in `src/lib/ephemeris/`, never period extrapolation. Node = true node. See [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris).
 
 ## Memories
+- [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris) — 180 degree ASC bug fix, JPL Horizons asteroid tables, true node
 - [Minimal entry auto-fill](mem://features/charts/minimal-entry-autofill) — derives South Node, Lilith, asteroids, Eris, Vertex, Part of Fortune, cusps from birth data
 - [Editorial Synthesis Standard](mem://style/editorial-synthesis-standard) — 3-layer pattern (human truth → astrology underneath → lived behavior) for MAJOR claims only; each section adds a new layer; per-surface scoping for ask-astrology, family-pair, family-system.
 - [Operating Rules 4–10](mem://architecture/ask-astrology/operating-rules-4-through-10) — Cloud-wins, labeled placement blocks, ephemeris-override ban, base-prompt inheritance, full regression-failure list, gate-404 handling, one-confirmation discipline
