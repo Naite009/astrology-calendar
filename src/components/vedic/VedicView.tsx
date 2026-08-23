@@ -23,6 +23,7 @@ import { VARGA_NOTE } from '@/lib/vedic/divisionalCharts';
 import { buildVedicThemes, buildOneMinute } from '@/lib/vedic/themeSynthesis';
 import { PlacementDeepDiveCard } from './PlacementDeepDive';
 import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
+import { AshtakavargaCard } from './AshtakavargaCard';
 import { PanchangaCard } from './PanchangaCard';
 import { PlanetConditionCard } from './PlanetConditionCard';
 import { YogaCard } from './YogaCard';
@@ -246,6 +247,7 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           ))}
 
           <PlanetConditionCard conditions={reading.conditions} />
+          {reading.ashtakavarga && <AshtakavargaCard report={reading.ashtakavarga} />}
 
           <YogaCard yogas={reading.yogas} name={reading.chart.name} />
 

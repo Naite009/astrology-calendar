@@ -21,6 +21,7 @@ import { buildYogas, Yoga } from './yogas';
 import { buildArudhas, Arudha } from './arudha';
 import { buildPanchanga, Panchanga } from './panchanga';
 import { buildGochara, GocharaReport } from './gochara';
+import { buildAshtakavarga, AshtakavargaReport } from './ashtakavarga';
 import { buildDrishti, BodyDrishti, signExchanges } from './drishti';
 import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './karakas';
 import { buildVimshottari, findCurrentDasha, formatDashaRange, formatDashaDateExact, formatYears, DashaPeriod, CurrentDasha } from './vimshottariDasha';
@@ -65,6 +66,8 @@ export interface VedicReading {
   birthPanchanga: Panchanga | null;
   /** Gochara, the sign-based transit read. */
   gochara: GocharaReport | null;
+  /** Classical bindu scores per sign and house. */
+  ashtakavarga: AshtakavargaReport | null;
   /** Graha glances, both cast and received. */
   drishti: BodyDrishti[];
   signExchanges: ReturnType<typeof signExchanges>;
@@ -135,6 +138,8 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
   const conditions = buildConditions(chart, allVargas);
   const yogas = buildYogas(chart, vargas.D9);
   const arudhas = buildArudhas(chart);
+  let ashtakavarga: AshtakavargaReport | null = null;
+  try { ashtakavarga = buildAshtakavarga(chart); } catch (e) { console.error('[Vedic] ashtakavarga failed', e); }
   const birthPanchanga = moon && sun ? buildPanchanga(sun.longitude, moon.longitude, chart.birthMoment) : null;
 
   let gochara: GocharaReport | null = null;
@@ -159,7 +164,7 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
 
   return {
     chart, vargas, allVargas, karakas, dashas, current, sections,
-    conditions, yogas, arudhas, birthPanchanga, gochara,
+    conditions, yogas, arudhas, birthPanchanga, gochara, ashtakavarga,
     drishti: buildDrishti(chart),
     signExchanges: signExchanges(chart),
   };
