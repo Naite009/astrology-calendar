@@ -181,31 +181,31 @@ export function buildGochara(
   let moonToday: GocharaTransit | null = null;
   let saturnSign: string | null = null;
 
-  const entries = Object.entries(sky.planets) as [string, { longitude?: number; retrograde?: boolean } | undefined][];
+  type SkyPos = { sign?: string; degree?: number; minutes?: number; seconds?: number; isRetrograde?: boolean };
+  const entries = Object.entries(sky.planets) as [string, SkyPos | undefined][];
 
   for (const [name, p] of entries) {
     const graha = NAME_MAP[name];
     if (!graha || !p) continue;
-    const t = build(graha, p.longitude ?? 0, !!p.retrograde);
+    const lon = toLongitude(p);
+    const t = build(graha, lon, !!p.isRetrograde);
     if (graha === 'Saturn') saturnSign = t.sign;
     if (graha === 'Moon') { moonToday = t; continue; }
     if (SLOW.includes(graha)) transits.push(t);
-    if (graha === 'Rahu') {
-      const ketu = build('Ketu', norm360((p.longitude ?? 0) + 180), true);
-      transits.push(ketu);
-    }
+    if (graha === 'Rahu') transits.push(build('Ketu', norm360(lon + 180), true));
   }
 
   // Also surface the current dasha lord's transit, whatever speed it is.
   let dashaLordTransit: GocharaTransit | null = null;
   if (dashaLord) {
     const match = entries.find(([n]) => NAME_MAP[n] === dashaLord)?.[1];
-    if (match) dashaLordTransit = build(dashaLord, match.longitude ?? 0, !!match.retrograde);
+    if (match) dashaLordTransit = build(dashaLord, toLongitude(match), !!match.isRetrograde);
     else if (dashaLord === 'Ketu') {
       const node = entries.find(([n]) => NAME_MAP[n] === 'Rahu')?.[1];
-      if (node) dashaLordTransit = build('Ketu', norm360((node.longitude ?? 0) + 180), true);
+      if (node) dashaLordTransit = build('Ketu', norm360(toLongitude(node) + 180), true);
     }
   }
+
 
 
   return {
