@@ -32,6 +32,9 @@ export interface FixedStar {
   j2000Lon: number;
   /** One-line interpretive theme (the star's traditional nature). */
   theme: string;
+  /** 'major' = famous star. 'notable' = lesser known, still real when contacted. */
+  tier?: 'major' | 'notable';
+
 }
 
 /**
