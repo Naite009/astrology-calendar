@@ -5,7 +5,7 @@
  * second question: is that condition modified? For debility that means the
  * neecha bhanga conditions. For exaltation it means the qualifiers that can
  * limit an otherwise strong placement (dusthana lordship or occupation,
- * combustion, malefic glance, weak divisional support).
+ * combustion, malefic drishti, weak divisional support).
  *
  * Everything here is deterministic whole-sign logic. Nothing is estimated.
  *
@@ -132,7 +132,7 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
         mitigations.push(`${dispositor} sits in the same sign as ${body.name}, so the sign lord and its occupant are together.`);
       }
       if (dispBody && mutualDrishti(body, dispBody)) {
-        mitigations.push(`${body.name} and ${dispositor} glance at each other, which classically links them.`);
+        mitigations.push(`${body.name} and ${dispositor} aspect each other by classical drishti, which links them.`);
       }
       if (dispBody && chart.byName[body.name] && dispBody.sign !== body.sign) {
         const swapped = SIGN_LORDS[dispBody.sign] === body.name;
@@ -173,14 +173,17 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
         }
       }
       const malefics: VedicPlanet[] = ['Saturn', 'Mars', 'Rahu', 'Ketu'];
-      const glancers = malefics.filter(m => {
+      const glanceLines = malefics.flatMap(m => {
         const mb = chart.byName[m];
-        if (!mb) return false;
-        return castsFrom(chart, mb).some(d => d.sign === body.sign);
+        if (!mb) return [];
+        const hit = castsFrom(chart, mb).find(d => d.sign === body.sign);
+        if (!hit) return [];
+        const which = hit.distance === 7
+          ? `by the 7th-sign drishti every graha casts`
+          : `by its special ${hit.distance === 3 ? '3rd' : hit.distance === 4 ? '4th' : hit.distance === 5 ? '5th' : hit.distance === 8 ? '8th' : hit.distance === 9 ? '9th' : `${hit.distance}th`}-sign drishti`;
+        return [`${m} aspects ${body.name} in ${body.sign} ${which}, so the placement works under pressure rather than untroubled.`];
       });
-      if (glancers.length) {
-        qualifiers.push(`${glancers.join(' and ')} glance${glancers.length === 1 ? 's' : ''} at ${body.sign}, so the placement is pressured rather than untroubled.`);
-      }
+      qualifiers.push(...glanceLines);
       const sun = chart.byName.Sun;
       if (sun && body.name !== 'Sun' && sun.sign === body.sign && Math.abs(sun.degree - body.degree) < 8) {
         qualifiers.push(`${body.name} is close to the Sun in the same sign, which classical texts read as combustion, dimming its independent expression.`);
@@ -216,11 +219,11 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
 
     const verdict = body.dignity === 'debilitated'
       ? (mitigations.length
-          ? `Modified debility. ${mitigations.length} classical cancellation condition${mitigations.length === 1 ? '' : 's'} apply${mitigations.length === 1 ? '' : ''} here, so this should not be read as a simple weakness.`
-          : 'Unmodified by the cancellation conditions this app checks, so the classical reading stands as written, and the function is likely to develop through experience rather than arrive ready-made.')
+          ? 'Modified debility. Conditions listed above are the kind classical texts read as neecha bhanga, softening the debility rather than erasing it. Schools differ on how much weight each one carries, so treat this as a placement that works with support, not a simple weakness.'
+          : 'None of the cancellation conditions this app checks apply, so the classical reading stands as written: the function tends to be built through experience rather than arriving ready-made.')
       : (qualifiers.length
-          ? `Qualified strength. The exaltation is real, but ${qualifiers.length} condition${qualifiers.length === 1 ? '' : 's'} here mean it does not operate unopposed.`
-          : 'Clean exaltation by the checks this app runs, with no dusthana placement, malefic glance or combustion limiting it.');
+          ? 'Qualified strength. The exaltation is real, and the conditions listed above mean it does not operate unopposed.'
+          : 'Clean exaltation by the checks this app runs: no difficult-house placement, no malefic drishti and no combustion limiting it.');
 
     out.push({
       planet: body.name,
@@ -245,8 +248,8 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
 /** Compact one-line summary for the chart-logic boxes. */
 export function dignityAuditLine(a: DignityAudit): string {
   const mod = a.dignity === 'debilitated'
-    ? (a.mitigations.length ? `neecha bhanga conditions present (${a.mitigations.length})` : 'no cancellation conditions found')
-    : (a.qualifiers.length ? `qualified (${a.qualifiers.length})` : 'unqualified');
+    ? (a.mitigations.length ? 'neecha bhanga conditions present' : 'no cancellation conditions found')
+    : (a.qualifiers.length ? 'qualified by other conditions' : 'unqualified');
   return `${a.planet} ${a.dignity} in ${a.sign}${a.house ? `, house ${a.house}` : ''}; dispositor ${a.dispositor}; ${mod}`;
 }
 

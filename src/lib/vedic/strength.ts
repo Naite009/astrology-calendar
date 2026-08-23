@@ -7,7 +7,7 @@
  *  - Baladi avastha: the five-fold maturity state by degree within the sign.
  *  - Combustion (asta): too close to the Sun to act freely.
  *  - Planetary war (graha yuddha): two non-luminaries inside one degree.
- *  - Dig bala: directional strength by house.
+ *  - Dig bala: directional strength measured in virupas from the cardinal points.
  *  - Cheshta: retrograde motion, which classical texts read as strong but wilful.
  *  - Varga bala: how many of the divisional charts keep the graha dignified.
  *  - Drik: benefic versus malefic glances landing on it.
@@ -24,6 +24,9 @@ import { VedicPlanet } from './nakshatras';
 import { VedicDignity } from './vedicDignity';
 import { drishtiBalance } from './drishti';
 import { VargaKey, buildVarga, VargaChart } from './divisionalCharts';
+
+const SIGN_ORDER = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
 /* ---------------------------------------------------------------- */
 /* Baladi avastha                                                    */
@@ -112,7 +115,7 @@ export function planetaryWars(chart: VedicChart): PlanetaryWar[] {
 /* Dig bala                                                          */
 /* ---------------------------------------------------------------- */
 
-/** House of full directional strength for each graha. */
+/** Direction of full strength for each graha, expressed as a house cusp. */
 const DIG_BALA_HOUSE: Partial<Record<VedicPlanet, number>> = {
   Jupiter: 1, Mercury: 1,   // east, the ascendant
   Sun: 10, Mars: 10,        // south, the midheaven
@@ -120,21 +123,51 @@ const DIG_BALA_HOUSE: Partial<Record<VedicPlanet, number>> = {
   Moon: 4, Venus: 4,        // north, the base
 };
 
-export function digBala(body: VedicBody): { score: number; plain: string } | null {
+const DIRECTION_NAME: Record<number, string> = {
+  1: 'the eastern point, the rising degree',
+  4: 'the northern point, the base of the chart',
+  7: 'the western point, the setting degree',
+  10: 'the southern point, the top of the chart',
+};
+
+/**
+ * Dig bala, computed the classical way rather than estimated from the house
+ * number. Each graha has a point of full strength and the point opposite it is
+ * its point of zero strength. Strength is the angular distance from the zero
+ * point, scaled to the classical maximum of 60 virupas.
+ *
+ * The four cardinal points are taken from the lagna degree (rising degree, and
+ * then 90, 180 and 270 degrees from it). That is the equal-cusp convention. A
+ * chart using a quadrant house system would place the southern point at the
+ * actual midheaven instead, which can shift a value by a few virupas.
+ */
+export function digBala(
+  chart: VedicChart,
+  body: VedicBody,
+): { virupas: number; score: number; plain: string } | null {
   const best = DIG_BALA_HOUSE[body.name];
-  if (!best || !body.house) return null;
-  const distance = Math.min(
-    Math.abs(body.house - best),
-    12 - Math.abs(body.house - best),
-  );
-  // Full strength at the best house, zero at the opposite house.
-  const score = Math.max(0, 1 - distance / 6);
-  const plain = score > 0.75
-    ? `${body.name} is near its direction of full strength, house ${best}, so it has an easy time acting.`
-    : score < 0.25
-      ? `${body.name} is near the house opposite its direction of strength, house ${best}, so it has to work harder to be effective in a straightforward way.`
-      : `${body.name} has moderate directional strength. Its strongest direction is house ${best}.`;
-  return { score, plain };
+  if (!best) return null;
+  if (chart.lagnaDegree === null || !chart.lagnaSign) return null;
+
+  const lagnaLon = ((SIGN_ORDER.indexOf(chart.lagnaSign) * 30 + chart.lagnaDegree) % 360 + 360) % 360;
+  // House 1 = lagna, house 4 = lagna + 90, house 7 = +180, house 10 = +270.
+  const fullPoint = (lagnaLon + (best - 1) * 30) % 360;
+  const zeroPoint = (fullPoint + 180) % 360;
+
+  let arc = Math.abs(body.longitude - zeroPoint);
+  if (arc > 180) arc = 360 - arc;
+  const virupas = arc / 3; // 180 degrees maps to the classical 60 virupas
+  const score = virupas / 60;
+
+  const where = DIRECTION_NAME[best];
+  const plain = `${body.name} gains its full directional strength at ${where}, and loses it at the point opposite. It sits ${arc.toFixed(1)} degrees from that weak point, which is ${virupas.toFixed(1)} of the 60 virupas dig bala can give. ${
+    score > 0.75
+      ? 'That is close to full directional strength, so this function acts without much friction.'
+      : score < 0.25
+        ? 'That is near the bottom of the range, so this function has to be worked at deliberately rather than run on instinct.'
+        : 'That is mid-range, so this function works but not effortlessly.'
+  }`;
+  return { virupas, score, plain };
 }
 
 /* ---------------------------------------------------------------- */
@@ -171,11 +204,23 @@ export function vargaBala(chart: VedicChart, body: VedicBody, vargas: Partial<Re
   }
 
   const score = count ? total / count : 0.4;
-  const plain = strongIn.length >= 2
-    ? `${body.name} keeps a dignified sign in ${strongIn.join(', ')} as well as the birth chart, which classical texts read as real durability rather than a one-chart accident.`
-    : weakIn.length >= 2
-      ? `${body.name} loses dignity again in ${weakIn.join(' and ')}, so its difficulty in the birth chart is repeated rather than cancelled.`
-      : `${body.name} holds an average position across the divisional charts, so nothing there strongly amplifies or cancels its birth chart condition.`;
+  const natalStrong = body.dignity === 'exalted' || body.dignity === 'own sign' || body.dignity === 'moolatrikona';
+  const natalWeak = body.dignity === 'debilitated';
+
+  let plain: string;
+  if (strongIn.length >= 2) {
+    plain = natalWeak
+      ? `${body.name} is weak in the birth chart but picks up a dignified sign in ${strongIn.join(', ')}, so the divisional charts partly offset the birth chart rather than confirming it.`
+      : natalStrong
+        ? `${body.name} keeps a dignified sign in ${strongIn.join(', ')} as well as the birth chart, which classical texts read as real durability rather than a one-chart accident.`
+        : `${body.name} is neutral in the birth chart but dignified in ${strongIn.join(', ')}, so the divisional charts add strength the birth chart alone does not show.`;
+  } else if (weakIn.length >= 2) {
+    plain = natalWeak
+      ? `${body.name} loses dignity again in ${weakIn.join(' and ')}, so the birth chart difficulty is repeated rather than cancelled.`
+      : `${body.name} is not weak in the birth chart, but it loses dignity in ${weakIn.join(' and ')}, so the divisional charts hold it back rather than backing it up.`;
+  } else {
+    plain = `${body.name} holds an average position across the divisional charts, so nothing there strongly amplifies or cancels its birth chart condition.`;
+  }
 
   return { checked: keys, strongIn, weakIn, score, plain };
 }
@@ -196,7 +241,7 @@ export interface PlanetCondition {
   avastha: { state: Avastha; plain: string };
   combust: { combust: boolean; separation: number; plain: string } | null;
   war: PlanetaryWar | null;
-  dig: { score: number; plain: string } | null;
+  dig: { virupas: number; score: number; plain: string } | null;
   retrograde: boolean;
   vargaBala: VargaBala;
   drishti: ReturnType<typeof drishtiBalance>;
@@ -223,7 +268,7 @@ export function planetCondition(
 ): PlanetCondition {
   const avastha = baladiAvastha(body, signIdx);
   const combust = combustion(chart, body);
-  const dig = digBala(body);
+  const dig = digBala(chart, body);
   const vb = vargaBala(chart, body, vargas);
   const dk = drishtiBalance(chart, body);
   const war = wars.find(w => w.winner === body.name || w.loser === body.name) || null;
@@ -274,7 +319,7 @@ export function planetCondition(
 }
 
 export const CONDITION_INDEX_NOTE =
-  'This condition index combines the classical strength markers Jyotish actually uses: sign dignity, the maturity state by degree, whether the graha holds up across the divisional charts, directional strength by house, which grahas are looking at it, closeness to the Sun, planetary war and retrograde motion. It is not the full six-fold Shadbala, because that also needs sunrise and seasonal data, so it is reported as a condition index and every component is shown next to it.';
+  'This condition index combines the classical strength markers Jyotish actually uses: sign dignity, the maturity state by degree, whether the graha holds up across the divisional charts, directional strength measured in virupas from the cardinal points, which grahas are looking at it, closeness to the Sun, planetary war and retrograde motion. It is not the full six-fold Shadbala, because that also needs sunrise and seasonal data, so it is reported as a condition index and every component is shown next to it.';
 
 export function buildConditions(
   chart: VedicChart,

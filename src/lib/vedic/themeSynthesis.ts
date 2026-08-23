@@ -15,6 +15,7 @@
  * forced.
  */
 
+import { ordinal } from '@/lib/solarReturnConstants';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import { VedicChart, VedicBody, houseLord, bodiesInHouse } from './siderealChart';
 import { VargaChart } from './divisionalCharts';
@@ -283,7 +284,7 @@ function westernEvidence(themeKey: string, natal: NatalChart | null): Evidence[]
   if (!pl.length) return [];
   const out: Evidence[] = [];
   const ref = (p: { name: string; sign: string; house: number | null }) =>
-    `${p.name} in ${p.sign}${p.house ? `, ${p.house}th house` : ''} (tropical, Placidus)`;
+    `${p.name} in ${p.sign}${p.house ? `, ${ordinal(p.house)} house` : ''} (tropical, Placidus)`;
 
   const push = (p: typeof pl[number], why: string) => out.push({ fact: ref(p), why });
 

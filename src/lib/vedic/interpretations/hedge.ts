@@ -32,7 +32,12 @@ const HEDGE_PRESENT: Record<string, string> = {
 
 const ALREADY_HEDGED = /\b(may|might|can|could|tend|tends|often|usually|sometimes|traditionally|possible|possibly|likely|suggests?)\b/i;
 
-const HEDGE_TARGET = /\b(You|you)\s+([A-Za-z\u2019']+)/;
+// Only the grammatical subject at the start of the sentence is softened.
+// Matching "you" anywhere produced things like "People register you may as".
+const HEDGE_TARGET = /^\s*(You)\s+([A-Za-z\u2019']+)/;
+
+// "People register you as ..." style sentences: soften the third-person verb.
+const OTHERS_TARGET = /^\s*(People|Others|Family|Colleagues|Partners)\s+(register|see|read|treat|expect|assume|notice|hand|give|describe|experience)\b/;
 
 function hedgeSentence(sentence: string): string {
   if (!sentence.trim()) return sentence;
@@ -44,6 +49,11 @@ function hedgeSentence(sentence: string): string {
     const mapped = HEDGE_PRESENT[verb.toLowerCase()];
     const replacement = mapped ? `${subj} ${mapped}` : `${subj} may ${verb}`;
     return sentence.replace(full, replacement);
+  }
+
+  const othersMatch = sentence.match(OTHERS_TARGET);
+  if (othersMatch) {
+    return sentence.replace(othersMatch[0], `${othersMatch[1]} may ${othersMatch[2]}`);
   }
 
   // "Your voice carries authority" style claims.

@@ -155,7 +155,7 @@ export const PLANET_IN_SIGN: Record<VedicPlanet, SignMap> = {
 
 export const PLANET_IN_HOUSE: Record<VedicPlanet, HouseMap> = {
   Sun: {
-    1: 'People register you as someone in charge before you have done anything. Health and confidence rise and fall together for you.',
+    1: 'People register you as someone in charge before you have done anything. Your sense of vitality and your confidence tend to move together, so when one is low the other usually follows.',
     2: 'Your voice carries authority and family expectations shaped what you think you are worth. Money is tied to standing.',
     3: 'You lead through effort, siblings and your own hands. Courage is something you built rather than inherited.',
     4: 'Home is where the authority question lives. Your father, your property or your inner peace is a running theme rather than a settled matter.',
