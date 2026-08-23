@@ -181,14 +181,12 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     return { ...base, blockedReason: 'Add the birth date (YYYY-MM-DD) to run verification.' };
   }
 
+  const region = birthLocation ? matchRegion(birthLocation) : null;
   let coordinates = birthLocation ? getCoordinatesFromLocation(birthLocation) : null;
   let coordsApproximate = false;
-  if (!coordinates && birthLocation) {
-    const fallback = fallbackCoordinates(birthLocation);
-    if (fallback) {
-      coordinates = fallback;
-      coordsApproximate = true;
-    }
+  if (!coordinates && region) {
+    coordinates = { lat: region.lat, lon: region.lon };
+    coordsApproximate = true;
   }
   let offset = typeof input.timezoneOffset === 'number' ? input.timezoneOffset : null;
   if (birthLocation) {
@@ -199,7 +197,8 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     } else if (offset === null) {
       // Region-level lookup (handles "NJ", "New Jersey", state-only entries)
       const zone = lookupTimezone(birthLocation, birthDate);
-      if (zone?.timezone) offset = getTimezoneInfoForDate(zone.timezone, birthDate).offset;
+      const tz = zone?.timezone || region?.tz;
+      if (tz) offset = getTimezoneInfoForDate(tz, birthDate).offset;
     }
   }
 
