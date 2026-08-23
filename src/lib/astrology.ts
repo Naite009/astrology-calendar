@@ -192,12 +192,18 @@ export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; s
 
 // Get detailed North Node position for natal chart
 export const getDetailedNodePosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
+  // True node (the Moon's instantaneous orbital plane), which is what chart
+  // services print as "Node". The mean node below is only a fallback.
+  const trueNode = trueNodeLongitude(date);
+  if (trueNode !== null) return getDetailedPosition(trueNode);
+
   const jd = date.getTime() / 86400000 + 2440587.5;
   const T = (jd - 2451545.0) / 36525;
   const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
   const normalizedNode = ((omega % 360) + 360) % 360;
   return getDetailedPosition(normalizedNode);
 };
+
 
 // Calculate Chiron position using ephemeris lookup table (accurate interpolated data)
 export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
