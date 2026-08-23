@@ -88,29 +88,30 @@ export const slowBodyLongitude = (body: SlowBody, date: Date): number | null => 
 /** True (osculating) North Node longitude in degrees. */
 export const trueNodeLongitude = (date: Date): number | null => {
   try {
-    const step = 0.02; // days, small enough for a clean velocity estimate
-    const before = Astronomy.GeoMoon(new Date(date.getTime() - step * 86400000));
-    const after = Astronomy.GeoMoon(new Date(date.getTime() + step * 86400000));
-    const mid = Astronomy.GeoMoon(date);
+    const eps = 23.4392911 * Math.PI / 180;
+    const toEcliptic = (v: Astronomy.Vector) => ({
+      x: v.x,
+      y: v.y * Math.cos(eps) + v.z * Math.sin(eps),
+      z: -v.y * Math.sin(eps) + v.z * Math.cos(eps),
+    });
 
-    const velocity = {
-      x: (after.x - before.x) / (2 * step),
-      y: (after.y - before.y) / (2 * step),
-      z: (after.z - before.z) / (2 * step),
+    const step = 0.02 * 86400000; // milliseconds
+    const before = toEcliptic(Astronomy.GeoMoon(new Date(date.getTime() - step)));
+    const after = toEcliptic(Astronomy.GeoMoon(new Date(date.getTime() + step)));
+    const mid = toEcliptic(Astronomy.GeoMoon(date));
+
+    const v = { x: after.x - before.x, y: after.y - before.y, z: after.z - before.z };
+
+    // Orbit normal, then the ascending node direction in the ecliptic plane.
+    const n = {
+      x: mid.y * v.z - mid.z * v.y,
+      y: mid.z * v.x - mid.x * v.z,
     };
 
-    // Orbit normal = r x v, then the ascending node direction = normal x zHat.
-    const normal = {
-      x: mid.y * velocity.z - mid.z * velocity.y,
-      y: mid.z * velocity.x - mid.x * velocity.z,
-      z: mid.x * velocity.y - mid.y * velocity.x,
-    };
-    // Node line in equatorial coordinates (normal x ecliptic-pole is not needed;
-    // convert to ecliptic first via astronomy-engine, then take the node).
-    const nodeVector = new Astronomy.Vector(normal.y, -normal.x, 0, mid.t);
-    const ecliptic = Astronomy.Ecliptic(nodeVector);
-    return ((ecliptic.elon % 360) + 360) % 360;
+    const lon = Math.atan2(n.x, -n.y) * 180 / Math.PI;
+    return ((lon % 360) + 360) % 360;
   } catch {
     return null;
   }
 };
+
