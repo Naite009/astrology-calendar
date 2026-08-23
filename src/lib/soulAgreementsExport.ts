@@ -148,74 +148,107 @@ class Doc {
     this.y += 2;
   }
 
-  /** Boxed block. Renders content via callback with padded width. */
-  box(label: string, render: (write: (t: string) => void, list: (i: string[]) => void) => void, tint = C.card) {
-    const startPage = this.d.getNumberOfPages();
-    const top = this.y;
-    // Measure by rendering to a buffer of strings first is complex; instead
-    // render content, then draw the frame behind it on the same page when the
-    // block did not break across pages.
+  /**
+   * Boxed card. Measured before drawing, so a card never splits across a
+   * page break and the frame is always the right size.
+   */
+  box(label: string, blocks: BoxBlock[], tint = C.card) {
     const pad = 5;
-    this.y += pad + (label ? 9.5 : 0);
     const innerLeft = MARGIN + pad;
     const innerW = CONTENT_W - pad * 2;
 
-    const write = (t: string) => {
-      this.d.setFont("helvetica", "normal");
-      this.d.setFontSize(9.5);
-      this.d.setTextColor(...C.body);
-      String(t || "").split(/\n{2,}/).forEach((para, pi, arr) => {
-        const lines = this.d.splitTextToSize(para.replace(/\n/g, " ").trim(), innerW);
-        lines.forEach((ln: string) => {
-          this.need(6);
-          this.d.text(ln, innerLeft, this.y);
-          this.y += 5;
+    type Line = { text: string; x: number; italic: boolean; bullet: boolean; gap: number };
+    const lines: Line[] = [];
+
+    const measureParagraph = (text: string, italic: boolean) => {
+      this.d.setFont("helvetica", italic ? "italic" : "normal");
+      this.d.setFontSize(italic ? 8.5 : 9.5);
+      const paras = String(text || "").split(/\n{2,}/).filter((p) => p.trim());
+      paras.forEach((para, pi) => {
+        const wrapped: string[] = this.d.splitTextToSize(para.replace(/\n/g, " ").trim(), innerW);
+        wrapped.forEach((ln, li) => {
+          lines.push({
+            text: ln,
+            x: innerLeft,
+            italic,
+            bullet: false,
+            gap: li === wrapped.length - 1 && pi < paras.length - 1 ? 2.5 : 0,
+          });
         });
-        if (pi < arr.length - 1) this.y += 2.5;
       });
     };
-    const list = (items: string[]) => {
-      this.d.setFont("helvetica", "normal");
-      this.d.setFontSize(9.5);
-      items.filter(Boolean).forEach((item) => {
-        const lines = this.d.splitTextToSize(String(item).replace(/^[-•✓]\s*/, ""), innerW - 5);
-        lines.forEach((ln: string, i: number) => {
-          this.need(6);
-          this.d.setTextColor(...C.gold);
-          if (i === 0) this.d.text("•", innerLeft, this.y);
-          this.d.setTextColor(...C.body);
-          this.d.text(ln, innerLeft + 4.5, this.y);
-          this.y += 5;
+
+    blocks.forEach((block) => {
+      if (block.p !== undefined) measureParagraph(block.p, Boolean(block.italic));
+      if (block.list) {
+        this.d.setFont("helvetica", "normal");
+        this.d.setFontSize(9.5);
+        block.list.filter(Boolean).forEach((item) => {
+          const wrapped: string[] = this.d.splitTextToSize(
+            String(item).replace(/^[-•✓]\s*/, ""),
+            innerW - 5,
+          );
+          wrapped.forEach((ln, li) => {
+            lines.push({
+              text: ln,
+              x: innerLeft + 4.5,
+              italic: false,
+              bullet: li === 0,
+              gap: li === wrapped.length - 1 ? 1 : 0,
+            });
+          });
         });
-        this.y += 1;
-      });
-      this.y += 1;
-    };
-
-    render(write, list);
-    const bottom = this.y + pad;
-
-    if (this.d.getNumberOfPages() === startPage) {
-      // Draw frame behind the already-written text.
-      this.d.setFillColor(...tint);
-      this.d.setDrawColor(...C.cardBorder);
-      this.d.setLineWidth(0.3);
-      this.d.rect(MARGIN, top, CONTENT_W, bottom - top, "S");
-      if (label) {
-        this.d.setFont("helvetica", "bold");
-        this.d.setFontSize(7.5);
-        this.d.setTextColor(...C.gold);
-        this.d.text(label.toUpperCase(), innerLeft, top + pad + 3, { charSpace: 0.7 });
       }
-    } else if (label) {
-      // Block broke across pages: keep the label inline, skip the frame.
+    });
+
+    const lineH = (l: Line) => (l.italic ? 4.4 : 5) + l.gap;
+    const contentH = lines.reduce((sum, l) => sum + lineH(l), 0);
+    const labelH = label ? 9.5 : 0;
+    const boxH = pad * 2 + labelH + contentH;
+
+    // Keep the whole card together when it fits on a page by itself.
+    if (this.y + boxH > PAGE_H - MARGIN && boxH <= PAGE_H - MARGIN * 2) {
+      this.d.addPage();
+      this.y = MARGIN;
+    }
+
+    const top = this.y;
+    this.d.setDrawColor(...C.cardBorder);
+    this.d.setLineWidth(0.3);
+    this.d.setFillColor(...tint);
+    this.d.rect(MARGIN, top, CONTENT_W, Math.min(boxH, PAGE_H - MARGIN - top), "S");
+
+    this.y = top + pad + 3;
+    if (label) {
       this.d.setFont("helvetica", "bold");
       this.d.setFontSize(7.5);
       this.d.setTextColor(...C.gold);
-      this.d.text(label.toUpperCase(), MARGIN, top + 4, { charSpace: 0.7 });
+      this.d.text(label.toUpperCase(), innerLeft, this.y, { charSpace: 0.7 });
+      this.y += labelH;
     }
-    this.y = bottom + 6;
+
+    lines.forEach((l) => {
+      this.need(6);
+      if (l.bullet) {
+        this.d.setFont("helvetica", "normal");
+        this.d.setFontSize(9.5);
+        this.d.setTextColor(...C.gold);
+        this.d.text("•", innerLeft, this.y);
+      }
+      this.d.setFont("helvetica", l.italic ? "italic" : "normal");
+      this.d.setFontSize(l.italic ? 8.5 : 9.5);
+      this.d.setTextColor(...(l.italic ? C.muted : C.body));
+      this.d.text(l.text, l.x, this.y);
+      this.y += lineH(l);
+    });
+
+    this.y = top + boxH + 6;
+    if (this.y > PAGE_H - MARGIN) {
+      this.d.addPage();
+      this.y = MARGIN;
+    }
   }
+
 
   footers(name: string) {
     const total = this.d.getNumberOfPages();
