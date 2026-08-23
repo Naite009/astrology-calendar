@@ -23,6 +23,13 @@ import { VARGA_NOTE } from '@/lib/vedic/divisionalCharts';
 import { buildVedicThemes, buildOneMinute } from '@/lib/vedic/themeSynthesis';
 import { PlacementDeepDiveCard } from './PlacementDeepDive';
 import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
+import { AshtakavargaCard } from './AshtakavargaCard';
+import { PanchangaCard } from './PanchangaCard';
+import { PlanetConditionCard } from './PlanetConditionCard';
+import { YogaCard } from './YogaCard';
+import { ArudhaCard } from './ArudhaCard';
+import { GocharaCard } from './GocharaCard';
+import { VargaBrowser } from './VargaBrowser';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -150,8 +157,25 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
       oneMinuteSummary: overview?.oneMinute.paragraphs || [],
       placementDeepDive: buildPlacementDeepDives(chart),
       signatureCombinations: findComboHits(chart),
+      birthPanchanga: reading.birthPanchanga,
+      planetConditions: reading.conditions.map(c => ({
+        graha: c.body, sign: c.sign, house: c.house, dignity: c.dignity,
+        conditionIndex: c.index, band: c.band,
+        components: c.components,
+      })),
+      yogas: reading.yogas,
+      arudhaPadas: reading.arudhas,
+      currentTransits: reading.gochara
+        ? { transits: reading.gochara.transits, sadeSati: reading.gochara.sadeSati, dashaLordTransit: reading.gochara.dashaLordTransit }
+        : null,
+      grahaDrishti: reading.drishti,
+      signExchanges: reading.signExchanges,
+      allDivisionalCharts: Object.fromEntries(
+        Object.entries(reading.allVargas).map(([k, v]) => [k, { reads: v?.reads, lagna: v?.lagnaSign, placements: v?.placements }])
+      ),
     };
   }, [reading, overview]);
+
 
   if (!activeChart) {
     return (
@@ -214,9 +238,18 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             <VedicOverview chart={reading.chart} oneMinute={overview.oneMinute} themes={overview.themes} />
           )}
 
+          {reading.birthPanchanga && (
+            <PanchangaCard panchanga={reading.birthPanchanga} name={reading.chart.name} />
+          )}
+
           {reading.sections.slice(0, 2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
+
+          <PlanetConditionCard conditions={reading.conditions} />
+          {reading.ashtakavarga && <AshtakavargaCard report={reading.ashtakavarga} />}
+
+          <YogaCard yogas={reading.yogas} name={reading.chart.name} />
 
           {deepDive && deepDive.dives.length > 0 && (
             <PlacementDeepDiveCard dives={deepDive.dives} combos={deepDive.combos} name={reading.chart.name} />
@@ -224,9 +257,15 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
 
           <DashaTimeline periods={reading.dashas} current={reading.current} birthMoment={reading.chart.birthMoment} />
 
+          {reading.gochara && reading.chart.byName.Moon && (
+            <GocharaCard gochara={reading.gochara} moonSign={reading.chart.byName.Moon.sign} />
+          )}
+
           {reading.sections.slice(2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
+
+          <ArudhaCard arudhas={reading.arudhas} name={reading.chart.name} />
 
           {/* Divisional charts reference */}
           <div className="rounded-lg border border-border bg-card p-5 md:p-6">
@@ -241,6 +280,9 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
               ))}
             </div>
           </div>
+
+          <VargaBrowser vargas={reading.allVargas} exactBirthTime={!!activeChart.birthTime} />
+
 
           <div className="rounded-md border border-border bg-secondary/25 p-4 text-[12px] leading-relaxed text-muted-foreground">
             How to hold all of this: these are symbolic patterns and tendencies, not verdicts. This tab never predicts

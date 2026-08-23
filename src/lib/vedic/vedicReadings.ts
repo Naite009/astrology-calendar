@@ -15,7 +15,14 @@
  */
 
 import { VedicChart, VedicBody, houseLord, bodiesInHouse, formatDegree } from './siderealChart';
-import { buildVarga, VargaChart, isVargottama, VARGA_LABELS, VARGA_NOTE } from './divisionalCharts';
+import { buildVarga, VargaChart, isVargottama, VARGA_LABELS, VARGA_NOTE, VargaKey, ALL_VARGAS } from './divisionalCharts';
+import { buildConditions, PlanetCondition } from './strength';
+import { buildYogas, Yoga } from './yogas';
+import { buildArudhas, Arudha } from './arudha';
+import { buildPanchanga, Panchanga } from './panchanga';
+import { buildGochara, GocharaReport } from './gochara';
+import { buildAshtakavarga, AshtakavargaReport } from './ashtakavarga';
+import { buildDrishti, BodyDrishti, signExchanges } from './drishti';
 import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './karakas';
 import { buildVimshottari, findCurrentDasha, formatDashaRange, formatDashaDateExact, formatYears, DashaPeriod, CurrentDasha } from './vimshottariDasha';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
@@ -43,11 +50,29 @@ export interface VedicSectionData {
 export interface VedicReading {
   chart: VedicChart;
   vargas: Record<'D2' | 'D7' | 'D9' | 'D10' | 'D12', VargaChart>;
+  /** The full shodashavarga set, used by the strength engine and the varga browser. */
+  allVargas: Partial<Record<VargaKey, VargaChart>>;
   karakas: KarakaAssignment[];
   dashas: DashaPeriod[];
   current: CurrentDasha | null;
   sections: VedicSectionData[];
+  /** Classical condition index per graha, with its components. */
+  conditions: PlanetCondition[];
+  /** Named classical combinations with their evidence. */
+  yogas: Yoga[];
+  /** Jaimini image points. */
+  arudhas: Arudha[];
+  /** The five limbs of the birth day. */
+  birthPanchanga: Panchanga | null;
+  /** Gochara, the sign-based transit read. */
+  gochara: GocharaReport | null;
+  /** Classical bindu scores per sign and house. */
+  ashtakavarga: AshtakavargaReport | null;
+  /** Graha glances, both cast and received. */
+  drishti: BodyDrishti[];
+  signExchanges: ReturnType<typeof signExchanges>;
 }
+
 
 const bodyLine = (b: VedicBody): string =>
   `${b.name} ${formatDegree(b.degree)} ${b.sign}${b.house ? `, house ${b.house}` : ''} (${b.nakshatra.name} pada ${b.nakshatra.pada})${b.dignity !== 'neutral' ? `, ${b.dignity}` : ''}`;
@@ -99,10 +124,30 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
     D12: buildVarga(chart, 'D12'),
   };
 
+  // The full sixteen-chart set. D60 is only meaningful with an exact birth
+  // time, so it is still computed but flagged in the UI.
+  const allVargas: Partial<Record<VargaKey, VargaChart>> = {};
+  for (const k of ALL_VARGAS) allVargas[k] = buildVarga(chart, k);
+
   const karakas = computeKarakas(chart);
   const moon = chart.byName.Moon;
+  const sun = chart.byName.Sun;
   const dashas = moon ? buildVimshottari(moon.longitude, chart.birthMoment) : [];
   const current = dashas.length ? findCurrentDasha(dashas, today) : null;
+
+  const conditions = buildConditions(chart, allVargas);
+  const yogas = buildYogas(chart, vargas.D9);
+  const arudhas = buildArudhas(chart);
+  let ashtakavarga: AshtakavargaReport | null = null;
+  try { ashtakavarga = buildAshtakavarga(chart); } catch (e) { console.error('[Vedic] ashtakavarga failed', e); }
+  const birthPanchanga = moon && sun ? buildPanchanga(sun.longitude, moon.longitude, chart.birthMoment) : null;
+
+  let gochara: GocharaReport | null = null;
+  try {
+    gochara = buildGochara(chart, current?.maha.lord ?? null, today);
+  } catch (e) {
+    console.error('[Vedic] gochara failed', e);
+  }
 
   const sections: VedicSectionData[] = [
     snapshotSection(chart),
@@ -117,7 +162,12 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
     comparisonSection(chart),
   ].filter((s): s is VedicSectionData => !!s);
 
-  return { chart, vargas, karakas, dashas, current, sections };
+  return {
+    chart, vargas, allVargas, karakas, dashas, current, sections,
+    conditions, yogas, arudhas, birthPanchanga, gochara, ashtakavarga,
+    drishti: buildDrishti(chart),
+    signExchanges: signExchanges(chart),
+  };
 }
 
 /* 1. Snapshot ------------------------------------------------------------- */
