@@ -183,22 +183,41 @@ export const calculatePlacidusHouses = (
   latitude: number,
   longitude: number
 ): PlacidusHouses => {
-  // Get Julian Day
   const jd = dateToJD(date);
-  
-  // Calculate Local Sidereal Time
   const lst = localSiderealTime(jd, longitude);
-  
-  // Calculate ASC and MC
-  const asc = calculateAscendant(lst, latitude, OBLIQUITY);
-  const mc = calculateMC(lst, OBLIQUITY);
-  
-  // Calculate all 12 house cusps
+  const obliquity = obliquityOfDate(jd);
+
+  const asc = calculateAscendant(lst, latitude, obliquity);
+  const mc = calculateMC(lst, obliquity);
+
+  // Placidus proper, with a Porphyry fallback for latitudes where a cusp
+  // never rises (above roughly 66 degrees) so the chart still has 12 houses.
   const cusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    cusps[i] = calculatePlacidusHouseCusp(i, mc, asc, lst, latitude, OBLIQUITY);
+  cusps[1] = asc;
+  cusps[10] = mc;
+  cusps[4] = (mc + 180) % 360;
+  cusps[7] = (asc + 180) % 360;
+
+  let usedPorphyry = false;
+  for (const h of [11, 12, 2, 3] as const) {
+    const value = placidusIntermediateCusp(h, lst, latitude, obliquity);
+    if (value === null) {
+      usedPorphyry = true;
+      break;
+    }
+    cusps[h] = value;
   }
-  
+
+  if (usedPorphyry) {
+    const fallback = porphyryCusps(asc, mc);
+    for (let i = 1; i <= 12; i++) cusps[i] = fallback[i];
+  } else {
+    cusps[5] = (cusps[11] + 180) % 360;
+    cusps[6] = (cusps[12] + 180) % 360;
+    cusps[8] = (cusps[2] + 180) % 360;
+    cusps[9] = (cusps[3] + 180) % 360;
+  }
+
   return {
     house1: longitudeToPosition(cusps[1]),
     house2: longitudeToPosition(cusps[2]),
