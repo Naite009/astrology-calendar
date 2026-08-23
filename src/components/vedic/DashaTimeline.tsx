@@ -1,12 +1,18 @@
 /**
  * Vimshottari dasha timeline. The current mahadasha is highlighted, and each
  * period can be expanded to show its sub-periods with real dates.
+ *
+ * The first period is the balance of the birth nakshatra lord's chapter that
+ * was still remaining at birth, so it starts at birth and is usually short.
  */
 
 import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { DashaPeriod, CurrentDasha, formatDashaRange, formatAgeRange } from '@/lib/vedic/vimshottariDasha';
+import {
+  DashaPeriod, CurrentDasha, formatDashaRange, formatAgeRange, formatYears, formatDashaDateExact,
+} from '@/lib/vedic/vimshottariDasha';
 import { dashaCopy } from '@/lib/vedic/interpretations/dashaCopy';
+import { VedicTerm } from './VedicTerm';
 
 interface Props {
   periods: DashaPeriod[];
@@ -19,17 +25,29 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
 
   if (!periods.length) return null;
 
+  const balance = periods[0]?.isBirthBalance ? periods[0] : null;
+
   return (
     <div className="rounded-lg border border-border bg-card p-5 md:p-6">
-      <h3 className="font-serif text-xl">Dasha Timeline</h3>
-      <p className="mt-1 text-sm leading-relaxed text-foreground/85">
-        This is not a calendar of when you are allowed to have love, money, family, or success. Those parts of life can happen in every period. The planet named here only shows which kind of growth is taking the lead.
+      <h3 className="font-serif text-xl">Your Life Periods</h3>
+      <p className="mb-1 mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+        <VedicTerm term="Vimshottari">Vimshottari</VedicTerm> <VedicTerm term="Mahadasha">mahadasha</VedicTerm> and{' '}
+        <VedicTerm term="Antardasha">antardasha</VedicTerm>
       </p>
-      <p className="mb-4 mt-2 text-xs text-muted-foreground">
-        A Venus period at age 96 does not mean love begins at 96. Relationship timing uses your full chart, especially Venus, the 7th house, the D9 marriage chart, and shorter sub-periods together.
+      <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+        A mahadasha is a long planetary chapter of life and an antardasha is a smaller chapter inside it. The planet named
+        only shows which kind of growth tends to take the lead. It is not a calendar of when you are allowed to have love,
+        money, family or success, all of which can happen in any period.
       </p>
+      {balance && (
+        <p className="mt-2 rounded-md border border-border/60 bg-secondary/25 p-3 text-[12px] leading-relaxed text-muted-foreground">
+          Timed from the exact sidereal Moon. At birth, {formatYears(balance.years)} of the {balance.lord} period
+          ({balance.fullYears} years in full) was still remaining, so that balance runs from birth to{' '}
+          {formatDashaDateExact(balance.end)} and every later period is chained from there.
+        </p>
+      )}
 
-      <div className="space-y-2">
+      <div className="mt-4 space-y-2">
         {periods.map(p => {
           const key = `${p.lord}-${p.start.getTime()}`;
           const isCurrent = current?.maha.start.getTime() === p.start.getTime();
@@ -48,6 +66,7 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
                 <span className="text-xs text-muted-foreground">
                   {formatDashaRange(p)}
                   {birthMoment ? ` · ${formatAgeRange(p, birthMoment)}` : ''}
+                  {p.isBirthBalance ? ` · balance at birth, ${formatYears(p.years)}` : ''}
                 </span>
                 <span className="ml-auto hidden text-xs text-muted-foreground sm:inline">{copy.title}</span>
                 {isCurrent && (
@@ -60,7 +79,8 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
               {open === key && (
                 <div className="border-t border-border/60 px-3 py-3">
                   <p className="mb-3 text-[13px] leading-relaxed text-foreground/85">
-                    During this chapter, {p.lord} puts more emphasis on this part of life. It asks {copy.asks}. It may bring {copy.gives}. Watch for {copy.trap}.
+                    During this chapter, {p.lord} tends to put more emphasis on this part of life. It may ask {copy.asks}.
+                    It can bring {copy.gives}. Watch for {copy.trap}.
                   </p>
                   <div className="space-y-1">
                     {(p.sub || []).map(s => {
@@ -71,7 +91,7 @@ export const DashaTimeline = ({ periods, current, birthMoment }: Props) => {
                           className={`flex items-baseline justify-between gap-2 rounded px-2 py-1 text-[12px] ${isNow ? 'bg-primary/10 text-foreground' : 'text-muted-foreground'}`}
                         >
                           <span>{p.lord} · {s.subLord}</span>
-                          <span>{formatDashaRange(s)}{isNow ? ' · current' : ''}</span>
+                          <span>{formatDashaDateExact(s.start)} to {formatDashaDateExact(s.end)}{isNow ? ' · current' : ''}</span>
                         </div>
                       );
                     })}

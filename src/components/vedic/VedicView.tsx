@@ -18,6 +18,9 @@ import { formatAyanamsa } from '@/lib/vedic/ayanamsa';
 import { VedicSectionCard } from './VedicSectionCard';
 import { DashaTimeline } from './DashaTimeline';
 import { VargaGrid } from './VargaGrid';
+import { VedicOverview } from './VedicOverview';
+import { VARGA_NOTE } from '@/lib/vedic/divisionalCharts';
+import { buildVedicThemes, buildOneMinute } from '@/lib/vedic/themeSynthesis';
 import { PlacementDeepDiveCard } from './PlacementDeepDive';
 import { buildPlacementDeepDives, findComboHits } from '@/lib/vedic/placementDeepDive';
 
@@ -74,6 +77,17 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
     }
   }, [reading]);
 
+  const overview = useMemo(() => {
+    if (!reading) return null;
+    try {
+      const themes = buildVedicThemes(reading.chart, reading.vargas, reading.karakas, activeChart);
+      return { themes, oneMinute: buildOneMinute(reading.chart, themes, reading.karakas) };
+    } catch (e) {
+      console.error('[Vedic] synthesis failed', e);
+      return null;
+    }
+  }, [reading, activeChart]);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const jsonData = useMemo(() => {
@@ -125,10 +139,19 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         reading: s.paragraphs,
         whatThisMeansInRealLife: s.takeaway || null,
       })),
+      repeatingThemes: (overview?.themes || []).map(t => ({
+        theme: t.label,
+        plain: t.plain,
+        state: t.state,
+        vedicEvidence: t.vedic,
+        westernEvidence: t.western,
+        synthesis: t.synthesis,
+      })),
+      oneMinuteSummary: overview?.oneMinute.paragraphs || [],
       placementDeepDive: buildPlacementDeepDives(chart),
       signatureCombinations: findComboHits(chart),
     };
-  }, [reading]);
+  }, [reading, overview]);
 
   if (!activeChart) {
     return (
@@ -187,6 +210,10 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
             </span>
           </div>
 
+          {overview && (
+            <VedicOverview chart={reading.chart} oneMinute={overview.oneMinute} themes={overview.themes} />
+          )}
+
           {reading.sections.slice(0, 2).map(s => (
             <VedicSectionCard key={s.id} section={s} />
           ))}
@@ -204,15 +231,24 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           {/* Divisional charts reference */}
           <div className="rounded-lg border border-border bg-card p-5 md:p-6">
             <h3 className="font-serif text-xl">Your Divisional Charts</h3>
-            <p className="mb-4 mt-1 text-xs uppercase tracking-widest text-muted-foreground">
+            <p className="mb-1 mt-1 text-xs uppercase tracking-widest text-muted-foreground">
               The vargas behind the readings above
             </p>
+            <p className="mb-4 text-sm leading-relaxed text-foreground/85">{VARGA_NOTE}</p>
             <div className="grid gap-3 md:grid-cols-2">
               {(['D9', 'D10', 'D12', 'D2', 'D7'] as const).map(k => (
                 <VargaGrid key={k} varga={reading.vargas[k]} />
               ))}
             </div>
           </div>
+
+          <div className="rounded-md border border-border bg-secondary/25 p-4 text-[12px] leading-relaxed text-muted-foreground">
+            How to hold all of this: these are symbolic patterns and tendencies, not verdicts. This tab never predicts
+            death, illness, divorce, accidents or financial ruin, and it never reads one placement on its own. Anything
+            described here is only stated when several independent parts of the chart point the same way, and you can open
+            the evidence for each one.
+          </div>
+
         </div>
       )}
     </div>

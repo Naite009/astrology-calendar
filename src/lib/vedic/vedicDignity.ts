@@ -42,6 +42,32 @@ export function vedicDignity(planet: VedicPlanet, sign: string): VedicDignity {
   return 'neutral';
 }
 
+/**
+ * The exact definition of the dignity condition a planet is actually in.
+ * Never describe "own sign" using the word exalted: they are separate
+ * conditions. Saturn in Aquarius is in its own sign. Saturn's exaltation
+ * sign is Libra.
+ */
+export function dignityDefinition(dignity: VedicDignity): string {
+  switch (dignity) {
+    case 'exalted':
+      return 'Exalted means placed in the sign where classical texts say the planet functions at its strongest.';
+    case 'own sign':
+      return 'Own sign means the planet is sitting in a sign it rules, so it is on familiar ground. This is a different condition from exaltation.';
+    case 'moolatrikona':
+      return 'Moolatrikona means the planet sits in the strongest portion of a sign it rules.';
+    case 'debilitated':
+      return 'Debilitated means placed in the sign opposite its exaltation, where the same function tends to work in a less standard way.';
+    default:
+      return 'Neutral means the sign neither strengthens nor strains the planet by classical dignity.';
+  }
+}
+
+/** The sign each graha is exalted in, kept public so copy can name it correctly. */
+export function exaltationSign(planet: VedicPlanet): string | undefined {
+  return EXALTED[planet];
+}
+
 /** Short plain-language gloss for the chart-logic box. */
 export function dignityGloss(dignity: VedicDignity): string {
   switch (dignity) {

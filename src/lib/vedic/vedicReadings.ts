@@ -15,15 +15,15 @@
  */
 
 import { VedicChart, VedicBody, houseLord, bodiesInHouse, formatDegree } from './siderealChart';
-import { buildVarga, VargaChart, isVargottama, VARGA_LABELS } from './divisionalCharts';
+import { buildVarga, VargaChart, isVargottama, VARGA_LABELS, VARGA_NOTE } from './divisionalCharts';
 import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './karakas';
-import { buildVimshottari, findCurrentDasha, formatDashaRange, DashaPeriod, CurrentDasha } from './vimshottariDasha';
+import { buildVimshottari, findCurrentDasha, formatDashaRange, formatDashaDateExact, formatYears, DashaPeriod, CurrentDasha } from './vimshottariDasha';
 import { nakshatraCopy } from './interpretations/nakshatraCopy';
 import {
   PLANET_PLAIN, PLANET_MOTIVE, housePlain, signTendency, dignityPlain,
   DASHA_EMPHASIS, moneyPattern, KARAKA_PLAIN, DASHA_DEFINITION,
 } from './interpretations/plainMeaning';
-import { SIGN_LORDS } from './vedicDignity';
+import { SIGN_LORDS, dignityDefinition, exaltationSign } from './vedicDignity';
 import { VedicPlanet } from './nakshatras';
 
 export interface VedicSectionData {
@@ -256,7 +256,7 @@ function bigPictureSection(
   // Paragraph 3: gifts and tensions from dignity.
   if (strong.length || weak.length) {
     const strongText = strong.length
-      ? `${list(strong.map(b => `${b.name} ${b.dignity === 'exalted' ? 'exalted' : 'in its own sign'} in ${b.sign}`))} ${strong.length > 1 ? 'are' : 'is'} working at full capacity. Exalted means placed in the sign where a planet functions best. Practically, ${list(strong.map(b => PLANET_MOTIVE[b.name]))} ${strong.length > 1 ? 'come' : 'comes'} more easily to you than to most people, and ${strong.length > 1 ? 'those are the functions' : 'that is the function'} other people tend to rely on you for.`
+      ? `${list(strong.map(b => `${b.name} ${b.dignity === 'exalted' ? 'exalted' : 'in its own sign'} in ${b.sign}`))} ${strong.length > 1 ? 'are' : 'is'} classically read as well placed. ${list(strong.map(b => `${b.dignity === 'exalted' ? `${b.name} is exalted: ${dignityDefinition('exalted')}` : `${b.name} is in its own sign: ${dignityDefinition('own sign')} ${b.name}'s exaltation sign is ${exaltationSign(b.name)}, which is a separate condition and not what is happening here`}`))}. Practically, ${list(strong.map(b => PLANET_MOTIVE[b.name]))} may come more easily to you than to most people, and ${strong.length > 1 ? 'those tend to be the functions' : 'that tends to be the function'} other people rely on you for.`
       : '';
     const weakText = weak.length
       ? `At the same time ${list(weak.map(b => `${b.name} is debilitated in ${b.sign}`))}. Debilitated means placed in the sign where a planet operates least comfortably. It is not a defect. It usually shows up as a function that matures later, works in a personal and non-standard way, and becomes genuinely capable through experience rather than arriving ready-made. Since ${list(weak.map(b => PLANET_PLAIN[b.name]))}, that is where the learning curve sits.`
@@ -321,8 +321,8 @@ function dashaSection(chart: VedicChart, current: CurrentDasha | null): VedicSec
     const lord = current.maha.lord;
     const info = DASHA_EMPHASIS[lord];
     const seat = chart.byName[lord];
-    logic.push(`Mahadasha: ${lord}, ${formatDashaRange(current.maha)} (${current.maha.years} years)`);
-    if (current.antar) logic.push(`Antardasha: ${current.antar.subLord} within ${lord}, ${formatDashaRange(current.antar)}`);
+    logic.push(`Mahadasha (a long planetary chapter): ${lord}, ${formatDashaDateExact(current.maha.start)} to ${formatDashaDateExact(current.maha.end)} (${formatYears(current.maha.years)}${current.maha.isBirthBalance ? `, the balance of a ${current.maha.fullYears} year period remaining at birth` : ''})`);
+    if (current.antar) logic.push(`Antardasha (the smaller chapter inside it): ${current.antar.subLord} within ${lord}, ${formatDashaDateExact(current.antar.start)} to ${formatDashaDateExact(current.antar.end)}`);
     logic.push(`Progress through the mahadasha: ${Math.round(current.progress * 100)}%`);
     if (has(seat)) logic.push(`${lord} in the birth chart: ${bodyLine(seat)}`);
     const ruled = rulership(chart, lord);
@@ -390,10 +390,10 @@ function pastLifeSection(chart: VedicChart, d12: VargaChart): VedicSectionData {
     if (k12) logic.push(`Ketu in ${VARGA_LABELS.D12.name}: ${k12.sign}${k12.house ? `, house ${k12.house}` : ''}`);
   }
   if (has(rahu)) logic.push(`Rahu: ${bodyLine(rahu)}`);
-  logic.push(`${VARGA_LABELS.D12.name} reads ${VARGA_LABELS.D12.reads}. Traditional claim, offered as inherited pattern rather than proven history.`);
+  logic.push(`${VARGA_LABELS.D12.name} reads ${VARGA_LABELS.D12.reads}. ${VARGA_NOTE}`);
 
   paras.push(
-    'Rahu and Ketu are not planets. They are the two points where the Moon\u2019s path crosses the Sun\u2019s, and they always sit exactly opposite each other. Tradition reads them as an axis of experience: one end is already familiar, the other is not.'
+    'Rahu and Ketu are not planets. They are the two points where the Moon\u2019s path crosses the Sun\u2019s, and they always sit exactly opposite each other. In plain language, Ketu is what already feels familiar or instinctive, and therefore may be easy to fall back on. Rahu is what attracts you and stretches you, but may initially feel unfamiliar, excessive, or hard to regulate. Neither side is the bad side.'
   );
 
   if (has(ketu)) {
@@ -410,15 +410,20 @@ function pastLifeSection(chart: VedicChart, d12: VargaChart): VedicSectionData {
       `Progress there is likely to feel like beginner work no matter how accomplished you are elsewhere, which is an accurate description of the axis rather than a sign anything is wrong.`
     );
   }
+  if (has(ketu) && has(rahu) && ketu.house && rahu.house) {
+    paras.push(
+      `The short version of the axis: from ${housePlain(ketu.house)}, which you already have a feel for, toward ${housePlain(rahu.house)}, which asks for practice. The Ketu skill stays a resource. Rahu simply describes the developmental stretch, and stretching there tends to feel like beginner work even for people who are accomplished elsewhere.`
+    );
+  }
   paras.push(
-    'Classical texts describe this axis as unfinished business carried forward from a previous life. That is a traditional claim, not something the chart can prove, and you can take it literally or not without changing the practical reading.'
+    'Traditional Jyotish may interpret some of this axis, and some ancestral patterns in the D12, karmically as unfinished business carried forward. That is a spiritual interpretation rather than something the chart can prove. The practical reading above holds either way.'
   );
 
   const takeaway = has(ketu) && has(rahu)
     ? `In real life this usually shows up as a pull between two comfortable options: retreating into ${housePlain(ketu.house)}, where you already know what you are doing, or stretching into ${housePlain(rahu.house)}, where you do not. Both are legitimate. The one that develops you is the second, and the useful move is to keep the Ketu skill as a resource rather than a hiding place.`
     : undefined;
 
-  return section('past-life', 'Why You Came In', 'Ketu, Rahu and the Dwadashamsha (D12)', logic, paras, takeaway);
+  return section('past-life', 'Familiar Ground and the Stretch', 'Ketu, Rahu and the Dwadashamsha (D12): parents, ancestry and inherited patterns', logic, paras, takeaway);
 }
 
 /* 5. Purpose, gifts and talents ------------------------------------------ */
@@ -444,8 +449,8 @@ function purposeSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (has(body)) logic.push(`Nakshatra: ${body.nakshatra.name} pada ${body.nakshatra.pada}`);
 
   paras.push(
-    `The Atmakaraka is the planet that travelled furthest into its sign, and in the Jaimini branch of Vedic astrology it is treated as the loudest theme in the life. Yours is ${ak.planet}, and ${PLANET_PLAIN[ak.planet]}. ` +
-    `So the thread that keeps returning for you is ${PLANET_MOTIVE[ak.planet]}.`
+    `In the Jaimini branch of Vedic astrology, the Atmakaraka is the planet with the highest relevant degree, and it is traditionally treated as a major recurring developmental theme rather than proof of a soul purpose. Think of it as a subject life keeps asking you to study. Yours is ${ak.planet}, and ${PLANET_PLAIN[ak.planet]}. ` +
+    `So the repeating subject is ${PLANET_MOTIVE[ak.planet]}.`
   );
 
   if (has(body)) {
@@ -530,6 +535,13 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
     );
   }
 
+  if (second && eleventh && second.lord === eleventh.lord) {
+    const seat = second.body;
+    paras.push(
+      `Worth noticing: both the second and the eleventh house are ruled by the same planet, ${second.lord}${seat?.house ? `, and it sits in house ${seat.house}, the area of ${housePlain(seat.house)}` : ''}. When one planet runs both earning and gains, the two tend to move together rather than independently. Income and increases may be especially connected with ${PLANET_MOTIVE[second.lord]}${seat?.house === 1 ? ', which here means your own knowledge, decisions, initiative, skills, reputation and personal contribution' : ''}. In plain terms, your ideas, knowledge, communication or personal expertise may themselves become resources.`
+    );
+  }
+
   const strained = lords.find(l => l.body?.dignity === 'debilitated');
   if (strained && strained.body) {
     paras.push(
@@ -559,7 +571,7 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
 
   if (tenth) logic.push(`House 10 lord: ${tenth.lord} (${tenth.sign})${tenthLordBody?.house ? `, sitting in house ${tenthLordBody.house}` : ''}`);
   if (tenthOccupants.length) logic.push(`In house 10: ${tenthOccupants.map(b => b.name).join(', ')}`);
-  if (amk) logic.push(`Amatyakaraka (career indicator): ${amk.planet} at ${formatDegree(amk.degree)} ${amk.sign}${amk.house ? `, house ${amk.house}` : ''}`);
+  if (amk) logic.push(`Amatyakaraka (an important capacity used in work and contribution): ${amk.planet} at ${formatDegree(amk.degree)} ${amk.sign}${amk.house ? `, house ${amk.house}` : ''}`);
   const amk10 = amk ? d10.byName[amk.planet] : undefined;
   if (amk10) logic.push(`Amatyakaraka in ${VARGA_LABELS.D10.name}: ${amk10.sign}${amk10.house ? `, house ${amk10.house}` : ''}`);
   if (d10.lagnaSign) logic.push(`${VARGA_LABELS.D10.name} lagna: ${d10.lagnaSign}`);
@@ -570,14 +582,14 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
 
   if (amk) {
     paras.push(
-      `Your Amatyakaraka is ${amk.planet}, and ${PLANET_PLAIN[amk.planet]}. That points to work which genuinely uses that capacity. It describes the function, not a job title, so it can be satisfied in many different fields, and it is a useful test to run on any role you are considering.`
+      `Your Amatyakaraka is ${amk.planet}, and ${PLANET_PLAIN[amk.planet]}. In Jaimini astrology this is read as an important capacity used in work and contribution, one of the tools you use to do something meaningful, so it points toward work which genuinely uses that capacity. It describes the function, not a job title, so it can be satisfied in many different fields, and it is a useful test to run on any role you are considering.`
     );
   }
   if (tenth && tenthLordBody?.house) {
     const rp = rulershipPhrase(chart, tenth.lord);
     paras.push(
       `The tenth house covers career direction and public reputation. Yours is ruled by ${tenth.lord}, which sits in the area of ${housePlain(tenthLordBody.house)}. ` +
-      `That suggests your professional standing is built through that part of life rather than through a conventional ladder, and it is often not the route you would have picked on paper. ` +
+      `That suggests your professional standing may be built through that part of life more than through a conventional ladder, and it is often not the route you would have picked on paper. ` +
       (rp ? `${rp}, which is why those themes keep turning up in work contexts for you.` : '')
     );
   } else if (tenth) {
@@ -593,9 +605,13 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
   }
   if (tenthOccupants.length) {
     paras.push(
-      `With ${list(tenthOccupants.map(b => b.name))} placed in the tenth house, work and visibility carry more weight in your chart than average. Tradition reads this as a life where public role is a main theme rather than a background one.`
+      `With ${list(tenthOccupants.map(b => b.name))} placed in the tenth house, work and visibility carry more weight in this chart than average. Tradition reads this as a life where public role tends to be a main theme rather than a background one.`
     );
   }
+
+  paras.push(
+    'Two things to hold together rather than choosing between. A chart can combine privacy and depth with responsibility and professional visibility at the same time. Where that happens, the person often works especially well when the job requires discretion, strategy, investigation, emotional intelligence, deep focus, specialised knowledge, or institutional and behind-the-scenes work, while still allowing them to build authority or expertise. Wanting recognition for genuine expertise or a meaningful contribution is different from wanting visibility for its own sake, and a 12th house emphasis does not mean recognition is impossible or unwanted.'
+  );
 
   const takeaway = amk
     ? `In real life: the fit test is not the industry, it is whether the role asks for ${PLANET_MOTIVE[amk.planet]}. A well-paid position that never uses that capacity tends to feel wrong for reasons that are hard to explain, and a modest one that uses it constantly tends to hold your interest.`
@@ -616,7 +632,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   const occupants = bodiesInHouse(chart, 7);
   const venus = chart.byName.Venus;
 
-  if (dk) logic.push(`Darakaraka (partnership indicator): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest degree in the chart)`);
+  if (dk) logic.push(`Darakaraka (one indicator for close partnership): ${dk.planet} at ${formatDegree(dk.degree)} ${dk.sign}${dk.house ? `, house ${dk.house}` : ''} (lowest degree in the chart)`);
   if (seventh) logic.push(`House 7 lord: ${seventh.lord} (${seventh.sign})${seventhLordBody?.house ? `, sitting in house ${seventhLordBody.house}` : ''}`);
   if (seventhLordBody) logic.push(`House 7 lord nakshatra: ${seventhLordBody.nakshatra.name} pada ${seventhLordBody.nakshatra.pada}`);
   if (occupants.length) logic.push(`In house 7: ${occupants.map(b => b.name).join(', ')}`);
@@ -625,12 +641,12 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (dk9) logic.push(`Darakaraka in ${VARGA_LABELS.D9.name}: ${dk9.sign}${dk9.house ? `, house ${dk9.house}` : ''}`);
 
   paras.push(
-    'Partnership is read from the seventh house and its ruler, from Venus, which describes what you value and enjoy in closeness, and from the Darakaraka, the planet at the lowest degree in the chart, read as the qualities that matter most in a close relationship. The Navamsa is then used to see what tends to hold over time.'
+    'Close one-to-one relationships are an important arena of development in every chart, and this section describes what that arena tends to ask for. It applies to romantic partnership and marriage, and equally to other important one-to-one bonds, business partnerships and close collaborative relationships. Partnership is read from the seventh house and its ruler, from Venus, which describes what you value and enjoy in closeness, and from the Darakaraka, the planet at the lowest degree in the chart, read as the qualities that matter most in a close relationship. The Navamsa is then used to see what tends to hold over time.'
   );
 
   if (dk) {
     paras.push(
-      `Your Darakaraka is ${dk.planet} in ${dk.sign}, and ${PLANET_PLAIN[dk.planet]}. Read as a partnership signal, that points to closeness where ${PLANET_MOTIVE[dk.planet]} is central: it is both what you tend to be drawn to in someone else and what you are asked to develop in yourself. Expressed ${signTendency(dk.sign)}, that quality can look like steadiness or like pressure depending on how consciously it is handled.`
+      `Your Darakaraka is ${dk.planet} in ${dk.sign}, and ${PLANET_PLAIN[dk.planet]}. In Jaimini astrology the Darakaraka is one indicator used for close partnership, the relationship energy that can teach you a lot about yourself, rather than a description of a specific spouse. Read that way, that points to closeness where ${PLANET_MOTIVE[dk.planet]} is central: it is both what you tend to be drawn to in someone else and what you are asked to develop in yourself. Expressed ${signTendency(dk.sign)}, that quality can look like steadiness or like pressure depending on how consciously it is handled.`
     );
   }
   if (seventh && seventhLordBody?.house) {
@@ -659,7 +675,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (partnerWindows.length) {
     logic.push(`Periods that emphasize partnership themes: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)}`).join('; ')}`);
     paras.push(
-      `The periods when relationship themes are emphasized are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}`))}. Emphasis means the topic becomes louder, not that anything is scheduled, and plenty happens outside those windows.`
+      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
     );
   }
 
@@ -667,7 +683,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     ? `In real life: this section describes what closeness asks of you, not who arrives or when. The recurring work is ${PLANET_MOTIVE[dk.planet]}, and relationships tend to go better when you develop that quality yourself instead of looking for someone to supply it.`
     : undefined;
 
-  return section('partner', 'Partner and Marriage', 'Darakaraka, seventh house and the Navamsa (D9)', logic, paras, takeaway);
+  return section('partner', 'Close Partnership', 'Seventh house and ruler, Venus, Darakaraka and the Navamsa (D9)', logic, paras, takeaway);
 }
 
 /* 9. Obstacles ----------------------------------------------------------- */
@@ -750,6 +766,6 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
     'What changed, what held',
     logic,
     paras,
-    'In real life: use the Western chart for psychological detail and transit timing, and use this tab for life periods, purpose and the practical questions about money, work and partnership. They answer different questions and do not need to agree.',
+    'In real life: Western and Vedic astrology begin with the same astronomical birth sky but use different zodiac frameworks and interpretive traditions. Neither chart replaces the other in this app. The Western tab leads with psychological pattern, personality, emotional needs, aspects, house dynamics and transits. This tab leads with sidereal placements, whole-sign house structure, house rulers, nakshatras, planetary dignity, Vimshottari periods, Jaimini indicators and divisional charts. Reading them together, what you are looking for is repetition, reinforcement, tension, or the same underlying theme expressed two different ways. It is not that one system tells you who you are and the other tells you what happens.',
   );
 }

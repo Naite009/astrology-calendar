@@ -27,7 +27,7 @@ export const PLANET_IN_SIGN: Record<VedicPlanet, SignMap> = {
     Aries: 'You want to be first, and you would rather lead a small thing you started than inherit a big thing someone else built. Authority handed to you feels less real than authority you took.',
     Taurus: 'You want your position to be solid before you announce it. You will hold a job, a house or an opinion long past the point where others would have moved, because moving feels like losing ground.',
     Gemini: 'Your standing comes from what you know and how you explain it. You get respect in conversation, and you lose interest fast in any role where you cannot talk, teach or negotiate.',
-    Cancer: 'You lead by taking care of people, and you take criticism of your work as criticism of you personally. Your father or your family history sits close to how you see your own worth.',
+    Cancer: 'You may lead by taking care of people, and criticism of your work can land as criticism of you personally. Family history and early authority figures are traditionally read as connected to how worth gets measured here, though that only becomes a firm reading when the rest of the chart repeats it.',
     Leo: 'You are comfortable being looked at and uncomfortable being ignored. You do your best work when your name is attached and your worst work when you are one anonymous name on a list.',
     Virgo: 'You prove yourself through competence, not presence. You would rather be the person who catches the error than the person on stage, and you quietly resent it when the stage person gets the credit.',
     Libra: 'You need other people to reflect you back before you feel sure. You lead through diplomacy and partnership, and you stall when a decision means someone will be unhappy with you.',
@@ -166,7 +166,7 @@ export const PLANET_IN_HOUSE: Record<VedicPlanet, HouseMap> = {
     9: 'Belief, teachers and travel form you. You either follow your father\u2019s worldview closely or reject it completely.',
     10: 'Career is the main stage of your life. Visibility and reputation come to you, and your worth is tangled up with your job.',
     11: 'Gains come through networks and older friends. You are respected in groups and you want your circle to be impressive.',
-    12: 'You work behind the scenes, abroad or in solitary settings. Public recognition is not where your fulfillment is.',
+    12: 'A twelfth house emphasis can create a strong pull toward privacy, retreat, independent work, behind-the-scenes roles, or periods away from constant visibility. It does not mean public recognition is impossible or unwanted, and many people with this placement build real authority quietly first.',
   },
   Moon: {
     1: 'Your mood shows on your face. People sense how you feel before you speak and you are read as approachable.',
