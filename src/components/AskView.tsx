@@ -1079,14 +1079,17 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           if (lon != null) transitLon[k.charAt(0).toUpperCase() + k.slice(1)] = lon;
         });
 
-        // Natal fixed-star activations (lifetime — anchor)
-        const natalStarHits = findFixedStarActivations(chart);
+        // Natal fixed-star contacts (lifetime — anchor). Conjunctions AND hard
+        // aspects, so contacts like "Algol square Mars" reach the reading.
+        const natalStarHits = topFixedStarContacts(chart, 10);
         if (natalStarHits.length > 0) {
           context += "\n--- NATAL FIXED STAR CONTACTS (lifetime) ---\n";
-          for (const h of natalStarHits.slice(0, 8)) {
-            context += `- ${h.star} conjunct natal ${h.point} (orb ${h.orb.toFixed(2)}°) — ${h.interpretation}\n`;
+          context += "Conjunctions are primary. Oppositions and squares are real but arrive as friction or through other people.\n";
+          for (const h of natalStarHits) {
+            context += `- ${h.star} ${h.aspect} natal ${h.point} (orb ${h.orb.toFixed(2)}°, ${h.starTier} star) — ${h.interpretation}\n`;
           }
         }
+
 
         // Fixed stars triggered TODAY by transiting planets within 1° of the
         // natal points the stars already touch.
