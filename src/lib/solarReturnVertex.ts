@@ -26,13 +26,13 @@ const fromAbsDeg = (absDeg: number): { sign: string; degree: number; minutes: nu
 
 /**
  * Calculate the Vertex given the MC and geographic latitude.
- * Formula: Vertex = Ascendant calculated with colatitude (90° - |latitude|).
- * The Vertex is the western intersection of the Prime Vertical with the Ecliptic.
  *
- * Simplified formula:
- * RAMC = absolute degree of MC
- * Colatitude = 90 - |latitude|
- * Vertex longitude = atan2(cos(RAMC), -sin(RAMC) * cos(obliquity) - tan(colatitude) * sin(obliquity))
+ * The Vertex is the Ascendant formula run with the colatitude (90 - latitude),
+ * then rotated 180 degrees, because the raw result is the Antivertex (east).
+ * The MC's ecliptic longitude must first be converted back to RAMC:
+ *   RAMC = atan2(sin(mc) * cos(obliquity), cos(mc))
+ * Feeding the ecliptic longitude straight in as RAMC skews the result by up to
+ * a couple of degrees, so it is converted here.
  */
 export function calculateVertex(
   mcSign: string, mcDegree: number, mcMinutes: number,
@@ -40,31 +40,29 @@ export function calculateVertex(
 ): { sign: string; degree: number; minutes: number } | null {
   if (!mcSign || latitude === undefined) return null;
 
-  const obliquity = 23.4393; // mean obliquity of the ecliptic in degrees
+  const obliquity = 23.4392911; // mean obliquity of the ecliptic in degrees
   const toRad = (d: number) => d * Math.PI / 180;
   const toDeg = (r: number) => r * 180 / Math.PI;
 
   const mcAbsDeg = SIGNS.indexOf(mcSign) * 30 + mcDegree + (mcMinutes || 0) / 60;
-  const RAMC = toRad(mcAbsDeg);
   const oblRad = toRad(obliquity);
-  const colatitude = 90 - Math.abs(latitude);
-  const colatRad = toRad(colatitude);
+  const mcRad = toRad(mcAbsDeg);
 
-  // Calculate using the Ascendant formula with colatitude
+  // Ecliptic longitude of the MC back to right ascension of the MC.
+  const RAMC = Math.atan2(Math.sin(mcRad) * Math.cos(oblRad), Math.cos(mcRad));
+
+  // Signed colatitude, so southern latitudes stay correct.
+  const colatRad = toRad(90 - latitude);
+
   const y = Math.cos(RAMC);
-  const x = -(Math.sin(RAMC) * Math.cos(oblRad)) - (Math.tan(colatRad) * Math.sin(oblRad));
+  const x = -(Math.sin(oblRad) * Math.tan(colatRad) + Math.cos(oblRad) * Math.sin(RAMC));
 
-  let vertexLong = toDeg(Math.atan2(y, x));
-  // Normalize to 0-360
-  vertexLong = ((vertexLong % 360) + 360) % 360;
-
-  // The Vertex should be in the western half (houses 5-8, roughly 180-360 from ASC)
-  // If it ends up in the eastern half, add 180° to get the correct western point
-  // Typically Vertex falls between roughly 150° and 330° absolute
-  // This is a simplified check - in most cases the formula yields the correct hemisphere
+  // atan2 here gives the Antivertex; the Vertex is the opposite point.
+  const vertexLong = toDeg(Math.atan2(y, x)) + 180;
 
   return fromAbsDeg(vertexLong);
 }
+
 
 /**
  * Common city latitudes for fallback when location is a city name.

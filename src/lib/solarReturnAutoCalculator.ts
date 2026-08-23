@@ -11,6 +11,7 @@
 import * as Astronomy from 'astronomy-engine';
 import { calculatePlacidusHouses } from './placidusHouses';
 import { getAccurateAsteroidPosition } from './asteroidEphemeris';
+import { trueNodeLongitude } from './ephemeris/slowBodies';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -127,8 +128,8 @@ export function calculateSolarReturnAuto(
     };
   }
 
-  // North Node (mean)
-  planets['NorthNode'] = { ...lonToPos(getMeanNodeLon(srDate)) };
+  // North Node: true node, with the mean node only as a fallback.
+  planets['NorthNode'] = { ...lonToPos(trueNodeLongitude(srDate) ?? getMeanNodeLon(srDate)) };
 
   // Chiron from ephemeris lookup
   const chironRaw = getAccurateAsteroidPosition('chiron', srDate);

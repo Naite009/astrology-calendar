@@ -2,6 +2,7 @@
 // Uses natural zodiac (Aries rising, equal 30° houses) for collective/educational view
 
 import * as Astronomy from 'astronomy-engine';
+import { trueNodeLongitude } from './ephemeris/slowBodies';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const ZODIAC_SIGNS = [
@@ -58,25 +59,15 @@ export function buildLiveSkyChart(date: Date = new Date()): NatalChart {
     } catch { /* skip on error */ }
   }
 
-  // North Node via Moon's ascending node
-  try {
-    const nodeResult = Astronomy.SearchMoonNode(new Date(date.getTime() - 30 * 86400000));
-    if (nodeResult) {
-      // Approximate: get Moon's node longitude
-      // Use a simpler approach — the mean node moves ~19.3° per year retrograde
-      const j2000 = new Date('2000-01-01T12:00:00Z');
-      const daysSinceJ2000 = (date.getTime() - j2000.getTime()) / 86400000;
-      const meanNodeLon = (125.044522 - 0.0529539 * daysSinceJ2000) % 360;
-      const normalizedNode = ((meanNodeLon % 360) + 360) % 360;
-      planets['NorthNode'] = lonToSignDegree(normalizedNode);
-    }
-  } catch {
-    // Fallback mean node calculation
+  // North Node: true (osculating) node, matching the rest of the app.
+  {
+    const trueNode = trueNodeLongitude(date);
     const j2000 = new Date('2000-01-01T12:00:00Z');
     const daysSinceJ2000 = (date.getTime() - j2000.getTime()) / 86400000;
     const meanNodeLon = ((125.044522 - 0.0529539 * daysSinceJ2000) % 360 + 360) % 360;
-    planets['NorthNode'] = lonToSignDegree(meanNodeLon);
+    planets['NorthNode'] = lonToSignDegree(trueNode ?? meanNodeLon);
   }
+
 
   // Natural zodiac: Aries rising, equal houses at 0° of each sign
   const houseCusps: Record<string, { sign: string; degree: number; minutes: number }> = {};

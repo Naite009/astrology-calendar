@@ -16,6 +16,7 @@ import { buildAspectNarrative, getMoonDispositorChain } from "@/lib/aspectMeanin
 import { calculateTransitAspects, getTopTransitAspects } from "@/lib/transitAspects";
 import { getTransitPlanetHouse, getNatalPlanetHouse } from "@/lib/houseCalculations";
 import { formatMoonHouseSchedule } from "@/lib/moonHouseSchedule";
+import { trueNodeLongitude } from "@/lib/ephemeris/slowBodies";
 import { buildMorningDigest } from "@/lib/cosmicWeatherMorningDigest";
 import { getMercuryRetrogrades, getRetrogradeStatus, getAllRetrogradePeriods } from "@/lib/retrogradePatterns";
 import ReactMarkdown from "react-markdown";
@@ -153,10 +154,12 @@ function findStelliums(planets: PlanetaryPositions): Array<{ sign: string; plane
 
   // Add North Node from mean node ephemeris
   try {
+    const now = new Date();
     const j2000 = new Date('2000-01-01T12:00:00Z');
-    const daysSinceJ2000 = (new Date().getTime() - j2000.getTime()) / 86400000;
+    const daysSinceJ2000 = (now.getTime() - j2000.getTime()) / 86400000;
     const meanNodeLon = ((125.044522 - 0.0529539 * daysSinceJ2000) % 360 + 360) % 360;
-    const signIdx = Math.floor(meanNodeLon / 30);
+    const nodeLon = trueNodeLongitude(now) ?? meanNodeLon;
+    const signIdx = Math.floor(nodeLon / 30);
     const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
     const nodeSign = ZODIAC[signIdx];
     if (nodeSign) {
