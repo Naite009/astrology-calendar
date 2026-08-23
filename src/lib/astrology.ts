@@ -495,21 +495,16 @@ export const calculateVertex = (
   const ramcRad = ramcDeg * Math.PI / 180;
   
   // Calculate anti-Ascendant (western horizon intersection)
+  // Antivertex is the rising degree computed with the colatitude.
+  // The Vertex is its opposite point, on the western side of the chart.
   const y = Math.cos(ramcRad);
   const x = -(Math.sin(obliqRad) * Math.tan(colatRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
-  
-  let vtxLon = Math.atan2(y, x) * 180 / Math.PI;
-  
-  // Adjust for western hemisphere (opposite the Ascendant calculation)
-  if (ramcDeg >= 0 && ramcDeg < 180) {
-    vtxLon = vtxLon + 180;
-  }
-  if (ramcDeg >= 180 && ramcDeg < 360) {
-    vtxLon = vtxLon + 360;
-  }
-  
+
+  let vtxLon = Math.atan2(y, x) * 180 / Math.PI + 180;
+
   // Normalize
   vtxLon = ((vtxLon % 360) + 360) % 360;
+
   
   return getDetailedPosition(vtxLon);
 };
