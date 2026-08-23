@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T13:57:46.585Z",
+  "generatedAt": "2026-08-23T13:58:21.852Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -181,24 +181,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 312,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 6th house — work routines, health, daily systems. That's…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 352,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -210,18 +197,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 233,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. It's rew…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 232,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -273,18 +253,11 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 728,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 733,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Uranus",
@@ -296,18 +269,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 752,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 757,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -318,9 +284,9 @@
             "score": 1
           }
         ],
-        "errorCount": 5,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9230769230769232
+        "score": 1
       }
     },
     {
@@ -502,24 +468,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 317,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 10th house — career, reputation, public-facing self. That…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 357,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -531,18 +484,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 241,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 10th house — career, reputation, public-facing self. It's…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 240,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -602,18 +548,11 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 883,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 888,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Neptune",
@@ -625,23 +564,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 700,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 705,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 5,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9230769230769232
+        "score": 1
       }
     },
     {
@@ -823,24 +755,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 317,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 10th house — career, reputation, public-facing self. That…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 357,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -852,18 +771,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 223,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. It's rewor…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 222,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -883,33 +795,19 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 700,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 705,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 1074,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Venus is strong in Libra, so people often n…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1079,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mars",
@@ -953,23 +851,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 716,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 721,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 6,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9076923076923078
+        "score": 1
       }
     },
     {
@@ -1151,24 +1042,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 311,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 351,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -1180,18 +1058,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 238,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 237,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -1259,18 +1130,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 941,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 946,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -1281,9 +1145,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615386
+        "score": 1
       }
     },
     {
@@ -1465,24 +1329,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 311,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 351,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -1494,18 +1345,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 244,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 243,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -1549,18 +1393,11 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 796,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 801,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Saturn",
@@ -1588,23 +1425,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 723,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 728,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 5,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9230769230769232
+        "score": 1
       }
     },
     {
@@ -1786,24 +1616,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 7th house — close partnerships, one-on-ones, mirrors. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -1815,18 +1632,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 225,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. It's rew…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 224,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -1909,9 +1719,9 @@
             "score": 1
           }
         ],
-        "errorCount": 3,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9538461538461539
+        "score": 1
       }
     },
     {
@@ -2093,24 +1903,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 2nd house — money, self-worth, and what feels secure. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -2122,48 +1919,27 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 289,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 894,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Sun is not at home in Libra, this s…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 899,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 630,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Becaus…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 635,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mercury",
@@ -2175,18 +1951,11 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 1001,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Becaus…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1006,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mars",
@@ -2206,18 +1975,11 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 692,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 697,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Uranus",
@@ -2237,23 +1999,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 736,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 741,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 8,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.8769230769230769
+        "score": 1
       }
     },
     {
@@ -2435,24 +2190,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 305,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 345,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -2464,18 +2206,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 276,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. You don't…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 275,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -2558,9 +2293,9 @@
             "score": 1
           }
         ],
-        "errorCount": 3,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9538461538461539
+        "score": 1
       }
     },
     {
@@ -2742,24 +2477,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -2771,63 +2493,35 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 279,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 9th house — meaning, travel, belief, big picture. You do…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 278,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 819,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Sun is not at home in Libra, this s…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 824,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 721,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 726,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 626,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 631,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Venus",
@@ -2839,18 +2533,11 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 776,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Mars is not at home in Libra, this…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 781,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
@@ -2870,18 +2557,11 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 693,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 698,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Neptune",
@@ -2893,23 +2573,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 919,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 924,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 9,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.8615384615384616
+        "score": 1
       }
     },
     {
@@ -3091,24 +2764,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 302,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 5th house — creativity, play, kids, romance. That's wher…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 342,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -3120,18 +2780,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 227,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 6th house — work routines, health, daily systems. It's r…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 226,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -3199,18 +2852,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 725,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 730,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -3221,9 +2867,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615386
+        "score": 1
       }
     },
     {
@@ -3405,24 +3051,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 2nd house — money, self-worth, and what feels secure. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -3434,18 +3067,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 289,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -3497,18 +3123,11 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 1230,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Saturn is strong in Libra, so people often…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1235,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Uranus",
@@ -3535,9 +3154,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615386
+        "score": 1
       }
     },
     {
@@ -3719,24 +3338,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -3748,18 +3354,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 279,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 9th house — meaning, travel, belief, big picture. You do…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 278,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -3787,48 +3386,27 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 767,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Venus is strong in Libra, so people often n…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 772,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 909,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Mars is not at home in Libra, this…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 914,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 856,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 861,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Saturn",
@@ -3848,18 +3426,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 897,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 902,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -3870,9 +3441,9 @@
             "score": 1
           }
         ],
-        "errorCount": 7,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.8923076923076925
+        "score": 1
       }
     },
     {
@@ -4054,24 +3625,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -4083,18 +3641,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 282,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 10th house — career, reputation, public-facing self. You…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 281,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -4130,18 +3681,11 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 708,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Mars i…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 713,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
@@ -4191,9 +3735,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 1,
-        "score": 0.9346153846153845
+        "score": 0.9961538461538461
       }
     },
     {
@@ -4375,24 +3919,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 330,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 1st house — your body, your energy, how you're showing u…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 370,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -4404,18 +3935,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 231,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 2nd house — money, values, and what feels secure. It's r…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 230,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -4459,18 +3983,11 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 878,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 883,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Saturn",
@@ -4505,9 +4022,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615386
+        "score": 1
       }
     },
     {
@@ -4689,24 +4206,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 314,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 8th house — intimacy, shared money, buried truths. That'…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 354,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -4718,18 +4222,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 233,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 8th house — intimacy, shared money, buried truths. It's…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 232,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -4741,18 +4238,11 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 1012,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1017,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mercury",
@@ -4772,18 +4262,11 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 752,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Mars is not at home in Libra, this…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 757,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
@@ -4803,18 +4286,11 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 886,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 891,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Neptune",
@@ -4826,23 +4302,16 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 1011,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1016,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           }
         ],
-        "errorCount": 7,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.8923076923076925
+        "score": 1
       }
     },
     {
@@ -5024,24 +4493,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 7th house — close partnerships, one-on-ones, mirrors. Th…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 360,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -5053,33 +4509,19 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 277,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. You don'…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 276,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 841,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 846,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Moon",
@@ -5091,33 +4533,19 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 748,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Others may recognize this in you before you…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 753,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 907,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Becaus…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 912,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mars",
@@ -5137,18 +4565,11 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 712,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 717,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Uranus",
@@ -5182,9 +4603,9 @@
             "score": 1
           }
         ],
-        "errorCount": 7,
+        "errorCount": 0,
         "warningCount": 1,
-        "score": 0.8884615384615384
+        "score": 0.9961538461538461
       }
     },
     {
@@ -5366,24 +4787,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 305,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 345,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -5395,18 +4803,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 221,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. It's rewor…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 220,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -5450,18 +4851,11 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 596,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 601,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Saturn",
@@ -5481,18 +4875,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 860,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 865,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -5503,9 +4890,9 @@
             "score": 1
           }
         ],
-        "errorCount": 5,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9230769230769232
+        "score": 1
       }
     },
     {
@@ -5687,24 +5074,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 305,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 345,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -5716,18 +5090,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 288,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 287,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -5747,18 +5114,11 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 992,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 997,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Venus",
@@ -5770,18 +5130,11 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 672,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Because Mars is not at home in Libra, this…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 677,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
@@ -5809,18 +5162,11 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 1018,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Others…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 1023,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Pluto",
@@ -5831,9 +5177,9 @@
             "score": 1
           }
         ],
-        "errorCount": 6,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9076923076923078
+        "score": 1
       }
     },
     {
@@ -6015,24 +5361,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 311,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 351,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -6044,18 +5377,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 253,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. It…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 252,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -6067,18 +5393,11 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 885,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Becaus…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 890,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Mercury",
@@ -6145,9 +5464,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615385
+        "score": 1
       }
     },
     {
@@ -6329,24 +5648,11 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 330,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 1st house — your body, your energy, how you're showing u…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
+            "charCount": 370,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.6
+            "score": 1
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
@@ -6358,18 +5664,11 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 225,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 2nd house — money, values, and what feels secure. It's r…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 224,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Sun",
@@ -6405,18 +5704,11 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 761,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"intense\".",
-                "excerpt": "…In Scorpio, this tends to come out quietly, intensely, and rarely showing all your cards. Mars i…"
-              }
-            ],
-            "errorCount": 1,
+            "charCount": 766,
+            "findings": [],
+            "errorCount": 0,
             "warningCount": 0,
-            "score": 0.8
+            "score": 1
           },
           {
             "source": "planetSynthesis.Jupiter",
@@ -6459,9 +5751,9 @@
             "score": 1
           }
         ],
-        "errorCount": 4,
+        "errorCount": 0,
         "warningCount": 0,
-        "score": 0.9384615384615385
+        "score": 1
       }
     }
   ],
@@ -6475,22 +5767,12 @@
     "invariantPass": 140,
     "mathScore": 0.9988095238095238,
     "readingBlocks": 260,
-    "lintErrors": 104,
+    "lintErrors": 0,
     "lintWarnings": 2,
-    "readingScore": 0.9196153846153846,
+    "readingScore": 0.9996153846153846,
     "rulesChecked": 14
   },
   "ruleBreakdown": [
-    {
-      "rule": "no-vague-labels",
-      "hits": 64,
-      "severity": "error"
-    },
-    {
-      "rule": "no-em-dash",
-      "hits": 40,
-      "severity": "error"
-    },
     {
       "rule": "readable-sentences",
       "hits": 2,
