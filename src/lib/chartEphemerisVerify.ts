@@ -147,7 +147,15 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     return { ...base, blockedReason: 'Add the birth date (YYYY-MM-DD) to run verification.' };
   }
 
-  const coordinates = birthLocation ? getCoordinatesFromLocation(birthLocation) : null;
+  let coordinates = birthLocation ? getCoordinatesFromLocation(birthLocation) : null;
+  let coordsApproximate = false;
+  if (!coordinates && birthLocation) {
+    const fallback = fallbackCoordinates(birthLocation);
+    if (fallback) {
+      coordinates = fallback;
+      coordsApproximate = true;
+    }
+  }
   let offset = typeof input.timezoneOffset === 'number' ? input.timezoneOffset : null;
   if (birthLocation) {
     const [y, m, d] = birthDate.split('-').map(Number);
@@ -160,6 +168,28 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     computed = calculateNatalChart(birthDate, birthTime || '12:00', offset ?? 0, birthLocation) as any;
   } catch {
     return { ...base, coordinates, timezoneOffset: offset, blockedReason: 'The ephemeris recomputation failed for this birth data.' };
+  }
+
+  // Angles when the city table did not know the place but a region did.
+  if (coordinates && coordsApproximate && birthTime) {
+    try {
+      const [y, m, d] = birthDate.split('-').map(Number);
+      const [hh, mm] = birthTime.split(':').map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d, (hh || 0) - (offset ?? 0), mm || 0));
+      const asc = calculateAscendant(date, coordinates.lat, coordinates.lon);
+      if (asc?.sign) computed.Ascendant = asc;
+      const vtx = calculateVertex(date, coordinates.lat, coordinates.lon);
+      if (vtx?.sign) computed.Vertex = vtx;
+      const ascLon = absLon(asc);
+      const sunLon = absLon(computed.Sun);
+      const moonLon = absLon(computed.Moon);
+      if (ascLon !== null && sunLon !== null && moonLon !== null) {
+        const pof = calculatePartOfFortune(ascLon, sunLon, moonLon, date, coordinates.lat);
+        if (pof?.sign) computed.PartOfFortune = pof;
+      }
+    } catch {
+      // leave the angles unavailable
+    }
   }
 
   const entered = input.planets || {};
