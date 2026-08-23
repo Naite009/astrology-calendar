@@ -129,22 +129,49 @@ export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
   const coords = chart.birthLocation ? safe(() => getCoordinatesFromLocation(chart.birthLocation)) : null;
   let houseCusps = chart.houseCusps;
 
-  // Only derive cusps when there is no Ascendant on file at all. A typed
-  // Ascendant is exact; city-level coordinates are not, so we never override it.
-  if (coords && chart.birthTime && !houseCusps?.house1?.sign && !hasSign(planets.Ascendant)) {
-    const cusps = safe(() => calculatePlacidusHouseCusps(date, coords.lat, coords.lon));
-    if (cusps) {
+  // House cusps drive every house-based report, so never leave them empty.
+  if (!houseCusps?.house1?.sign) {
+    const placidus = coords && chart.birthTime
+      ? safe(() => calculatePlacidusHouseCusps(date, coords.lat, coords.lon))
+      : null;
+    const typedAsc = absDeg(planets.Ascendant);
+    const placidusAsc = placidus ? absDeg((placidus as any).house1) : null;
+
+    // Placidus from the birth data, but only when it agrees with a typed
+    // Ascendant (city-level coordinates are approximate, a typed Asc is exact).
+    const agrees =
+      placidusAsc !== null &&
+      (typedAsc === null || Math.abs(((placidusAsc - typedAsc + 540) % 360) - 180) < 2);
+
+    if (placidus && agrees) {
       const built: Record<string, { sign: string; degree: number; minutes: number }> = {};
       for (let i = 1; i <= 12; i++) {
-        const c = (cusps as any)[`house${i}`] || (cusps as any).cusps?.[i - 1];
+        const c = (placidus as any)[`house${i}`];
         if (c?.sign) built[`house${i}`] = { sign: c.sign, degree: c.degree ?? 0, minutes: c.minutes ?? 0 };
       }
       if (built.house1) {
         houseCusps = built as NatalChart['houseCusps'];
         derived.push('houseCusps');
       }
+    } else if (typedAsc !== null) {
+      // Equal houses from the typed Ascendant: exact on house 1 and never wrong
+      // about which sign each house starts in by more than the system choice.
+      const built: Record<string, { sign: string; degree: number; minutes: number }> = {};
+      for (let i = 0; i < 12; i++) {
+        const lon = (typedAsc + i * 30) % 360;
+        const deg = lon % 30;
+        const d = Math.floor(deg);
+        built[`house${i + 1}`] = {
+          sign: SIGNS[Math.floor(lon / 30)],
+          degree: d,
+          minutes: Math.round((deg - d) * 60),
+        };
+      }
+      houseCusps = built as NatalChart['houseCusps'];
+      derived.push('houseCusps(equal)');
     }
   }
+
 
   if (coords && chart.birthTime && !hasSign(planets.Vertex)) {
     add('Vertex', safe(() => toPos(calculateVertex(date, coords.lat, coords.lon))));
