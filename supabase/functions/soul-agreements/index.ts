@@ -1215,7 +1215,10 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
           ],
           response_format: { type: "json_object" },
           temperature: 0.4,
-          max_tokens: 7000,
+          // 9 long sections + summary routinely exceed 7k tokens; the old cap
+          // truncated the JSON mid-string and every parse attempt failed, so the
+          // UI spun until the fallback landed. Give the model real headroom.
+          max_tokens: 32000,
         }),
       });
 
@@ -1225,8 +1228,13 @@ Return ONLY the JSON object. No prose outside JSON. No markdown fences.`;
       }
 
       const data = await resp.json();
+      const finish = data?.choices?.[0]?.finish_reason;
+      if (finish && finish !== "stop") {
+        console.warn(`[soul-agreements] finish_reason=${finish} (output may be truncated)`);
+      }
       return data?.choices?.[0]?.message?.content ?? "{}";
     };
+
 
     const normalizeAgreements = (value: any) => {
       const fallback = makeFallbackAgreements({ chartName, placements, houses, aspects });
