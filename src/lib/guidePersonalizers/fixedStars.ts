@@ -8,8 +8,10 @@ import type { NatalChart } from "@/hooks/useNatalChart";
 import {
   FIXED_STARS,
   precessedLongitude,
+  findFixedStarContacts,
   type FixedStar,
 } from "@/lib/fixedStars";
+
 import { toAbsoluteLongitude } from "@/lib/houseForLongitude";
 import type { PersonalReading, AspectHit } from "./divineFeminine";
 
