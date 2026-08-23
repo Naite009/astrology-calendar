@@ -321,7 +321,23 @@ export function getTimezoneInfoForDate(
   return { offset, label };
 }
 
+/**
+ * US state-level zones. Used only when the city map has no entry, so a small
+ * birth town still gets the correct zone instead of blocking calculation.
+ * State names and postal codes are matched inside the normalized string
+ * (commas are already stripped, so "newton nj" contains " nj").
+ */
+const US_STATE_TIMEZONES: Array<{ terms: string[]; timezone: string }> = [
+  { terms: ['new jersey', ' nj', 'new york', ' ny', 'connecticut', ' ct', 'pennsylvania', ' pa', 'delaware', ' de', 'maryland', ' md', 'washington dc', ' dc', 'virginia', ' va', 'west virginia', ' wv', 'massachusetts', ' ma', 'vermont', ' vt', 'new hampshire', ' nh', 'maine', ' me', 'rhode island', ' ri', 'north carolina', ' nc', 'south carolina', ' sc', 'georgia', ' ga', 'florida', ' fl', 'ohio', ' oh', 'michigan', ' mi', 'indiana', ' in'], timezone: 'America/New_York' },
+  { terms: ['illinois', ' il', 'wisconsin', ' wi', 'minnesota', ' mn', 'iowa', ' ia', 'missouri', ' mo', 'arkansas', ' ar', 'louisiana', ' la', 'mississippi', ' ms', 'alabama', ' al', 'tennessee', ' tn', 'kentucky', ' ky', 'texas', ' tx', 'oklahoma', ' ok', 'kansas', ' ks', 'nebraska', ' ne', 'south dakota', ' sd', 'north dakota', ' nd'], timezone: 'America/Chicago' },
+  { terms: ['colorado', ' co', 'new mexico', ' nm', 'utah', ' ut', 'wyoming', ' wy', 'montana', ' mt', 'idaho', ' id', 'arizona', ' az'], timezone: 'America/Denver' },
+  { terms: ['california', ' ca', 'oregon', ' or', 'nevada', ' nv', 'washington state', ' wa'], timezone: 'America/Los_Angeles' },
+  { terms: ['alaska', ' ak'], timezone: 'America/Anchorage' },
+  { terms: ['hawaii', ' hi'], timezone: 'Pacific/Honolulu' },
+];
+
 export function lookupTimezone(location: string, birthDate?: string): TimezoneResult | null {
+
   if (!location) return null;
   
   // Normalize the location string
@@ -353,8 +369,16 @@ export function lookupTimezone(location: string, birthDate?: string): TimezoneRe
       }
     }
   }
-  
+
+  // State-level fallback, so a small town the city map never heard of still
+  // resolves the right zone (and the right historical DST rule for the date).
+  if (!match) {
+    const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
+    if (zone) match = { timezone: zone.timezone } as typeof match;
+  }
+
   if (!match) return null;
+
   
   // Calculate the actual offset for the given date
   // Parse the date string carefully to avoid timezone issues
