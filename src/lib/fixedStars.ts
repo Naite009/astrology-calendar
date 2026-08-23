@@ -269,7 +269,23 @@ function gatherNatalPoints(chart: NatalChart): Array<{ key: string; lon: number;
     if (!isNaN(lon)) out.push({ key: 'Midheaven', lon, pretty: `${mc.deg}°${String(mc.min).padStart(2,'0')}' ${mc.sign}` });
   }
 
-  const eligible: Array<keyof typeof p> = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','NorthNode'];
+  // Descendant and IC, so a star on the 7th or 4th cusp is not silently lost.
+  const opposite = (cusp: { sign: string; degree: number; minutes?: number } | undefined, key: string) => {
+    if (!cusp) return;
+    const lon = pointLongitude(cusp.sign, cusp.degree, cusp.minutes || 0);
+    if (isNaN(lon)) return;
+    const f = fromLongitude(lon);
+    out.push({ key, lon, pretty: `${f.deg}°${String(f.min).padStart(2, '0')}' ${f.sign}` });
+  };
+  opposite(chart.houseCusps?.house7 as any, 'Descendant');
+  opposite(chart.houseCusps?.house4 as any, 'IC');
+
+  const eligible: Array<keyof typeof p> = [
+    'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn',
+    'Uranus','Neptune','Pluto','Chiron','NorthNode','SouthNode',
+    'Lilith','PartOfFortune','Vertex',
+  ];
+
   for (const key of eligible) {
     const pos = p[key];
     if (!pos) continue;
