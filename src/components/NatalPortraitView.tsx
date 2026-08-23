@@ -11,6 +11,9 @@ import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
+import { ReadingExportButtons } from '@/components/ReadingExportButtons';
+import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
+import type { ExportMeta } from '@/lib/pdfDocEngine';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
   Heart, Briefcase, Waves, Shield, Flame, Compass,
@@ -230,7 +233,7 @@ const TopThemesSection = ({ themes }: { themes: RankedTheme[] }) => (
 
 // ─── Domain Deep Dive Card ──────────────────────────────────────────
 
-const DomainSection = ({ domain }: { domain: DomainDeepDive }) => {
+const DomainSection = ({ domain, meta }: { domain: DomainDeepDive; meta: ExportMeta }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
@@ -305,6 +308,14 @@ const DomainSection = ({ domain }: { domain: DomainDeepDive }) => {
         {/* Advice */}
         <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm">
           <p className="text-[11px] text-primary italic">💡 {domain.advice}</p>
+        </div>
+
+        <div className="pt-3 border-t border-border">
+          <ReadingExportButtons
+            label={`Download ${domain.title}`}
+            onPdf={() => exportDomainPdf(meta, domain)}
+            onJson={() => exportDomainJson(meta, domain)}
+          />
         </div>
       </div>
     </SectionWrapper>
@@ -571,12 +582,12 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       <SoulAgreementsSection chart={selectedChart} />
 
       {/* 3-8. Domain Deep Dives */}
-      <DomainSection domain={portrait.relationshipBlueprint} />
-      <DomainSection domain={portrait.careerMoneyMap} />
-      <DomainSection domain={portrait.emotionalArchitecture} />
-      <DomainSection domain={portrait.healthVitality} />
-      <DomainSection domain={portrait.shadowGrowth} />
-      <DomainSection domain={portrait.spiritualKarmic} />
+      <DomainSection domain={portrait.relationshipBlueprint} meta={exportMeta} />
+      <DomainSection domain={portrait.careerMoneyMap} meta={exportMeta} />
+      <DomainSection domain={portrait.emotionalArchitecture} meta={exportMeta} />
+      <DomainSection domain={portrait.healthVitality} meta={exportMeta} />
+      <DomainSection domain={portrait.shadowGrowth} meta={exportMeta} />
+      <DomainSection domain={portrait.spiritualKarmic} meta={exportMeta} />
 
       {/* 9. House Emphasis */}
       <HouseEmphasisSection houses={portrait.houseEmphasis} />
