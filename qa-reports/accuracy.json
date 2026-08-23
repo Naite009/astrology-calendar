@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T13:54:06.389Z",
+  "generatedAt": "2026-08-23T13:57:46.585Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -137,7 +137,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Capricorn 5°50', 7th Cancer 5°50'"
+            "detail": "1st Capricorn 5°49', 7th Cancer 5°49'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -146,8 +146,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -173,7 +173,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref01",
@@ -181,13 +181,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 320,
+            "charCount": 312,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 2nd house — money, self-worth, and what feels secure. Th…"
+                "excerpt": "…y's Gemini Moon is transiting your 6th house — work routines, health, daily systems. That's…"
               },
               {
                 "rule": "no-vague-labels",
@@ -202,7 +202,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 159,
+            "charCount": 155,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -210,13 +210,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 235,
+            "charCount": 233,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 2nd house — money, values, and what feels secure. It's r…"
+                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. It's rew…"
               }
             ],
             "errorCount": 1,
@@ -225,7 +225,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 921,
+            "charCount": 925,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -233,7 +233,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 797,
+            "charCount": 799,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -241,7 +241,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 901,
+            "charCount": 905,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -257,7 +257,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 736,
+            "charCount": 740,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -265,7 +265,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 749,
+            "charCount": 750,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -273,7 +273,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 729,
+            "charCount": 728,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -288,7 +288,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 730,
+            "charCount": 731,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -296,7 +296,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 749,
+            "charCount": 752,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -311,7 +311,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 881,
+            "charCount": 886,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -467,8 +467,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -494,7 +494,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref02",
@@ -502,13 +502,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 317,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 10th house — career, reputation, public-facing self. That…"
               },
               {
                 "rule": "no-vague-labels",
@@ -523,7 +523,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 157,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -531,13 +531,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 249,
+            "charCount": 241,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 10th house — career, reputation, public-facing self. It's…"
               }
             ],
             "errorCount": 1,
@@ -546,7 +546,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 1054,
+            "charCount": 1053,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -554,7 +554,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 700,
+            "charCount": 698,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -562,7 +562,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 611,
+            "charCount": 613,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -570,7 +570,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 682,
+            "charCount": 686,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -578,7 +578,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 868,
+            "charCount": 884,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -586,7 +586,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 731,
+            "charCount": 730,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -594,7 +594,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 732,
+            "charCount": 736,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -602,7 +602,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 879,
+            "charCount": 883,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -617,7 +617,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 740,
+            "charCount": 750,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -788,8 +788,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -815,7 +815,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref03",
@@ -823,13 +823,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 317,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 10th house — career, reputation, public-facing self. That…"
               },
               {
                 "rule": "no-vague-labels",
@@ -844,7 +844,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 157,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -852,13 +852,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 237,
+            "charCount": 223,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. It's rewor…"
               }
             ],
             "errorCount": 1,
@@ -867,7 +867,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 698,
+            "charCount": 708,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -875,7 +875,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 734,
+            "charCount": 737,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -883,7 +883,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 690,
+            "charCount": 700,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -898,7 +898,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 1070,
+            "charCount": 1074,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -913,7 +913,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 715,
+            "charCount": 720,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -921,7 +921,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 1271,
+            "charCount": 1274,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -929,7 +929,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 1037,
+            "charCount": 1041,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -937,7 +937,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 1070,
+            "charCount": 1074,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -953,7 +953,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 706,
+            "charCount": 716,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -1116,8 +1116,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -1143,7 +1143,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref04",
@@ -1151,13 +1151,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 311,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
               },
               {
                 "rule": "no-vague-labels",
@@ -1172,7 +1172,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 154,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1180,13 +1180,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 240,
+            "charCount": 238,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
               }
             ],
             "errorCount": 1,
@@ -1195,7 +1195,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 692,
+            "charCount": 694,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1203,7 +1203,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 714,
+            "charCount": 734,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1211,7 +1211,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 816,
+            "charCount": 818,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1219,7 +1219,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 933,
+            "charCount": 932,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1227,7 +1227,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 704,
+            "charCount": 706,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1235,7 +1235,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 911,
+            "charCount": 915,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1243,7 +1243,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 672,
+            "charCount": 670,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1251,7 +1251,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 711,
+            "charCount": 715,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1259,7 +1259,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 939,
+            "charCount": 941,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -1274,7 +1274,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 843,
+            "charCount": 853,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1430,8 +1430,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -1457,7 +1457,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref05",
@@ -1465,13 +1465,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 311,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
               },
               {
                 "rule": "no-vague-labels",
@@ -1486,7 +1486,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 154,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1494,13 +1494,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 246,
+            "charCount": 244,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
               }
             ],
             "errorCount": 1,
@@ -1509,7 +1509,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 845,
+            "charCount": 865,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1525,7 +1525,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 802,
+            "charCount": 822,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1533,7 +1533,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 753,
+            "charCount": 756,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1541,7 +1541,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 1049,
+            "charCount": 1065,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1549,7 +1549,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 792,
+            "charCount": 796,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -1564,7 +1564,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 739,
+            "charCount": 744,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1572,7 +1572,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 1038,
+            "charCount": 1058,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1580,7 +1580,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 1052,
+            "charCount": 1072,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1588,7 +1588,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 721,
+            "charCount": 723,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -1751,8 +1751,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -1778,7 +1778,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref06",
@@ -1786,13 +1786,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…y's Gemini Moon is transiting your 7th house — close partnerships, one-on-ones, mirrors. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -1807,7 +1807,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1815,13 +1815,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 238,
+            "charCount": 225,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. It's rew…"
               }
             ],
             "errorCount": 1,
@@ -1838,7 +1838,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 867,
+            "charCount": 877,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1854,7 +1854,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 740,
+            "charCount": 756,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1862,7 +1862,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 714,
+            "charCount": 718,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1870,7 +1870,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 733,
+            "charCount": 734,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1878,7 +1878,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 715,
+            "charCount": 735,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1886,7 +1886,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 876,
+            "charCount": 886,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1894,7 +1894,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 634,
+            "charCount": 638,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -1902,7 +1902,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 737,
+            "charCount": 753,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2058,8 +2058,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -2085,7 +2085,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref07",
@@ -2093,13 +2093,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 330,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 1st house — your body, your energy, how you're showing u…"
+                "excerpt": "…y's Gemini Moon is transiting your 2nd house — money, self-worth, and what feels secure. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -2114,7 +2114,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 164,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2122,13 +2122,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 283,
+            "charCount": 290,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. Yo…"
+                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
               }
             ],
             "errorCount": 1,
@@ -2137,7 +2137,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 886,
+            "charCount": 894,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2152,7 +2152,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 629,
+            "charCount": 630,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2167,7 +2167,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 712,
+            "charCount": 720,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2175,7 +2175,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 981,
+            "charCount": 1001,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2190,7 +2190,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 709,
+            "charCount": 714,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2198,7 +2198,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 1058,
+            "charCount": 1063,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2206,7 +2206,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 691,
+            "charCount": 692,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2221,7 +2221,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 719,
+            "charCount": 724,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2229,7 +2229,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 728,
+            "charCount": 733,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2237,7 +2237,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 716,
+            "charCount": 736,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2273,88 +2273,88 @@
           {
             "body": "Sun",
             "expected": 12.9192,
-            "actual": 12.904166666666667,
-            "deltaArcmin": 0.9020000000009532,
+            "actual": 12.924722222222222,
+            "deltaArcmin": 0.3313333333335322,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Moon",
             "expected": 173.5272,
-            "actual": 173.26166666666666,
-            "deltaArcmin": 15.932000000000244,
+            "actual": 173.5275,
+            "deltaArcmin": 0.01800000000230284,
             "limit": 8,
-            "status": "close"
+            "status": "pass"
           },
           {
             "body": "Mercury",
             "expected": 18.2984,
-            "actual": 18.261388888888888,
-            "deltaArcmin": 2.220666666669331,
+            "actual": 18.304444444444446,
+            "deltaArcmin": 0.36266666666733727,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 58.7872,
-            "actual": 58.770833333333336,
-            "deltaArcmin": 0.9819999999967877,
+            "actual": 58.79111111111111,
+            "deltaArcmin": 0.23466666666990932,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 6.801,
-            "actual": 6.790555555555556,
-            "deltaArcmin": 0.62666666666928,
+            "actual": 6.8069444444444445,
+            "deltaArcmin": 0.3566666666688434,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 286.0709,
-            "actual": 286.0702777777778,
-            "deltaArcmin": 0.037333333332298935,
+            "actual": 286.0722222222222,
+            "deltaArcmin": 0.07933333332857728,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 359.3971,
-            "actual": 359.39972222222224,
-            "deltaArcmin": 0.15733333333628252,
+            "actual": 359.4022222222222,
+            "deltaArcmin": 0.3073333333259143,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 304.0391,
-            "actual": 304.03861111111115,
-            "deltaArcmin": 0.029333333332033362,
+            "actual": 304.0391666666667,
+            "deltaArcmin": 0.004000000003543391,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 297.552,
-            "actual": 297.555,
-            "deltaArcmin": 0.17999999999574356,
+            "actual": 297.5552777777778,
+            "deltaArcmin": 0.19666666667035315,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 242.9044,
-            "actual": 242.90166666666667,
-            "deltaArcmin": 0.16400000000203363,
+            "actual": 242.9013888888889,
+            "deltaArcmin": 0.180666666669822,
             "limit": 8,
             "status": "pass"
           },
           {
             "body": "Chiron",
             "expected": 191.0377,
-            "actual": 191.0425,
-            "deltaArcmin": 0.2879999999959182,
+            "actual": 191.04083333333332,
+            "deltaArcmin": 0.18800000000283035,
             "limit": 60,
             "status": "pass",
             "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
@@ -2362,8 +2362,8 @@
           {
             "body": "NorthNode",
             "expected": 197.5441,
-            "actual": 197.19083333333333,
-            "deltaArcmin": 21.19599999999764,
+            "actual": 197.19055555555556,
+            "deltaArcmin": 21.212666666665427,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -2371,19 +2371,19 @@
           {
             "body": "Ascendant",
             "expected": 137.0182,
-            "actual": 130.23805555555555,
-            "deltaArcmin": 406.8086666666659,
+            "actual": 137.01944444444445,
+            "deltaArcmin": 0.07466666666459787,
             "limit": 30,
-            "status": "fail",
+            "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
           },
           {
             "body": "Midheaven",
             "expected": 46.3441,
-            "actual": 38.733333333333334,
-            "deltaArcmin": 456.64600000000064,
+            "actual": 46.35,
+            "deltaArcmin": 0.35399999999981446,
             "limit": 30,
-            "status": "fail",
+            "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
           }
         ],
@@ -2391,17 +2391,17 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Leo 10°14', 7th Aquarius 10°14'"
+            "detail": "1st Leo 17°01', 7th Aquarius 17°01'"
           },
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Taurus 8°44', 4th Scorpio 8°44'"
+            "detail": "10th Taurus 16°21', 4th Scorpio 16°21'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -2416,7 +2416,7 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 4°35'"
+            "detail": "Vertex Pisces 8°01'"
           },
           {
             "name": "Timezone and daylight saving resolved correctly",
@@ -2424,10 +2424,10 @@
             "detail": "expected +5.5h, app used +5.5h"
           }
         ],
-        "passCount": 11,
-        "closeCount": 1,
-        "failCount": 2,
-        "score": 0.8333333333333334
+        "passCount": 14,
+        "closeCount": 0,
+        "failCount": 0,
+        "score": 1
       },
       "reading": {
         "id": "ref08",
@@ -2435,13 +2435,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 305,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
               },
               {
                 "rule": "no-vague-labels",
@@ -2456,7 +2456,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 151,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2464,13 +2464,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
+            "charCount": 276,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. You don't…"
               }
             ],
             "errorCount": 1,
@@ -2479,7 +2479,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 709,
+            "charCount": 802,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2487,7 +2487,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 694,
+            "charCount": 611,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2495,7 +2495,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 794,
+            "charCount": 710,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2503,7 +2503,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 906,
+            "charCount": 905,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2511,7 +2511,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 724,
+            "charCount": 725,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2519,7 +2519,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 854,
+            "charCount": 754,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2527,7 +2527,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 876,
+            "charCount": 881,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2535,7 +2535,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 735,
+            "charCount": 755,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2543,7 +2543,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 882,
+            "charCount": 902,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2551,7 +2551,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 735,
+            "charCount": 739,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2707,8 +2707,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -2734,7 +2734,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref09",
@@ -2742,13 +2742,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -2763,7 +2763,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2771,13 +2771,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
+            "charCount": 279,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…is in Cancer. It's transiting your 9th house — meaning, travel, belief, big picture. You do…"
               }
             ],
             "errorCount": 1,
@@ -2786,7 +2786,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 803,
+            "charCount": 819,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2831,7 +2831,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 787,
+            "charCount": 789,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2839,7 +2839,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 760,
+            "charCount": 776,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -2854,7 +2854,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 894,
+            "charCount": 904,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2862,7 +2862,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 726,
+            "charCount": 729,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2885,7 +2885,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 912,
+            "charCount": 916,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -2893,7 +2893,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 903,
+            "charCount": 919,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3047,7 +3047,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Capricorn 29°48', 7th Cancer 29°48'"
+            "detail": "1st Capricorn 29°46', 7th Cancer 29°46'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -3056,8 +3056,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -3083,7 +3083,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref10",
@@ -3091,13 +3091,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 330,
+            "charCount": 302,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 1st house — your body, your energy, how you're showing u…"
+                "excerpt": "…y's Gemini Moon is transiting your 5th house — creativity, play, kids, romance. That's wher…"
               },
               {
                 "rule": "no-vague-labels",
@@ -3112,7 +3112,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 164,
+            "charCount": 150,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3120,13 +3120,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 231,
+            "charCount": 227,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. It…"
+                "excerpt": "…is in Cancer. It's transiting your 6th house — work routines, health, daily systems. It's r…"
               }
             ],
             "errorCount": 1,
@@ -3135,7 +3135,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 834,
+            "charCount": 844,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3143,7 +3143,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 873,
+            "charCount": 876,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3151,7 +3151,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 840,
+            "charCount": 852,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3159,7 +3159,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 741,
+            "charCount": 745,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3167,7 +3167,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 760,
+            "charCount": 767,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3183,7 +3183,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 877,
+            "charCount": 893,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3191,7 +3191,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 620,
+            "charCount": 627,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3199,7 +3199,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 720,
+            "charCount": 725,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3214,7 +3214,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 872,
+            "charCount": 879,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3370,8 +3370,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -3397,7 +3397,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref11",
@@ -3405,13 +3405,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 330,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 1st house — your body, your energy, how you're showing u…"
+                "excerpt": "…y's Gemini Moon is transiting your 2nd house — money, self-worth, and what feels secure. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -3426,321 +3426,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 164,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "mercuryRetroPersonal",
-            "charCount": 283,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. Yo…"
-              }
-            ],
-            "errorCount": 1,
-            "warningCount": 0,
-            "score": 0.8
-          },
-          {
-            "source": "planetSynthesis.Sun",
-            "charCount": 738,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Moon",
-            "charCount": 796,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Mercury",
-            "charCount": 853,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Venus",
-            "charCount": 1072,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Mars",
-            "charCount": 1377,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Jupiter",
-            "charCount": 905,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Saturn",
-            "charCount": 1222,
-            "findings": [
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"fairness\".",
-                "excerpt": "…other people, comparing options and weighing fairness. Saturn is strong in Libra, so people often…"
-              }
-            ],
-            "errorCount": 1,
-            "warningCount": 0,
-            "score": 0.8
-          },
-          {
-            "source": "planetSynthesis.Uranus",
-            "charCount": 720,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Neptune",
-            "charCount": 726,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Pluto",
-            "charCount": 1338,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          }
-        ],
-        "errorCount": 4,
-        "warningCount": 0,
-        "score": 0.9384615384615386
-      }
-    },
-    {
-      "math": {
-        "id": "ref12",
-        "name": "Reference 12 Denver 1946",
-        "birthLine": "1946-08-19 10:03 Denver, CO, USA (America/Denver)",
-        "why": "1946, no DST in Colorado that year",
-        "approximateTime": false,
-        "timezone": {
-          "expectedOffset": -7,
-          "resolvedOffset": -6,
-          "ok": false,
-          "detail": "Offset disagrees with tzdata, so every position shifts."
-        },
-        "bodies": [
-          {
-            "body": "Sun",
-            "expected": 146.0902,
-            "actual": 146.05555555555557,
-            "deltaArcmin": 2.0786666666663223,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Moon",
-            "expected": 51.5929,
-            "actual": 51.0075,
-            "deltaArcmin": 35.12400000000298,
-            "limit": 8,
-            "status": "fail"
-          },
-          {
-            "body": "Mercury",
-            "expected": 127.6818,
-            "actual": 127.65305555555557,
-            "deltaArcmin": 1.7246666666665078,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Venus",
-            "expected": 191.2166,
-            "actual": 191.17527777777778,
-            "deltaArcmin": 2.4793333333332157,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Mars",
-            "expected": 186.412,
-            "actual": 186.38944444444445,
-            "deltaArcmin": 1.3533333333316477,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Jupiter",
-            "expected": 203.2357,
-            "actual": 203.23055555555555,
-            "deltaArcmin": 0.30866666666724996,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Saturn",
-            "expected": 122.1467,
-            "actual": 122.14611111111111,
-            "deltaArcmin": 0.03533333333052724,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Uranus",
-            "expected": 81.1478,
-            "actual": 81.14972222222222,
-            "deltaArcmin": 0.11533333333318296,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Neptune",
-            "expected": 186.8538,
-            "actual": 186.8563888888889,
-            "deltaArcmin": 0.15533333333451083,
-            "limit": 6,
-            "status": "pass"
-          },
-          {
-            "body": "Pluto",
-            "expected": 131.859,
-            "actual": 131.8636111111111,
-            "deltaArcmin": 0.27666666666618767,
-            "limit": 8,
-            "status": "pass"
-          },
-          {
-            "body": "Chiron",
-            "expected": 198.883,
-            "actual": 198.87805555555556,
-            "deltaArcmin": 0.296666666663441,
-            "limit": 60,
-            "status": "pass",
-            "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
-          },
-          {
-            "body": "NorthNode",
-            "expected": 77.2617,
-            "actual": 78.93916666666667,
-            "deltaArcmin": 100.64799999999877,
-            "limit": 120,
-            "status": "pass",
-            "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
-          },
-          {
-            "body": "Ascendant",
-            "expected": 202.5297,
-            "actual": 190.535,
-            "deltaArcmin": 719.681999999998,
-            "limit": 30,
-            "status": "fail",
-            "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
-          },
-          {
-            "body": "Midheaven",
-            "expected": 116.1972,
-            "actual": 102.11666666666666,
-            "deltaArcmin": 844.8319999999967,
-            "limit": 30,
-            "status": "fail",
-            "note": "Same coordinate rounding as the Ascendant."
-          }
-        ],
-        "invariants": [
-          {
-            "name": "Ascendant and Descendant are opposite",
-            "ok": true,
-            "detail": "1st Libra 10°32', 7th Aries 10°32'"
-          },
-          {
-            "name": "Midheaven and IC are opposite",
-            "ok": true,
-            "detail": "10th Cancer 12°07', 4th Capricorn 12°07'"
-          },
-          {
-            "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
-          },
-          {
-            "name": "North and South Node are exactly opposite",
-            "ok": true,
-            "detail": "Gemini 18°56' / Sagittarius 18°56'"
-          },
-          {
-            "name": "Every body’s sign matches its own longitude",
-            "ok": true,
-            "detail": "No sign / degree mismatch."
-          },
-          {
-            "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
-            "ok": true,
-            "detail": "Vertex Aries 9°25'"
-          },
-          {
-            "name": "Timezone and daylight saving resolved correctly",
-            "ok": false,
-            "detail": "expected -7h, app used -6h"
-          }
-        ],
-        "passCount": 11,
-        "closeCount": 0,
-        "failCount": 3,
-        "score": 0.7619047619047619
-      },
-      "reading": {
-        "id": "ref12",
-        "name": "Reference 12 Denver 1946",
-        "lints": [
-          {
-            "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
-            "findings": [
-              {
-                "rule": "no-em-dash",
-                "severity": "error",
-                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
-              },
-              {
-                "rule": "no-vague-labels",
-                "severity": "error",
-                "message": "Banned vague phrasing: \"scattered\".",
-                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
-              }
-            ],
-            "errorCount": 2,
-            "warningCount": 0,
-            "score": 0.6
-          },
-          {
-            "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3763,7 +3449,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 721,
+            "charCount": 737,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3771,7 +3457,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 747,
+            "charCount": 795,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3779,7 +3465,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 872,
+            "charCount": 856,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3787,7 +3473,321 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 855,
+            "charCount": 1071,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Mars",
+            "charCount": 1387,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Jupiter",
+            "charCount": 904,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Saturn",
+            "charCount": 1230,
+            "findings": [
+              {
+                "rule": "no-vague-labels",
+                "severity": "error",
+                "message": "Banned vague phrasing: \"fairness\".",
+                "excerpt": "…other people, comparing options and weighing fairness. Saturn is strong in Libra, so people often…"
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "score": 0.8
+          },
+          {
+            "source": "planetSynthesis.Uranus",
+            "charCount": 724,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Neptune",
+            "charCount": 725,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Pluto",
+            "charCount": 1343,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          }
+        ],
+        "errorCount": 4,
+        "warningCount": 0,
+        "score": 0.9384615384615386
+      }
+    },
+    {
+      "math": {
+        "id": "ref12",
+        "name": "Reference 12 Denver 1946",
+        "birthLine": "1946-08-19 10:03 Denver, CO, USA (America/Denver)",
+        "why": "1946, no DST in Colorado that year",
+        "approximateTime": false,
+        "timezone": {
+          "expectedOffset": -7,
+          "resolvedOffset": -7,
+          "ok": true,
+          "detail": "Matches tzdata."
+        },
+        "bodies": [
+          {
+            "body": "Sun",
+            "expected": 146.0902,
+            "actual": 146.09583333333333,
+            "deltaArcmin": 0.3379999999992833,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Moon",
+            "expected": 51.5929,
+            "actual": 51.59305555555556,
+            "deltaArcmin": 0.009333333334780036,
+            "limit": 8,
+            "status": "pass"
+          },
+          {
+            "body": "Mercury",
+            "expected": 127.6818,
+            "actual": 127.68722222222223,
+            "deltaArcmin": 0.32533333333503833,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Venus",
+            "expected": 191.2166,
+            "actual": 191.21972222222223,
+            "deltaArcmin": 0.18733333333557312,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Mars",
+            "expected": 186.412,
+            "actual": 186.41611111111112,
+            "deltaArcmin": 0.24666666666689707,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Jupiter",
+            "expected": 203.2357,
+            "actual": 203.23722222222221,
+            "deltaArcmin": 0.09133333333238625,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Saturn",
+            "expected": 122.1467,
+            "actual": 122.15111111111112,
+            "deltaArcmin": 0.2646666666691999,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Uranus",
+            "expected": 81.1478,
+            "actual": 81.15111111111112,
+            "deltaArcmin": 0.19866666666530364,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Neptune",
+            "expected": 186.8538,
+            "actual": 186.85777777777778,
+            "deltaArcmin": 0.2386666666666315,
+            "limit": 6,
+            "status": "pass"
+          },
+          {
+            "body": "Pluto",
+            "expected": 131.859,
+            "actual": 131.8647222222222,
+            "deltaArcmin": 0.34333333333051996,
+            "limit": 8,
+            "status": "pass"
+          },
+          {
+            "body": "Chiron",
+            "expected": 198.883,
+            "actual": 198.88250000000002,
+            "deltaArcmin": 0.029999999999290594,
+            "limit": 60,
+            "status": "pass",
+            "note": "Chiron is an orbital model, so sources differ by tens of arc-minutes."
+          },
+          {
+            "body": "NorthNode",
+            "expected": 77.2617,
+            "actual": 78.9388888888889,
+            "deltaArcmin": 100.63133333333099,
+            "limit": 120,
+            "status": "pass",
+            "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
+          },
+          {
+            "body": "Ascendant",
+            "expected": 202.5297,
+            "actual": 202.5275,
+            "deltaArcmin": 0.13200000000097134,
+            "limit": 30,
+            "status": "pass",
+            "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
+          },
+          {
+            "body": "Midheaven",
+            "expected": 116.1972,
+            "actual": 116.2,
+            "deltaArcmin": 0.1679999999987558,
+            "limit": 30,
+            "status": "pass",
+            "note": "Same coordinate rounding as the Ascendant."
+          }
+        ],
+        "invariants": [
+          {
+            "name": "Ascendant and Descendant are opposite",
+            "ok": true,
+            "detail": "1st Libra 22°32', 7th Aries 22°32'"
+          },
+          {
+            "name": "Midheaven and IC are opposite",
+            "ok": true,
+            "detail": "10th Cancer 26°12', 4th Capricorn 26°12'"
+          },
+          {
+            "name": "House cusps run forward in zodiacal order",
+            "ok": true,
+            "detail": "All twelve cusps ascend."
+          },
+          {
+            "name": "North and South Node are exactly opposite",
+            "ok": true,
+            "detail": "Gemini 18°56' / Sagittarius 18°56'"
+          },
+          {
+            "name": "Every body’s sign matches its own longitude",
+            "ok": true,
+            "detail": "No sign / degree mismatch."
+          },
+          {
+            "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
+            "ok": true,
+            "detail": "Vertex Aries 20°10'"
+          },
+          {
+            "name": "Timezone and daylight saving resolved correctly",
+            "ok": true,
+            "detail": "expected -7h, app used -7h"
+          }
+        ],
+        "passCount": 14,
+        "closeCount": 0,
+        "failCount": 0,
+        "score": 1
+      },
+      "reading": {
+        "id": "ref12",
+        "name": "Reference 12 Denver 1946",
+        "lints": [
+          {
+            "source": "personalDailyGuidance.reflection",
+            "charCount": 320,
+            "findings": [
+              {
+                "rule": "no-em-dash",
+                "severity": "error",
+                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
+                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
+              },
+              {
+                "rule": "no-vague-labels",
+                "severity": "error",
+                "message": "Banned vague phrasing: \"scattered\".",
+                "excerpt": "…r you. The mood is chatty, curious, a little scattered, so pace yourself accordingly. As a First Qu…"
+              }
+            ],
+            "errorCount": 2,
+            "warningCount": 0,
+            "score": 0.6
+          },
+          {
+            "source": "personalDailyGuidance.journalPrompt",
+            "charCount": 159,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "mercuryRetroPersonal",
+            "charCount": 279,
+            "findings": [
+              {
+                "rule": "no-em-dash",
+                "severity": "error",
+                "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
+                "excerpt": "…is in Cancer. It's transiting your 9th house — meaning, travel, belief, big picture. You do…"
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "score": 0.8
+          },
+          {
+            "source": "planetSynthesis.Sun",
+            "charCount": 723,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Moon",
+            "charCount": 897,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Mercury",
+            "charCount": 867,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Venus",
+            "charCount": 767,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3802,7 +3802,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 895,
+            "charCount": 909,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3817,7 +3817,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 704,
+            "charCount": 856,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3832,7 +3832,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 744,
+            "charCount": 743,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3840,7 +3840,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 727,
+            "charCount": 734,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -3848,7 +3848,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 885,
+            "charCount": 897,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -3863,7 +3863,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 884,
+            "charCount": 733,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4019,8 +4019,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -4046,7 +4046,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref13",
@@ -4054,13 +4054,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…y's Gemini Moon is transiting your 9th house — meaning, travel, belief, the big picture. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -4075,7 +4075,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4083,13 +4083,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
+            "charCount": 282,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 10th house — career, reputation, public-facing self. You…"
               }
             ],
             "errorCount": 1,
@@ -4098,22 +4098,6 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 746,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Moon",
-            "charCount": 864,
-            "findings": [],
-            "errorCount": 0,
-            "warningCount": 0,
-            "score": 1
-          },
-          {
-            "source": "planetSynthesis.Mercury",
             "charCount": 766,
             "findings": [],
             "errorCount": 0,
@@ -4121,8 +4105,24 @@
             "score": 1
           },
           {
+            "source": "planetSynthesis.Moon",
+            "charCount": 869,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
+            "source": "planetSynthesis.Mercury",
+            "charCount": 786,
+            "findings": [],
+            "errorCount": 0,
+            "warningCount": 0,
+            "score": 1
+          },
+          {
             "source": "planetSynthesis.Venus",
-            "charCount": 729,
+            "charCount": 730,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4130,7 +4130,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 704,
+            "charCount": 708,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4145,7 +4145,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 855,
+            "charCount": 875,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4153,7 +4153,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 690,
+            "charCount": 691,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4161,7 +4161,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 817,
+            "charCount": 825,
             "findings": [
               {
                 "rule": "readable-sentences",
@@ -4176,7 +4176,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 1018,
+            "charCount": 1022,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4184,7 +4184,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 892,
+            "charCount": 902,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4340,8 +4340,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -4367,7 +4367,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref14",
@@ -4404,13 +4404,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 235,
+            "charCount": 231,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. It…"
+                "excerpt": "…is in Cancer. It's transiting your 2nd house — money, values, and what feels secure. It's r…"
               }
             ],
             "errorCount": 1,
@@ -4419,7 +4419,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 821,
+            "charCount": 825,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4427,7 +4427,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 684,
+            "charCount": 686,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4435,7 +4435,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 698,
+            "charCount": 708,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4443,7 +4443,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 702,
+            "charCount": 712,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4451,7 +4451,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 810,
+            "charCount": 812,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4459,7 +4459,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 870,
+            "charCount": 878,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4474,7 +4474,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 723,
+            "charCount": 733,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4482,7 +4482,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 894,
+            "charCount": 893,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4490,7 +4490,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 652,
+            "charCount": 655,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4498,7 +4498,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 710,
+            "charCount": 712,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4654,8 +4654,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -4681,7 +4681,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref15",
@@ -4689,13 +4689,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 314,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…y's Gemini Moon is transiting your 8th house — intimacy, shared money, buried truths. That'…"
               },
               {
                 "rule": "no-vague-labels",
@@ -4710,7 +4710,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 156,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4718,13 +4718,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 243,
+            "charCount": 233,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…is in Cancer. It's transiting your 8th house — intimacy, shared money, buried truths. It's…"
               }
             ],
             "errorCount": 1,
@@ -4733,7 +4733,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 692,
+            "charCount": 697,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4741,7 +4741,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 1010,
+            "charCount": 1012,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4756,7 +4756,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 792,
+            "charCount": 797,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4764,7 +4764,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 1026,
+            "charCount": 1027,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4772,7 +4772,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 754,
+            "charCount": 752,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4787,7 +4787,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 768,
+            "charCount": 774,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4795,7 +4795,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 856,
+            "charCount": 855,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -4803,7 +4803,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 870,
+            "charCount": 886,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4826,7 +4826,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 1009,
+            "charCount": 1011,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -4989,8 +4989,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -5016,7 +5016,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref16",
@@ -5024,13 +5024,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 320,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…y's Gemini Moon is transiting your 7th house — close partnerships, one-on-ones, mirrors. Th…"
               },
               {
                 "rule": "no-vague-labels",
@@ -5045,7 +5045,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 159,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5053,13 +5053,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 290,
+            "charCount": 277,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…is in Cancer. It's transiting your 7th house — close partnerships and one-on-ones. You don'…"
               }
             ],
             "errorCount": 1,
@@ -5068,7 +5068,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 839,
+            "charCount": 841,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5083,7 +5083,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 854,
+            "charCount": 858,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5091,7 +5091,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 749,
+            "charCount": 748,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5106,7 +5106,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 905,
+            "charCount": 907,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5129,7 +5129,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 722,
+            "charCount": 727,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5137,7 +5137,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 696,
+            "charCount": 712,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5152,7 +5152,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 812,
+            "charCount": 816,
             "findings": [
               {
                 "rule": "readable-sentences",
@@ -5167,7 +5167,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 753,
+            "charCount": 763,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5331,8 +5331,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -5358,7 +5358,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref17",
@@ -5366,13 +5366,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 305,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
               },
               {
                 "rule": "no-vague-labels",
@@ -5387,7 +5387,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 151,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5395,13 +5395,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 235,
+            "charCount": 221,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 11th house — friends, community, future goals. It's rewor…"
               }
             ],
             "errorCount": 1,
@@ -5410,7 +5410,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 839,
+            "charCount": 842,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5418,7 +5418,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 620,
+            "charCount": 628,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5426,7 +5426,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 850,
+            "charCount": 853,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5434,7 +5434,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 729,
+            "charCount": 728,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5442,7 +5442,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 741,
+            "charCount": 743,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5450,7 +5450,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 592,
+            "charCount": 596,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5465,7 +5465,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 1039,
+            "charCount": 1041,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5473,7 +5473,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 727,
+            "charCount": 743,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5481,7 +5481,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 850,
+            "charCount": 860,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5525,80 +5525,80 @@
           {
             "body": "Sun",
             "expected": 253.0132,
-            "actual": 252.99805555555554,
-            "deltaArcmin": 0.9086666666667043,
+            "actual": 253.01916666666668,
+            "deltaArcmin": 0.35799999999653664,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Moon",
             "expected": 167.5544,
-            "actual": 167.25944444444445,
-            "deltaArcmin": 17.697333333335337,
+            "actual": 167.55444444444444,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 8,
-            "status": "close"
+            "status": "pass"
           },
           {
             "body": "Mercury",
             "expected": 232.6375,
-            "actual": 232.61972222222224,
-            "deltaArcmin": 1.0666666666634228,
+            "actual": 232.64194444444445,
+            "deltaArcmin": 0.2666666666709716,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 259.5549,
-            "actual": 259.53472222222223,
-            "deltaArcmin": 1.210666666661382,
+            "actual": 259.56083333333333,
+            "deltaArcmin": 0.35600000000158616,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 180.8415,
-            "actual": 180.8325,
-            "deltaArcmin": 0.5400000000008731,
+            "actual": 180.84361111111113,
+            "deltaArcmin": 0.1266666666697347,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 124.1519,
-            "actual": 124.14777777777779,
-            "deltaArcmin": 0.2473333333341543,
+            "actual": 124.14694444444446,
+            "deltaArcmin": 0.2973333333306982,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 352.9854,
-            "actual": 352.98361111111114,
-            "deltaArcmin": 0.10733333333291739,
+            "actual": 352.9841666666667,
+            "deltaArcmin": 0.07400000000416185,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 174.1392,
-            "actual": 174.13833333333332,
-            "deltaArcmin": 0.051999999998315616,
+            "actual": 174.13861111111112,
+            "deltaArcmin": 0.03533333333052724,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 232.6782,
-            "actual": 232.6786111111111,
-            "deltaArcmin": 0.02466666666805395,
+            "actual": 232.67944444444444,
+            "deltaArcmin": 0.07466666666459787,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 170.5577,
-            "actual": 170.55833333333334,
-            "deltaArcmin": 0.03799999999955617,
+            "actual": 170.55861111111113,
+            "deltaArcmin": 0.05466666666734454,
             "limit": 8,
             "status": "pass"
           },
@@ -5614,8 +5614,8 @@
           {
             "body": "NorthNode",
             "expected": 44.7204,
-            "actual": 46.33388888888889,
-            "deltaArcmin": 96.80933333333542,
+            "actual": 46.33416666666667,
+            "deltaArcmin": 96.8260000000032,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -5623,19 +5623,19 @@
           {
             "body": "Ascendant",
             "expected": 125.8577,
-            "actual": 118.62777777777777,
-            "deltaArcmin": 433.7953333333371,
+            "actual": 125.85527777777777,
+            "deltaArcmin": 0.14533333333247356,
             "limit": 30,
-            "status": "fail",
+            "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
           },
           {
             "body": "Midheaven",
             "expected": 40.1828,
-            "actual": 32.43333333333333,
-            "deltaArcmin": 464.96799999999894,
+            "actual": 40.18333333333333,
+            "deltaArcmin": 0.03200000000106229,
             "limit": 30,
-            "status": "fail",
+            "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
           }
         ],
@@ -5643,17 +5643,17 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Cancer 28°38', 7th Capricorn 28°38'"
+            "detail": "1st Leo 5°51', 7th Aquarius 5°51'"
           },
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Taurus 2°26', 4th Scorpio 2°26'"
+            "detail": "10th Taurus 10°11', 4th Scorpio 10°11'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -5668,7 +5668,7 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 27°09'"
+            "detail": "Vertex Pisces 27°24'"
           },
           {
             "name": "Timezone and daylight saving resolved correctly",
@@ -5676,10 +5676,10 @@
             "detail": "expected +7.5h, app used +7.5h"
           }
         ],
-        "passCount": 11,
-        "closeCount": 1,
-        "failCount": 2,
-        "score": 0.8333333333333334
+        "passCount": 14,
+        "closeCount": 0,
+        "failCount": 0,
+        "score": 1
       },
       "reading": {
         "id": "ref18",
@@ -5687,13 +5687,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 305,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 11th house — friends, community, future goals. That's whe…"
               },
               {
                 "rule": "no-vague-labels",
@@ -5708,7 +5708,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 151,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5716,13 +5716,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 240,
+            "charCount": 288,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 3rd house — conversations, siblings, everyday communicat…"
+                "excerpt": "…s in Cancer. It's transiting your 12th house — solitude, dreams, endings, what's dissolving…"
               }
             ],
             "errorCount": 1,
@@ -5731,7 +5731,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 683,
+            "charCount": 691,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5739,7 +5739,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 781,
+            "charCount": 785,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5747,7 +5747,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 988,
+            "charCount": 992,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5762,7 +5762,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 706,
+            "charCount": 714,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5770,7 +5770,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 739,
+            "charCount": 672,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5785,7 +5785,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 618,
+            "charCount": 698,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5793,7 +5793,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 1037,
+            "charCount": 1042,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5801,7 +5801,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 991,
+            "charCount": 995,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5809,7 +5809,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 1014,
+            "charCount": 1018,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -5824,7 +5824,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 700,
+            "charCount": 704,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -5980,8 +5980,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -6007,7 +6007,7 @@
         "passCount": 14,
         "closeCount": 0,
         "failCount": 0,
-        "score": 0.9523809523809523
+        "score": 1
       },
       "reading": {
         "id": "ref19",
@@ -6015,13 +6015,13 @@
         "lints": [
           {
             "source": "personalDailyGuidance.reflection",
-            "charCount": 362,
+            "charCount": 311,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…y's Gemini Moon is transiting your 3rd house — conversations, siblings, the daily-message l…"
+                "excerpt": "…'s Gemini Moon is transiting your 12th house — solitude, dreams, what's dissolving. That's…"
               },
               {
                 "rule": "no-vague-labels",
@@ -6036,7 +6036,7 @@
           },
           {
             "source": "personalDailyGuidance.journalPrompt",
-            "charCount": 180,
+            "charCount": 154,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6059,7 +6059,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 1018,
+            "charCount": 1022,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6067,7 +6067,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 883,
+            "charCount": 885,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -6082,7 +6082,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 612,
+            "charCount": 616,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6090,7 +6090,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 951,
+            "charCount": 955,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6098,7 +6098,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 671,
+            "charCount": 681,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6106,7 +6106,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 908,
+            "charCount": 928,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6114,7 +6114,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 908,
+            "charCount": 909,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6122,7 +6122,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 714,
+            "charCount": 718,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6130,7 +6130,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 831,
+            "charCount": 834,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6138,7 +6138,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 745,
+            "charCount": 746,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6285,7 +6285,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Gemini 24°12', 7th Sagittarius 24°12'"
+            "detail": "1st Gemini 24°13', 7th Sagittarius 24°13'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -6294,8 +6294,8 @@
           },
           {
             "name": "House cusps run forward in zodiacal order",
-            "ok": false,
-            "detail": "A cusp is out of order or missing."
+            "ok": true,
+            "detail": "All twelve cusps ascend."
           },
           {
             "name": "North and South Node are exactly opposite",
@@ -6321,7 +6321,7 @@
         "passCount": 13,
         "closeCount": 1,
         "failCount": 0,
-        "score": 0.9285714285714286
+        "score": 0.9761904761904762
       },
       "reading": {
         "id": "ref20",
@@ -6358,13 +6358,13 @@
           },
           {
             "source": "mercuryRetroPersonal",
-            "charCount": 229,
+            "charCount": 225,
             "findings": [
               {
                 "rule": "no-em-dash",
                 "severity": "error",
                 "message": "Em dash in user-facing copy. Use a comma, period, colon, or parentheses.",
-                "excerpt": "…is in Cancer. It's transiting your 1st house — your body, identity, and how you show up. It…"
+                "excerpt": "…is in Cancer. It's transiting your 2nd house — money, values, and what feels secure. It's r…"
               }
             ],
             "errorCount": 1,
@@ -6373,7 +6373,7 @@
           },
           {
             "source": "planetSynthesis.Sun",
-            "charCount": 879,
+            "charCount": 878,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6381,7 +6381,7 @@
           },
           {
             "source": "planetSynthesis.Moon",
-            "charCount": 886,
+            "charCount": 885,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6389,7 +6389,7 @@
           },
           {
             "source": "planetSynthesis.Mercury",
-            "charCount": 720,
+            "charCount": 725,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6397,7 +6397,7 @@
           },
           {
             "source": "planetSynthesis.Venus",
-            "charCount": 763,
+            "charCount": 767,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6405,7 +6405,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 741,
+            "charCount": 761,
             "findings": [
               {
                 "rule": "no-vague-labels",
@@ -6420,7 +6420,7 @@
           },
           {
             "source": "planetSynthesis.Jupiter",
-            "charCount": 761,
+            "charCount": 766,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6428,7 +6428,7 @@
           },
           {
             "source": "planetSynthesis.Saturn",
-            "charCount": 722,
+            "charCount": 724,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6436,7 +6436,7 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 714,
+            "charCount": 746,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6444,7 +6444,7 @@
           },
           {
             "source": "planetSynthesis.Neptune",
-            "charCount": 748,
+            "charCount": 756,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6452,7 +6452,7 @@
           },
           {
             "source": "planetSynthesis.Pluto",
-            "charCount": 705,
+            "charCount": 709,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -6468,12 +6468,12 @@
   "totals": {
     "peopleCount": 20,
     "bodyChecks": 280,
-    "bodyPass": 270,
-    "bodyClose": 3,
-    "bodyFail": 7,
+    "bodyPass": 279,
+    "bodyClose": 1,
+    "bodyFail": 0,
     "invariantChecks": 140,
-    "invariantPass": 119,
-    "mathScore": 0.9297619047619048,
+    "invariantPass": 140,
+    "mathScore": 0.9988095238095238,
     "readingBlocks": 260,
     "lintErrors": 104,
     "lintWarnings": 2,
