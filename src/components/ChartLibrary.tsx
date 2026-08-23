@@ -1685,6 +1685,34 @@ export const ChartLibrary = ({
                   </p>
                 </div>
 
+                {formData.birthDate && (
+                  <div className="mb-4">
+                    <ChartVerificationPanel
+                      birthDate={formData.birthDate}
+                      birthTime={formData.birthTime}
+                      birthLocation={formData.birthLocation}
+                      timezoneOffset={formData.timezoneOffset}
+                      planets={formData.planets as any}
+                      onApplyValue={(body, position) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          planets: {
+                            ...prev.planets,
+                            [body]: {
+                              sign: position.sign,
+                              degree: Math.floor(position.degree || 0),
+                              minutes: Math.round(position.minutes || 0),
+                              seconds: 0,
+                              isRetrograde: Boolean(position.isRetrograde),
+                            },
+                          },
+                        }));
+                        toast.success(`${body} set to the ephemeris value.`);
+                      }}
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {CORE_PLANETS.map(planet => renderPlanetRow(planet))}
                 </div>
