@@ -7,6 +7,12 @@
 import jsPDF from "jspdf";
 import type { StrengthContract } from "@/lib/soulStrengthContract";
 
+interface BoxBlock {
+  p?: string;
+  italic?: boolean;
+  list?: string[];
+}
+
 const PAGE_W = 210;
 const PAGE_H = 297;
 const MARGIN = 22;
@@ -314,7 +320,7 @@ function renderSection(doc: Doc, s: ExportSection) {
   doc.rule();
   doc.body(s.interpretation);
   if (s.question?.trim()) {
-    doc.box("Recognition Check", (write) => write(s.question.replace(/\n+/g, "\n\n")));
+    doc.box("Recognition Check", [{ p: s.question.replace(/\n+/g, "\n\n") }]);
   }
 }
 
@@ -325,37 +331,26 @@ function renderContract(doc: Doc, contract: StrengthContract) {
   doc.body(contract.coreStrength);
 
   contract.strengths.forEach((st) => {
-    doc.box(st.title, (write) => {
-      write(st.plain);
-      doc.d.setFont("helvetica", "italic");
-      doc.d.setFontSize(8.5);
-      doc.d.setTextColor(...C.muted);
-      doc.d.splitTextToSize(st.chartReason, CONTENT_W - 10).forEach((ln: string) => {
-        doc.need(6);
-        doc.d.text(ln, MARGIN + 5, doc.y);
-        doc.y += 4.4;
-      });
-      doc.y += 1;
-    });
+    doc.box(st.title, [{ p: st.plain }, { p: st.chartReason, italic: true }]);
   });
 
   doc.eyebrow("How to use it");
   doc.bullets(contract.howToUse);
   doc.eyebrow("What it costs when it runs unchecked");
   doc.body(contract.costWhenOverused);
-  doc.box("The Commitment", (write) => write(contract.commitment), C.soft);
+  doc.box("The Commitment", [{ p: contract.commitment }], C.soft);
 }
 
 function renderSummary(doc: Doc, summary: ExportSummary) {
   doc.eyebrow("Soul Contract Summary");
   doc.title("The reading in four lines", 14);
   doc.rule();
-  doc.box("", (write) => {
-    write(`What to practice: ${summary.whatToPractice}`);
-    write(`What to watch for: ${summary.whatToWatchFor}`);
-    write(`What to build: ${summary.whatToBuild}`);
-    write(`What to give: ${summary.whatToGive}`);
-  });
+  doc.box("", [
+    { p: `What to practice: ${summary.whatToPractice}` },
+    { p: `What to watch for: ${summary.whatToWatchFor}` },
+    { p: `What to build: ${summary.whatToBuild}` },
+    { p: `What to give: ${summary.whatToGive}` },
+  ]);
   if (summary.integration) doc.body(summary.integration);
   if (summary.growthSigns?.length) {
     doc.eyebrow("How to know you're growing");
