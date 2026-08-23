@@ -78,7 +78,7 @@ Synthesize these two cards into a unified message. Find the thread that connects
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "google/gemini-3.7-flash",
           messages: [
             { role: "system", content: synthesisSystemPrompt },
             { role: "user", content: synthesisUserPrompt }
@@ -191,7 +191,7 @@ Please provide a rich astrological interpretation of this card. Weave together:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-3.7-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }

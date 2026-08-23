@@ -101,7 +101,7 @@ Give a reading about what this hexagram says about their current chapter of life
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.7-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },

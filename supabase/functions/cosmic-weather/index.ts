@@ -1192,7 +1192,7 @@ CRITICAL INSTRUCTIONS:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.7-flash",
         messages: [
           { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
           { role: "user", content: userPrompt },
@@ -1394,7 +1394,7 @@ CRITICAL INSTRUCTIONS:
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: "google/gemini-3.7-flash",
             messages: [
               { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
               { role: "user", content: userPrompt + correctionInstruction },
