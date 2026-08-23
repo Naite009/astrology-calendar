@@ -464,18 +464,29 @@ export const EXTENDED_CITY_COORDINATES: Record<string, { lat: number; lon: numbe
 // Get coordinates from location string (enhanced)
 export const getCoordinatesFromLocation = (location: string): { lat: number; lon: number } | null => {
   const lowerLocation = location.toLowerCase().trim();
-  
+
   // Try exact match first
   if (EXTENDED_CITY_COORDINATES[lowerLocation]) {
     return EXTENDED_CITY_COORDINATES[lowerLocation];
   }
-  
-  // Try partial match
+
+  // Longest partial match, so a specific city beats a shorter name that
+  // happens to be contained in the same string.
+  let best: { lat: number; lon: number } | null = null;
+  let bestLength = 0;
   for (const [city, coords] of Object.entries(EXTENDED_CITY_COORDINATES)) {
-    if (lowerLocation.includes(city) || city.includes(lowerLocation)) {
-      return coords;
+    if (lowerLocation.includes(city) && city.length > bestLength) {
+      best = coords;
+      bestLength = city.length;
     }
   }
-  
+  if (best) return best;
+
+  // Last resort: the stored city name contains the queried fragment.
+  for (const [city, coords] of Object.entries(EXTENDED_CITY_COORDINATES)) {
+    if (city.includes(lowerLocation)) return coords;
+  }
+
   return null;
 };
+
