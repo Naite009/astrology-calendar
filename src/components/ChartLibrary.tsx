@@ -6,6 +6,7 @@ import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitCha
 import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
 import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
 import { NatalChartNarrative } from './NatalChartNarrative';
+import { ChartVerificationPanel } from './ChartVerificationPanel';
 import { toast } from 'sonner';
 
 const ZODIAC_SIGNS = [
