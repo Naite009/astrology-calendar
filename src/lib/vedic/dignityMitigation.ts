@@ -118,11 +118,8 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
       if (dispBody && dispHouseFromMoon && KENDRA.includes(dispHouseFromMoon)) {
         mitigations.push(`${dispositor}, the lord of ${body.sign}, is in an angle counted from the Moon (house ${dispHouseFromMoon} from the Moon).`);
       }
-      const exaltLord = (Object.keys(SIGN_LORDS) as string[])
-        .length > 0
-        ? (['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as VedicPlanet[])
-            .find(p => exaltationSign(p) === body.sign)
-        : undefined;
+      const exaltLord = (['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as VedicPlanet[])
+        .find(p => exaltationSign(p) === body.sign);
       if (exaltLord) {
         const ex = chart.byName[exaltLord];
         const exHouse = ex?.house ?? null;
