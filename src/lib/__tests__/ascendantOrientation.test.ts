@@ -34,10 +34,12 @@ describe('Ascendant orientation', () => {
     const chart = calculateNatalChart('2026-08-23', '00:00', 0, 'New York, NY (US)') as any;
     const sunLon = lonOf(chart.Sun);
     const ascLon = lonOf(chart.Ascendant);
-    // At local midnight the Sun sits near the IC, so the Ascendant leads it
-    // by roughly a quadrant. A 180 degree flip would break this window.
-    let delta = ((ascLon - sunLon) % 360 + 360) % 360;
-    expect(delta).toBeGreaterThan(40);
-    expect(delta).toBeLessThan(140);
+    // At local midnight the Sun sits near the IC (the 4th cusp), which is
+    // about a quadrant ahead of the Ascendant in longitude. A 180 degree
+    // flip would push this out of the window.
+    const delta = ((ascLon - sunLon) % 360 + 360) % 360;
+    expect(delta).toBeGreaterThan(220);
+    expect(delta).toBeLessThan(320);
   });
+
 });
