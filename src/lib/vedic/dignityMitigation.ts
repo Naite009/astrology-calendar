@@ -179,7 +179,7 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
       const glancers = malefics.filter(m => {
         const mb = chart.byName[m];
         if (!mb) return false;
-        return castsFrom(chart, mb).some(d => d.toSign === body.sign);
+        return castsFrom(chart, mb).some(d => d.sign === body.sign);
       });
       if (glancers.length) {
         qualifiers.push(`${glancers.join(' and ')} glance${glancers.length === 1 ? 's' : ''} at ${body.sign}, so the placement is pressured rather than untroubled.`);
