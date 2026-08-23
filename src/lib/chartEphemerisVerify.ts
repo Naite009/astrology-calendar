@@ -196,7 +196,13 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
   if (birthLocation) {
     const [y, m, d] = birthDate.split('-').map(Number);
     const detected = detectTimezoneFromLocation(birthLocation, new Date(y, m - 1, d));
-    if (detected) offset = detected.offset;
+    if (detected) {
+      offset = detected.offset;
+    } else if (offset === null) {
+      // Region-level lookup (handles "NJ", "New Jersey", state-only entries)
+      const zone = lookupTimezone(birthLocation, birthDate);
+      if (zone?.timezone) offset = getTimezoneInfoForDate(zone.timezone, birthDate).offset;
+    }
   }
 
   let computed: Record<string, VerifyPosition> = {};
