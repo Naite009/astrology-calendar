@@ -261,6 +261,26 @@ export const calculatePlacidusHouses = (
 // Extended city coordinates database
 export const EXTENDED_CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
   // New Jersey (common birth cities, so angles are exact rather than state-level)
+  'newton, nj': { lat: 41.0581, lon: -74.7529 },
+  'denville': { lat: 40.8918, lon: -74.4815 },
+  'passaic': { lat: 40.8568, lon: -74.1285 },
+  'clifton': { lat: 40.8584, lon: -74.1638 },
+  'union': { lat: 40.6976, lon: -74.2632 },
+  'hoboken': { lat: 40.7439, lon: -74.0324 },
+  'bayonne': { lat: 40.6687, lon: -74.1143 },
+  'dover, nj': { lat: 40.8840, lon: -74.5621 },
+  // Pennsylvania and Maryland suburbs that appear in these charts
+  'wynnewood': { lat: 40.0087, lon: -75.2860 },
+  'bryn mawr': { lat: 40.0223, lon: -75.3157 },
+  'ardmore': { lat: 40.0068, lon: -75.2871 },
+  'narberth': { lat: 40.0134, lon: -75.2610 },
+  'bala cynwyd': { lat: 40.0068, lon: -75.2338 },
+  'abington': { lat: 40.1201, lon: -75.1180 },
+  'bethesda': { lat: 38.9807, lon: -77.1003 },
+  'silver spring': { lat: 38.9907, lon: -77.0261 },
+  'rockville': { lat: 39.0840, lon: -77.1528 },
+  'chevy chase': { lat: 38.9686, lon: -77.0872 },
+
   'hackensack': { lat: 40.8859, lon: -74.0435 },
   'newark': { lat: 40.7357, lon: -74.1724 },
   'jersey city': { lat: 40.7178, lon: -74.0431 },
