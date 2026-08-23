@@ -21,12 +21,12 @@ import {
   getDetailedPallasPosition,
   getDetailedJunoPosition,
   getDetailedVestaPosition,
-  getErisPosition,
   calculateVertex,
   calculatePartOfFortune,
   getCoordinatesFromLocation,
   calculatePlacidusHouseCusps,
 } from './astrology';
+import { getAccurateAsteroidPosition } from './asteroidEphemeris';
 
 const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -122,15 +122,16 @@ export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
   if (!hasSign(planets.Juno)) add('Juno', safe(() => toPos(getDetailedJunoPosition(date))));
   if (!hasSign(planets.Vesta)) add('Vesta', safe(() => toPos(getDetailedVestaPosition(date))));
   if (!hasSign(planets.Eris)) {
-    const eris = safe(() => getErisPosition(date));
-    add('Eris', eris ? toPos({ sign: eris.sign, degree: eris.degree, minutes: eris.minutes ?? 0, seconds: 0, isRetrograde: true }) : null);
+    add('Eris', safe(() => toPos(getAccurateAsteroidPosition('eris', date))));
   }
 
   // Angles-dependent points need coordinates and a real birth time.
   const coords = chart.birthLocation ? safe(() => getCoordinatesFromLocation(chart.birthLocation)) : null;
   let houseCusps = chart.houseCusps;
 
-  if (coords && chart.birthTime && !houseCusps?.house1?.sign) {
+  // Only derive cusps when there is no Ascendant on file at all. A typed
+  // Ascendant is exact; city-level coordinates are not, so we never override it.
+  if (coords && chart.birthTime && !houseCusps?.house1?.sign && !hasSign(planets.Ascendant)) {
     const cusps = safe(() => calculatePlacidusHouseCusps(date, coords.lat, coords.lon));
     if (cusps) {
       const built: Record<string, { sign: string; degree: number; minutes: number }> = {};
