@@ -235,7 +235,10 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
     const enteredPos = entered[body]?.sign ? (entered[body] as VerifyPosition) : null;
     const computedPos = computed[body]?.sign ? computed[body] : null;
     const label = LABELS[body] || body;
-    const note = LOOSE_BODIES[body];
+    const needsAnglesBody = body === 'Ascendant' || body === 'Vertex' || body === 'PartOfFortune';
+    const note = needsAnglesBody && coordsApproximate
+      ? 'Computed from region-level coordinates, so treat it as a sanity check, not an exact value.'
+      : LOOSE_BODIES[body];
 
     // Angles and derived points need a birth time and known coordinates.
     const needsAngles = body === 'Ascendant' || body === 'Vertex' || body === 'PartOfFortune';
