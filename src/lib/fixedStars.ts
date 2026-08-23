@@ -393,3 +393,158 @@ export function findActiveFixedStarsToday(
   }
   return out;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hard-aspect star contacts
+//
+// A star does not only matter when a planet sits exactly on it. Algol square
+// Mars, or Regulus opposite the Moon, behaves like a real signature too: the
+// star's nature keeps colliding with that planet instead of merging with it.
+// Conjunctions stay primary and keep the traditional orbs. Oppositions and
+// squares use half the conjunction orb, so the list stays short and honest.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type StarAspect = 'conjunction' | 'opposition' | 'square';
+
+const ASPECT_ANGLE: Record<StarAspect, number> = {
+  conjunction: 0,
+  opposition: 180,
+  square: 90,
+};
+
+const ASPECT_SYMBOL: Record<StarAspect, string> = {
+  conjunction: '☌',
+  opposition: '☍',
+  square: '□',
+};
+
+export interface FixedStarContact extends FixedStarHit {
+  aspect: StarAspect;
+  symbol: string;
+  /** 0–100. Tighter orb, more famous star and more personal point score higher. */
+  prominence: number;
+  starTier: 'major' | 'notable';
+}
+
+/** Points whose contact hits hardest, used for the prominence score. */
+const POINT_WEIGHT: Record<string, number> = {
+  Ascendant: 1.0, Midheaven: 1.0, Sun: 1.0, Moon: 1.0,
+  Descendant: 0.8, IC: 0.8,
+  Mercury: 0.85, Venus: 0.85, Mars: 0.85,
+  Jupiter: 0.75, Saturn: 0.75,
+  'North Node': 0.75, 'South Node': 0.6,
+  Uranus: 0.55, Neptune: 0.55, Pluto: 0.6, Chiron: 0.6,
+  'Black Moon Lilith': 0.5, 'Part of Fortune': 0.5, Vertex: 0.5,
+};
+
+const ASPECT_WEIGHT: Record<StarAspect, number> = {
+  conjunction: 1.0,
+  opposition: 0.7,
+  square: 0.65,
+};
+
+const ASPECT_PHRASE: Record<StarAspect, string> = {
+  conjunction: 'sits right on',
+  opposition: 'sits directly across from',
+  square: 'sits at right angles to',
+};
+
+const ASPECT_DYNAMIC: Record<StarAspect, string> = {
+  conjunction: 'The star and the planet act as one thing, so the theme feels like part of you rather than something happening to you.',
+  opposition: 'The theme tends to arrive through other people and situations rather than from inside you, and it asks to be balanced instead of absorbed.',
+  square: 'The theme shows up as friction. It repeatedly interrupts that planet until you deal with it on purpose.',
+};
+
+const POINT_FLAVOR: Record<string, string> = {
+  Ascendant: 'the body and the way you arrive in a room',
+  Midheaven: 'your public role and how the world reads you',
+  Descendant: 'partnership and the kind of people you attract',
+  IC: 'home, family roots, and what happens privately',
+  Sun: 'your core sense of self and life direction',
+  Moon: 'your emotional baseline and what feels safe',
+  Mercury: 'how you think and speak',
+  Venus: 'what you love and how you relate',
+  Mars: 'your drive and how you fight for what you want',
+  Jupiter: 'your beliefs and where you expand',
+  Saturn: 'your discipline and where life tests you over time',
+  Uranus: 'where you break pattern',
+  Neptune: 'where you dissolve boundaries and where you can be fooled',
+  Pluto: 'where power and control get worked out',
+  Chiron: 'the old wound you end up qualified to treat in others',
+  'North Node': 'the direction your life keeps asking you to grow',
+  'South Node': 'the familiar setting you fall back into under stress',
+  'Black Moon Lilith': 'what you refuse to apologize for',
+  'Part of Fortune': 'where things go well when you stop forcing them',
+  Vertex: 'fated meetings and turning-point events',
+};
+
+/**
+ * Every star contact in the chart, conjunctions plus hard aspects, sorted by
+ * prominence. This is the thorough view: nothing eligible is filtered out for
+ * being obscure, only for being out of orb.
+ */
+export function findFixedStarContacts(chart: NatalChart): FixedStarContact[] {
+  if (!chart) return [];
+  const year = birthYearFromChart(chart);
+  const points = gatherNatalPoints(chart);
+  const out: FixedStarContact[] = [];
+
+  for (const star of FIXED_STARS) {
+    const starLon = precessedLongitude(star.j2000Lon, year);
+    const f = fromLongitude(starLon);
+    const starPretty = `${f.deg}°${String(f.min).padStart(2, '0')}' ${f.sign}`;
+    const tier = star.tier ?? 'major';
+
+    for (const pt of points) {
+      const baseOrb = orbFor(pt.key);
+      if (baseOrb == null) continue;
+      const label = POINT_LABEL[pt.key] || pt.key;
+
+      let sep = Math.abs(starLon - pt.lon);
+      if (sep > 180) sep = 360 - sep;
+
+      for (const aspect of ['conjunction', 'opposition', 'square'] as StarAspect[]) {
+        const allowed = aspect === 'conjunction' ? baseOrb : baseOrb / 2;
+        const orb = Math.abs(sep - ASPECT_ANGLE[aspect]);
+        if (orb > allowed) continue;
+
+        const tightness = 1 - orb / allowed;              // 1 = exact
+        const tierWeight = tier === 'major' ? 1 : 0.85;
+        const prominence = Math.round(
+          100 * tightness * (POINT_WEIGHT[label] ?? 0.5) * ASPECT_WEIGHT[aspect] * tierWeight,
+        );
+
+        out.push({
+          star: star.name,
+          theme: star.theme,
+          point: label,
+          orb: Math.round(orb * 100) / 100,
+          starPosition: starPretty,
+          natalPosition: pt.pretty,
+          aspect,
+          symbol: ASPECT_SYMBOL[aspect],
+          prominence,
+          starTier: tier,
+          interpretation:
+            `${star.name} at ${starPretty} ${ASPECT_PHRASE[aspect]} your ${label} at ${pt.pretty} ` +
+            `(orb ${(Math.round(orb * 100) / 100).toFixed(2)}°). The star's nature is ${star.theme} ` +
+            `Here it lands on ${POINT_FLAVOR[label] || 'that part of the chart'}. ${ASPECT_DYNAMIC[aspect]}`,
+        });
+      }
+    }
+  }
+
+  out.sort((a, b) => b.prominence - a.prominence || a.orb - b.orb);
+  return out;
+}
+
+/**
+ * The short list worth putting in front of a person: the strongest contacts,
+ * with any rare-but-tight star kept even if a famous star outranks it.
+ */
+export function topFixedStarContacts(chart: NatalChart, limit = 8): FixedStarContact[] {
+  const all = findFixedStarContacts(chart);
+  const top = all.slice(0, limit);
+  const rareTight = all.find(c => c.starTier === 'notable' && c.orb <= 0.5 && !top.includes(c));
+  return rareTight ? [...top.slice(0, Math.max(1, limit - 1)), rareTight] : top;
+}
