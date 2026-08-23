@@ -96,8 +96,8 @@ const absLon = (p?: VerifyPosition | null): number | null => {
 
 /** Shortest separation between two ecliptic longitudes, in arc-minutes. */
 const separationArcmin = (a: number, b: number): number => {
-  const raw = Math.abs(((a - b + 540) % 360) - 180);
-  return Math.round((180 - raw) * 0 + raw * 60);
+  const degrees = Math.abs(((a - b + 540) % 360) - 180);
+  return degrees * 60;
 };
 
 export const formatPosition = (p?: VerifyPosition | null): string => {
