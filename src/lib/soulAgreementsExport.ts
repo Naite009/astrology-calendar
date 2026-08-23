@@ -76,6 +76,7 @@ class Doc {
   }
 
   eyebrow(text: string) {
+    this.y += 2;
     this.need(10);
     this.d.setFont("helvetica", "bold");
     this.d.setFontSize(7.5);
@@ -155,7 +156,7 @@ class Doc {
     // render content, then draw the frame behind it on the same page when the
     // block did not break across pages.
     const pad = 5;
-    this.y += pad + (label ? 6 : 0);
+    this.y += pad + (label ? 9.5 : 0);
     const innerLeft = MARGIN + pad;
     const innerW = CONTENT_W - pad * 2;
 
@@ -172,7 +173,6 @@ class Doc {
         });
         if (pi < arr.length - 1) this.y += 2.5;
       });
-      this.y += 2;
     };
     const list = (items: string[]) => {
       this.d.setFont("helvetica", "normal");
@@ -205,7 +205,7 @@ class Doc {
         this.d.setFont("helvetica", "bold");
         this.d.setFontSize(7.5);
         this.d.setTextColor(...C.gold);
-        this.d.text(label.toUpperCase(), innerLeft, top + pad + 3.5, { charSpace: 0.7 });
+        this.d.text(label.toUpperCase(), innerLeft, top + pad + 3, { charSpace: 0.7 });
       }
     } else if (label) {
       // Block broke across pages: keep the label inline, skip the frame.
@@ -219,7 +219,7 @@ class Doc {
 
   footers(name: string) {
     const total = this.d.getNumberOfPages();
-    for (let p = 1; p <= total; p++) {
+    for (let p = 2; p <= total; p++) {
       this.d.setPage(p);
       this.d.setFont("helvetica", "normal");
       this.d.setFontSize(7.5);
@@ -281,7 +281,7 @@ function renderSection(doc: Doc, s: ExportSection) {
   doc.rule();
   doc.body(s.interpretation);
   if (s.question?.trim()) {
-    doc.box("Recognition Check", (write) => write(s.question));
+    doc.box("Recognition Check", (write) => write(s.question.replace(/\n+/g, "\n\n")));
   }
 }
 
