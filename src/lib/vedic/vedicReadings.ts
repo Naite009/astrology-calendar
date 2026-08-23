@@ -121,10 +121,28 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
     D12: buildVarga(chart, 'D12'),
   };
 
+  // The full sixteen-chart set. D60 is only meaningful with an exact birth
+  // time, so it is still computed but flagged in the UI.
+  const allVargas: Partial<Record<VargaKey, VargaChart>> = {};
+  for (const k of ALL_VARGAS) allVargas[k] = buildVarga(chart, k);
+
   const karakas = computeKarakas(chart);
   const moon = chart.byName.Moon;
+  const sun = chart.byName.Sun;
   const dashas = moon ? buildVimshottari(moon.longitude, chart.birthMoment) : [];
   const current = dashas.length ? findCurrentDasha(dashas, today) : null;
+
+  const conditions = buildConditions(chart, allVargas);
+  const yogas = buildYogas(chart, vargas.D9);
+  const arudhas = buildArudhas(chart);
+  const birthPanchanga = moon && sun ? buildPanchanga(sun.longitude, moon.longitude, chart.birthMoment) : null;
+
+  let gochara: GocharaReport | null = null;
+  try {
+    gochara = buildGochara(chart, current?.maha.lord ?? null, today);
+  } catch (e) {
+    console.error('[Vedic] gochara failed', e);
+  }
 
   const sections: VedicSectionData[] = [
     snapshotSection(chart),
@@ -139,7 +157,12 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
     comparisonSection(chart),
   ].filter((s): s is VedicSectionData => !!s);
 
-  return { chart, vargas, karakas, dashas, current, sections };
+  return {
+    chart, vargas, allVargas, karakas, dashas, current, sections,
+    conditions, yogas, arudhas, birthPanchanga, gochara,
+    drishti: buildDrishti(chart),
+    signExchanges: signExchanges(chart),
+  };
 }
 
 /* 1. Snapshot ------------------------------------------------------------- */
