@@ -519,11 +519,17 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 </div>
               )}
 
+              <p className="text-[10px] text-muted-foreground">
+                Saved to your account. This reading stays here every time you open the app.
+              </p>
+
               <button
-                onClick={generate}
+                onClick={() => {
+                  if (window.confirm("This replaces the saved reading for this chart. Generate a new one?")) generate();
+                }}
                 className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
               >
-                <RefreshCw size={11} /> Refresh reading
+                <RefreshCw size={11} /> Regenerate reading
               </button>
             </div>
           )}
