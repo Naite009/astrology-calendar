@@ -59,9 +59,9 @@ const calculateAscendant = (lst: number, latitude: number, obliquity: number): n
   const latRad = latitude * DEG_TO_RAD;
   const obliqRad = obliquity * DEG_TO_RAD;
   
-  // Standard formula for Ascendant
-  const y = -Math.cos(lstRad);
-  const x = Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(lstRad);
+  // Standard formula for Ascendant (the rising degree, not its opposite)
+  const y = Math.cos(lstRad);
+  const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(lstRad));
   
   let asc = Math.atan2(y, x) * RAD_TO_DEG;
   
