@@ -2,13 +2,13 @@
  * Builds a sidereal (Jyotish) chart from a stored NatalChart.
  *
  * The stored chart holds tropical sign/degree/minute values. We convert those
- * to absolute tropical longitude, subtract the Lahiri ayanamsa for the birth
+ * to absolute tropical longitude, subtract the chosen ayanamsa for the birth
  * moment, and rebuild sign, nakshatra, pada and whole-sign house from there.
  * All math is deterministic. No AI is involved in any calculation.
  */
 
 import { NatalChart } from '@/hooks/useNatalChart';
-import { lahiriAyanamsa } from './ayanamsa';
+import { ayanamsaFor, ayanamsaLabel, AyanamsaMode, DEFAULT_AYANAMSA } from './ayanamsa';
 import { getNakshatra, NakshatraInfo, VedicPlanet } from './nakshatras';
 import { signFromIndex, signIndex, vedicDignity, VedicDignity, wholeSignHouse, SIGN_LORDS } from './vedicDignity';
 
@@ -37,6 +37,8 @@ export interface VedicChart {
   birthTime: string;
   birthLocation: string;
   ayanamsa: number;
+  ayanamsaMode: AyanamsaMode;
+  ayanamsaLabel: string;
   hasBirthTime: boolean;
   lagnaSign: string | null;
   lagnaDegree: number | null;
@@ -71,11 +73,14 @@ export function buildBirthMoment(chart: NatalChart): Date {
   return new Date(Date.UTC(y || 2000, (m || 1) - 1, d || 1, hh || 12, (mm || 0) - Math.round(offset * 60)));
 }
 
-export function buildVedicChart(chart: NatalChart): VedicChart | null {
+export function buildVedicChart(
+  chart: NatalChart,
+  mode: AyanamsaMode = DEFAULT_AYANAMSA,
+): VedicChart | null {
   if (!chart) return null;
 
   const birthMoment = buildBirthMoment(chart);
-  const ayanamsa = lahiriAyanamsa(birthMoment);
+  const ayanamsa = ayanamsaFor(birthMoment, mode);
 
   // Ascendant: houseCusps.house1 is the source of truth, then planets.Ascendant.
   const ascSource = chart.houseCusps?.house1 || chart.planets?.Ascendant;
@@ -140,6 +145,8 @@ export function buildVedicChart(chart: NatalChart): VedicChart | null {
     birthTime: chart.birthTime,
     birthLocation: chart.birthLocation,
     ayanamsa,
+    ayanamsaMode: mode,
+    ayanamsaLabel: ayanamsaLabel(mode),
     hasBirthTime: !!chart.birthTime,
     lagnaSign,
     lagnaDegree,

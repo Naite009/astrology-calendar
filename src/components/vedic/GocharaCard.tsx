@@ -4,13 +4,19 @@
  * disaster.
  */
 
-import { GocharaReport, GOCHARA_NOTE } from '@/lib/vedic/gochara';
+import { GocharaReport, GOCHARA_NOTE, VEDHA_NOTE, BINDU_FILTER_NOTE } from '@/lib/vedic/gochara';
 import { VedicTerm } from './VedicTerm';
 
 interface Props {
   gochara: GocharaReport;
   moonSign: string;
 }
+
+const NET_LABEL = {
+  works: 'Worth acting on',
+  mixed: 'Genuinely mixed',
+  maintenance: 'Upkeep, not launch',
+} as const;
 
 const QUALITY_CLS = {
   favourable: 'border-emerald-500/40 bg-emerald-500/5',
@@ -47,9 +53,13 @@ export const GocharaCard = ({ gochara, moonSign }: Props) => {
             <div className="flex items-baseline justify-between gap-2">
               <span className="font-serif text-[15px]">{t.graha} in {t.sign}</span>
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                {t.fromMoon} from the Moon
+                {NET_LABEL[t.netVerdict]}
               </span>
             </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {t.fromMoon} from the Moon{t.bindus.sav !== null ? `, ${t.bindus.sav} bindus in this sign` : ''}
+              {t.vedha.blocked ? ', obstruction active' : ''}
+            </p>
             <p className="mt-1 text-[11px] text-muted-foreground">
               {t.nakshatra} nakshatra{t.dignity !== 'neutral' ? `, ${t.dignity}` : ''}{t.retrograde ? ', retrograde' : ''}
             </p>
@@ -77,6 +87,16 @@ export const GocharaCard = ({ gochara, moonSign }: Props) => {
       <p className="mt-4 rounded-md border border-border/60 bg-secondary/20 p-3 text-[12px] leading-relaxed text-muted-foreground">
         {GOCHARA_NOTE}
       </p>
+
+      <p className="mt-2 rounded-md border border-border/60 bg-secondary/20 p-3 text-[12px] leading-relaxed text-muted-foreground">
+        {VEDHA_NOTE}
+      </p>
+
+      {gochara.bindusAvailable && (
+        <p className="mt-2 rounded-md border border-border/60 bg-secondary/20 p-3 text-[12px] leading-relaxed text-muted-foreground">
+          {BINDU_FILTER_NOTE}
+        </p>
+      )}
     </section>
   );
 };

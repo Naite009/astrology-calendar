@@ -22,7 +22,9 @@ import { buildYogas, Yoga } from './yogas';
 import { buildArudhas, Arudha } from './arudha';
 import { buildPanchanga, Panchanga } from './panchanga';
 import { buildGochara, GocharaReport } from './gochara';
-import { buildAshtakavarga, AshtakavargaReport } from './ashtakavarga';
+import { buildAshtakavarga, AshtakavargaReport, binduSupportSentence } from './ashtakavarga';
+import { buildChartDrivers, ChartDriverGate } from './chartDrivers';
+import { buildDashaGocharaSynthesis, DashaGocharaSynthesis } from './dashaGocharaSynthesis';
 import { buildDrishti, BodyDrishti, signExchanges } from './drishti';
 import { computeKarakas, findKaraka, KARAKA_MEANING, KarakaAssignment } from './karakas';
 import { buildVimshottari, findCurrentDasha, formatDashaRange, formatDashaDateExact, formatYears, DashaPeriod, CurrentDasha } from './vimshottariDasha';
@@ -49,6 +51,10 @@ export interface VedicSectionData {
 }
 
 export interface VedicReading {
+  /** The three or four factors that actually run the chart, read first. */
+  drivers?: ChartDriverGate | null;
+  /** Period and transit read as one statement, which is how timing is judged. */
+  timing?: DashaGocharaSynthesis | null;
   chart: VedicChart;
   vargas: Record<'D2' | 'D7' | 'D9' | 'D10' | 'D12', VargaChart>;
   /** The full shodashavarga set, used by the strength engine and the varga browser. */
@@ -137,15 +143,17 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
   const current = dashas.length ? findCurrentDasha(dashas, today) : null;
 
   const conditions = buildConditions(chart, allVargas);
-  const yogas = buildYogas(chart, vargas.D9);
   const arudhas = buildArudhas(chart);
   let ashtakavarga: AshtakavargaReport | null = null;
   try { ashtakavarga = buildAshtakavarga(chart); } catch (e) { console.error('[Vedic] ashtakavarga failed', e); }
+  // Yogas inherit the condition index, so a pattern built from a strained graha
+  // is not read as loudly as the same pattern built from a clean one.
+  const yogas = buildYogas(chart, vargas.D9, conditions);
   const birthPanchanga = moon && sun ? buildPanchanga(sun.longitude, moon.longitude, chart.birthMoment) : null;
 
   let gochara: GocharaReport | null = null;
   try {
-    gochara = buildGochara(chart, current?.maha.lord ?? null, today);
+    gochara = buildGochara(chart, current?.maha.lord ?? null, today, ashtakavarga);
   } catch (e) {
     console.error('[Vedic] gochara failed', e);
   }
@@ -156,14 +164,21 @@ export function buildVedicReading(chart: VedicChart, today: Date = new Date()): 
     dashaSection(chart, current),
     pastLifeSection(chart, vargas.D12),
     purposeSection(chart, vargas.D9, karakas),
-    wealthSection(chart, vargas.D2),
-    careerSection(chart, vargas.D10, karakas),
-    partnerSection(chart, vargas.D9, karakas, dashas),
+    wealthSection(chart, vargas.D2, ashtakavarga),
+    careerSection(chart, vargas.D10, karakas, ashtakavarga),
+    partnerSection(chart, vargas.D9, karakas, dashas, ashtakavarga),
     obstacleSection(chart),
     comparisonSection(chart),
   ].filter((s): s is VedicSectionData => !!s);
 
+  let drivers: ChartDriverGate | null = null;
+  try { drivers = buildChartDrivers(chart, conditions, karakas, current); } catch (e) { console.error('[Vedic] drivers failed', e); }
+
+  let timing: DashaGocharaSynthesis | null = null;
+  try { timing = buildDashaGocharaSynthesis(chart, current, gochara, conditions); } catch (e) { console.error('[Vedic] timing synthesis failed', e); }
+
   return {
+    drivers, timing,
     chart, vargas, allVargas, karakas, dashas, current, sections,
     conditions, yogas, arudhas, birthPanchanga, gochara, ashtakavarga,
     drishti: buildDrishti(chart),
@@ -186,7 +201,7 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
   }
   if (has(sun)) logic.push(bodyLine(sun));
   if (has(moon)) logic.push(bodyLine(moon));
-  logic.push(`Ayanamsa: Lahiri, ${formatDegree(chart.ayanamsa)}. Houses: whole sign.`);
+  logic.push(`Ayanamsa: ${chart.ayanamsaLabel}, ${formatDegree(chart.ayanamsa)}. Houses: whole sign.`);
 
   const paras: string[] = [];
 
@@ -541,7 +556,7 @@ function purposeSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
 
 /* 6. Money and wealth ---------------------------------------------------- */
 
-function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
+function wealthSection(chart: VedicChart, d2: VargaChart, av?: AshtakavargaReport | null): VedicSectionData {
   const logic: string[] = [];
   const paras: string[] = [];
 
@@ -602,6 +617,9 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
     paras.push('None of your wealth house rulers are in signs classical texts read as weakened, which describes a steady rather than dramatic pattern. The question for you is consistency more than capacity.');
   }
 
+  const bindu = binduSupportSentence(av ?? null, [2, 11], 'earning and gains');
+  if (bindu) paras.push(bindu);
+
   const takeaway = second?.body
     ? `In real life: your money tends to follow the pattern above rather than the standard advice. Identify the one income channel that matches it and give it sustained attention before adding another. This system describes tendency and timing. It does not name a number, and any reading that promises wealth by a date is selling something.`
     : 'In real life: this section describes the shape your earning tends to take, not an amount and not a schedule.';
@@ -611,7 +629,7 @@ function wealthSection(chart: VedicChart, d2: VargaChart): VedicSectionData {
 
 /* 7. Career -------------------------------------------------------------- */
 
-function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssignment[]): VedicSectionData {
+function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssignment[], av?: AshtakavargaReport | null): VedicSectionData {
   const logic: string[] = [];
   const paras: string[] = [];
 
@@ -664,6 +682,9 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
     'Two things to hold together rather than choosing between. A chart can combine privacy and depth with responsibility and professional visibility at the same time. Where that happens, the person often works especially well when the job requires discretion, strategy, investigation, emotional intelligence, deep focus, specialised knowledge, or institutional and behind-the-scenes work, while still allowing them to build authority or expertise. Wanting recognition for genuine expertise or a meaningful contribution is different from wanting visibility for its own sake, and a 12th house emphasis does not mean recognition is impossible or unwanted.'
   );
 
+  const binduCareer = binduSupportSentence(av ?? null, [10, 6], 'work and public standing');
+  if (binduCareer) paras.push(binduCareer);
+
   const takeaway = amk
     ? `In real life: the fit test is not the industry, it is whether the role asks for ${PLANET_MOTIVE[amk.planet]}. A well-paid position that never uses that capacity tends to feel wrong for reasons that are hard to explain, and a modest one that uses it constantly tends to hold your interest.`
     : undefined;
@@ -673,7 +694,7 @@ function careerSection(chart: VedicChart, d10: VargaChart, karakas: KarakaAssign
 
 /* 8. Partner and marriage ------------------------------------------------ */
 
-function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssignment[], dashas: DashaPeriod[]): VedicSectionData {
+function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssignment[], dashas: DashaPeriod[], av?: AshtakavargaReport | null): VedicSectionData {
   const logic: string[] = [];
   const paras: string[] = [];
 
@@ -741,6 +762,9 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
     );
   }
 
+  const binduPartner = binduSupportSentence(av ?? null, [7], 'partnership');
+  if (binduPartner) paras.push(binduPartner);
+
   const takeaway = dk
     ? `In real life: this section describes what closeness asks of you, not who arrives or when. The recurring work is ${PLANET_MOTIVE[dk.planet]}, and relationships tend to go better when you develop that quality yourself instead of looking for someone to supply it.`
     : undefined;
@@ -799,7 +823,7 @@ function comparisonSection(chart: VedicChart): VedicSectionData {
   const held = chart.bodies.filter(b => b.sign === b.tropicalSign);
 
   const logic: string[] = [
-    `Ayanamsa applied: Lahiri, ${formatDegree(chart.ayanamsa)}`,
+    `Ayanamsa applied: ${chart.ayanamsaLabel}, ${formatDegree(chart.ayanamsa)}`,
     `Signs that shift: ${shifted.length ? shifted.map(b => `${b.name} ${b.tropicalSign} to ${b.sign}`).join(', ') : 'none'}`,
     `Signs that hold: ${held.length ? held.map(b => b.name).join(', ') : 'none'}`,
     'Western houses stay Placidus elsewhere in the app. This tab uses whole sign houses, the house system this reading is built on. Jyotish also uses other systems, including Sripati and the bhava chalit chart, and practitioners differ on which to lead with.',

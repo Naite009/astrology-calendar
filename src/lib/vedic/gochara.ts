@@ -12,7 +12,8 @@
  */
 
 import { buildLiveSkyChart } from '@/lib/liveSkyChart';
-import { lahiriAyanamsa } from './ayanamsa';
+import { ayanamsaFor } from './ayanamsa';
+import { AshtakavargaReport, savForSign, bavForTransit, SavBand } from './ashtakavarga';
 import { VedicChart } from './siderealChart';
 import { VedicPlanet, getNakshatra } from './nakshatras';
 import { signIndex, signFromIndex, vedicDignity, VedicDignity } from './vedicDignity';
@@ -30,8 +31,46 @@ export interface GocharaTransit {
   house: number | null;
   /** Classical verdict of that count from the Moon */
   quality: 'favourable' | 'mixed' | 'difficult';
+  /** Vedha: another graha sitting in the obstruction point cancels the result */
+  vedha: { blocked: boolean; by: VedicPlanet | null; house: number | null; plain: string | null };
+  /** Ashtakavarga filter on the sign being transited */
+  bindus: { sav: number | null; savBand: SavBand | null; bav: number | null; plain: string | null };
+  /** The verdict after vedha and bindus are applied, which is what to actually read */
+  netVerdict: 'works' | 'mixed' | 'maintenance';
   plain: string;
 }
+
+/**
+ * Vedha (obstruction) points. When a graha transits one of its favourable
+ * houses from the natal Moon, the good result is classically cancelled if
+ * another graha occupies the paired obstruction house at the same time.
+ * Sun and Saturn never obstruct each other, and Moon and Mercury never
+ * obstruct each other, which are the two standard exceptions.
+ */
+const VEDHA: Partial<Record<VedicPlanet, Record<number, number>>> = {
+  Sun: { 3: 9, 6: 12, 10: 4, 11: 5 },
+  Moon: { 1: 5, 3: 9, 6: 12, 7: 2, 10: 4, 11: 8 },
+  Mars: { 3: 12, 6: 9, 11: 5 },
+  Mercury: { 2: 5, 4: 3, 6: 9, 8: 1, 10: 7, 11: 12 },
+  Jupiter: { 2: 12, 5: 4, 7: 3, 9: 10, 11: 8 },
+  Venus: { 1: 8, 2: 7, 3: 1, 4: 10, 5: 9, 8: 5, 9: 11, 11: 6, 12: 3 },
+  Saturn: { 3: 12, 6: 9, 11: 5 },
+};
+
+const VEDHA_EXEMPT: Array<[VedicPlanet, VedicPlanet]> = [
+  ['Sun', 'Saturn'],
+  ['Moon', 'Mercury'],
+];
+
+function exempt(a: VedicPlanet, b: VedicPlanet): boolean {
+  return VEDHA_EXEMPT.some(pair => pair.includes(a) && pair.includes(b));
+}
+
+export const VEDHA_NOTE =
+  'Jyotish does not read a transit at face value. When a graha reaches one of its favourable positions counted from your natal Moon, the classical rule is that the good result is obstructed if another graha is sitting in the paired obstruction house at the same moment. That is why two people can have the same transit and only one of them feels it.';
+
+export const BINDU_FILTER_NOTE =
+  'The Ashtakavarga scores are the second filter. A transit through a sign holding thirty points or more usually produces something you can point to. The same transit through a sign holding under twenty five usually asks for maintenance instead, however good the position looks on paper.';
 
 const SLOW: VedicPlanet[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
 
@@ -87,6 +126,9 @@ function norm360(v: number) { return ((v % 360) + 360) % 360; }
 export interface GocharaReport {
   when: Date;
   ayanamsa: number;
+  ayanamsaLabel: string;
+  /** Whether the Ashtakavarga filter could be applied */
+  bindusAvailable: boolean;
   transits: GocharaTransit[];
   moonToday: GocharaTransit | null;
   sadeSati: SadeSati | null;
@@ -124,9 +166,10 @@ export function buildGochara(
   vedic: VedicChart,
   dashaLord?: VedicPlanet | null,
   when: Date = new Date(),
+  ashtakavarga?: AshtakavargaReport | null,
 ): GocharaReport | null {
   const sky = buildLiveSkyChart(when);
-  const ayan = lahiriAyanamsa(when);
+  const ayan = ayanamsaFor(when, vedic.ayanamsaMode);
   const moonNatal = vedic.byName.Moon;
   if (!moonNatal) return null;
 
@@ -146,9 +189,74 @@ export function buildGochara(
     return idx * 30 + (p.degree || 0) + (p.minutes || 0) / 60 + (p.seconds || 0) / 3600;
   };
 
+  type SkyPos = { sign?: string; degree?: number; minutes?: number; seconds?: number; isRetrograde?: boolean };
+  const entries = Object.entries(sky.planets) as [string, SkyPos | undefined][];
 
-  const build = (graha: VedicPlanet, tropicalLon: number, retro: boolean): GocharaTransit => {
-    const lon = norm360(tropicalLon - ayan);
+  /** Sidereal longitude of every graha in the sky right now, Ketu included. */
+  const skyLon = new Map<VedicPlanet, { lon: number; retro: boolean }>();
+  for (const [name, p] of entries) {
+    const graha = NAME_MAP[name];
+    if (!graha || !p) continue;
+    const lon = norm360(toLongitude(p) - ayan);
+    skyLon.set(graha, { lon, retro: !!p.isRetrograde });
+    if (graha === 'Rahu') skyLon.set('Ketu', { lon: norm360(lon + 180), retro: true });
+  }
+
+  /** Which house from the natal Moon each transiting graha currently occupies. */
+  const fromMoonOf = new Map<VedicPlanet, number>();
+  skyLon.forEach((v, graha) => {
+    const sign = signFromIndex(Math.floor(v.lon / 30));
+    fromMoonOf.set(graha, ((signIndex(sign) - signIndex(moonNatal.sign) + 12) % 12) + 1);
+  });
+
+  const checkVedha = (graha: VedicPlanet, fromMoon: number, favourable: boolean): GocharaTransit['vedha'] => {
+    const table = VEDHA[graha];
+    const point = table ? table[fromMoon] : undefined;
+    if (!favourable || !point) {
+      return { blocked: false, by: null, house: point ?? null, plain: null };
+    }
+    let blocker: VedicPlanet | null = null;
+    fromMoonOf.forEach((h, other) => {
+      if (blocker || other === graha || exempt(graha, other)) return;
+      if (other === 'Rahu' || other === 'Ketu') return; // the nodes are not classical vedha agents
+      if (h === point) blocker = other;
+    });
+    if (!blocker) {
+      return {
+        blocked: false, by: null, house: point,
+        plain: `The obstruction point for this transit is ${point} houses from your Moon, and nothing is sitting there right now, so the favourable reading stands.`,
+      };
+    }
+    return {
+      blocked: true, by: blocker, house: point,
+      plain: `${blocker} is currently ${point} houses from your natal Moon, which is the classical obstruction point for ${graha} in this position. Under the vedha rule that cancels the easy result, so expect the opportunity to exist but to need pushing rather than to arrive on its own.`,
+    };
+  };
+
+  const bindusFor = (graha: VedicPlanet, sign: string): GocharaTransit['bindus'] => {
+    const savSign = savForSign(ashtakavarga ?? null, sign);
+    const bav = bavForTransit(ashtakavarga ?? null, graha, sign);
+    if (!savSign && bav === null) return { sav: null, savBand: null, bav: null, plain: null };
+    const parts: string[] = [];
+    if (savSign) {
+      parts.push(
+        `${sign} holds ${savSign.bindus} of the 337 Ashtakavarga points, against an average of 28, which is ${savSign.band === 'strong' ? 'above average' : savSign.band === 'average' ? 'around average' : 'below average'}.`,
+      );
+    }
+    if (bav !== null) {
+      parts.push(
+        bav >= 5
+          ? `${graha} itself has ${bav} of its own 8 points in this sign, so it is transiting supported ground.`
+          : bav <= 2
+            ? `${graha} has only ${bav} of its own 8 points in this sign, so this leg of the transit is the thin part of it.`
+            : `${graha} has ${bav} of its own 8 points in this sign, which is middling.`,
+      );
+    }
+    return { sav: savSign?.bindus ?? null, savBand: savSign?.band ?? null, bav, plain: parts.join(' ') };
+  };
+
+  const build = (graha: VedicPlanet, siderealLon: number, retro: boolean): GocharaTransit => {
+    const lon = norm360(siderealLon);
     const sign = signFromIndex(Math.floor(lon / 30));
     const degree = lon % 30;
     const fromMoon = ((signIndex(sign) - signIndex(moonNatal.sign) + 12) % 12) + 1;
@@ -157,6 +265,18 @@ export function buildGochara(
     const quality: GocharaTransit['quality'] = good ? 'favourable' : [4, 8, 12].includes(fromMoon) ? 'difficult' : 'mixed';
     const press = GRAHA_PRESSURE[graha];
     const focus = house ? HOUSE_FOCUS[house] : null;
+
+    const vedha = checkVedha(graha, fromMoon, good);
+    const bindus = bindusFor(graha, sign);
+
+    // Net verdict: the classical count, then vedha, then the bindu filter.
+    let netVerdict: GocharaTransit['netVerdict'] =
+      quality === 'favourable' ? 'works' : quality === 'difficult' ? 'maintenance' : 'mixed';
+    if (vedha.blocked && netVerdict === 'works') netVerdict = 'mixed';
+    if (bindus.savBand === 'weak' && netVerdict === 'works') netVerdict = 'mixed';
+    else if (bindus.savBand === 'weak' && netVerdict === 'mixed') netVerdict = 'maintenance';
+    else if (bindus.savBand === 'strong' && netVerdict === 'maintenance') netVerdict = 'mixed';
+    else if (bindus.savBand === 'strong' && netVerdict === 'mixed' && !vedha.blocked) netVerdict = 'works';
 
     const plain = [
       `${graha} is transiting ${sign}${retro ? ', retrograde' : ''}, which is ${fromMoon === 1 ? 'the same sign as' : `${fromMoon} signs from`} your natal Moon.`,
@@ -167,13 +287,20 @@ export function buildGochara(
         : quality === 'favourable'
           ? 'Counted from the Moon this is one of the supportive positions, so effort here tends to go further than usual.'
           : 'Counted from the Moon this is a mixed position, so it depends more on what you do with it than on the transit itself.',
+      vedha.plain || '',
+      bindus.plain || '',
+      netVerdict === 'works'
+        ? 'After both filters this one is worth acting on.'
+        : netVerdict === 'maintenance'
+          ? 'After both filters this one reads as upkeep rather than launch.'
+          : 'After both filters this one is genuinely mixed, so pick one thing here rather than several.',
     ].filter(Boolean).join(' ');
 
     return {
       graha, sign, degree, retrograde: retro,
       dignity: vedicDignity(graha, sign),
       nakshatra: getNakshatra(lon).name,
-      fromMoon, house, quality, plain,
+      fromMoon, house, quality, vedha, bindus, netVerdict, plain,
     };
   };
 
@@ -181,40 +308,29 @@ export function buildGochara(
   let moonToday: GocharaTransit | null = null;
   let saturnSign: string | null = null;
 
-  type SkyPos = { sign?: string; degree?: number; minutes?: number; seconds?: number; isRetrograde?: boolean };
-  const entries = Object.entries(sky.planets) as [string, SkyPos | undefined][];
-
-  for (const [name, p] of entries) {
-    const graha = NAME_MAP[name];
-    if (!graha || !p) continue;
-    const lon = toLongitude(p);
-    const t = build(graha, lon, !!p.isRetrograde);
+  skyLon.forEach((v, graha) => {
+    const t = build(graha, v.lon, v.retro);
     if (graha === 'Saturn') saturnSign = t.sign;
-    if (graha === 'Moon') { moonToday = t; continue; }
+    if (graha === 'Moon') { moonToday = t; return; }
     if (SLOW.includes(graha)) transits.push(t);
-    if (graha === 'Rahu') transits.push(build('Ketu', norm360(lon + 180), true));
-  }
+  });
 
   // Also surface the current dasha lord's transit, whatever speed it is.
   let dashaLordTransit: GocharaTransit | null = null;
   if (dashaLord) {
-    const match = entries.find(([n]) => NAME_MAP[n] === dashaLord)?.[1];
-    if (match) dashaLordTransit = build(dashaLord, toLongitude(match), !!match.isRetrograde);
-    else if (dashaLord === 'Ketu') {
-      const node = entries.find(([n]) => NAME_MAP[n] === 'Rahu')?.[1];
-      if (node) dashaLordTransit = build('Ketu', norm360(toLongitude(node) + 180), true);
-    }
+    const match = skyLon.get(dashaLord);
+    if (match) dashaLordTransit = build(dashaLord, match.lon, match.retro);
   }
-
-
 
   return {
     when,
     ayanamsa: ayan,
+    ayanamsaLabel: vedic.ayanamsaLabel,
     transits: transits.sort((a, b) => a.graha.localeCompare(b.graha)),
     moonToday,
     sadeSati: saturnSign ? sadeSati(moonNatal.sign, saturnSign) : null,
     dashaLordTransit,
+    bindusAvailable: !!ashtakavarga,
   };
 }
 

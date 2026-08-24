@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Copy } from 'lucide-react';
 import { runAccuracySuite, formatSuiteMarkdown } from '@/lib/qa/runAccuracySuite';
+import { runVedicAccuracySuite, formatVedicMarkdown } from '@/lib/qa/vedicAccuracy';
 import { formatArcmin, formatLongitude } from '@/lib/qa/accuracyAudit';
 import { toast } from 'sonner';
 
@@ -30,6 +31,16 @@ const QaAccuracy = () => {
     return runAccuracySuite();
   }, [runId]);
   const t = report.totals;
+  const vedic = useMemo(() => {
+    void runId;
+    return runVedicAccuracySuite();
+  }, [runId]);
+  const v = vedic.totals;
+
+  const copyVedicMarkdown = async () => {
+    await navigator.clipboard.writeText(formatVedicMarkdown(vedic));
+    toast.success('Vedic scorecard copied as markdown');
+  };
 
   const copyMarkdown = async () => {
     await navigator.clipboard.writeText(formatSuiteMarkdown(report));
@@ -51,6 +62,9 @@ const QaAccuracy = () => {
           </Button>
           <Button size="sm" variant="outline" onClick={copyMarkdown}>
             <Copy className="mr-2 h-4 w-4" /> Copy scorecard
+          </Button>
+          <Button size="sm" variant="outline" onClick={copyVedicMarkdown}>
+            <Copy className="mr-2 h-4 w-4" /> Copy Vedic scorecard
           </Button>
         </div>
       </header>
@@ -236,6 +250,115 @@ const QaAccuracy = () => {
           );
         })}
       </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">Vedic engine</h2>
+        <p className="text-muted-foreground text-sm">
+          Each chart's sidereal longitudes are graded against the frozen tropical values minus the ayanamsa for the same
+          UTC instant, then nakshatra, pada, whole-sign house, the Vimshottari dasha structure, all sixteen divisional
+          charts and the Ashtakavarga totals are checked independently.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Sidereal positions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="text-2xl font-semibold">{pct(v.bodyPass / Math.max(1, v.bodyChecks))}</div>
+              <p className="text-muted-foreground text-xs">
+                {v.bodyPass} of {v.bodyChecks} inside tolerance
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Nakshatra and house</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="text-2xl font-semibold">
+                {pct((v.nakshatraPass + v.housePass) / Math.max(1, v.nakshatraChecks + v.houseChecks))}
+              </div>
+              <p className="text-muted-foreground text-xs">
+                {v.nakshatraPass}/{v.nakshatraChecks} nakshatra and pada, {v.housePass}/{v.houseChecks} whole-sign houses
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Dasha, varga, bindus</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="text-2xl font-semibold">{pct(v.invariantPass / Math.max(1, v.invariantChecks))}</div>
+              <p className="text-muted-foreground text-xs">
+                {v.invariantPass} of {v.invariantChecks} structural checks held
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-2">
+          {vedic.people.map((p) => {
+            const broken = p.invariants.filter((i) => !i.ok);
+            const offBodies = p.bodies.filter(
+              (b) => b.status !== 'pass' || !b.signOk || !b.nakshatraOk || !b.houseOk,
+            );
+            const clean = broken.length === 0 && offBodies.length === 0;
+            return (
+              <Collapsible key={p.id}>
+                <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left">
+                  <span className="text-sm font-medium">{p.name}</span>
+                  <span className="flex items-center gap-2">
+                    <Badge variant={clean ? 'default' : 'destructive'}>{pct(p.score)}</Badge>
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 px-3 py-2">
+                  <p className="text-muted-foreground text-xs">{p.birthLine}</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-muted-foreground">
+                        <tr className="text-left">
+                          <th className="py-1 pr-3">Graha</th>
+                          <th className="py-1 pr-3">Expected</th>
+                          <th className="py-1 pr-3">App</th>
+                          <th className="py-1 pr-3">Delta</th>
+                          <th className="py-1 pr-3">Nakshatra</th>
+                          <th className="py-1">House</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {p.bodies.map((b) => (
+                          <tr key={b.body} className="border-t">
+                            <td className="py-1 pr-3">{b.body}</td>
+                            <td className="py-1 pr-3">{formatLongitude(b.expectedSidereal)}</td>
+                            <td className="py-1 pr-3">
+                              {b.actualSidereal === null ? 'missing' : formatLongitude(b.actualSidereal)}
+                            </td>
+                            <td className={`py-1 pr-3 ${b.status === 'pass' ? '' : 'text-destructive'}`}>
+                              {formatArcmin(b.deltaArcmin)}
+                            </td>
+                            <td className={`py-1 pr-3 ${b.nakshatraOk ? '' : 'text-destructive'}`}>
+                              {b.actualNakshatra ?? 'missing'} {b.actualPada ?? ''}
+                            </td>
+                            <td className={`py-1 ${b.houseOk ? '' : 'text-destructive'}`}>{b.actualHouse ?? '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <ul className="space-y-1 text-xs">
+                    {p.invariants.map((i) => (
+                      <li key={i.name} className={i.ok ? 'text-muted-foreground' : 'text-destructive'}>
+                        {i.ok ? 'OK' : 'FAIL'}: {i.name}. {i.detail}
+                      </li>
+                    ))}
+                  </ul>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </div>
+      </section>
+
     </main>
   );
 };
