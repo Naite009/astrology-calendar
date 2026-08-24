@@ -21,7 +21,7 @@ import { VedicPlanet } from './nakshatras';
 import { PlanetCondition } from './strength';
 import { KarakaAssignment } from './karakas';
 import { CurrentDasha } from './vimshottariDasha';
-import { housePlain } from './interpretations/houseCopy';
+import { housePlain } from './interpretations/plainMeaning';
 
 export interface ChartDriver {
   role: 'Runs the chart' | 'Keeps coming back' | 'Owns these years' | 'Loudest right now';
