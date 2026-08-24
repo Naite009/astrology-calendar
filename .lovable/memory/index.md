@@ -29,6 +29,8 @@ Updated: now
 - Chart entry only needs 10 planets + Asc + cusps + North Node + Chiron; the rest is auto-derived on save. See [Minimal entry auto-fill](mem://features/charts/minimal-entry-autofill).
 - Ascendant/Placidus/Vertex formulas must never add a 180 degree adjustment, and Chiron/asteroids come from the JPL tables in `src/lib/ephemeris/`, never period extrapolation. Node = true node. See [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris).
 
+- Vedic: ayanamsa is selectable (Lahiri default) and never hardcoded in copy; yogas weighted by graha condition; transits filtered by Vedha + bindus; readings open with Lagna lord, Atmakaraka, Mahadasha lord. See [Vedic accuracy and depth standards](mem://technical/astrology/vedic-accuracy-and-depth-standards).
+
 ## Memories
 - [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris) — 180 degree ASC bug fix, JPL Horizons asteroid tables, true node
 - [Minimal entry auto-fill](mem://features/charts/minimal-entry-autofill) — derives South Node, Lilith, asteroids, Eris, Vertex, Part of Fortune, cusps from birth data
