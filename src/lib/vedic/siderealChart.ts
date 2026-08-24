@@ -2,7 +2,7 @@
  * Builds a sidereal (Jyotish) chart from a stored NatalChart.
  *
  * The stored chart holds tropical sign/degree/minute values. We convert those
- * to absolute tropical longitude, subtract the Lahiri ayanamsa for the birth
+ * to absolute tropical longitude, subtract the chosen ayanamsa for the birth
  * moment, and rebuild sign, nakshatra, pada and whole-sign house from there.
  * All math is deterministic. No AI is involved in any calculation.
  */
