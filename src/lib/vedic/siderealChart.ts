@@ -37,6 +37,8 @@ export interface VedicChart {
   birthTime: string;
   birthLocation: string;
   ayanamsa: number;
+  ayanamsaMode: AyanamsaMode;
+  ayanamsaLabel: string;
   hasBirthTime: boolean;
   lagnaSign: string | null;
   lagnaDegree: number | null;
