@@ -28,6 +28,86 @@ export interface Yoga {
   meaning: string;
   /** How much weight to put on it */
   weight: 'strong' | 'moderate' | 'noted';
+  /** The grahas the combination is built from, read out of the evidence. */
+  planets?: VedicPlanet[];
+  /** Average condition index of those grahas, 0-100, when conditions are supplied. */
+  conditionIndex?: number | null;
+  /** Whether the condition check raised, lowered or left the weight alone. */
+  conditionEffect?: 'raised' | 'lowered' | 'unchanged';
+  /** Plain sentence explaining what the condition check did to the weight. */
+  conditionNote?: string;
+}
+
+const ALL_GRAHAS: VedicPlanet[] = [
+  'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu',
+];
+
+/** Which grahas a yoga is actually built from, taken from its own evidence lines. */
+export function yogaPlanets(yoga: Yoga): VedicPlanet[] {
+  const text = [yoga.name, ...yoga.evidence].join(' ');
+  return ALL_GRAHAS.filter(g => new RegExp(`\\b${g}\\b`).test(text));
+}
+
+/**
+ * A yoga is only as good as the grahas that make it. A Gaja Kesari built from a
+ * combust Jupiter is not the same pattern as one built from a clean Jupiter, so
+ * the condition index feeds back into the weight instead of sitting beside it.
+ */
+export function weighYogas(
+  yogas: Yoga[],
+  conditions: Array<{ body: VedicPlanet; index: number; band: 'strong' | 'workable' | 'strained' }>,
+): Yoga[] {
+  const byBody = new Map(conditions.map(c => [c.body, c]));
+  const order: Yoga['weight'][] = ['strong', 'moderate', 'noted'];
+
+  const scored = yogas.map((y): Yoga => {
+    const planets = yogaPlanets(y);
+    const found = planets.map(p => byBody.get(p)).filter((c): c is NonNullable<typeof c> => !!c);
+    if (!found.length) {
+      return { ...y, planets, conditionIndex: null, conditionEffect: 'unchanged' };
+    }
+
+    const avg = Math.round(found.reduce((a, c) => a + c.index, 0) / found.length);
+    const strained = found.filter(c => c.band === 'strained').map(c => c.body);
+    const strong = found.filter(c => c.band === 'strong').map(c => c.body);
+
+    let weight = y.weight;
+    let effect: Yoga['conditionEffect'] = 'unchanged';
+    const idx = order.indexOf(weight);
+
+    if (avg < 40 && idx < order.length - 1) {
+      weight = order[idx + 1];
+      effect = 'lowered';
+    } else if (avg >= 70 && idx > 0) {
+      weight = order[idx - 1];
+      effect = 'raised';
+    }
+
+    const detail = strained.length
+      ? `${list(strained)} ${strained.length > 1 ? 'are' : 'is'} in strained condition here`
+      : strong.length
+        ? `${list(strong)} ${strong.length > 1 ? 'are' : 'is'} in strong condition here`
+        : 'the grahas involved are in workable condition';
+
+    const note =
+      effect === 'lowered'
+        ? `Condition check: the grahas behind this pattern average ${avg} out of 100, and ${detail}, so the pattern is real but reads weaker than the textbook version. Treat it as something that needs support rather than something that runs by itself.`
+        : effect === 'raised'
+          ? `Condition check: the grahas behind this pattern average ${avg} out of 100, and ${detail}, so this one carries more weight than the same combination usually would.`
+          : `Condition check: the grahas behind this pattern average ${avg} out of 100, and ${detail}, so the weight stands as classically described.`;
+
+    return { ...y, planets, conditionIndex: avg, conditionEffect: effect, weight, conditionNote: note };
+  });
+
+  const rank = { strong: 0, moderate: 1, noted: 2 } as const;
+  return scored.sort(
+    (a, b) => rank[a.weight] - rank[b.weight] || (b.conditionIndex ?? 0) - (a.conditionIndex ?? 0),
+  );
+}
+
+function list(items: string[]): string {
+  if (items.length <= 1) return items[0] || '';
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
 const KENDRA = [1, 4, 7, 10];
@@ -318,15 +398,26 @@ function namedYogas(chart: VedicChart, navamsa?: VargaChart): Yoga[] {
 export const YOGA_NOTE =
   'A yoga is a named combination, not a verdict. Classical texts describe hundreds, and most people have several that pull in different directions, which is normal and is why no single one is read on its own. Each pattern below lists the exact placements behind it so you can check it yourself.';
 
-export function buildYogas(chart: VedicChart, navamsa?: VargaChart): Yoga[] {
+export function buildYogas(
+  chart: VedicChart,
+  navamsa?: VargaChart,
+  conditions?: Array<{ body: VedicPlanet; index: number; band: 'strong' | 'workable' | 'strained' }>,
+): Yoga[] {
   const all = [
     ...panchamahapurusha(chart),
     ...rajaYogas(chart),
     ...dhanaYogas(chart),
     ...namedYogas(chart, navamsa),
   ];
+  if (conditions && conditions.length) return weighYogas(all, conditions).slice(0, 14);
   const order = { strong: 0, moderate: 1, noted: 2 } as const;
-  return all.sort((a, b) => order[a.weight] - order[b.weight]).slice(0, 14);
+  return all
+    .map(y => ({ ...y, planets: yogaPlanets(y), conditionIndex: null, conditionEffect: 'unchanged' as const }))
+    .sort((a, b) => order[a.weight] - order[b.weight])
+    .slice(0, 14);
 }
+
+export const YOGA_CONDITION_NOTE =
+  'Each pattern below is weighted by the condition of the grahas that build it, not just by whether the combination exists. The same named yoga can be a headline in one chart and a footnote in another, and the condition line under each one says which it is here.';
 
 export { DUSTHANA };
