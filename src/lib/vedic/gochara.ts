@@ -12,7 +12,8 @@
  */
 
 import { buildLiveSkyChart } from '@/lib/liveSkyChart';
-import { lahiriAyanamsa } from './ayanamsa';
+import { ayanamsaFor } from './ayanamsa';
+import { AshtakavargaReport, savForSign, bavForTransit, SavBand } from './ashtakavarga';
 import { VedicChart } from './siderealChart';
 import { VedicPlanet, getNakshatra } from './nakshatras';
 import { signIndex, signFromIndex, vedicDignity, VedicDignity } from './vedicDignity';
@@ -30,8 +31,46 @@ export interface GocharaTransit {
   house: number | null;
   /** Classical verdict of that count from the Moon */
   quality: 'favourable' | 'mixed' | 'difficult';
+  /** Vedha: another graha sitting in the obstruction point cancels the result */
+  vedha: { blocked: boolean; by: VedicPlanet | null; house: number | null; plain: string | null };
+  /** Ashtakavarga filter on the sign being transited */
+  bindus: { sav: number | null; savBand: SavBand | null; bav: number | null; plain: string | null };
+  /** The verdict after vedha and bindus are applied, which is what to actually read */
+  netVerdict: 'works' | 'mixed' | 'maintenance';
   plain: string;
 }
+
+/**
+ * Vedha (obstruction) points. When a graha transits one of its favourable
+ * houses from the natal Moon, the good result is classically cancelled if
+ * another graha occupies the paired obstruction house at the same time.
+ * Sun and Saturn never obstruct each other, and Moon and Mercury never
+ * obstruct each other, which are the two standard exceptions.
+ */
+const VEDHA: Partial<Record<VedicPlanet, Record<number, number>>> = {
+  Sun: { 3: 9, 6: 12, 10: 4, 11: 5 },
+  Moon: { 1: 5, 3: 9, 6: 12, 7: 2, 10: 4, 11: 8 },
+  Mars: { 3: 12, 6: 9, 11: 5 },
+  Mercury: { 2: 5, 4: 3, 6: 9, 8: 1, 10: 7, 11: 12 },
+  Jupiter: { 2: 12, 5: 4, 7: 3, 9: 10, 11: 8 },
+  Venus: { 1: 8, 2: 7, 3: 1, 4: 10, 5: 9, 8: 5, 9: 11, 11: 6, 12: 3 },
+  Saturn: { 3: 12, 6: 9, 11: 5 },
+};
+
+const VEDHA_EXEMPT: Array<[VedicPlanet, VedicPlanet]> = [
+  ['Sun', 'Saturn'],
+  ['Moon', 'Mercury'],
+];
+
+function exempt(a: VedicPlanet, b: VedicPlanet): boolean {
+  return VEDHA_EXEMPT.some(pair => pair.includes(a) && pair.includes(b));
+}
+
+export const VEDHA_NOTE =
+  'Jyotish does not read a transit at face value. When a graha reaches one of its favourable positions counted from your natal Moon, the classical rule is that the good result is obstructed if another graha is sitting in the paired obstruction house at the same moment. That is why two people can have the same transit and only one of them feels it.';
+
+export const BINDU_FILTER_NOTE =
+  'The Ashtakavarga scores are the second filter. A transit through a sign holding thirty points or more usually produces something you can point to. The same transit through a sign holding under twenty five usually asks for maintenance instead, however good the position looks on paper.';
 
 const SLOW: VedicPlanet[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
 
