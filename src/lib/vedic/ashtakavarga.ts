@@ -306,3 +306,44 @@ export function bavForTransit(
   if (!row) return null;
   return row.bySignIndex[signIndex(sign)];
 }
+
+/** SAV row for a whole-sign house, when the chart has a birth time. */
+export function savForHouse(report: AshtakavargaReport | null, house: number): SavSign | null {
+  if (!report) return null;
+  return report.sav.find(s => s.house === house) || null;
+}
+
+/**
+ * The sentence the money, career and partnership sections use so the bindu
+ * scores actually feed the reading instead of sitting in their own card.
+ * Returns null when there is no birth time, because the houses cannot be placed.
+ */
+export function binduSupportSentence(
+  report: AshtakavargaReport | null,
+  houses: number[],
+  topic: string,
+): string | null {
+  if (!report) return null;
+  const rows = houses.map(h => savForHouse(report, h)).filter((r): r is SavSign => !!r);
+  if (!rows.length) return null;
+
+  const parts = rows.map(
+    r => `your ${ordinal(r.house!)} house (${r.sign}) holds ${r.bindus} points`,
+  );
+  const best = [...rows].sort((a, b) => b.bindus - a.bindus)[0];
+  const worst = [...rows].sort((a, b) => a.bindus - b.bindus)[0];
+
+  const verdict =
+    best.bindus >= 30
+      ? `The ${ordinal(best.house!)} house is the supported one at ${best.bindus}, so ${topic} tends to respond best when routed through ${HOUSE_LIFE_AREA[best.house!]}.`
+      : best.bindus >= 25
+        ? `Nothing here is stacked either way, so ${topic} tracks your effort fairly closely rather than being helped or hindered by the chart.`
+        : `All of these sit below the classical average, which reads as ${topic} needing more preparation and more patience than it looks like it should, not as a limit on what is possible.`;
+
+  const caution =
+    rows.length > 1 && worst.bindus < 25 && worst.house !== best.house
+      ? ` The ${ordinal(worst.house!)} house is the thin one at ${worst.bindus}, so plans that depend mainly on ${HOUSE_LIFE_AREA[worst.house!]} usually need a second support built in.`
+      : '';
+
+  return `Ashtakavarga check. Across the 337 points in the chart an average house holds about 28, and ${parts.join(', ')}. ${verdict}${caution} These scores matter most for timing: the same transit through a high-scoring house produces something you can point to, and through a low-scoring one usually asks for maintenance instead.`;
+}
