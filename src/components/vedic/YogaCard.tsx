@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Yoga, YOGA_NOTE } from '@/lib/vedic/yogas';
+import { Yoga, YOGA_NOTE, YOGA_CONDITION_NOTE } from '@/lib/vedic/yogas';
 
 interface Props {
   yogas: Yoga[];
@@ -57,6 +57,16 @@ export const YogaCard = ({ yogas, name }: Props) => {
                   <span className="font-serif text-[15px]">{y.name}</span>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${cat.cls}`}>{cat.text}</span>
                   <span className="text-[11px] text-muted-foreground">{WEIGHT_LABEL[y.weight]}</span>
+                  {y.conditionEffect === 'lowered' && (
+                    <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                      weakened by condition
+                    </span>
+                  )}
+                  {y.conditionEffect === 'raised' && (
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                      strengthened by condition
+                    </span>
+                  )}
                   <ChevronDown size={14} className={`ml-auto ${isOpen ? 'rotate-180' : ''} transition-transform`} />
                 </div>
                 <p className="mt-1 text-[13px] text-muted-foreground">In plain English, {y.plainName}.</p>
@@ -73,6 +83,11 @@ export const YogaCard = ({ yogas, name }: Props) => {
                     </ul>
                   </div>
                   <p className="text-[13px] leading-relaxed">{y.meaning}</p>
+                  {y.conditionNote && (
+                    <p className="rounded-md border border-border/60 bg-background/50 p-3 text-[12px] leading-relaxed text-muted-foreground">
+                      {y.conditionNote}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -81,7 +96,7 @@ export const YogaCard = ({ yogas, name }: Props) => {
       </div>
 
       <p className="mt-4 rounded-md border border-border/60 bg-secondary/20 p-3 text-[12px] leading-relaxed text-muted-foreground">
-        {YOGA_NOTE}
+        {YOGA_NOTE} {YOGA_CONDITION_NOTE}
       </p>
     </section>
   );

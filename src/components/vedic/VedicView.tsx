@@ -15,7 +15,10 @@ import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { buildVedicChart, formatDegree } from '@/lib/vedic/siderealChart';
 import { buildVedicReading } from '@/lib/vedic/vedicReadings';
 import { KARAKA_METHOD_NOTE } from '@/lib/vedic/karakas';
-import { formatAyanamsa } from '@/lib/vedic/ayanamsa';
+import { formatAyanamsa, AyanamsaMode, DEFAULT_AYANAMSA } from '@/lib/vedic/ayanamsa';
+import { AyanamsaSelector } from './AyanamsaSelector';
+import { ChartDriversCard } from './ChartDriversCard';
+import { DashaTransitCard } from './DashaTransitCard';
 import { VedicSectionCard } from './VedicSectionCard';
 import { DashaTimeline } from './DashaTimeline';
 import { VargaGrid } from './VargaGrid';
@@ -42,6 +45,7 @@ interface Props {
 }
 
 const STORAGE_KEY = 'vedic-selected-chart';
+const AYANAMSA_KEY = 'vedic-ayanamsa-mode';
 
 export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
   const [selectedId, setSelectedId] = useState<string>(() => {
@@ -49,6 +53,16 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
     if (stored) return stored;
     return userNatalChart?.id || savedCharts[0]?.id || '';
   });
+
+  const [ayanamsa, setAyanamsa] = useState<AyanamsaMode>(() => {
+    const stored = sessionStorage.getItem(AYANAMSA_KEY) as AyanamsaMode | null;
+    return stored || DEFAULT_AYANAMSA;
+  });
+
+  const handleAyanamsa = (mode: AyanamsaMode) => {
+    setAyanamsa(mode);
+    try { sessionStorage.setItem(AYANAMSA_KEY, mode); } catch { /* storage full, non-critical */ }
+  };
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
@@ -68,13 +82,13 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
   const reading = useMemo(() => {
     if (!activeChart) return null;
     try {
-      const vedic = buildVedicChart(activeChart);
+      const vedic = buildVedicChart(activeChart, ayanamsa);
       return vedic ? buildVedicReading(vedic) : null;
     } catch (e) {
       console.error('[Vedic] failed to build reading', e);
       return null;
     }
-  }, [activeChart]);
+  }, [activeChart, ayanamsa]);
 
   const deepDive = useMemo(() => {
     if (!reading) return null;
@@ -119,7 +133,7 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
       },
       system: {
         zodiac: 'sidereal',
-        ayanamsa: `Lahiri ${formatAyanamsa(chart.ayanamsa)}`,
+        ayanamsa: `${chart.ayanamsaLabel} ${formatAyanamsa(chart.ayanamsa)}`,
         houses: 'whole sign',
       },
       lagna: chart.lagnaSign
@@ -175,6 +189,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
         conditionIndex: c.index, band: c.band,
         components: c.components,
       })),
+      whatRunsTheChart: reading.drivers,
+      periodAndTransitTogether: reading.timing,
       yogas: reading.yogas,
       arudhaPadas: reading.arudhas,
       currentTransits: reading.gochara
@@ -240,11 +256,20 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           <div className="flex flex-wrap items-start gap-2 rounded-md border border-border bg-secondary/25 p-3 text-[12px] text-muted-foreground">
             <Info size={14} className="mt-0.5 shrink-0" />
             <span>
-              Sidereal zodiac, Lahiri ayanamsa {formatAyanamsa(reading.chart.ayanamsa)}, whole-sign houses.
+              Sidereal zodiac, {reading.chart.ayanamsaLabel} ayanamsa {formatAyanamsa(reading.chart.ayanamsa)}, whole-sign houses.
               {!reading.chart.lagnaSign && ' No rising sign is available for this chart, so house-based material is limited until a birth time is added.'}
               {' '}Sanskrit terms are kept visible on purpose, with the plain reading directly underneath each one.
             </span>
           </div>
+
+          <AyanamsaSelector
+            mode={ayanamsa}
+            onChange={handleAyanamsa}
+            birthMoment={reading.chart.birthMoment}
+            value={reading.chart.ayanamsa}
+          />
+
+          {reading.drivers && <ChartDriversCard gate={reading.drivers} name={reading.chart.name} />}
 
           <ZodiacBridgeCard chart={reading.chart} />
 
@@ -272,6 +297,8 @@ export const VedicView = ({ userNatalChart, savedCharts }: Props) => {
           )}
 
           <DashaTimeline periods={reading.dashas} current={reading.current} birthMoment={reading.chart.birthMoment} />
+
+          {reading.timing && <DashaTransitCard synthesis={reading.timing} />}
 
           {reading.gochara && reading.chart.byName.Moon && (
             <GocharaCard gochara={reading.gochara} moonSign={reading.chart.byName.Moon.sign} />
