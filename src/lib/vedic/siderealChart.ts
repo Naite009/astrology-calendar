@@ -8,7 +8,7 @@
  */
 
 import { NatalChart } from '@/hooks/useNatalChart';
-import { lahiriAyanamsa } from './ayanamsa';
+import { ayanamsaFor, ayanamsaLabel, AyanamsaMode, DEFAULT_AYANAMSA } from './ayanamsa';
 import { getNakshatra, NakshatraInfo, VedicPlanet } from './nakshatras';
 import { signFromIndex, signIndex, vedicDignity, VedicDignity, wholeSignHouse, SIGN_LORDS } from './vedicDignity';
 
