@@ -73,11 +73,14 @@ export function buildBirthMoment(chart: NatalChart): Date {
   return new Date(Date.UTC(y || 2000, (m || 1) - 1, d || 1, hh || 12, (mm || 0) - Math.round(offset * 60)));
 }
 
-export function buildVedicChart(chart: NatalChart): VedicChart | null {
+export function buildVedicChart(
+  chart: NatalChart,
+  mode: AyanamsaMode = DEFAULT_AYANAMSA,
+): VedicChart | null {
   if (!chart) return null;
 
   const birthMoment = buildBirthMoment(chart);
-  const ayanamsa = lahiriAyanamsa(birthMoment);
+  const ayanamsa = ayanamsaFor(birthMoment, mode);
 
   // Ascendant: houseCusps.house1 is the source of truth, then planets.Ascendant.
   const ascSource = chart.houseCusps?.house1 || chart.planets?.Ascendant;
@@ -142,6 +145,8 @@ export function buildVedicChart(chart: NatalChart): VedicChart | null {
     birthTime: chart.birthTime,
     birthLocation: chart.birthLocation,
     ayanamsa,
+    ayanamsaMode: mode,
+    ayanamsaLabel: ayanamsaLabel(mode),
     hasBirthTime: !!chart.birthTime,
     lagnaSign,
     lagnaDegree,
