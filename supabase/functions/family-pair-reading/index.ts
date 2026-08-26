@@ -980,6 +980,94 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     } else if (needs === undefined) {
       (payload as Record<string, unknown>).whatThisChildNeedsFromYou = null;
     }
+    // ─── Traceability validator: every strong claim must name astrology ──────
+    const PLANET_WORDS = [
+      "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus",
+      "Neptune", "Pluto", "Chiron", "Node", "Ascendant", "Midheaven", "Lilith",
+    ];
+    const SIGN_WORDS = [
+      "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio",
+      "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+    ];
+    const ASPECT_WORDS = [
+      "conjunct", "conjunction", "opposite", "opposition", "square", "trine",
+      "sextile", "quincunx", "semisextile",
+    ];
+    const HOUSE_RE = /\b(house\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+house|H\d{1,2})\b/i;
+    const isTraceable = (t: string): boolean => {
+      if (!t || !t.trim()) return false;
+      if (HOUSE_RE.test(t)) return true;
+      const hasPlanet = PLANET_WORDS.some((w) => new RegExp(`\\b${w}`, "i").test(t));
+      const hasSign = SIGN_WORDS.some((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
+      const hasAspect = ASPECT_WORDS.some((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
+      return hasPlanet || hasSign || hasAspect;
+    };
+
+    const pl = payload as Record<string, unknown>;
+
+    // essence: drop untraceable bullets, but never empty the array entirely.
+    if (Array.isArray(pl.essence)) {
+      const kept = (pl.essence as string[]).filter((l) => isTraceable(l));
+      if (kept.length >= 2) {
+        if (kept.length !== (pl.essence as string[]).length) validationLog.push("essence_untraceable_dropped");
+        pl.essence = kept;
+      }
+    }
+
+    // sections: howItLands / blindSpot must name astrology; blank the line if not.
+    if (Array.isArray(pl.sections)) {
+      for (const sec of pl.sections as Record<string, unknown>[]) {
+        const heading = typeof sec.heading === "string" ? sec.heading : "";
+        const withHeading = (t: unknown) => `${heading} ${typeof t === "string" ? t : ""}`;
+        if (typeof sec.howItLands === "string" && !isTraceable(withHeading(sec.howItLands))) {
+          sec.howItLands = "";
+          validationLog.push("section_howItLands_untraceable");
+        }
+        if (typeof sec.blindSpot === "string" && !isTraceable(withHeading(sec.blindSpot))) {
+          sec.blindSpot = "";
+          validationLog.push("section_blindSpot_untraceable");
+        }
+      }
+      pl.sections = (pl.sections as Record<string, unknown>[]).filter(
+        (sec) => (typeof sec.howItLands === "string" && sec.howItLands.trim()) || (Array.isArray(sec.whatHelps) && sec.whatHelps.length),
+      );
+    }
+
+    // bothAreLearning: entries need a tiedTo that names astrology.
+    const bal = pl.bothAreLearning as
+      | { parentIsLearning?: { text?: string; tiedTo?: string }[]; childIsLearning?: { text?: string; tiedTo?: string }[]; sharedNote?: string }
+      | null
+      | undefined;
+    if (bal) {
+      const clean = (arr?: { text?: string; tiedTo?: string }[]) =>
+        (arr ?? []).filter((e) => !!e?.text?.trim() && isTraceable(`${e.tiedTo ?? ""} ${e.text ?? ""}`));
+      const parentSide = clean(bal.parentIsLearning);
+      const childSide = clean(bal.childIsLearning);
+      if (parentSide.length && childSide.length) {
+        pl.bothAreLearning = { parentIsLearning: parentSide, childIsLearning: childSide, sharedNote: bal.sharedNote ?? "" };
+      } else {
+        pl.bothAreLearning = null;
+        validationLog.push("both_are_learning_one_sided");
+      }
+    }
+
+    // responsibilities: keep only traceable lines.
+    const resp = pl.responsibilities as { notTheParents?: string[]; notTheChilds?: string[] } | null | undefined;
+    if (resp) {
+      const np = (resp.notTheParents ?? []).filter(isTraceable);
+      const nc = (resp.notTheChilds ?? []).filter(isTraceable);
+      pl.responsibilities = np.length || nc.length ? { notTheParents: np, notTheChilds: nc } : null;
+      if (!np.length && !nc.length) validationLog.push("responsibilities_untraceable");
+    }
+
+    // traceableAspects: label must name both planets; cap at 5.
+    if (Array.isArray(pl.traceableAspects)) {
+      const rows = (pl.traceableAspects as { label?: string; meaning?: string }[]).filter(
+        (r) => !!r?.label && !!r?.meaning?.trim() && isTraceable(r.label!),
+      );
+      pl.traceableAspects = rows.slice(0, 5);
+    }
+
     if (validationLog.length) {
       console.warn("[family-pair-reading] needs section validation:", validationLog);
       (payload as Record<string, unknown>)._validation_log = validationLog;
@@ -991,6 +1079,7 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
         ...payload,
         ageYears,
         aspectsUsed: aspects.length,
+        widerContacts,
         overallIntensity,
         totalSignatureScore: totalScore,
         highWeightCount,
