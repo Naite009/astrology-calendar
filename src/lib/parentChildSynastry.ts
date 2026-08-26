@@ -530,6 +530,30 @@ export interface PairReadingResponse {
   inTheMoment?: { scenario: string; actions: string[] }[];
   whatMakesItWorse?: string[];
   whatAlreadyWorks?: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
+  /** Two-sided learning block: both people have responsibilities. */
+  bothAreLearning?: {
+    parentIsLearning: { text: string; tiedTo: string }[];
+    childIsLearning: { text: string; tiedTo: string }[];
+    sharedNote?: string;
+  } | null;
+  /** What is NOT each person's responsibility, grounded in a named contact. */
+  responsibilities?: {
+    notTheParents: string[];
+    notTheChilds: string[];
+  } | null;
+  /** Traceable evidence rows: planet + planet + aspect + orb + plain meaning. */
+  traceableAspects?: {
+    label: string;
+    orb: number;
+    meaning: string;
+    tone: "supportive" | "difficult";
+  }[];
+  /** Real but wider contacts, surfaced briefly without equal weight. */
+  widerContacts?: string[];
+  whatThisChildNeedsFromYou?: {
+    opener: string;
+    lines: { text: string; tiedTo: string }[];
+  } | null;
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
@@ -619,7 +643,9 @@ export function buildPairReadingPayload(
   const fromPlanets = fromChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
   const toPlanets = toChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
 
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 12).map((r) => {
+  // Widen the candidate pool so the server can see every meaningful curated
+  // contact. The server ranks and caps the narrative itself.
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 24).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;
