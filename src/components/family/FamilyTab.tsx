@@ -1347,7 +1347,7 @@ const AiPairReadingView = ({
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               {reading.connectionMisfire.framing?.trim() && (
-                <p className="italic text-muted-foreground">{reading.connectionMisfire.framing}</p>
+                <p className="italic text-muted-foreground whitespace-pre-line">{reading.connectionMisfire.framing}</p>
               )}
               {reading.connectionMisfire.parentIntent?.trim() && (
                 <div>
