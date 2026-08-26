@@ -1420,7 +1420,7 @@ const AiPairReadingView = ({
                   <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
                     Plain English
                   </div>
-                  <p>{reading.repairProfile.plainEnglish}</p>
+                  <p className="whitespace-pre-line">{reading.repairProfile.plainEnglish}</p>
                 </div>
               )}
               {reading.repairProfile.whatTheParentMayNotice?.length > 0 && (
