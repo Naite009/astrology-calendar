@@ -241,7 +241,15 @@ export function computeFamilySynastry(
     });
   }
 
-  rows.sort((a, b) => a.orb - b.orb);
+  // Rank by importance AND tightness (see familyAspectRankScore). Anything
+  // inside 1° is guaranteed to sit above looser contacts, so a very tight
+  // aspect can never be buried under a "heavier" but wide one.
+  rows.sort(
+    (a, b) =>
+      familyAspectRankScore(b.fromPlanet, b.toPlanet, b.aspect, b.orb) -
+      familyAspectRankScore(a.fromPlanet, a.toPlanet, a.aspect, a.orb),
+  );
+
 
   const essenceLines = rows
     .slice(0, 3)
