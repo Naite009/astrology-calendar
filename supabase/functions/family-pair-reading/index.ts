@@ -527,7 +527,8 @@ ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairPr
   Child: overwhelmed → retreat → regulate → maybe talk later
 - Use the real names instead of "Parent"/"Child" when they read naturally (e.g. "Lauren: talk → understand → settle").
 - 3-5 steps per side. Each step is 1-3 plain words. No therapy vocabulary in the arrows (BANNED inside arrows: co-regulate, attune, dysregulation, nervous system, hold space, process emotions, self-soothe, validate).
-- Include exactly ONE arrow pair in connectionMisfire.childExperience or connectionMisfire.framing, and at most ONE in repairProfile.plainEnglish. Do not scatter arrows everywhere.
+- REQUIRED: connectionMisfire.framing MUST end with the arrow pair on two new lines (\n separated) whenever connectionMisfire is filled at all. This is not optional. repairProfile.plainEnglish MUST also end with one arrow pair when it is filled.
+- Do not put arrows anywhere else. Two arrow pairs total in the whole reading, maximum.
 - The arrows are a translation device, not decoration. Each side's sequence must match that person's actual named placements in the data.
 
 BOTH ARE LEARNING RULE (HARD — applies to bothAreLearning):
@@ -636,7 +637,7 @@ JSON SCHEMA:
   "repairProfile": {
     "title": "What Repair Requires for This Child",
     "astrology": string (1-3 sentences naming the EXACT signatures driving this child's repair style — Sun/Saturn condition, 4th/10th houses and their rulers, Pluto links to 4th/10th, 8th/12th emphasis, Moon-Chiron, Moon-Neptune, Mercury hard aspects. Include valid degree orbs. If no qualifying signatures, return "" and empty arrays/strings),
-    "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
+    "plainEnglish": string (2-4 sentences ending with one required arrow pair on its own two lines per the ARROW TRANSLATION STYLE RULE, describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
     "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
   },
@@ -648,7 +649,7 @@ JSON SCHEMA:
   },
   "connectionMisfire": {
     "title": "When Connection Misfires",
-    "framing": string (1-2 sentences. Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
+    "framing": string (1-2 sentences, THEN a newline, THEN the required two arrow lines per the ARROW TRANSLATION STYLE RULE, e.g. "Lauren: talk → understand → restore equilibrium\nBen: overwhelmed → retreat → regulate → maybe talk later". Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
     "parentIntent": string (1-2 sentences. What the parent is TRYING to do — explain, reason, make things fair, protect, teach, set limits. Anchor to the parent's own Mercury/Sun/Saturn/Chiron pattern shown in the cross-aspects.),
     "childExperience": string (1-2 sentences. How the child may EXPERIENCE that intent — as pressure, control, being unseen emotionally, being cornered, being judged. Anchor to the child's Moon/Mercury/Saturn/Chiron sensitivities and the specific named misfire aspect with orb.),
     "childProtection": string (1-2 sentences. What the child may DO instead of showing vulnerability — sharp words, cold logic, withdrawal, sarcasm, attack language, shutdown, debating the accusation, walking away. Calibrated to this specific child's Mars/Mercury/Moon pattern. Use "may"/"might".),
