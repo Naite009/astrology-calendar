@@ -110,6 +110,22 @@ interface ReadingPayload {
     opener: string;
     lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
   } | null;
+  bothAreLearning?: {
+    parentIsLearning: { text: string; tiedTo: string }[];
+    childIsLearning: { text: string; tiedTo: string }[];
+    sharedNote?: string;
+  } | null;
+  responsibilities?: {
+    notTheParents: string[];
+    notTheChilds: string[];
+  } | null;
+  traceableAspects?: {
+    label: string;
+    orb: number;
+    meaning: string;
+    tone: "supportive" | "difficult";
+  }[];
+  widerContacts?: string[];
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -505,6 +521,34 @@ ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlready
 - This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
 
 
+ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairProfile, and anywhere you contrast the two people's sequences):
+- When you show how the same moment runs differently for each person, use the compact arrow shorthand exactly in this shape, on its own line inside the string:
+  Parent: talk → understand → restore equilibrium
+  Child: overwhelmed → retreat → regulate → maybe talk later
+- Use the real names instead of "Parent"/"Child" when they read naturally (e.g. "Lauren: talk → understand → settle").
+- 3-5 steps per side. Each step is 1-3 plain words. No therapy vocabulary in the arrows (BANNED inside arrows: co-regulate, attune, dysregulation, nervous system, hold space, process emotions, self-soothe, validate).
+- Include exactly ONE arrow pair in connectionMisfire.childExperience or connectionMisfire.framing, and at most ONE in repairProfile.plainEnglish. Do not scatter arrows everywhere.
+- The arrows are a translation device, not decoration. Each side's sequence must match that person's actual named placements in the data.
+
+BOTH ARE LEARNING RULE (HARD — applies to bothAreLearning):
+- The reading must NOT be one-sided parent accommodation. Name what the parent is practising AND what the child is practising.
+- The child side describes reasonable growth at this age (coming back after a blow-up, saying "I need a minute" instead of going silent, apologising for words said in heat). It must NOT demand compliance, obedience, or that the child manage the parent's feelings, and it must NOT blame the child for their wiring.
+- CORE PRINCIPLE (must be reflected in sharedNote): feeling pressured does not automatically mean the parent's request was unreasonable. A parent asking for respect, cooperation, or basic kindness is a reasonable expectation, not emotional dependence.
+- Every entry must carry a tiedTo naming the placement or cross-aspect with orb. If you cannot tie it, drop the entry.
+
+RECIPROCAL RESPONSIBILITY RULE (HARD — applies to responsibilities):
+- Distinguish what is NOT the parent's responsibility and what is NOT the child's responsibility in THIS pair.
+- Keep each item to one short line, grounded in a named placement or cross-aspect. No generic parenting philosophy.
+- Do not use this section to excuse hurtful behaviour on either side.
+
+TRACEABILITY RULE (HARD — applies to traceableAspects, essence, sections.howItLands, sections.blindSpot):
+- For the strongest supportive and difficult contacts, show the astrology first (parent planet + sign, aspect, child planet + sign, orb) and the plain-English meaning underneath. That is what traceableAspects is for.
+- Any essence bullet or howItLands sentence that does not name a planet, sign, house, or aspect must be deleted rather than softened.
+- Keep it readable. This is a parent's reading, not a textbook: at most 5 traceableAspects entries and no degree math in the prose.
+
+WIDER CONTACTS RULE:
+- Contacts listed under WIDER CONTACTS in the data are real but loose. You may mention at most one in passing, always labelled as a background or occasional influence. Never build a section on one.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
@@ -531,6 +575,27 @@ JSON SCHEMA:
       // Optional 4th entry with tiedTo: "specificFriction" ONLY when a named friction (Chiron contact, retrograde Mercury, Moon-Pluto) demands it.
     ]
   } | null (see DEPENDENCY GATE — emit null if childMechanism is missing a clear internal conflict OR cause→effect; never fall back to generic parenting language),
+  "bothAreLearning": {
+    "parentIsLearning": [
+      { "text": string (one plain sentence naming a real thing the parent is practising, tied to a named contact), "tiedTo": string (e.g. "your Mercury square his Moon, 1.2°") },
+      { "text": string, "tiedTo": string }
+      // 2-3 entries
+    ],
+    "childIsLearning": [
+      { "text": string (one plain sentence naming a reasonable growth step for the child at this age: how they come back after a blow-up, how they say the thing instead of slamming a door, how they tell you they need time instead of going silent. Never blaming, never "must obey". Tie to a named contact.), "tiedTo": string },
+      { "text": string }
+      // 2-3 entries
+    ],
+    "sharedNote": string (ONE sentence making clear both people carry responsibility here. Must include the principle that feeling pressured does not automatically mean the parent's request was unreasonable.)
+  },
+  "responsibilities": {
+    "notTheParents": [string, ...2-3 short items naming what is NOT the parent's job in this pair, each tied to a named placement or cross-aspect, e.g. "Regulating his mood for him before he has tried (his Moon square your Mars, 2.1°)"],
+    "notTheChilds": [string, ...2-3 short items naming what is NOT the child's job, each tied to a named placement or cross-aspect, e.g. "Managing your worry about his future (your Saturn on his Sun, 1.4°)"]
+  },
+  "traceableAspects": [
+    { "label": "FROM_NAME's Planet in Sign [aspect] TO_NAME's Planet in Sign", "orb": number (one decimal), "meaning": string (1-2 plain sentences, no jargon, what this looks like at home), "tone": "supportive" | "difficult" }
+    // one entry for the 3-5 strongest contacts used in this reading, tightest first
+  ],
   "sections": [
     {
       "heading": "FROM_NAME's PLANET ASPECT TO_NAME's PLANET" (use the actual names and aspect word, e.g. "Lauren's Mercury square Ben's Moon"),
@@ -758,6 +823,9 @@ ${parentRetroBlock}
 CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
 
+WIDER CONTACTS (real but looser — background only, never a section):
+${widerContacts.length ? widerContacts.join("\n") : "(none)"}
+
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
 INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
 
@@ -780,7 +848,7 @@ THIS YEAR FOR THIS CHILD: At least ONE sentence in essence MUST reference the cu
 
 PARENT ACTIVATION SECTION: If the PARENT ACTIVATION MAP above contains any hits, the perceptionTranslation.whatHelps array MUST include one item directed AT THE PARENT (not the child) describing a regulation move for the parent (e.g. "When his anger lands on your Chiron, step out for 60 seconds and breathe before responding").
 
-Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then one section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects.`;
+Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then one section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects. Also produce traceableAspects for the 3-5 strongest contacts, bothAreLearning with both sides plus the sharedNote, and responsibilities with both "not the parent's" and "not the child's" lines.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
