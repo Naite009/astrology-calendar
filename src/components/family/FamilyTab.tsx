@@ -997,6 +997,135 @@ const AiPairReadingView = ({
         </CardContent>
       </Card>
 
+      {reading.traceableAspects && reading.traceableAspects.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">The Astrology Behind This</CardTitle>
+            <CardDescription>Each line shows the placement first, then what it looks like at home.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {reading.traceableAspects.map((t, i) => (
+              <div key={i} className="border-l-2 pl-3" style={{ borderColor: t.tone === "supportive" ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
+                <div className="text-xs font-medium">
+                  {t.label} <span className="text-muted-foreground">· {Number(t.orb).toFixed(1)}°</span>
+                </div>
+                <p className="mt-1">{t.meaning}</p>
+              </div>
+            ))}
+            {reading.widerContacts && reading.widerContacts.length > 0 && (
+              <div className="border-t border-border pt-3">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  Also present, but wider
+                </div>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-muted-foreground">
+                  {reading.widerContacts.slice(0, 3).map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.whatThisChildNeedsFromYou &&
+        reading.whatThisChildNeedsFromYou.lines?.length > 0 && (
+          <Card className="border-primary/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{reading.whatThisChildNeedsFromYou.opener}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+              <ul className="space-y-2">
+                {reading.whatThisChildNeedsFromYou.lines.map((l, i) => (
+                  <li key={i} className="flex gap-2">
+                    <ArrowRight className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                    <span>{l.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+      {reading.bothAreLearning && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Both of You Are Learning Something</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What you are practising
+              </div>
+              <ul className="space-y-1.5">
+                {reading.bothAreLearning.parentIsLearning.map((e, i) => (
+                  <li key={i}>
+                    {e.text}
+                    {e.tiedTo && <span className="text-xs text-muted-foreground"> ({e.tiedTo})</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                What {toName} is practising
+              </div>
+              <ul className="space-y-1.5">
+                {reading.bothAreLearning.childIsLearning.map((e, i) => (
+                  <li key={i}>
+                    {e.text}
+                    {e.tiedTo && <span className="text-xs text-muted-foreground"> ({e.tiedTo})</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {reading.bothAreLearning.sharedNote && (
+              <p className="border-t border-border pt-3 text-muted-foreground">
+                {reading.bothAreLearning.sharedNote}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {reading.responsibilities &&
+        ((reading.responsibilities.notTheParents?.length ?? 0) > 0 ||
+          (reading.responsibilities.notTheChilds?.length ?? 0) > 0) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Where the Line Sits</CardTitle>
+              <CardDescription>What each of you is not responsible for.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {reading.responsibilities.notTheParents?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Not your job
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.responsibilities.notTheParents.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {reading.responsibilities.notTheChilds?.length > 0 && (
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                    Not {toName}'s job
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reading.responsibilities.notTheChilds.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+
       {reading.soulContract && (
         <Card className="border-primary/40">
           <CardHeader className="pb-3 bg-primary/10 rounded-t-lg">
@@ -1218,7 +1347,7 @@ const AiPairReadingView = ({
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               {reading.connectionMisfire.framing?.trim() && (
-                <p className="italic text-muted-foreground">{reading.connectionMisfire.framing}</p>
+                <p className="italic text-muted-foreground whitespace-pre-line">{reading.connectionMisfire.framing}</p>
               )}
               {reading.connectionMisfire.parentIntent?.trim() && (
                 <div>
@@ -1291,7 +1420,7 @@ const AiPairReadingView = ({
                   <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
                     Plain English
                   </div>
-                  <p>{reading.repairProfile.plainEnglish}</p>
+                  <p className="whitespace-pre-line">{reading.repairProfile.plainEnglish}</p>
                 </div>
               )}
               {reading.repairProfile.whatTheParentMayNotice?.length > 0 && (

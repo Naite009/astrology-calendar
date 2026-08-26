@@ -85,6 +85,11 @@ const PARENT_TO_CHILD_PAIRS: CuratedPair[] = [
   { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
   { from: "NorthNode", to: "Sun", framingKey: "node-sun" },
   { from: "NorthNode", to: "Moon", framingKey: "node-moon" },
+  // Uranus contacts: unpredictability, reactivity, and nervous-system speed
+  // between the two charts. Previously missing entirely.
+  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
+  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
+  { from: "Uranus", to: "Sun", framingKey: "uranus-sun" },
 ];
 
 /** Sibling-specific pair set — drops Saturn-authority, adds Mercury↔Mercury. */
@@ -99,6 +104,8 @@ const SIBLING_PAIRS: CuratedPair[] = [
   { from: "Mercury", to: "Moon", framingKey: "mercury-moon" },
   { from: "Jupiter", to: "Sun", framingKey: "jupiter-sun" },
   { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
+  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
+  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
 ];
 
 const ASPECTS = [
@@ -108,6 +115,69 @@ const ASPECTS = [
   { name: "square", angle: 90, symbol: "□" },
   { name: "sextile", angle: 60, symbol: "⚹" },
 ] as const;
+
+/**
+ * Family-pair-only minor aspects. Deliberately NOT routed through the shared
+ * `getEffectiveOrb` table so nothing changes for the rest of the app. These are
+ * only tested when at least one side is Sun / Moon / Mercury / Mars, and only at
+ * very tight orbs, because a wide quincunx tells a parent nothing useful.
+ */
+const FAMILY_MINOR_ASPECTS = [
+  { name: "quincunx", angle: 150, symbol: "⚻" },
+  { name: "semisextile", angle: 30, symbol: "⚺" },
+] as const;
+
+const MINOR_ELIGIBLE = new Set(["Sun", "Moon", "Mercury", "Mars"]);
+
+function familyMinorOrbLimit(p1: string, p2: string): number | null {
+  const lum = (p: string) => p === "Sun" || p === "Moon";
+  if (!MINOR_ELIGIBLE.has(p1) && !MINOR_ELIGIBLE.has(p2)) return null;
+  if (lum(p1) || lum(p2)) return 2.5;
+  return 1.5;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared family-pair ranking. The identical weighting lives in
+// supabase/functions/family-pair-reading/index.ts so client and server agree on
+// what matters. Keep the two in sync.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FAMILY_HARD = new Set(["conjunction", "opposition", "square", "quincunx"]);
+const FAMILY_SOFT = new Set(["trine", "sextile"]);
+
+/** Astrological importance of a family cross-contact, 1 (light) to 5 (defining). */
+export function familyAspectWeight(from: string, to: string, aspect: string): number {
+  const isHard = FAMILY_HARD.has(aspect);
+  const pair = (a: string, b: string) => (from === a && to === b) || (from === b && to === a);
+  const withAny = (set: string[], other: string) =>
+    (set.includes(from) && to === other) || (set.includes(to) && from === other);
+
+  if (isHard && withAny(["Saturn"], "Sun")) return 5;
+  if (isHard && withAny(["Saturn"], "Moon")) return 5;
+  if (isHard && withAny(["Chiron"], "Sun")) return 4;
+  if (isHard && withAny(["Chiron"], "Moon")) return 4;
+  if (pair("Pluto", "Moon")) return 4;
+  if (isHard && pair("Moon", "Neptune")) return 3;
+  if (pair("Mercury", "Chiron")) return 3;
+  if (isHard && pair("Mars", "Saturn")) return 3;
+  if (isHard && pair("Mars", "Moon")) return 3;
+  if (isHard && pair("Uranus", "Moon")) return 3;
+  if (isHard && pair("Uranus", "Mercury")) return 3;
+  if (from === "NorthNode" || to === "NorthNode" || from === "SouthNode" || to === "SouthNode") return 2;
+  if (FAMILY_SOFT.has(aspect)) return 1;
+  return 2;
+}
+
+/**
+ * Combined rank: importance AND tightness, with a hard guarantee that anything
+ * inside 1° outranks everything looser regardless of planetary weight.
+ */
+export function familyAspectRankScore(from: string, to: string, aspect: string, orb: number): number {
+  const weight = familyAspectWeight(from, to, aspect);
+  const tightness = 10 - Math.min(orb, 10);
+  const exactBonus = orb < 1 ? 12 : 0;
+  return weight * 2 + tightness * 0.6 + exactBonus;
+}
 
 function toAbsoluteDegree(p?: NatalPlanetPosition): number | null {
   if (!p || !p.sign) return null;
@@ -126,6 +196,13 @@ function bestAspect(deg1: number, deg2: number, p1: string, p2: string) {
       return { name: a.name, symbol: a.symbol, orb };
     }
   }
+  const minorLimit = familyMinorOrbLimit(p1, p2);
+  if (minorLimit != null) {
+    for (const a of FAMILY_MINOR_ASPECTS) {
+      const orb = Math.abs(diff - a.angle);
+      if (orb <= minorLimit) return { name: a.name, symbol: a.symbol, orb };
+    }
+  }
   return null;
 }
 
@@ -133,6 +210,7 @@ function pairsForRoles(fromRole: FamilyRole, toRole: FamilyRole): CuratedPair[] 
   if (fromRole === "sibling" || toRole === "sibling") return SIBLING_PAIRS;
   return PARENT_TO_CHILD_PAIRS;
 }
+
 
 export function computeFamilySynastry(
   fromChart: NatalChart,
@@ -163,7 +241,15 @@ export function computeFamilySynastry(
     });
   }
 
-  rows.sort((a, b) => a.orb - b.orb);
+  // Rank by importance AND tightness (see familyAspectRankScore). Anything
+  // inside 1° is guaranteed to sit above looser contacts, so a very tight
+  // aspect can never be buried under a "heavier" but wide one.
+  rows.sort(
+    (a, b) =>
+      familyAspectRankScore(b.fromPlanet, b.toPlanet, b.aspect, b.orb) -
+      familyAspectRankScore(a.fromPlanet, a.toPlanet, a.aspect, a.orb),
+  );
+
 
   const essenceLines = rows
     .slice(0, 3)
@@ -444,6 +530,30 @@ export interface PairReadingResponse {
   inTheMoment?: { scenario: string; actions: string[] }[];
   whatMakesItWorse?: string[];
   whatAlreadyWorks?: string[]; // REQUIRED: 3-5 specific strengths grounded in chart evidence
+  /** Two-sided learning block: both people have responsibilities. */
+  bothAreLearning?: {
+    parentIsLearning: { text: string; tiedTo: string }[];
+    childIsLearning: { text: string; tiedTo: string }[];
+    sharedNote?: string;
+  } | null;
+  /** What is NOT each person's responsibility, grounded in a named contact. */
+  responsibilities?: {
+    notTheParents: string[];
+    notTheChilds: string[];
+  } | null;
+  /** Traceable evidence rows: planet + planet + aspect + orb + plain meaning. */
+  traceableAspects?: {
+    label: string;
+    orb: number;
+    meaning: string;
+    tone: "supportive" | "difficult";
+  }[];
+  /** Real but wider contacts, surfaced briefly without equal weight. */
+  widerContacts?: string[];
+  whatThisChildNeedsFromYou?: {
+    opener: string;
+    lines: { text: string; tiedTo: string }[];
+  } | null;
   soulContract?: SoulContract | null;
   moonBridge?: MoonBridgeAi | null;
   pressureProfile?: PressureProfile | null;
@@ -533,7 +643,9 @@ export function buildPairReadingPayload(
   const fromPlanets = fromChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
   const toPlanets = toChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number; isRetrograde?: boolean } | undefined>;
 
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 12).map((r) => {
+  // Widen the candidate pool so the server can see every meaningful curated
+  // contact. The server ranks and caps the narrative itself.
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 24).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;

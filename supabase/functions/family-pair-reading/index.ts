@@ -110,6 +110,22 @@ interface ReadingPayload {
     opener: string;
     lines: { text: string; tiedTo: "processing" | "stuckPoint" | "pressure" | "specificFriction" }[];
   } | null;
+  bothAreLearning?: {
+    parentIsLearning: { text: string; tiedTo: string }[];
+    childIsLearning: { text: string; tiedTo: string }[];
+    sharedNote?: string;
+  } | null;
+  responsibilities?: {
+    notTheParents: string[];
+    notTheChilds: string[];
+  } | null;
+  traceableAspects?: {
+    label: string;
+    orb: number;
+    meaning: string;
+    tone: "supportive" | "difficult";
+  }[];
+  widerContacts?: string[];
 }
 
 function ageStage(years: number | null | undefined): string {
@@ -157,7 +173,7 @@ Deno.serve(async (req) => {
     const stage = ageStage(ageYears);
 
     // Deterministic signature weighting (run BEFORE prompt assembly).
-    const HARD = new Set(["conjunction", "opposition", "square"]);
+    const HARD = new Set(["conjunction", "opposition", "square", "quincunx"]);
     const SOFT = new Set(["trine", "sextile"]);
     function scoreAspect(a: CrossAspect): number {
       const f = a.fromPlanet, t = a.toPlanet, asp = a.aspect;
@@ -180,6 +196,11 @@ Deno.serve(async (req) => {
       if (involves("Mercury", "Chiron")) return 3;
       // Mars-Saturn hard = +3
       if (isHard && involves("Mars", "Saturn")) return 3;
+      // Mars-Moon hard = +3 (reaction speed lands straight on regulation)
+      if (isHard && involves("Mars", "Moon")) return 3;
+      // Uranus contacts = +3 (unpredictability against regulation / processing)
+      if (isHard && involves("Uranus", "Moon")) return 3;
+      if (isHard && involves("Uranus", "Mercury")) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
       // Soft aspects = +1
@@ -194,24 +215,43 @@ Deno.serve(async (req) => {
       return "mild";
     }
 
-    // Reduced default aspect count: 4-6 strongest only. Allow up to 6 if extra
-    // aspects have very tight orb (<3°) OR add new planet pair information.
-    const allRanked = [...body.aspects]
-      .map((a) => ({ a, score: scoreAspect(a), tightness: 10 - Math.min(a.orb, 10) }))
-      .sort((x, y) => (y.score + y.tightness * 0.4) - (x.score + x.tightness * 0.4));
+    // Ranking mirrors src/lib/parentChildSynastry.ts familyAspectRankScore:
+    // importance AND tightness, with anything inside 1° guaranteed a slot.
+    const rankScore = (a: CrossAspect) =>
+      scoreAspect(a) * 2 + (10 - Math.min(a.orb, 10)) * 0.6 + (a.orb < 1 ? 12 : 0);
+    const allRanked = [...body.aspects].sort((x, y) => rankScore(y) - rankScore(x));
     const seen = new Set<string>();
     const picked: CrossAspect[] = [];
-    for (const { a } of allRanked) {
-      if (picked.length >= 6) break;
-      const key = `${a.fromPlanet}|${a.toPlanet}`;
-      const isTight = a.orb < 3;
-      const isNewPair = !seen.has(key);
-      if (picked.length < 4 || isTight || isNewPair) {
+    const NARRATIVE_CAP = 9;
+    // Pass 1: every sub-1° contact is guaranteed representation (deduped by pair).
+    for (const a of allRanked) {
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (a.orb < 1 && !seen.has(key)) {
         picked.push(a);
         seen.add(key);
       }
     }
-    const aspects = picked;
+    // Pass 2: fill remaining slots by rank, avoiding duplicate planet pairs.
+    for (const a of allRanked) {
+      if (picked.length >= NARRATIVE_CAP) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      const pairKey = `${a.fromPlanet}|${a.toPlanet}`;
+      if (seen.has(key)) continue;
+      const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
+      if (pairAlreadyUsed && a.orb >= 3) continue;
+      picked.push(a);
+      seen.add(key);
+    }
+    const aspects = picked.slice(0, NARRATIVE_CAP);
+    // Real contacts left out only because they are wider. Surfaced briefly so
+    // the reading never pretends they do not exist.
+    const widerContacts = allRanked
+      .filter((a) => !aspects.includes(a))
+      .slice(0, 5)
+      .map(
+        (a) =>
+          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°) — real but wide, background influence only.`,
+      );
 
     // Hard orb gate for qualifying signatures (used by pressureProfile / repairProfile / perceptionTranslation).
     // Anything outside these limits is invisible to the AI for those sections.
@@ -481,6 +521,35 @@ ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlready
 - This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
 
 
+ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairProfile, and anywhere you contrast the two people's sequences):
+- When you show how the same moment runs differently for each person, use the compact arrow shorthand exactly in this shape, on its own line inside the string:
+  Parent: talk → understand → restore equilibrium
+  Child: overwhelmed → retreat → regulate → maybe talk later
+- Use the real names instead of "Parent"/"Child" when they read naturally (e.g. "Lauren: talk → understand → settle").
+- 3-5 steps per side. Each step is 1-3 plain words. No therapy vocabulary in the arrows (BANNED inside arrows: co-regulate, attune, dysregulation, nervous system, hold space, process emotions, self-soothe, validate).
+- REQUIRED: connectionMisfire.framing MUST end with the arrow pair on two new lines (\n separated) whenever connectionMisfire is filled at all. This is not optional. repairProfile.plainEnglish MUST also end with one arrow pair when it is filled.
+- Do not put arrows anywhere else. Two arrow pairs total in the whole reading, maximum.
+- The arrows are a translation device, not decoration. Each side's sequence must match that person's actual named placements in the data.
+
+BOTH ARE LEARNING RULE (HARD — applies to bothAreLearning):
+- The reading must NOT be one-sided parent accommodation. Name what the parent is practising AND what the child is practising.
+- The child side describes reasonable growth at this age (coming back after a blow-up, saying "I need a minute" instead of going silent, apologising for words said in heat). It must NOT demand compliance, obedience, or that the child manage the parent's feelings, and it must NOT blame the child for their wiring.
+- CORE PRINCIPLE (must be reflected in sharedNote): feeling pressured does not automatically mean the parent's request was unreasonable. A parent asking for respect, cooperation, or basic kindness is a reasonable expectation, not emotional dependence.
+- Every entry must carry a tiedTo naming the placement or cross-aspect with orb. If you cannot tie it, drop the entry.
+
+RECIPROCAL RESPONSIBILITY RULE (HARD — applies to responsibilities):
+- Distinguish what is NOT the parent's responsibility and what is NOT the child's responsibility in THIS pair.
+- Keep each item to one short line, grounded in a named placement or cross-aspect. No generic parenting philosophy.
+- Do not use this section to excuse hurtful behaviour on either side.
+
+TRACEABILITY RULE (HARD — applies to traceableAspects, essence, sections.howItLands, sections.blindSpot):
+- For the strongest supportive and difficult contacts, show the astrology first (parent planet + sign, aspect, child planet + sign, orb) and the plain-English meaning underneath. That is what traceableAspects is for.
+- Any essence bullet or howItLands sentence that does not name a planet, sign, house, or aspect must be deleted rather than softened.
+- Keep it readable. This is a parent's reading, not a textbook: at most 5 traceableAspects entries and no degree math in the prose.
+
+WIDER CONTACTS RULE:
+- Contacts listed under WIDER CONTACTS in the data are real but loose. You may mention at most one in passing, always labelled as a background or occasional influence. Never build a section on one.
+
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
 
@@ -507,6 +576,27 @@ JSON SCHEMA:
       // Optional 4th entry with tiedTo: "specificFriction" ONLY when a named friction (Chiron contact, retrograde Mercury, Moon-Pluto) demands it.
     ]
   } | null (see DEPENDENCY GATE — emit null if childMechanism is missing a clear internal conflict OR cause→effect; never fall back to generic parenting language),
+  "bothAreLearning": {
+    "parentIsLearning": [
+      { "text": string (one plain sentence naming a real thing the parent is practising, tied to a named contact), "tiedTo": string (e.g. "your Mercury square his Moon, 1.2°") },
+      { "text": string, "tiedTo": string }
+      // 2-3 entries
+    ],
+    "childIsLearning": [
+      { "text": string (one plain sentence naming a reasonable growth step for the child at this age: how they come back after a blow-up, how they say the thing instead of slamming a door, how they tell you they need time instead of going silent. Never blaming, never "must obey". Tie to a named contact.), "tiedTo": string },
+      { "text": string }
+      // 2-3 entries
+    ],
+    "sharedNote": string (ONE sentence making clear both people carry responsibility here. Must include the principle that feeling pressured does not automatically mean the parent's request was unreasonable.)
+  },
+  "responsibilities": {
+    "notTheParents": [string, ...2-3 short items naming what is NOT the parent's job in this pair, each tied to a named placement or cross-aspect, e.g. "Regulating his mood for him before he has tried (his Moon square your Mars, 2.1°)"],
+    "notTheChilds": [string, ...2-3 short items naming what is NOT the child's job, each tied to a named placement or cross-aspect, e.g. "Managing your worry about his future (your Saturn on his Sun, 1.4°)"]
+  },
+  "traceableAspects": [
+    { "label": "FROM_NAME's Planet in Sign [aspect] TO_NAME's Planet in Sign", "orb": number (one decimal), "meaning": string (1-2 plain sentences, no jargon, what this looks like at home), "tone": "supportive" | "difficult" }
+    // one entry for the 3-5 strongest contacts used in this reading, tightest first
+  ],
   "sections": [
     {
       "heading": "FROM_NAME's PLANET ASPECT TO_NAME's PLANET" (use the actual names and aspect word, e.g. "Lauren's Mercury square Ben's Moon"),
@@ -547,7 +637,7 @@ JSON SCHEMA:
   "repairProfile": {
     "title": "What Repair Requires for This Child",
     "astrology": string (1-3 sentences naming the EXACT signatures driving this child's repair style — Sun/Saturn condition, 4th/10th houses and their rulers, Pluto links to 4th/10th, 8th/12th emphasis, Moon-Chiron, Moon-Neptune, Mercury hard aspects. Include valid degree orbs. If no qualifying signatures, return "" and empty arrays/strings),
-    "plainEnglish": string (2-4 sentences describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
+    "plainEnglish": string (2-4 sentences ending with one required arrow pair on its own two lines per the ARROW TRANSLATION STYLE RULE, describing this child's repair style and what would need to be true for trust to rebuild — age-calibrated, uses "may"/"might"/"can". NEVER predicts forgiveness one way or the other),
     "whatTheParentMayNotice": [string, ...3-5 short concrete observable behaviors during/after rupture, e.g. "shuts down when pressured", "asks logical questions instead of showing emotion"],
     "whatHelps": [string, ...3-5 short supportive parenting responses, verbs first, e.g. "apologize without demanding forgiveness", "show change through repeated behavior", "let them set the pace of closeness"]
   },
@@ -559,7 +649,7 @@ JSON SCHEMA:
   },
   "connectionMisfire": {
     "title": "When Connection Misfires",
-    "framing": string (1-2 sentences. Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
+    "framing": string (1-2 sentences, THEN a newline, THEN the required two arrow lines per the ARROW TRANSLATION STYLE RULE, e.g. "Lauren: talk → understand → restore equilibrium\nBen: overwhelmed → retreat → regulate → maybe talk later". Honest framing of the bond. If qualifying misfire signatures are present (see CONNECTION MISFIRE TRIGGERS below) AND the relationship is likely to feel tense / distant / hostile / disconnected in real life, you MUST include a sentence like: "This may be a relationship where care exists, but connection is hard to access in the moment." DO NOT romanticize. DO NOT claim there is connection if the user may not feel connection. If no qualifying misfire signatures exist, return "" for every field in this object.),
     "parentIntent": string (1-2 sentences. What the parent is TRYING to do — explain, reason, make things fair, protect, teach, set limits. Anchor to the parent's own Mercury/Sun/Saturn/Chiron pattern shown in the cross-aspects.),
     "childExperience": string (1-2 sentences. How the child may EXPERIENCE that intent — as pressure, control, being unseen emotionally, being cornered, being judged. Anchor to the child's Moon/Mercury/Saturn/Chiron sensitivities and the specific named misfire aspect with orb.),
     "childProtection": string (1-2 sentences. What the child may DO instead of showing vulnerability — sharp words, cold logic, withdrawal, sarcasm, attack language, shutdown, debating the accusation, walking away. Calibrated to this specific child's Mars/Mercury/Moon pattern. Use "may"/"might".),
@@ -734,6 +824,9 @@ ${parentRetroBlock}
 CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
 
+WIDER CONTACTS (real but looser — background only, never a section):
+${widerContacts.length ? widerContacts.join("\n") : "(none)"}
+
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
 INTENSITY RULE: Calibrate language in pressureProfile, repairProfile, and perceptionTranslation to this label. If high-weight count is 0 or 1, use overconfirmation-protection wording ("may occasionally...") and do NOT escalate to "often" / "consistently".
 
@@ -756,7 +849,7 @@ THIS YEAR FOR THIS CHILD: At least ONE sentence in essence MUST reference the cu
 
 PARENT ACTIVATION SECTION: If the PARENT ACTIVATION MAP above contains any hits, the perceptionTranslation.whatHelps array MUST include one item directed AT THE PARENT (not the child) describing a regulation move for the parent (e.g. "When his anger lands on your Chiron, step out for 60 seconds and breathe before responding").
 
-Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then one section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects.`;
+Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then one section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects. Also produce traceableAspects for the 3-5 strongest contacts, bothAreLearning with both sides plus the sharedNote, and responsibilities with both "not the parent's" and "not the child's" lines.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -888,6 +981,94 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     } else if (needs === undefined) {
       (payload as Record<string, unknown>).whatThisChildNeedsFromYou = null;
     }
+    // ─── Traceability validator: every strong claim must name astrology ──────
+    const PLANET_WORDS = [
+      "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus",
+      "Neptune", "Pluto", "Chiron", "Node", "Ascendant", "Midheaven", "Lilith",
+    ];
+    const SIGN_WORDS = [
+      "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio",
+      "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+    ];
+    const ASPECT_WORDS = [
+      "conjunct", "conjunction", "opposite", "opposition", "square", "trine",
+      "sextile", "quincunx", "semisextile",
+    ];
+    const HOUSE_RE = /\b(house\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+house|H\d{1,2})\b/i;
+    const isTraceable = (t: string): boolean => {
+      if (!t || !t.trim()) return false;
+      if (HOUSE_RE.test(t)) return true;
+      const hasPlanet = PLANET_WORDS.some((w) => new RegExp(`\\b${w}`, "i").test(t));
+      const hasSign = SIGN_WORDS.some((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
+      const hasAspect = ASPECT_WORDS.some((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
+      return hasPlanet || hasSign || hasAspect;
+    };
+
+    const pl = payload as Record<string, unknown>;
+
+    // essence: drop untraceable bullets, but never empty the array entirely.
+    if (Array.isArray(pl.essence)) {
+      const kept = (pl.essence as string[]).filter((l) => isTraceable(l));
+      if (kept.length >= 2) {
+        if (kept.length !== (pl.essence as string[]).length) validationLog.push("essence_untraceable_dropped");
+        pl.essence = kept;
+      }
+    }
+
+    // sections: howItLands / blindSpot must name astrology; blank the line if not.
+    if (Array.isArray(pl.sections)) {
+      for (const sec of pl.sections as Record<string, unknown>[]) {
+        const heading = typeof sec.heading === "string" ? sec.heading : "";
+        const withHeading = (t: unknown) => `${heading} ${typeof t === "string" ? t : ""}`;
+        if (typeof sec.howItLands === "string" && !isTraceable(withHeading(sec.howItLands))) {
+          sec.howItLands = "";
+          validationLog.push("section_howItLands_untraceable");
+        }
+        if (typeof sec.blindSpot === "string" && !isTraceable(withHeading(sec.blindSpot))) {
+          sec.blindSpot = "";
+          validationLog.push("section_blindSpot_untraceable");
+        }
+      }
+      pl.sections = (pl.sections as Record<string, unknown>[]).filter(
+        (sec) => (typeof sec.howItLands === "string" && sec.howItLands.trim()) || (Array.isArray(sec.whatHelps) && sec.whatHelps.length),
+      );
+    }
+
+    // bothAreLearning: entries need a tiedTo that names astrology.
+    const bal = pl.bothAreLearning as
+      | { parentIsLearning?: { text?: string; tiedTo?: string }[]; childIsLearning?: { text?: string; tiedTo?: string }[]; sharedNote?: string }
+      | null
+      | undefined;
+    if (bal) {
+      const clean = (arr?: { text?: string; tiedTo?: string }[]) =>
+        (arr ?? []).filter((e) => !!e?.text?.trim() && isTraceable(`${e.tiedTo ?? ""} ${e.text ?? ""}`));
+      const parentSide = clean(bal.parentIsLearning);
+      const childSide = clean(bal.childIsLearning);
+      if (parentSide.length && childSide.length) {
+        pl.bothAreLearning = { parentIsLearning: parentSide, childIsLearning: childSide, sharedNote: bal.sharedNote ?? "" };
+      } else {
+        pl.bothAreLearning = null;
+        validationLog.push("both_are_learning_one_sided");
+      }
+    }
+
+    // responsibilities: keep only traceable lines.
+    const resp = pl.responsibilities as { notTheParents?: string[]; notTheChilds?: string[] } | null | undefined;
+    if (resp) {
+      const np = (resp.notTheParents ?? []).filter(isTraceable);
+      const nc = (resp.notTheChilds ?? []).filter(isTraceable);
+      pl.responsibilities = np.length || nc.length ? { notTheParents: np, notTheChilds: nc } : null;
+      if (!np.length && !nc.length) validationLog.push("responsibilities_untraceable");
+    }
+
+    // traceableAspects: label must name both planets; cap at 5.
+    if (Array.isArray(pl.traceableAspects)) {
+      const rows = (pl.traceableAspects as { label?: string; meaning?: string }[]).filter(
+        (r) => !!r?.label && !!r?.meaning?.trim() && isTraceable(r.label!),
+      );
+      pl.traceableAspects = rows.slice(0, 5);
+    }
+
     if (validationLog.length) {
       console.warn("[family-pair-reading] needs section validation:", validationLog);
       (payload as Record<string, unknown>)._validation_log = validationLog;
@@ -899,6 +1080,7 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
         ...payload,
         ageYears,
         aspectsUsed: aspects.length,
+        widerContacts,
         overallIntensity,
         totalSignatureScore: totalScore,
         highWeightCount,
