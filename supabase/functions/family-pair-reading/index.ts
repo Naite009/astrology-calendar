@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
     const stage = ageStage(ageYears);
 
     // Deterministic signature weighting (run BEFORE prompt assembly).
-    const HARD = new Set(["conjunction", "opposition", "square"]);
+    const HARD = new Set(["conjunction", "opposition", "square", "quincunx"]);
     const SOFT = new Set(["trine", "sextile"]);
     function scoreAspect(a: CrossAspect): number {
       const f = a.fromPlanet, t = a.toPlanet, asp = a.aspect;
@@ -180,6 +180,11 @@ Deno.serve(async (req) => {
       if (involves("Mercury", "Chiron")) return 3;
       // Mars-Saturn hard = +3
       if (isHard && involves("Mars", "Saturn")) return 3;
+      // Mars-Moon hard = +3 (reaction speed lands straight on regulation)
+      if (isHard && involves("Mars", "Moon")) return 3;
+      // Uranus contacts = +3 (unpredictability against regulation / processing)
+      if (isHard && involves("Uranus", "Moon")) return 3;
+      if (isHard && involves("Uranus", "Mercury")) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
       // Soft aspects = +1
@@ -194,24 +199,43 @@ Deno.serve(async (req) => {
       return "mild";
     }
 
-    // Reduced default aspect count: 4-6 strongest only. Allow up to 6 if extra
-    // aspects have very tight orb (<3°) OR add new planet pair information.
-    const allRanked = [...body.aspects]
-      .map((a) => ({ a, score: scoreAspect(a), tightness: 10 - Math.min(a.orb, 10) }))
-      .sort((x, y) => (y.score + y.tightness * 0.4) - (x.score + x.tightness * 0.4));
+    // Ranking mirrors src/lib/parentChildSynastry.ts familyAspectRankScore:
+    // importance AND tightness, with anything inside 1° guaranteed a slot.
+    const rankScore = (a: CrossAspect) =>
+      scoreAspect(a) * 2 + (10 - Math.min(a.orb, 10)) * 0.6 + (a.orb < 1 ? 12 : 0);
+    const allRanked = [...body.aspects].sort((x, y) => rankScore(y) - rankScore(x));
     const seen = new Set<string>();
     const picked: CrossAspect[] = [];
-    for (const { a } of allRanked) {
-      if (picked.length >= 6) break;
-      const key = `${a.fromPlanet}|${a.toPlanet}`;
-      const isTight = a.orb < 3;
-      const isNewPair = !seen.has(key);
-      if (picked.length < 4 || isTight || isNewPair) {
+    const NARRATIVE_CAP = 9;
+    // Pass 1: every sub-1° contact is guaranteed representation (deduped by pair).
+    for (const a of allRanked) {
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (a.orb < 1 && !seen.has(key)) {
         picked.push(a);
         seen.add(key);
       }
     }
-    const aspects = picked;
+    // Pass 2: fill remaining slots by rank, avoiding duplicate planet pairs.
+    for (const a of allRanked) {
+      if (picked.length >= NARRATIVE_CAP) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      const pairKey = `${a.fromPlanet}|${a.toPlanet}`;
+      if (seen.has(key)) continue;
+      const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
+      if (pairAlreadyUsed && a.orb >= 3) continue;
+      picked.push(a);
+      seen.add(key);
+    }
+    const aspects = picked.slice(0, NARRATIVE_CAP);
+    // Real contacts left out only because they are wider. Surfaced briefly so
+    // the reading never pretends they do not exist.
+    const widerContacts = allRanked
+      .filter((a) => !aspects.includes(a))
+      .slice(0, 5)
+      .map(
+        (a) =>
+          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°) — real but wide, background influence only.`,
+      );
 
     // Hard orb gate for qualifying signatures (used by pressureProfile / repairProfile / perceptionTranslation).
     // Anything outside these limits is invisible to the AI for those sections.
