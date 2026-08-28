@@ -179,10 +179,8 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   // readings drift into "this relationship is mostly difficult".
   if (isSoft) {
     if (lum(from) && lum(to)) return 4;
-    if (lum(from) || lum(to)) {
-      if (["Venus", "Jupiter", "Moon", "Sun", "Mercury"].includes(from) || ["Venus", "Jupiter", "Moon", "Sun", "Mercury"].includes(to)) return 3;
-      return 2;
-    }
+    if (lum(from) || lum(to)) return 3;
+    if (["Venus", "Jupiter"].includes(from) || ["Venus", "Jupiter"].includes(to)) return 3;
     return 2;
   }
 
@@ -711,7 +709,7 @@ export function buildPairReadingPayload(
 
   // Widen the candidate pool so the server can see every meaningful curated
   // contact. The server ranks and caps the narrative itself.
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 24).map((r) => {
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 30).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;

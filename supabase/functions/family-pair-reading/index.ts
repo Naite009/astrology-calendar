@@ -187,8 +187,8 @@ Deno.serve(async (req) => {
       // "this relationship is mostly difficult" purely from scoring bias.
       if (SOFT.has(asp)) {
         if (LUM(f) && LUM(t)) return 4;
-        const warm = ["Venus", "Jupiter", "Moon", "Sun", "Mercury"];
-        if ((LUM(f) || LUM(t)) && (warm.includes(f) || warm.includes(t))) return 3;
+        if (LUM(f) || LUM(t)) return 3;
+        if (["Venus", "Jupiter"].includes(f) || ["Venus", "Jupiter"].includes(t)) return 3;
         return 2;
       }
       // Saturn hard Sun/Moon = +5
