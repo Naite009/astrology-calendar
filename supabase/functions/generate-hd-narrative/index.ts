@@ -162,7 +162,7 @@ STRUCTURE:
 8. Deconditioning guidance: Practical steps for living their design${includeShadow ? '\n9. Shadow/Not-Self patterns: Where conditioning pulls them off-track (frame compassionately)' : ''}
 10. Integration: How all the pieces create a coherent picture of who they are
 
-HYBRID CLARITY RULE: For each insight: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Never lead with traits alone. If a phrase sounds like jargon, rewrite it into a concrete scenario the reader has lived through.
+US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.\n\nHYBRID CLARITY RULE: For each insight: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Each sentence should combine what happens, how it feels, and what pattern it reflects. Never lead with traits alone. If a phrase sounds like jargon, rewrite it into a concrete scenario the reader has lived through.
 
 Write approximately ${wordCount} words.`;
 
