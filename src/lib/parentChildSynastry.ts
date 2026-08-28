@@ -90,6 +90,27 @@ const PARENT_TO_CHILD_PAIRS: CuratedPair[] = [
   { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
   { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
   { from: "Uranus", to: "Sun", framingKey: "uranus-sun" },
+  // Supportive-capable channels. Without these, a chart whose only tight
+  // easy contacts run through Mercury, Venus, or Jupiter looked like a
+  // relationship made entirely of hard aspects, which is a selection artifact.
+  { from: "Sun", to: "Mercury", framingKey: "sun-mercury" },
+  { from: "Sun", to: "Venus", framingKey: "sun-venus" },
+  { from: "Moon", to: "Mercury", framingKey: "moon-mercury" },
+  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
+  { from: "Venus", to: "Venus", framingKey: "venus-venus" },
+  { from: "Venus", to: "Sun", framingKey: "venus-sun" },
+  { from: "Venus", to: "Mercury", framingKey: "venus-mercury" },
+  { from: "Jupiter", to: "Moon", framingKey: "jupiter-moon" },
+  { from: "Jupiter", to: "Mercury", framingKey: "jupiter-mercury" },
+  { from: "Jupiter", to: "Venus", framingKey: "jupiter-venus" },
+  { from: "Saturn", to: "Venus", framingKey: "saturn-venus" },
+  { from: "Saturn", to: "Mercury", framingKey: "saturn-mercury" },
+  { from: "Mars", to: "Mercury", framingKey: "mars-mercury" },
+  { from: "Mars", to: "Sun", framingKey: "mars-sun" },
+  { from: "Neptune", to: "Mercury", framingKey: "neptune-mercury" },
+  { from: "Pluto", to: "Mercury", framingKey: "pluto-mercury" },
+  { from: "Chiron", to: "Mercury", framingKey: "chiron-mercury" },
+
 ];
 
 /** Sibling-specific pair set — drops Saturn-authority, adds Mercury↔Mercury. */
@@ -148,9 +169,20 @@ const FAMILY_SOFT = new Set(["trine", "sextile"]);
 /** Astrological importance of a family cross-contact, 1 (light) to 5 (defining). */
 export function familyAspectWeight(from: string, to: string, aspect: string): number {
   const isHard = FAMILY_HARD.has(aspect);
+  const isSoft = FAMILY_SOFT.has(aspect);
   const pair = (a: string, b: string) => (from === a && to === b) || (from === b && to === a);
   const withAny = (set: string[], other: string) =>
     (set.includes(from) && to === other) || (set.includes(to) && from === other);
+  const lum = (p: string) => p === "Sun" || p === "Moon";
+
+  // Supportive contacts carry real weight. Under-weighting them was what made
+  // readings drift into "this relationship is mostly difficult".
+  if (isSoft) {
+    if (lum(from) && lum(to)) return 4;
+    if (lum(from) || lum(to)) return 3;
+    if (["Venus", "Jupiter"].includes(from) || ["Venus", "Jupiter"].includes(to)) return 3;
+    return 2;
+  }
 
   if (isHard && withAny(["Saturn"], "Sun")) return 5;
   if (isHard && withAny(["Saturn"], "Moon")) return 5;
@@ -164,20 +196,39 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   if (isHard && pair("Uranus", "Moon")) return 3;
   if (isHard && pair("Uranus", "Mercury")) return 3;
   if (from === "NorthNode" || to === "NorthNode" || from === "SouthNode" || to === "SouthNode") return 2;
-  if (FAMILY_SOFT.has(aspect)) return 1;
   return 2;
 }
 
 /**
- * Combined rank: importance AND tightness, with a hard guarantee that anything
- * inside 1° outranks everything looser regardless of planetary weight.
+ * Tightness multiplier. Orb is decisive, not decorative: a sub-1° contact is
+ * headline material and anything past 7° is background, whatever the planets.
+ */
+export function familyOrbFactor(orb: number): number {
+  if (orb < 1) return 3.0;
+  if (orb < 2) return 2.2;
+  if (orb < 3) return 1.6;
+  if (orb < 5) return 1.15;
+  if (orb < 7) return 0.8;
+  return 0.4;
+}
+
+/** True when a contact is real but too wide to headline. */
+export function isWiderContact(orb: number): boolean {
+  return orb >= 7;
+}
+
+export function familyAspectTone(aspect: string): "supportive" | "difficult" {
+  return FAMILY_SOFT.has(aspect) ? "supportive" : "difficult";
+}
+
+/**
+ * Combined rank: importance x tightness. A sub-1° contact always outranks a
+ * wide one, and wide hard aspects can no longer bury tight supportive ones.
  */
 export function familyAspectRankScore(from: string, to: string, aspect: string, orb: number): number {
-  const weight = familyAspectWeight(from, to, aspect);
-  const tightness = 10 - Math.min(orb, 10);
-  const exactBonus = orb < 1 ? 12 : 0;
-  return weight * 2 + tightness * 0.6 + exactBonus;
+  return familyAspectWeight(from, to, aspect) * familyOrbFactor(orb);
 }
+
 
 function toAbsoluteDegree(p?: NatalPlanetPosition): number | null {
   if (!p || !p.sign) return null;
@@ -249,6 +300,19 @@ export function computeFamilySynastry(
       familyAspectRankScore(b.fromPlanet, b.toPlanet, b.aspect, b.orb) -
       familyAspectRankScore(a.fromPlanet, a.toPlanet, a.aspect, a.orb),
   );
+
+  // Balance rule: if the top of the list is all difficult contacts but a real
+  // supportive contact exists, promote the strongest supportive one into view.
+  const TOP = 5;
+  const head = rows.slice(0, TOP);
+  if (head.length && head.every((r) => familyAspectTone(r.aspect) === "difficult")) {
+    const bestSoftIdx = rows.findIndex((r) => familyAspectTone(r.aspect) === "supportive");
+    if (bestSoftIdx >= TOP) {
+      const [soft] = rows.splice(bestSoftIdx, 1);
+      rows.splice(Math.min(2, rows.length), 0, soft);
+    }
+  }
+
 
 
   const essenceLines = rows
@@ -645,7 +709,7 @@ export function buildPairReadingPayload(
 
   // Widen the candidate pool so the server can see every meaningful curated
   // contact. The server ranks and caps the narrative itself.
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 24).map((r) => {
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 30).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;

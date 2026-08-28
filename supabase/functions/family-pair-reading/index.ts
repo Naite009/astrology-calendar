@@ -175,6 +175,7 @@ Deno.serve(async (req) => {
     // Deterministic signature weighting (run BEFORE prompt assembly).
     const HARD = new Set(["conjunction", "opposition", "square", "quincunx"]);
     const SOFT = new Set(["trine", "sextile"]);
+    const LUM = (p: string) => p === "Sun" || p === "Moon";
     function scoreAspect(a: CrossAspect): number {
       const f = a.fromPlanet, t = a.toPlanet, asp = a.aspect;
       const isHard = HARD.has(asp);
@@ -182,6 +183,14 @@ Deno.serve(async (req) => {
         (f === p1 && t === p2) || (f === p2 && t === p1);
       const involvesAny = (set: string[], other: string) =>
         (set.includes(f) && t === other) || (set.includes(t) && f === other);
+      // Supportive contacts carry real weight so the reading cannot drift into
+      // "this relationship is mostly difficult" purely from scoring bias.
+      if (SOFT.has(asp)) {
+        if (LUM(f) && LUM(t)) return 4;
+        if (LUM(f) || LUM(t)) return 3;
+        if (["Venus", "Jupiter"].includes(f) || ["Venus", "Jupiter"].includes(t)) return 3;
+        return 2;
+      }
       // Saturn hard Sun/Moon = +5
       if (isHard && involvesAny(["Saturn"], "Sun")) return 5;
       if (isHard && involvesAny(["Saturn"], "Moon")) return 5;
@@ -203,8 +212,6 @@ Deno.serve(async (req) => {
       if (isHard && involves("Uranus", "Mercury")) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
-      // Soft aspects = +1
-      if (SOFT.has(asp)) return 1;
       // Default qualifying hard contact
       return 2;
     }
@@ -216,9 +223,13 @@ Deno.serve(async (req) => {
     }
 
     // Ranking mirrors src/lib/parentChildSynastry.ts familyAspectRankScore:
-    // importance AND tightness, with anything inside 1° guaranteed a slot.
-    const rankScore = (a: CrossAspect) =>
-      scoreAspect(a) * 2 + (10 - Math.min(a.orb, 10)) * 0.6 + (a.orb < 1 ? 12 : 0);
+    // importance x tightness. Orb is decisive, so a wide hard aspect can never
+    // outrank a tight supportive one.
+    const orbFactor = (orb: number) =>
+      orb < 1 ? 3.0 : orb < 2 ? 2.2 : orb < 3 ? 1.6 : orb < 5 ? 1.15 : orb < 7 ? 0.8 : 0.4;
+    const toneOf = (a: CrossAspect): "supportive" | "difficult" =>
+      SOFT.has(a.aspect) ? "supportive" : "difficult";
+    const rankScore = (a: CrossAspect) => scoreAspect(a) * orbFactor(a.orb);
     const allRanked = [...body.aspects].sort((x, y) => rankScore(y) - rankScore(x));
     const seen = new Set<string>();
     const picked: CrossAspect[] = [];
@@ -242,6 +253,18 @@ Deno.serve(async (req) => {
       picked.push(a);
       seen.add(key);
     }
+    // Balance rule: unless the pair genuinely has no supportive contact, at
+    // least one strong supportive contact must reach the narrative.
+    if (picked.every((a) => toneOf(a) === "difficult")) {
+      const bestSoft = allRanked.find((a) => toneOf(a) === "supportive");
+      if (bestSoft) {
+        const key = `${bestSoft.fromPlanet}|${bestSoft.toPlanet}|${bestSoft.aspect}`;
+        if (!seen.has(key)) {
+          picked.splice(Math.min(2, picked.length), 0, bestSoft);
+          seen.add(key);
+        }
+      }
+    }
     const aspects = picked.slice(0, NARRATIVE_CAP);
     // Real contacts left out only because they are wider. Surfaced briefly so
     // the reading never pretends they do not exist.
@@ -250,8 +273,10 @@ Deno.serve(async (req) => {
       .slice(0, 5)
       .map(
         (a) =>
-          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°) — real but wide, background influence only.`,
+          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): real but wide, background influence only.`,
       );
+    const supportiveInNarrative = aspects.filter((a) => toneOf(a) === "supportive");
+
 
     // Hard orb gate for qualifying signatures (used by pressureProfile / repairProfile / perceptionTranslation).
     // Anything outside these limits is invisible to the AI for those sections.
@@ -288,9 +313,15 @@ Deno.serve(async (req) => {
         const toHouse = a.toHouse ? ` (H${a.toHouse})` : "";
         const fromRetro = a.fromRetro ? " R" : "";
         const toRetro = a.toRetro ? " R" : "";
-        return `- [weight ${s}] ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro} — ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
+        const tone = toneOf(a);
+        const band = a.orb < 1 ? "EXACT" : a.orb < 2 ? "very tight" : a.orb < 5 ? "close" : a.orb < 7 ? "moderate" : "WIDE/secondary";
+        return `- [weight ${s} | ${tone} | ${band}] ${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"}${fromHouse}${fromRetro} ${a.symbol} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}${toHouse}${toRetro}: ${a.aspect}, orb ${a.orb.toFixed(1)}°`;
       })
       .join("\n");
+    const supportiveLines = supportiveInNarrative
+      .map((a) => `- ${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°)`)
+      .join("\n");
+
 
     const fromRoleLabel = body.fromRole;
     const toRoleLabel = body.toRole;
@@ -547,6 +578,22 @@ TRACEABILITY RULE (HARD — applies to traceableAspects, essence, sections.howIt
 - For the strongest supportive and difficult contacts, show the astrology first (parent planet + sign, aspect, child planet + sign, orb) and the plain-English meaning underneath. That is what traceableAspects is for.
 - Any essence bullet or howItLands sentence that does not name a planet, sign, house, or aspect must be deleted rather than softened.
 - Keep it readable. This is a parent's reading, not a textbook: at most 5 traceableAspects entries and no degree math in the prose.
+
+BALANCE RULE (HARD):
+- traceableAspects must include EVERY supportive contact listed under SUPPORTIVE CONTACTS IN THIS READING below, with tone "supportive". A traceableAspects list made only of difficult contacts is INVALID OUTPUT when a supportive contact exists.
+- Order sections by the bands in the aspect data: EXACT and very tight contacts are headline material. A contact marked WIDE/secondary may never be a headline section, and if you mention it you must say it is a wider, secondary influence.
+- Do not describe the relationship as mostly difficult unless the data actually contains no supportive contact.
+
+SUPPORTIVE CONTACTS IN THIS READING (must appear in traceableAspects):
+${supportiveLines || "(none in this pair)"}
+
+NO PSYCHOLOGICAL OVERCLAIM RULE (HARD):
+- Astrology cannot establish another person's private feelings, intentions, neurological capacity, or guaranteed motivation. Never write "he literally cannot", "she is incapable of", "he does not care", or absolute denials like "Not coldness, not avoidance, not a lack of care."
+- Use probabilistic phrasing instead: "may be very hard to put into words", "may function more as protection than indifference", "can look like avoidance, even when overwhelm is part of the pattern".
+- Never diagnose (autism, ADHD, anxiety disorder, depression, trauma response) and never state what the child "really" feels as fact.
+
+US ENGLISH RULE: use American spelling throughout (behavior, favor, center, organize, recognize, practicing). Never British spellings.
+
 
 WIDER CONTACTS RULE:
 - Contacts listed under WIDER CONTACTS in the data are real but loose. You may mention at most one in passing, always labeled as a background or occasional influence. Never build a section on one.
@@ -850,7 +897,7 @@ THIS YEAR FOR THIS CHILD: At least ONE sentence in essence MUST reference the cu
 
 PARENT ACTIVATION SECTION: If the PARENT ACTIVATION MAP above contains any hits, the perceptionTranslation.whatHelps array MUST include one item directed AT THE PARENT (not the child) describing a regulation move for the parent (e.g. "When his anger lands on your Chiron, step out for 60 seconds and breathe before responding").
 
-Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then one section per cross-aspect above, in the same order. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects. Also produce traceableAspects for the 3-5 strongest contacts, bothAreLearning with both sides plus the sharedNote, and responsibilities with both "not the parent's" and "not the child's" lines.`;
+Write the reading. FIRST, produce the childMechanism object following the MECHANISM PORTRAIT RULE — this is the highest-priority section and must be a cognitive-emotional model of THIS child, not an astrology description. SECOND, produce whatThisChildNeedsFromYou following the WHAT THIS CHILD NEEDS FROM YOU RULE and DEPENDENCY GATE — emit null if the childMechanism you just produced lacks a clear internal conflict or cause→effect; do NOT fall back to generic parenting language. Then write ONE section per cross-aspect listed in the aspect data above, in the same order, covering ALL ${aspects.length} of them. Do not skip contacts and do not merge two contacts into one section. Supportive contacts get their own sections with the same care as difficult ones. Generate 3-5 essence bullets that name the headline pattern of the relationship in real-life terms. Then the practice. Then the soulContract object following the SOUL CONTRACT RULES. Then the moonBridge object following the MOON BRIDGE rule. Then the pressureProfile object following the PRESSURE PROFILE rules. Then the perceptionTranslation object following the PARENT PERCEPTION TRANSLATION rules. Then the repairProfile object following the REPAIR PROFILE rules. Then the connectionMisfire object following the CONNECTION MISFIRE TRANSLATION MODULE rules — fill it ONLY if at least one CONNECTION MISFIRE TRIGGER is present, otherwise return "" for every string and [] for whatHelpsInTheMoment. Only fill pressureProfile, perceptionTranslation, repairProfile, and connectionMisfire if ${toRoleLabel} indicates the recipient is a child (roles like "child", "son", "daughter", "stepchild"); otherwise return empty strings and empty arrays for every field in those four objects. Also produce traceableAspects for the 3-5 strongest contacts, bothAreLearning with both sides plus the sharedNote, and responsibilities with both "not the parent's" and "not the child's" lines.`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -930,21 +977,120 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     };
     payload = scrubText(payload) as ReadingPayload;
 
-    // ─── DEPENDENCY GATE: whatThisChildNeedsFromYou requires a valid childMechanism ─────
-    const CONFLICT_PATTERNS = [
-      /feels?\s+like\s+\w+\s+but\s+(?:has|have)\s+to/i,
-      /wants?\s+\w+\s+but\s+(?:is|are)\s+wired/i,
-      /feels?\s+\w+\s+but\s+\w+\s+(?:has|have|needs?)\s+to/i,
-      /\bbut\s+(?:has|have|needs?|wants?)\s+to\b/i,
+    // ─── Overclaim softener + US English pass (deterministic) ───────────────
+    // Astrology cannot establish another person's private feelings, intentions,
+    // or neurological capacity. Absolute claims are rewritten, not deleted.
+    const OVERCLAIM_REWRITES: [RegExp, string][] = [
+      [/\bliterally cannot\b/gi, "may find it very hard to"],
+      [/\bliterally can'?t\b/gi, "may find it very hard to"],
+      [/\bsimply cannot\b/gi, "may find it very hard to"],
+      [/\bis incapable of\b/gi, "may struggle to"],
+      [/\bare incapable of\b/gi, "may struggle to"],
+      [/\bhas no ability to\b/gi, "may find it hard to"],
+      [/\bcannot speak them\b/gi, "may find them very hard to put into words"],
+      [/\bhe cannot\b/g, "he may find it hard to"],
+      [/\bshe cannot\b/g, "she may find it hard to"],
+      [/\bthey cannot\b/g, "they may find it hard to"],
+      [/\bNot coldness,?\s*not avoidance,?\s*(and )?not a lack of care\.?/gi,
+        "This may function more as protection than as indifference."],
+      [/\bNot (coldness|avoidance|indifference|manipulation|defiance|a lack of care)\b[^.]*\./gi,
+        "This may function more as protection than as indifference."],
+      [/\bthis is not about\b/gi, "this may be less about"],
+      [/\bhe doesn'?t care\b/gi, "his care may not be visible in the moment"],
+      [/\bshe doesn'?t care\b/gi, "her care may not be visible in the moment"],
+      [/\bwill always\b/gi, "will often"],
+      [/\bwill never\b/gi, "may rarely"],
+      [/\balways feels\b/gi, "often feels"],
+      [/\bnever feels\b/gi, "rarely feels"],
+      [/\bhis brain is wired so that he cannot\b/gi, "his wiring may make it hard to"],
     ];
-    const CAUSE_EFFECT_MARKERS = /\b(so|because|which makes|which means|this creates|so that|which is why)\b/i;
+    const BRITISH_TO_US: [RegExp, string][] = [
+      [/\bbehaviour(s|al|ally)?\b/gi, "behavior$1"],
+      [/\bfavour(s|ite|ites|ed|ing)?\b/gi, "favor$1"],
+      [/\bcolour(s|ed|ing|ful)?\b/gi, "color$1"],
+      [/\bhonour(s|ed|ing|able)?\b/gi, "honor$1"],
+      [/\bpractis(e|es|ed|ing)\b/gi, "practic$1"],
+      [/\bcentre(s|d)?\b/gi, "center$1"],
+      [/\borganis(e|es|ed|ing|ation|ations)\b/gi, "organiz$1"],
+      [/\brecognis(e|es|ed|ing)\b/gi, "recogniz$1"],
+      [/\brealis(e|es|ed|ing)\b/gi, "realiz$1"],
+      [/\btravell(ed|ing|er|ers)\b/gi, "travel$1"],
+      [/\bcounsell(or|ors|ing|ed)\b/gi, "counsel$1"],
+      [/\bapologis(e|es|ed|ing)\b/gi, "apologiz$1"],
+      [/\bprioritis(e|es|ed|ing)\b/gi, "prioritiz$1"],
+      [/\bemphasis(e|es|ed|ing)\b/gi, "emphasiz$1"],
+      [/\banalys(e|es|ed|ing)\b/gi, "analyz$1"],
+      [/\bneighbour(s|hood)?\b/gi, "neighbor$1"],
+      [/\blabell(ed|ing)\b/gi, "label$1"],
+      [/\bamongst\b/gi, "among"],
+      [/\bgrey\b/gi, "gray"],
+    ];
+    const preserveCase = (match: string, replacement: string) =>
+      match[0] === match[0].toUpperCase()
+        ? replacement.charAt(0).toUpperCase() + replacement.slice(1)
+        : replacement;
+    const softenText = (s: unknown): unknown => {
+      if (typeof s === "string") {
+        let out = s;
+        for (const [re, rep] of OVERCLAIM_REWRITES) {
+          out = out.replace(re, (m) => preserveCase(m, rep));
+        }
+        for (const [re, rep] of BRITISH_TO_US) {
+          out = out.replace(re, (m, g1) => preserveCase(m, rep.replace("$1", g1 ?? "")));
+        }
+        return out.replace(/\s{2,}/g, " ").trim();
+      }
+      if (Array.isArray(s)) return s.map(softenText);
+      if (s && typeof s === "object") {
+        const o: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(s as Record<string, unknown>)) o[k] = softenText(v);
+        return o;
+      }
+      return s;
+    };
+    payload = softenText(payload) as ReadingPayload;
+
+
+    // ─── DEPENDENCY GATE: whatThisChildNeedsFromYou requires a valid childMechanism ─────
+    // The gate exists to block generic filler, NOT to block specific content.
+    // A mechanism passes when it (a) names real placements, (b) shows an internal
+    // tension/contrast, and (c) explains cause and effect somewhere in the
+    // real-life or under-stress text. Earlier versions demanded the literal
+    // phrase "but has to" and cause markers in BOTH fields, which rejected
+    // clearly specific mechanisms (e.g. Cancer Moon + Aquarius Mercury/Mars).
+    const CONTRAST_MARKERS =
+      /\b(but|while|even though|although|yet|however|at the same time|instead of|rather than|versus|vs\.?|though)\b/i;
+    const CAUSE_EFFECT_MARKERS =
+      /\b(so|because|since|which makes|which means|this creates|so that|which is why|leads to|results in|then)\b/i;
+    const NAMES_ASTROLOGY =
+      /\b(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Node|Ascendant|Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b|\b(house\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+house|H\d{1,2})\b/i;
     const cm = (payload as Record<string, unknown>).childMechanism as
-      | { theConflict?: string; inRealLife?: string; underStress?: string }
+      | {
+          theConflict?: string;
+          inRealLife?: string;
+          underStress?: string;
+          corePattern?: string;
+          parts?: { placement?: string; does?: string }[];
+        }
       | undefined;
-    const conflictOk = !!cm?.theConflict && CONFLICT_PATTERNS.some((re) => re.test(cm.theConflict!));
-    const causeOk = !!cm?.inRealLife && !!cm?.underStress &&
-      CAUSE_EFFECT_MARKERS.test(cm.inRealLife) && CAUSE_EFFECT_MARKERS.test(cm.underStress);
-    const mechanismValid = conflictOk && causeOk;
+    const mechanismText = [
+      cm?.theConflict,
+      cm?.inRealLife,
+      cm?.underStress,
+      cm?.corePattern,
+      ...(cm?.parts ?? []).map((p) => `${p?.placement ?? ""} ${p?.does ?? ""}`),
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const narrativeText = `${cm?.inRealLife ?? ""} ${cm?.underStress ?? ""}`.trim();
+    const conflictOk = !!cm?.theConflict && CONTRAST_MARKERS.test(cm.theConflict);
+    const causeOk = !!narrativeText && CAUSE_EFFECT_MARKERS.test(narrativeText);
+    const specificOk = NAMES_ASTROLOGY.test(mechanismText) && narrativeText.length >= 60;
+    const mechanismValid = conflictOk && causeOk && specificOk;
+    if (!mechanismValid) {
+      console.warn("[family-pair-reading] mechanism gate", { conflictOk, causeOk, specificOk });
+    }
+
 
     // Banned phrase backstop for needs lines.
     const BANNED_NEEDS_LINE = [
@@ -1062,30 +1208,62 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
       if (!np.length && !nc.length) validationLog.push("responsibilities_untraceable");
     }
 
-    // traceableAspects: label must name both planets; cap at 5.
-    if (Array.isArray(pl.traceableAspects)) {
-      const rows = (pl.traceableAspects as { label?: string; meaning?: string }[]).filter(
-        (r) => !!r?.label && !!r?.meaning?.trim() && isTraceable(r.label!),
+    // traceableAspects: label must name both planets; cap at 6, and supportive
+    // contacts that reached the narrative are guaranteed a row so the evidence
+    // list can never read as "all difficult".
+    type TraceRow = { label?: string; orb?: number; meaning?: string; tone?: string };
+    let traceRows: TraceRow[] = Array.isArray(pl.traceableAspects)
+      ? (pl.traceableAspects as TraceRow[]).filter(
+          (r) => !!r?.label && !!r?.meaning?.trim() && isTraceable(r.label!),
+        )
+      : [];
+    for (const a of supportiveInNarrative) {
+      const already = traceRows.some(
+        (r) =>
+          !!r.label &&
+          r.label.includes(a.fromPlanet) &&
+          r.label.includes(a.toPlanet) &&
+          r.label.toLowerCase().includes(a.aspect),
       );
-      pl.traceableAspects = rows.slice(0, 5);
+      if (already) continue;
+      traceRows.push({
+        label: `${body.fromName}'s ${a.fromPlanet} in ${a.fromSign ?? "?"} ${a.aspect} ${body.toName}'s ${a.toPlanet} in ${a.toSign ?? "?"}`,
+        orb: Number(a.orb.toFixed(1)),
+        meaning: `An easier channel between you: this contact tends to make ${a.toPlanet.toLowerCase() === "moon" ? "settling down" : "meeting each other"} less effortful when things are calm.`,
+        tone: "supportive",
+      });
+      validationLog.push("supportive_contact_injected");
     }
+    // Difficult rows built on wide orbs get labeled as secondary rather than headline.
+    traceRows = traceRows.map((r) =>
+      typeof r.orb === "number" && r.orb >= 7 && !/wider|secondary/i.test(r.meaning ?? "")
+        ? { ...r, meaning: `${r.meaning} (Wider, secondary contact: background influence, not a headline.)` }
+        : r,
+    );
+    pl.traceableAspects = traceRows.slice(0, 6);
 
     if (validationLog.length) {
       console.warn("[family-pair-reading] needs section validation:", validationLog);
       (payload as Record<string, unknown>)._validation_log = validationLog;
     }
 
+    // Counts must agree with what the reading actually contains.
+    const sectionCount = Array.isArray(pl.sections) ? (pl.sections as unknown[]).length : 0;
 
     return new Response(
       JSON.stringify({
         ...payload,
         ageYears,
-        aspectsUsed: aspects.length,
+        aspectsUsed: sectionCount || aspects.length,
+        aspectsConsidered: body.aspects.length,
+        aspectsRanked: aspects.length,
+        traceableCount: (pl.traceableAspects as unknown[]).length,
         widerContacts,
         overallIntensity,
         totalSignatureScore: totalScore,
         highWeightCount,
       }),
+
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
