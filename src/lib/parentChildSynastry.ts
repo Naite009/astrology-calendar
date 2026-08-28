@@ -90,6 +90,27 @@ const PARENT_TO_CHILD_PAIRS: CuratedPair[] = [
   { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
   { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
   { from: "Uranus", to: "Sun", framingKey: "uranus-sun" },
+  // Supportive-capable channels. Without these, a chart whose only tight
+  // easy contacts run through Mercury, Venus, or Jupiter looked like a
+  // relationship made entirely of hard aspects, which is a selection artifact.
+  { from: "Sun", to: "Mercury", framingKey: "sun-mercury" },
+  { from: "Sun", to: "Venus", framingKey: "sun-venus" },
+  { from: "Moon", to: "Mercury", framingKey: "moon-mercury" },
+  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
+  { from: "Venus", to: "Venus", framingKey: "venus-venus" },
+  { from: "Venus", to: "Sun", framingKey: "venus-sun" },
+  { from: "Venus", to: "Mercury", framingKey: "venus-mercury" },
+  { from: "Jupiter", to: "Moon", framingKey: "jupiter-moon" },
+  { from: "Jupiter", to: "Mercury", framingKey: "jupiter-mercury" },
+  { from: "Jupiter", to: "Venus", framingKey: "jupiter-venus" },
+  { from: "Saturn", to: "Venus", framingKey: "saturn-venus" },
+  { from: "Saturn", to: "Mercury", framingKey: "saturn-mercury" },
+  { from: "Mars", to: "Mercury", framingKey: "mars-mercury" },
+  { from: "Mars", to: "Sun", framingKey: "mars-sun" },
+  { from: "Neptune", to: "Mercury", framingKey: "neptune-mercury" },
+  { from: "Pluto", to: "Mercury", framingKey: "pluto-mercury" },
+  { from: "Chiron", to: "Mercury", framingKey: "chiron-mercury" },
+
 ];
 
 /** Sibling-specific pair set — drops Saturn-authority, adds Mercury↔Mercury. */
