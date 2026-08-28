@@ -19,31 +19,31 @@ interface CompatibilityRadarChartProps {
 }
 
 export const CompatibilityRadarChart = ({ chart1, chart2 }: CompatibilityRadarChartProps) => {
-  const analyses = useMemo(() => {
+  const analyzes = useMemo(() => {
     const focuses = ['romantic', 'friendship', 'business', 'creative', 'family'] as const;
     return focuses.map(focus => analyzeRelationshipFocus(chart1, chart2, focus));
   }, [chart1, chart2]);
 
   const radarData = useMemo(() => {
-    return analyses.map(analysis => ({
+    return analyzes.map(analysis => ({
       focus: analysis.title.replace(' Analysis', '').replace(' Partnership', ''),
       score: analysis.overallStrength,
       fullMark: 100,
     }));
-  }, [analyses]);
+  }, [analyzes]);
 
   const averageScore = useMemo(() => {
-    const total = analyses.reduce((sum, a) => sum + a.overallStrength, 0);
-    return Math.round(total / analyses.length);
-  }, [analyses]);
+    const total = analyzes.reduce((sum, a) => sum + a.overallStrength, 0);
+    return Math.round(total / analyzes.length);
+  }, [analyzes]);
 
   const strongestArea = useMemo(() => {
-    return analyses.reduce((max, a) => a.overallStrength > max.overallStrength ? a : max);
-  }, [analyses]);
+    return analyzes.reduce((max, a) => a.overallStrength > max.overallStrength ? a : max);
+  }, [analyzes]);
 
   const weakestArea = useMemo(() => {
-    return analyses.reduce((min, a) => a.overallStrength < min.overallStrength ? a : min);
-  }, [analyses]);
+    return analyzes.reduce((min, a) => a.overallStrength < min.overallStrength ? a : min);
+  }, [analyzes]);
 
   const getFocusIcon = (focusTitle: string) => {
     if (focusTitle.includes('Romantic')) return <Heart size={14} className="text-primary" />;
@@ -103,7 +103,7 @@ export const CompatibilityRadarChart = ({ chart1, chart2 }: CompatibilityRadarCh
 
         {/* Score Breakdown */}
         <div className="grid grid-cols-5 gap-2 mt-4">
-          {analyses.map((analysis, i) => (
+          {analyzes.map((analysis, i) => (
             <div 
               key={i} 
               className="text-center p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"

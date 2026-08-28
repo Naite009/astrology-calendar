@@ -7,7 +7,7 @@
  *  - Jupiter adds the 5th and the 9th.
  *  - Saturn adds the 3rd and the 10th.
  *  - Rahu and Ketu are given the 5th, 7th and 9th, which is the widely used
- *    convention. It is labelled as a convention wherever it is displayed.
+ *    convention. It is labeled as a convention wherever it is displayed.
  *
  * Everything here is whole-sign counting, deterministic, and never estimated.
  */

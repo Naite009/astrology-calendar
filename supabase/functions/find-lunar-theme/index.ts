@@ -52,7 +52,7 @@ CRITICAL RULES:
 - Body signals, dreams, repeated thoughts, and emotional charges are your primary evidence.
 - Draft intention stems should use "I" language and feel achievable, not grandiose.
 
-HYBRID CLARITY RULE: For each theme: (1) Start with a real-life situation. (2) Describe how it feels. (3) Briefly explain why. Do not say "a cycle of deep inner transformation." Instead: "you may be noticing that things you used to care about just don't matter the same way anymore — it feels like outgrowing something, because this cycle is clearing space for what's actually next."`;
+US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.\n\nHYBRID CLARITY RULE: For each theme: (1) Start with a real-life situation. (2) Describe how it feels. (3) Briefly explain why. Do not say "a cycle of deep inner transformation." Instead: "you may be noticing that things you used to care about just don't matter the same way anymore — it feels like outgrowing something, because this cycle is clearing space for what's actually next."`;
 
     const userPrompt = `This person is in a ${cycleSign} New Moon cycle at ${cycleDegree}°.${natalHouse ? ` It activates their ${natalHouse}th natal house.` : ""}${chartName ? ` Their name is ${chartName}.` : ""}
 

@@ -56,7 +56,7 @@ export function generateYearStoryPage(
 
   if (s.hierarchy.length) {
     ctx.drawGoldRule(doc);
-    ctx.writeBold(doc, 'What The Chart Emphasises Most', ctx.colors.gold, 12);
+    ctx.writeBold(doc, 'What The Chart Emphasizes Most', ctx.colors.gold, 12);
     for (const row of s.hierarchy) {
       ctx.writeLabel(doc, row.label, row.detail);
     }

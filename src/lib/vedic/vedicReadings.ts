@@ -754,7 +754,7 @@ function partnerSection(chart: VedicChart, d9: VargaChart, karakas: KarakaAssign
   if (partnerWindows.length) {
     logic.push(`Periods that emphasize partnership themes, limited to windows inside a usable age range: ${partnerWindows.map(p => `${p.lord} ${formatDashaRange(p)} (age ${ageAt(p.start)} to ${ageAt(p.end)})`).join('; ')}`);
     paras.push(
-      `The periods when relationship themes may be emphasised are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}, roughly age ${ageAt(p.start)} to ${ageAt(p.end)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
+      `The periods when relationship themes may be emphasized are ${list(partnerWindows.map(p => `${p.lord}, ${formatDashaRange(p)}, roughly age ${ageAt(p.start)} to ${ageAt(p.end)}`))}. These periods can increase the emphasis on relationship themes, but relationships can begin, deepen, change or end during many different planetary periods. Real timing requires the natal chart, the seventh house and its ruler, Venus, the D9, the mahadasha, the antardasha and the relevant transits together, so treat this line as emphasis and nothing more.`
     );
   } else {
     paras.push(

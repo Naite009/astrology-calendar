@@ -1,6 +1,6 @@
 /**
  * Chara Karakas (Jaimini). The seven grahas plus Rahu are ranked by the degrees
- * they have travelled inside their sign. Highest becomes Atmakaraka, and the
+ * they have traveled inside their sign. Highest becomes Atmakaraka, and the
  * ranking continues down to Darakaraka, the partner significator.
  *
  * Rahu is counted in reverse (30 minus its degree) because it moves backwards.
@@ -43,7 +43,7 @@ export interface KarakaAssignment {
  * appears higher than its printed degree.
  */
 export const KARAKA_METHOD_NOTE =
-  'This app uses the eight karaka method: the seven classical grahas plus Rahu. Ketu is excluded, as is standard in this method. Ranking is by degrees travelled inside the sign, highest first. Rahu is counted in reverse, so its effective degree is thirty minus its actual degree, because it always moves backwards through the zodiac. Some schools use a seven karaka method without Rahu, which can shift the assignments, so the method is named here rather than assumed.';
+  'This app uses the eight karaka method: the seven classical grahas plus Rahu. Ketu is excluded, as is standard in this method. Ranking is by degrees traveled inside the sign, highest first. Rahu is counted in reverse, so its effective degree is thirty minus its actual degree, because it always moves backwards through the zodiac. Some schools use a seven karaka method without Rahu, which can shift the assignments, so the method is named here rather than assumed.';
 
 export function computeKarakas(chart: VedicChart): KarakaAssignment[] {
   const eligible: VedicPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu'];

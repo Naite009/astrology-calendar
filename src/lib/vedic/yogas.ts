@@ -7,7 +7,7 @@
  * yogas, which are defined by one graha in one condition in a kendra).
  *
  * Strength is reported as evidence count, not as certainty, and every
- * description stays behavioural rather than predictive.
+ * description stays behavioral rather than predictive.
  */
 
 import { VedicChart, VedicBody, houseLord } from './siderealChart';
@@ -24,7 +24,7 @@ export interface Yoga {
   category: 'character' | 'wealth' | 'status' | 'strain' | 'protection' | 'learning';
   /** The exact placements that triggered it */
   evidence: string[];
-  /** What it tends to look like in behaviour */
+  /** What it tends to look like in behavior */
   meaning: string;
   /** How much weight to put on it */
   weight: 'strong' | 'moderate' | 'noted';
@@ -130,14 +130,14 @@ function lordOf(chart: VedicChart, house: number): { lord: VedicPlanet; body: Ve
 const MAHAPURUSHA: Record<string, { planet: VedicPlanet; name: string; plainName: string; meaning: string }> = {
   Mars: {
     planet: 'Mars', name: 'Ruchaka Yoga', plainName: 'the fighter pattern',
-    meaning: 'Mars is both dignified and in a corner house, which classical texts read as unusual physical courage and the willingness to take the confrontation nobody else wants. It tends to show up as someone who moves first and apologises later, and who gets restless without something to push against.',
+    meaning: 'Mars is both dignified and in a corner house, which classical texts read as unusual physical courage and the willingness to take the confrontation nobody else wants. It tends to show up as someone who moves first and apologizes later, and who gets restless without something to push against.',
   },
   Mercury: {
     planet: 'Mercury', name: 'Bhadra Yoga', plainName: 'the sharp-mind pattern',
     meaning: 'Mercury is dignified in a corner house, which classically indicates quick understanding and unusual skill with words, numbers or trade. It tends to look like someone who can explain a complicated thing quickly, and who gets impatient when others are slow.',
   },
   Jupiter: {
-    planet: 'Jupiter', name: 'Hamsa Yoga', plainName: 'the counsellor pattern',
+    planet: 'Jupiter', name: 'Hamsa Yoga', plainName: 'the counselor pattern',
     meaning: 'Jupiter is dignified in a corner house, which classically indicates someone people come to for judgement. It tends to look like being trusted with other people\'s decisions, and sometimes like taking on more advising than you asked for.',
   },
   Venus: {
@@ -204,7 +204,7 @@ function rajaYogas(chart: VedicChart): Yoga[] {
             ? `both sit together in ${a.body.sign}`
             : `they look at each other by classical glance from ${a.body.sign} and ${b.body.sign}`,
         ],
-        meaning: 'A corner-house lord and a trine-house lord are linked, which Jyotish reads as effort and support arriving in the same place. In behaviour it usually shows as work that raises your standing rather than merely paying you, and it tends to activate during the periods of the two grahas involved rather than continuously.',
+        meaning: 'A corner-house lord and a trine-house lord are linked, which Jyotish reads as effort and support arriving in the same place. In behavior it usually shows as work that raises your standing rather than merely paying you, and it tends to activate during the periods of the two grahas involved rather than continuously.',
         weight: together ? 'strong' : 'moderate',
       });
     }
@@ -318,8 +318,8 @@ function namedYogas(chart: VedicChart, navamsa?: VargaChart): Yoga[] {
   // Kemadruma and its cancellation: nothing in the 2nd or 12th from the Moon.
   if (moon) {
     const mIdx = signIndex(moon.sign);
-    const neighbours = [(mIdx + 1) % 12, (mIdx + 11) % 12].map(signFromIndex);
-    const occupants = chart.bodies.filter(b => b.name !== 'Moon' && neighbours.includes(b.sign));
+    const neighbors = [(mIdx + 1) % 12, (mIdx + 11) % 12].map(signFromIndex);
+    const occupants = chart.bodies.filter(b => b.name !== 'Moon' && neighbors.includes(b.sign));
     if (!occupants.length) {
       const kendraFromMoon = chart.bodies.some(b => {
         if (b.name === 'Moon') return false;
@@ -336,8 +336,8 @@ function namedYogas(chart: VedicChart, navamsa?: VargaChart): Yoga[] {
           ...(kendraFromMoon ? ['a benefic holds a corner position from the Moon, which classical texts treat as cancelling most of it'] : []),
         ],
         meaning: kendraFromMoon
-          ? 'The Moon has no immediate neighbours, which classically suggests processing things alone, but a benefic in a corner from it takes most of the edge off. In practice it usually means you work things out internally first and then bring people in, rather than feeling genuinely unsupported.'
-          : 'The Moon has no immediate neighbours. Classically this describes having to steady yourself without much surrounding help, which often shows up as processing privately and being slow to say when something is hard. It is a description of how support arrives, not a statement that support is absent.',
+          ? 'The Moon has no immediate neighbors, which classically suggests processing things alone, but a benefic in a corner from it takes most of the edge off. In practice it usually means you work things out internally first and then bring people in, rather than feeling genuinely unsupported.'
+          : 'The Moon has no immediate neighbors. Classically this describes having to steady yourself without much surrounding help, which often shows up as processing privately and being slow to say when something is hard. It is a description of how support arrives, not a statement that support is absent.',
         weight: kendraFromMoon ? 'noted' : 'moderate',
       });
     }

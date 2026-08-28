@@ -3,7 +3,7 @@
  * Moon's exact sidereal longitude at birth. Deterministic: no estimates, no AI.
  *
  * Birth balance rule (this is the part that is easy to get wrong):
- *   remaining fraction = (13 20' - degrees travelled in the birth nakshatra) / 13 20'
+ *   remaining fraction = (13 20' - degrees traveled in the birth nakshatra) / 13 20'
  *   balance years       = remaining fraction x full Vimshottari years of the nakshatra lord
  * The first mahadasha shown to the user therefore starts AT BIRTH and runs only
  * for that balance. Every later mahadasha is chained from the end of the balance.
@@ -68,7 +68,7 @@ export interface DashaSeed {
   nakshatraIndex: number;
   pada: number;
   lord: VedicPlanet;
-  /** Degrees travelled inside the birth nakshatra */
+  /** Degrees traveled inside the birth nakshatra */
   degreesElapsed: number;
   degreesRemaining: number;
   elapsedFraction: number;

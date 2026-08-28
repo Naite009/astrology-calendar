@@ -2311,7 +2311,7 @@ const buildEmptySummaryFallback = (
         const lbl = (w?.label || "").trim();
         const desc = (w?.description || "").trim();
         const haystack = `${lbl} ${desc}`;
-        // Honour an explicit `nature: "challenging"` flag if the schema
+        // Honor an explicit `nature: "challenging"` flag if the schema
         // ever grows one. Otherwise infer from planet+aspect regex.
         const explicitlyChallenging = typeof w?.nature === "string" && /challeng|hard|caution/i.test(w.nature);
         const inferredHard = HARD_OUTER_RE.test(haystack) && HARD_ASPECT_RE.test(haystack);
@@ -11699,7 +11699,7 @@ SYNTHESIS RULE: After describing each placement's behavior, connect it to at lea
 
 LANGUAGE STYLE: Always translate astrology into natural, human language. Do not make rigid or overly specific claims about behavior (e.g., frequency, exact habits, fixed traits). Describe tendencies, patterns, ways something may show up, and ranges of expression. Use language like "you may…", "this can show up as…", "you might find yourself…", "this often leads to…". The goal is accurate, flexible, recognizable — not absolute or overly literal. Avoid astrology jargon unless immediately explained in behavioral terms.
 
-HYBRID CLARITY RULE: For each key insight, follow this exact sequence: (1) Start with a real-life situation or experience — what actually happens. (2) Then describe how it feels. (3) Then briefly explain why in simple terms. Do not lead with traits alone. Avoid abstract descriptions of personality or "types of people." Each sentence should combine what happens, how it feels, and what pattern it reflects. Avoid phrases like "mentally stimulating", "emotionally complex", "intense dynamics", "psychologically deep", "unclear energy". Instead: "you may find yourself unsure where you stand with someone — it feels unsettling because you want clarity but the situation keeps shifting." If a phrase sounds like astrology language, rewrite it into a concrete, real-life scenario. Do not stack multiple abstract descriptors in one sentence.
+US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.\n\nHYBRID CLARITY RULE: For each key insight, follow this exact sequence: (1) Start with a real-life situation or experience — what actually happens. (2) Then describe how it feels. (3) Then briefly explain why in simple terms. Do not lead with traits alone. Avoid abstract descriptions of personality or "types of people." Each sentence should combine what happens, how it feels, and what pattern it reflects. Avoid phrases like "mentally stimulating", "emotionally complex", "intense dynamics", "psychologically deep", "unclear energy". Instead: "you may find yourself unsure where you stand with someone — it feels unsettling because you want clarity but the situation keeps shifting." If a phrase sounds like astrology language, rewrite it into a concrete, real-life scenario. Do not stack multiple abstract descriptors in one sentence.
 
 REWRITE FOR RECOGNITION: After writing each key sentence, test: if someone with zero astrology knowledge read this, would they immediately recognize it from their real life? If not, rewrite it until they would. The reader should think "that's exactly what happens to me." Never leave a sentence in abstract or symbolic form. Always land on the lived experience.
 
@@ -12252,7 +12252,7 @@ PRONOUN VOICE — STRICTLY 2ND PERSON: Address the subject directly as "you" / "
 
 BEHAVIOR-FIRST, PLACEMENT-AS-REASON: Every paragraph opens with the lived behavior or pattern first, then names the placement that causes it in the second sentence. Example: "You're not drawn to chaos as a baseline — and that comes from your Capricorn 7th house ruled by Saturn in Cancer in your 1st." NEVER open with "Your 7th house is..." as the first sentence. The reader must feel recognized in sentence 1, then learn the astrology in sentence 2.
 
-HYBRID CLARITY RULE: Every interpretation follows situation → feeling → why. Never stack abstract traits in a row. Every claim must land in a recognizable real-life moment, in the body, or in observable behavior.
+US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.\n\nHYBRID CLARITY RULE: Every interpretation follows situation → feeling → why. Never stack abstract traits in a row. Every claim must land in a recognizable real-life moment, in the body, or in observable behavior.
 
 NATAL-ONLY: Use ONLY natal chart data. Do NOT reference Solar Return positions, transits, progressions, or any time-bound material. The natal placement table is the single source of truth for signs, degrees, houses, and retrograde markers.
 

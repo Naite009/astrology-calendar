@@ -22,7 +22,7 @@ const PHASE_DOT_RGB: Record<string, Color> = {
   refinement:   [100, 149, 237],  // cornflower blue
   culmination:  [218, 165, 32],   // goldenrod
   sharing:      [147, 112, 219],  // medium purple
-  reevaluation: [169, 169, 169],  // dark grey
+  reevaluation: [169, 169, 169],  // dark gray
   completion:   [130, 125, 118],  // muted
 };
 

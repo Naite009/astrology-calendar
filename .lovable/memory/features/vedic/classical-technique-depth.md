@@ -7,9 +7,9 @@ type: feature
 The Vedic tab is not allowed to be a template concatenator. It carries real classical technique, computed deterministically, with the evidence always visible.
 
 Engines (all in `src/lib/vedic/`):
-- `drishti.ts` graha glances by whole sign, special glances for Mars/Jupiter/Saturn, node convention labelled as a convention, mutual glances, parivartana.
+- `drishti.ts` graha glances by whole sign, special glances for Mars/Jupiter/Saturn, node convention labeled as a convention, mutual glances, parivartana.
 - `strength.ts` CONDITION INDEX 0-100 from sign dignity, baladi avastha, varga bala, dig bala, drik, combustion, graha yuddha, cheshta. NEVER call it Shadbala; always display its components next to the number.
-- `yogas.ts` Panchamahapurusha, Raja, Dhana, Gaja Kesari, Chandra Mangala, Budhaditya, Amala, Kemadruma with its cancellation, Saturn-Moon, vargottama, Venus-Jupiter. Every yoga must list the exact placements that triggered it and a behavioural meaning, never an event prediction.
+- `yogas.ts` Panchamahapurusha, Raja, Dhana, Gaja Kesari, Chandra Mangala, Budhaditya, Amala, Kemadruma with its cancellation, Saturn-Moon, vargottama, Venus-Jupiter. Every yoga must list the exact placements that triggered it and a behavioral meaning, never an event prediction.
 - `arudha.ts` Jaimini image points AL, A2, A7, A10, UL. Framed as image versus reality, never as fact.
 - `panchanga.ts` tithi, vara, nakshatra, nitya yoga, karana. Read as the birth day quality before any planet.
 - `nakshatraDetail.ts` deity, gana, yoni, tara bala, pada note.

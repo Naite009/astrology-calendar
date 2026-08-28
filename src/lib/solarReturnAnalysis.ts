@@ -621,7 +621,7 @@ const internalAspectMeaning = (p1: string, p2: string, type: string): string => 
   const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
   const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
 
-  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) inside the Solar Return chart itself. ${feel.experience} This one sits in the background of the whole year rather than in one life area, so it can colour how the more specific themes play out.`;
+  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) inside the Solar Return chart itself. ${feel.experience} This one sits in the background of the whole year rather than in one life area, so it can color how the more specific themes play out.`;
 };
 
 // ─── Stellium interpretation helpers ────────────────────────────────

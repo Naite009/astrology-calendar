@@ -63,7 +63,7 @@ export function getNakshatra(siderealLongitude: number): NakshatraInfo {
   };
 }
 
-/** Fraction of the nakshatra already travelled (0-1). Seeds the dasha start. */
+/** Fraction of the nakshatra already traveled (0-1). Seeds the dasha start. */
 export function nakshatraElapsedFraction(siderealLongitude: number): number {
   const info = getNakshatra(siderealLongitude);
   return info.degreeInNakshatra / NAKSHATRA_SPAN;

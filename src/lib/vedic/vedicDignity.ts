@@ -3,7 +3,7 @@
  * Western dignity tables so the two systems never bleed into each other.
  *
  * Only the nine Jyotish grahas are graded. Uranus, Neptune and Pluto are not
- * part of this system and are never labelled here.
+ * part of this system and are never labeled here.
  */
 
 import { VedicPlanet } from './nakshatras';

@@ -30,7 +30,7 @@ export interface GocharaTransit {
   /** Whole-sign house from the natal lagna */
   house: number | null;
   /** Classical verdict of that count from the Moon */
-  quality: 'favourable' | 'mixed' | 'difficult';
+  quality: 'favorable' | 'mixed' | 'difficult';
   /** Vedha: another graha sitting in the obstruction point cancels the result */
   vedha: { blocked: boolean; by: VedicPlanet | null; house: number | null; plain: string | null };
   /** Ashtakavarga filter on the sign being transited */
@@ -41,7 +41,7 @@ export interface GocharaTransit {
 }
 
 /**
- * Vedha (obstruction) points. When a graha transits one of its favourable
+ * Vedha (obstruction) points. When a graha transits one of its favorable
  * houses from the natal Moon, the good result is classically cancelled if
  * another graha occupies the paired obstruction house at the same time.
  * Sun and Saturn never obstruct each other, and Moon and Mercury never
@@ -67,14 +67,14 @@ function exempt(a: VedicPlanet, b: VedicPlanet): boolean {
 }
 
 export const VEDHA_NOTE =
-  'Jyotish does not read a transit at face value. When a graha reaches one of its favourable positions counted from your natal Moon, the classical rule is that the good result is obstructed if another graha is sitting in the paired obstruction house at the same moment. That is why two people can have the same transit and only one of them feels it.';
+  'Jyotish does not read a transit at face value. When a graha reaches one of its favorable positions counted from your natal Moon, the classical rule is that the good result is obstructed if another graha is sitting in the paired obstruction house at the same moment. That is why two people can have the same transit and only one of them feels it.';
 
 export const BINDU_FILTER_NOTE =
   'The Ashtakavarga scores are the second filter. A transit through a sign holding thirty points or more usually produces something you can point to. The same transit through a sign holding under twenty five usually asks for maintenance instead, however good the position looks on paper.';
 
 const SLOW: VedicPlanet[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
 
-/** Classical favourable houses from the natal Moon for each graha. */
+/** Classical favorable houses from the natal Moon for each graha. */
 const GOOD_FROM_MOON: Record<VedicPlanet, number[]> = {
   Sun: [3, 6, 10, 11],
   Moon: [1, 3, 6, 7, 10, 11],
@@ -146,7 +146,7 @@ function sadeSati(natalMoonSign: string, saturnSign: string): SadeSati {
   const d = (signIndex(saturnSign) - signIndex(natalMoonSign) + 12) % 12;
   if (d === 11) return {
     active: true, phase: 'rising',
-    plain: 'Saturn is in the sign before your natal Moon, which begins the period Jyotish calls Sade Sati. The classical description is a long stretch of being asked to carry more and complain less. In practice the first third usually shows as tiredness and a sense that things need reorganising, not as catastrophe. It is a maturing period, and this app does not treat it as a prediction of loss.',
+    plain: 'Saturn is in the sign before your natal Moon, which begins the period Jyotish calls Sade Sati. The classical description is a long stretch of being asked to carry more and complain less. In practice the first third usually shows as tiredness and a sense that things need reorganizing, not as catastrophe. It is a maturing period, and this app does not treat it as a prediction of loss.',
   };
   if (d === 0) return {
     active: true, phase: 'peak',
@@ -209,10 +209,10 @@ export function buildGochara(
     fromMoonOf.set(graha, ((signIndex(sign) - signIndex(moonNatal.sign) + 12) % 12) + 1);
   });
 
-  const checkVedha = (graha: VedicPlanet, fromMoon: number, favourable: boolean): GocharaTransit['vedha'] => {
+  const checkVedha = (graha: VedicPlanet, fromMoon: number, favorable: boolean): GocharaTransit['vedha'] => {
     const table = VEDHA[graha];
     const point = table ? table[fromMoon] : undefined;
-    if (!favourable || !point) {
+    if (!favorable || !point) {
       return { blocked: false, by: null, house: point ?? null, plain: null };
     }
     let blocker: VedicPlanet | null = null;
@@ -224,7 +224,7 @@ export function buildGochara(
     if (!blocker) {
       return {
         blocked: false, by: null, house: point,
-        plain: `The obstruction point for this transit is ${point} houses from your Moon, and nothing is sitting there right now, so the favourable reading stands.`,
+        plain: `The obstruction point for this transit is ${point} houses from your Moon, and nothing is sitting there right now, so the favorable reading stands.`,
       };
     }
     return {
@@ -262,7 +262,7 @@ export function buildGochara(
     const fromMoon = ((signIndex(sign) - signIndex(moonNatal.sign) + 12) % 12) + 1;
     const house = vedic.lagnaSign ? ((signIndex(sign) - signIndex(vedic.lagnaSign) + 12) % 12) + 1 : null;
     const good = GOOD_FROM_MOON[graha].includes(fromMoon);
-    const quality: GocharaTransit['quality'] = good ? 'favourable' : [4, 8, 12].includes(fromMoon) ? 'difficult' : 'mixed';
+    const quality: GocharaTransit['quality'] = good ? 'favorable' : [4, 8, 12].includes(fromMoon) ? 'difficult' : 'mixed';
     const press = GRAHA_PRESSURE[graha];
     const focus = house ? HOUSE_FOCUS[house] : null;
 
@@ -271,7 +271,7 @@ export function buildGochara(
 
     // Net verdict: the classical count, then vedha, then the bindu filter.
     let netVerdict: GocharaTransit['netVerdict'] =
-      quality === 'favourable' ? 'works' : quality === 'difficult' ? 'maintenance' : 'mixed';
+      quality === 'favorable' ? 'works' : quality === 'difficult' ? 'maintenance' : 'mixed';
     if (vedha.blocked && netVerdict === 'works') netVerdict = 'mixed';
     if (bindus.savBand === 'weak' && netVerdict === 'works') netVerdict = 'mixed';
     else if (bindus.savBand === 'weak' && netVerdict === 'mixed') netVerdict = 'maintenance';
@@ -284,7 +284,7 @@ export function buildGochara(
       press ? `Classically this ${good ? press.good : press.hard}.` : '',
       quality === 'difficult'
         ? 'Counted from the Moon this is one of the harder positions, which classical texts read as needing more rest and fewer new commitments rather than as bad luck.'
-        : quality === 'favourable'
+        : quality === 'favorable'
           ? 'Counted from the Moon this is one of the supportive positions, so effort here tends to go further than usual.'
           : 'Counted from the Moon this is a mixed position, so it depends more on what you do with it than on the transit itself.',
       vedha.plain || '',

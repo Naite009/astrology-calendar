@@ -177,7 +177,7 @@ export const CosmicWeatherBanner = ({
       const planets = getPlanetaryPositions(d);
       const dayAspects = calculateDailyAspects(planets);
 
-      // Pick the "major" aspect: prioritise conjunctions/oppositions/squares of slow planets
+      // Pick the "major" aspect: prioritize conjunctions/oppositions/squares of slow planets
       const ranked = [...dayAspects].sort((a, b) => {
         const weight = (asp: Aspect) => {
           let w = 0;

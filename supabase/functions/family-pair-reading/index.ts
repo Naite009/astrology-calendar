@@ -276,7 +276,7 @@ Deno.serve(async (req) => {
       })
       .join("\n") || "(no cross-aspects pass the orb gate for this pair)";
 
-    // Scored summary (passed to AI for prioritisation).
+    // Scored summary (passed to AI for prioritization).
     const scored = aspects.map((a) => ({ a, s: scoreAspect(a) }));
     const totalScore = scored.reduce((sum, x) => sum + x.s, 0);
     const highWeightCount = scored.filter((x) => x.s >= 4).length;
@@ -519,6 +519,7 @@ ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlready
 - If real-life behavior (from user-provided context, repeated patterns, or hard aspects on the same body) contradicts the ideal expression, reflect the real-life version FIRST and the potential version second.
 - Prioritize observable behavior over textbook ideal interpretation. Astrology describes potential patterns — not guaranteed experiences.
 - This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
+- US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 
 
 ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairProfile, and anywhere you contrast the two people's sequences):
@@ -532,15 +533,15 @@ ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairPr
 - The arrows are a translation device, not decoration. Each side's sequence must match that person's actual named placements in the data.
 
 BOTH ARE LEARNING RULE (HARD — applies to bothAreLearning):
-- The reading must NOT be one-sided parent accommodation. Name what the parent is practising AND what the child is practising.
-- The child side describes reasonable growth at this age (coming back after a blow-up, saying "I need a minute" instead of going silent, apologising for words said in heat). It must NOT demand compliance, obedience, or that the child manage the parent's feelings, and it must NOT blame the child for their wiring.
+- The reading must NOT be one-sided parent accommodation. Name what the parent is practicing AND what the child is practicing.
+- The child side describes reasonable growth at this age (coming back after a blow-up, saying "I need a minute" instead of going silent, apologizing for words said in heat). It must NOT demand compliance, obedience, or that the child manage the parent's feelings, and it must NOT blame the child for their wiring.
 - CORE PRINCIPLE (must be reflected in sharedNote): feeling pressured does not automatically mean the parent's request was unreasonable. A parent asking for respect, cooperation, or basic kindness is a reasonable expectation, not emotional dependence.
 - Every entry must carry a tiedTo naming the placement or cross-aspect with orb. If you cannot tie it, drop the entry.
 
 RECIPROCAL RESPONSIBILITY RULE (HARD — applies to responsibilities):
 - Distinguish what is NOT the parent's responsibility and what is NOT the child's responsibility in THIS pair.
 - Keep each item to one short line, grounded in a named placement or cross-aspect. No generic parenting philosophy.
-- Do not use this section to excuse hurtful behaviour on either side.
+- Do not use this section to excuse hurtful behavior on either side.
 
 TRACEABILITY RULE (HARD — applies to traceableAspects, essence, sections.howItLands, sections.blindSpot):
 - For the strongest supportive and difficult contacts, show the astrology first (parent planet + sign, aspect, child planet + sign, orb) and the plain-English meaning underneath. That is what traceableAspects is for.
@@ -548,7 +549,7 @@ TRACEABILITY RULE (HARD — applies to traceableAspects, essence, sections.howIt
 - Keep it readable. This is a parent's reading, not a textbook: at most 5 traceableAspects entries and no degree math in the prose.
 
 WIDER CONTACTS RULE:
-- Contacts listed under WIDER CONTACTS in the data are real but loose. You may mention at most one in passing, always labelled as a background or occasional influence. Never build a section on one.
+- Contacts listed under WIDER CONTACTS in the data are real but loose. You may mention at most one in passing, always labeled as a background or occasional influence. Never build a section on one.
 
 DEVELOPMENTAL STAGE FOR THIS CHILD:
 ${stage}
@@ -578,7 +579,7 @@ JSON SCHEMA:
   } | null (see DEPENDENCY GATE — emit null if childMechanism is missing a clear internal conflict OR cause→effect; never fall back to generic parenting language),
   "bothAreLearning": {
     "parentIsLearning": [
-      { "text": string (one plain sentence naming a real thing the parent is practising, tied to a named contact), "tiedTo": string (e.g. "your Mercury square his Moon, 1.2°") },
+      { "text": string (one plain sentence naming a real thing the parent is practicing, tied to a named contact), "tiedTo": string (e.g. "your Mercury square his Moon, 1.2°") },
       { "text": string, "tiedTo": string }
       // 2-3 entries
     ],

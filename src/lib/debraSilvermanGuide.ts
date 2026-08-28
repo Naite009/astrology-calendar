@@ -132,7 +132,7 @@ export const SIGN_ARCHETYPES: Record<string, SignArchetype> = {
     rulingPlanet: 'Sun',
     planetKeyword: 'Planet of Life Force',
     bodyPart: 'Backbone / Heart',
-    traits: ['Wilful', 'Conviction', 'Ego', 'Self-centred', 'Attention seeker', 'Happy', 'Fun', 'Creative', 'Dramatic flair', 'Childlike', 'Playful'],
+    traits: ['Wilful', 'Conviction', 'Ego', 'Self-centered', 'Attention seeker', 'Happy', 'Fun', 'Creative', 'Dramatic flair', 'Childlike', 'Playful'],
     lifeLessons: [
       'Self recognition',
       'To share power',
@@ -489,7 +489,7 @@ export const SEVEN_STEPS_READING = [
   {
     step: 1,
     title: 'Name the Sun, Moon and Rising',
-    description: 'Every reading, say out loud where their Sun, Moon and Rising is. Pay attention to the distribution of elements amongst these three.',
+    description: 'Every reading, say out loud where their Sun, Moon and Rising is. Pay attention to the distribution of elements among these three.',
     subPoints: [
       'Fire + Air = Energized',
       'Water + Earth = Calm',

@@ -3,7 +3,7 @@
  *
  * The Vedic tab produces a lot of material, and every card used to claim equal
  * importance. Classical practice does not work that way: a handful of factors
- * carry the chart and the rest colours it. This picks the small set that
+ * carry the chart and the rest colors it. This picks the small set that
  * matters, with the reason each one made the list, so the reader has somewhere
  * to start before the detail.
  *
@@ -32,7 +32,7 @@ export interface ChartDriver {
   band: PlanetCondition['band'] | null;
   /** Why this graha is on the list at all. */
   why: string;
-  /** What to expect from it in behaviour. */
+  /** What to expect from it in behavior. */
   reads: string;
 }
 

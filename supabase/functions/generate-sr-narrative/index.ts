@@ -189,6 +189,7 @@ NON-NEGOTIABLE DOCTRINE:
 10. No generic aspect filler such as "squares are the engine of achievement" or "these energies merge into one force".
 11. Explain each placement fully once. Later mentions must add something new or connect themes.
 12. No em dashes anywhere.
+12. Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 13. Close with a short "What You Need to Know" wrap up, then one specific reflection question.${refBlock}`;
 
     // Build structured user prompt with interpolated data

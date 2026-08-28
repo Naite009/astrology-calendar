@@ -211,7 +211,7 @@ export function auditDignities(chart: VedicChart, navamsa?: VargaChart): Dignity
 
     const tradition = body.dignity === 'debilitated'
       ? `Classical texts read this as ${SOLAR_FUNCTION[body.name]} requiring more conscious development than it would in a comfortable sign.`
-      : `Classical texts read this as ${SOLAR_FUNCTION[body.name]} having unusually favourable conditions to work in.`;
+      : `Classical texts read this as ${SOLAR_FUNCTION[body.name]} having unusually favorable conditions to work in.`;
 
     const modern = MODERN_READING[body.name]
       ? `This app's interpretation, which is interpretation rather than classical text: it may show up as ${MODERN_READING[body.name]}.`

@@ -184,7 +184,7 @@ export function moneyPattern(house: number | null): string {
 
 /** Plain definitions for the Jaimini karakas. */
 export const KARAKA_PLAIN: Record<string, string> = {
-  Atmakaraka: 'the planet that travelled furthest into its sign. Tradition treats it as the single loudest theme in the life, the lesson that keeps returning until it is dealt with consciously.',
+  Atmakaraka: 'the planet that traveled furthest into its sign. Tradition treats it as the single loudest theme in the life, the lesson that keeps returning until it is dealt with consciously.',
   Amatyakaraka: 'the second highest degree planet, read as the function your work and career naturally run through.',
   Darakaraka: 'the planet at the lowest degree, read as the qualities that matter most in close partnership, both the ones you look for and the ones you have to develop yourself.',
 };

@@ -138,7 +138,7 @@ export function buildDashaGocharaSynthesis(
           ? 'It is in a supportive position, which mostly means it will not get in the way.'
           : t.netVerdict === 'maintenance'
             ? 'It is in a position that asks for upkeep, so expect it to add friction to unrelated plans rather than to create events of its own.'
-            : 'It is mixed, so it colours the period without changing its subject.'),
+            : 'It is mixed, so it colors the period without changing its subject.'),
     });
   }
 

@@ -215,7 +215,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
       'Relationships—harmony at all costs, even at expense of the self',
       'Thrive on novelty, adventure; hate being bored, consistent, repetitious, therefore impatient',
       'Independent, freedom—loving, thinker, curious, talkative, observant',
-      'Sociable pretence often assumed at expense of honesty'
+      'Sociable pretense often assumed at expense of honesty'
     ],
     
     keywords: [
@@ -251,7 +251,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
     ],
     
     menExpression: 'Intellects who are mad scientists, humanitarians who forget their children\'s names. Can appear detached and disinterested in human psyche or can be excessively charming, romantic, and almost feminine in respect to relationship.',
-    womenExpression: 'Social, friendly, value community, and networking. Love clothes, jewellery and design. Great sense of style. They are playful, entertaining, they love to talk, shop, and spend money. Change is their middle name; they change their mind often. Far more sensitive than they appear. Emotionally unpredictable.',
+    womenExpression: 'Social, friendly, value community, and networking. Love clothes, jewelry and design. Great sense of style. They are playful, entertaining, they love to talk, shop, and spend money. Change is their middle name; they change their mind often. Far more sensitive than they appear. Emotionally unpredictable.',
     
     permissions: [
       'Learn to talk from the heart and the body—use the body to stay in the moment and not get lost in words',

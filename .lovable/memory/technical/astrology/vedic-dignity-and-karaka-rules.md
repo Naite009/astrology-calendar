@@ -7,7 +7,7 @@ type: feature
 Dignity
 - A house ruler's dignity is always stated in the sign the ruler OCCUPIES, never the sign of the house it rules. Use `body.sign`, never the house sign.
 - Never report exaltation or debilitation in isolation. `src/lib/vedic/dignityMitigation.ts` (`auditDignities`) supplies dispositor condition, neecha bhanga cancellations (dispositor or exaltation lord in a kendra from lagna or Moon, conjunction, mutual drishti, parivartana, kendra placement, retrogression) and exaltation qualifiers (dusthana house or lordship, malefic glance, combustion, weak D9).
-- Present in three labelled layers: classical fact, traditional interpretation, this app's interpretation. Never blur them.
+- Present in three labeled layers: classical fact, traditional interpretation, this app's interpretation. Never blur them.
 
 Karakas
 - The app uses the eight karaka method (seven grahas plus Rahu, Ketu excluded). Rahu is reverse counted: effective degree = 30 minus its degree in sign.

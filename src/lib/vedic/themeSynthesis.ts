@@ -165,14 +165,14 @@ function builderEvidence(ctx: Ctx): Evidence[] {
       out.push({ fact: `Saturn ${sat.dignity} in ${sat.sign}${sat.house ? `, house ${sat.house}` : ''}`, why: 'Saturn stands for development through time, repetition, discipline and accumulated experience, and it is well placed here rather than strained.' });
     }
     if ([1, 4, 7, 10].includes(sat.house || 0)) {
-      out.push({ fact: `Saturn in house ${sat.house}`, why: 'Saturn on one of the four structural houses puts responsibility and long-build effort near the centre of the chart.' });
+      out.push({ fact: `Saturn in house ${sat.house}`, why: 'Saturn on one of the four structural houses puts responsibility and long-build effort near the center of the chart.' });
     }
     if (a === 'Saturn') out.push({ fact: 'Saturn is the Atmakaraka', why: 'The repeating subject of the chart is patience, responsibility, boundaries, discipline, maturity and building things that last.' });
     const ruled = rulesHouses(chart, 'Saturn');
     if (ruled.length) out.push({ fact: `Saturn rules house ${ruled.join(' and house ')}`, why: `Those areas (${ruled.map(h => HOUSE_WORD[h]).join('; ')}) tend to develop on Saturn\u2019s timetable, which is slower and more durable.` });
   }
   const cap = chart.bodies.filter(b => EARTH.includes(b.sign) && b.name !== 'Ketu' && b.name !== 'Rahu');
-  if (cap.length >= 4) out.push({ fact: `${cap.length} bodies in earth signs`, why: 'A weight of earth signs favours steady, testable results over quick ones.' });
+  if (cap.length >= 4) out.push({ fact: `${cap.length} bodies in earth signs`, why: 'A weight of earth signs favors steady, testable results over quick ones.' });
   return out;
 }
 
@@ -199,18 +199,18 @@ function mindEvidence(ctx: Ctx): Evidence[] {
   const merc = chart.byName.Mercury;
   if (merc && [1, 3, 5, 10, 11].includes(merc.house || 0)) out.push({ fact: bodyRef(merc), why: 'Mercury covers thinking, skill and communication, and it sits somewhere it gets used publicly.' });
   if (merc && (merc.dignity === 'own sign' || merc.dignity === 'exalted')) out.push({ fact: `Mercury ${merc.dignity} in ${merc.sign}`, why: 'Classically well placed, so knowledge and articulation tend to be reliable assets.' });
-  bodiesInHouse(chart, 3).filter(b => b.name !== 'Ketu').forEach(b => out.push({ fact: bodyRef(b), why: 'Third house placements emphasise communication, practice and everyday skill building.' }));
+  bodiesInHouse(chart, 3).filter(b => b.name !== 'Ketu').forEach(b => out.push({ fact: bodyRef(b), why: 'Third house placements emphasize communication, practice and everyday skill building.' }));
   const rahu = chart.byName.Rahu;
-  if (rahu && [3, 5, 11].includes(rahu.house || 0)) out.push({ fact: bodyRef(rahu), why: 'Rahu here describes appetite for learning and expression in an area still being practised.' });
+  if (rahu && [3, 5, 11].includes(rahu.house || 0)) out.push({ fact: bodyRef(rahu), why: 'Rahu here describes appetite for learning and expression in an area still being practiced.' });
   const airCount = chart.bodies.filter(b => AIR.includes(b.sign) && !['Rahu', 'Ketu'].includes(b.name)).length;
-  if (airCount >= 4) out.push({ fact: `${airCount} bodies in air signs`, why: 'Air weight favours thinking, language and exchange as the main tools.' });
+  if (airCount >= 4) out.push({ fact: `${airCount} bodies in air signs`, why: 'Air weight favors thinking, language and exchange as the main tools.' });
   return out;
 }
 
 function serviceEvidence(ctx: Ctx): Evidence[] {
   const { chart } = ctx;
   const out: Evidence[] = [];
-  bodiesInHouse(chart, 6).filter(b => b.name !== 'Ketu').forEach(b => out.push({ fact: bodyRef(b), why: 'Sixth house placements emphasise routine, problem solving and being the person who handles what needs handling.' }));
+  bodiesInHouse(chart, 6).filter(b => b.name !== 'Ketu').forEach(b => out.push({ fact: bodyRef(b), why: 'Sixth house placements emphasize routine, problem solving and being the person who handles what needs handling.' }));
   const moon = chart.byName.Moon;
   if (moon && [4, 6, 12].includes(moon.house || 0)) out.push({ fact: bodyRef(moon), why: 'The Moon in a caretaking house links emotional steadiness to looking after people or places.' });
   const jup = chart.byName.Jupiter;
@@ -222,8 +222,8 @@ function expansionEvidence(ctx: Ctx): Evidence[] {
   const { chart } = ctx;
   const out: Evidence[] = [];
   const fire = chart.bodies.filter(b => FIRE.includes(b.sign) && !['Rahu', 'Ketu'].includes(b.name)).length;
-  if (fire >= 4) out.push({ fact: `${fire} bodies in fire signs`, why: 'Fire weight favours initiative, conviction and momentum.' });
-  bodiesInHouse(chart, 9).filter(b => b.name !== 'Rahu').forEach(b => out.push({ fact: bodyRef(b), why: 'Ninth house placements emphasise belief, teachers, distance from where you started and the bigger picture.' }));
+  if (fire >= 4) out.push({ fact: `${fire} bodies in fire signs`, why: 'Fire weight favors initiative, conviction and momentum.' });
+  bodiesInHouse(chart, 9).filter(b => b.name !== 'Rahu').forEach(b => out.push({ fact: bodyRef(b), why: 'Ninth house placements emphasize belief, teachers, distance from where you started and the bigger picture.' }));
   const jup = chart.byName.Jupiter;
   if (jup && (jup.dignity === 'own sign' || jup.dignity === 'exalted')) out.push({ fact: `Jupiter ${jup.dignity} in ${jup.sign}`, why: 'Jupiter well placed supports perspective, learning and generosity of view.' });
   return out;
@@ -300,11 +300,11 @@ function westernEvidence(themeKey: string, natal: NatalChart | null): Evidence[]
         break;
       case 'relationships':
         if (p.house === 7) push(p, 'A seventh house planet in the Western chart repeats the partnership emphasis.');
-        if (p.name === 'Saturn' && p.house === 7) push(p, 'Western Saturn in the seventh independently emphasises commitment and reciprocity as a growth arena.');
+        if (p.name === 'Saturn' && p.house === 7) push(p, 'Western Saturn in the seventh independently emphasizes commitment and reciprocity as a growth arena.');
         if (p.name === 'Venus' && ['Libra', 'Taurus'].includes(p.sign)) push(p, 'Venus in a sign it rules keeps relating and fairness central.');
         break;
       case 'builder':
-        if (p.name === 'Saturn' && [1, 4, 7, 10].includes(p.house || 0)) push(p, 'Western Saturn on an angle also emphasises structure and long-build effort.');
+        if (p.name === 'Saturn' && [1, 4, 7, 10].includes(p.house || 0)) push(p, 'Western Saturn on an angle also emphasizes structure and long-build effort.');
         if (['Capricorn', 'Virgo', 'Taurus'].includes(p.sign) && ['Sun', 'Moon', 'Saturn'].includes(p.name)) push(p, 'An earth sign core placement in the Western chart supports the same steady build.');
         break;
       case 'visibility':
@@ -319,7 +319,7 @@ function westernEvidence(themeKey: string, natal: NatalChart | null): Evidence[]
         if (p.house === 6) push(p, 'A sixth house planet in the Western chart repeats the care and problem-solving theme.');
         break;
       case 'expansion':
-        if (p.house === 9 || (p.name === 'Jupiter' && ['Sagittarius', 'Pisces', 'Cancer'].includes(p.sign))) push(p, 'The Western chart also emphasises meaning, belief and perspective.');
+        if (p.house === 9 || (p.name === 'Jupiter' && ['Sagittarius', 'Pisces', 'Cancer'].includes(p.sign))) push(p, 'The Western chart also emphasizes meaning, belief and perspective.');
         break;
     }
   }
@@ -350,10 +350,10 @@ export function buildVedicThemes(
       western,
       state,
       synthesis: western.length >= 2
-        ? 'Both systems independently emphasise this, which is the strongest kind of signal the app can give you.'
+        ? 'Both systems independently emphasize this, which is the strongest kind of signal the app can give you.'
         : western.length === 1
           ? 'The Western chart touches this once. The Vedic chart carries more of the weight, so treat this as a layer the sidereal reading adds.'
-          : 'The Western chart does not particularly emphasise this. That does not cancel it. It may describe a part of the person that is less obvious in their outward Western pattern.',
+          : 'The Western chart does not particularly emphasize this. That does not cancel it. It may describe a part of the person that is less obvious in their outward Western pattern.',
       score: vedic.length * 2 + western.length,
     });
   }
@@ -363,7 +363,7 @@ export function buildVedicThemes(
   const vis = themes.find(t => t.key === 'visibility');
   if (priv && vis) {
     vis.state = 'tension';
-    vis.synthesis = 'This sits in apparent tension with the privacy theme above. Both can be true at once: the person may want responsibility, expertise and standing, while still needing the work itself to happen out of the spotlight. That combination often reads as authority built quietly and then recognised, rather than either hiding or performing.';
+    vis.synthesis = 'This sits in apparent tension with the privacy theme above. Both can be true at once: the person may want responsibility, expertise and standing, while still needing the work itself to happen out of the spotlight. That combination often reads as authority built quietly and then recognized, rather than either hiding or performing.';
   }
 
   return themes.sort((a, b) => b.score - a.score).slice(0, 5);

@@ -131,6 +131,8 @@ UNIVERSAL INTERPRETATION RULES — apply to every reading:
 
 8. WRITE TO "YOU." Warm, grounded, plain language. No em dashes.
 
+Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
+
 9. RESPECT ORIENTATION. Every card named in prose MUST match the exact orientation listed in the spread. Never silently flip a card. Never invent a card that was not drawn.
 
 10. NO CATASTROPHIZING and no guaranteed rewards. Negative-looking cards get honest, non-alarming treatment; positive-looking cards are opportunities, not promises.

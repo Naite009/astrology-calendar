@@ -866,7 +866,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
             )}
           </div>
 
-          {/* OVERALL SCORE BANNER - Shows first for all pair analyses */}
+          {/* OVERALL SCORE BANNER - Shows first for all pair analyzes */}
           {!isGroupAnalysis && trueOverallScore && chart1 && chart2 && (
             <div className="text-center p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/30 border">
               <div className="text-5xl font-bold text-primary mb-2">

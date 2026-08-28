@@ -233,7 +233,7 @@ export const PLANET_IN_HOUSE: Record<VedicPlanet, HouseMap> = {
     6: 'You show love through service and you can end up doing too much for the wrong person. Work relationships blur.',
     7: 'Partnership is central. You want a spouse and you are good at relating, and you overweight the relationship in your life.',
     8: 'Attraction runs deep and complicated. Shared money and intimacy are the transformative area.',
-    9: 'You are drawn to people from other cultures and to beauty found while travelling.',
+    9: 'You are drawn to people from other cultures and to beauty found while traveling.',
     10: 'Your career involves style, people or aesthetics, and your likability is a professional asset.',
     11: 'Friendships bring both pleasure and income. You gain through women and through social circles.',
     12: 'Private pleasures, foreign love, and a tendency to give in relationships without being seen doing it.',
