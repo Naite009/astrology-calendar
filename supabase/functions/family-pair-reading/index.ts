@@ -519,6 +519,7 @@ ASPECT REALITY RULE (CRITICAL — applies to EVERY field, especially whatAlready
 - If real-life behavior (from user-provided context, repeated patterns, or hard aspects on the same body) contradicts the ideal expression, reflect the real-life version FIRST and the potential version second.
 - Prioritize observable behavior over textbook ideal interpretation. Astrology describes potential patterns — not guaranteed experiences.
 - This rule overrides any pull toward clean, reassuring language. A "strength" stated without its range is invalid output.
+- US ENGLISH RULE: Write in U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 
 
 ARROW TRANSLATION STYLE RULE (HARD — applies to connectionMisfire and repairProfile, and anywhere you contrast the two people's sequences):
