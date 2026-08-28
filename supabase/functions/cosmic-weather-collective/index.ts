@@ -72,6 +72,7 @@ OUTPUT RULES
 - Describe OBSERVABLE BEHAVIOR. What people may FEEL. How people may ACT. What today is GOOD FOR.
 - End with a sentence starting "Best use:" naming what today actually supports.
 - Never use em dashes. Use commas, periods, colons, parentheses.
+- Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 - Use soft hedges: may, might, can, often.
 
 ABSOLUTELY FORBIDDEN WORDS / PHRASES (auto-fail if any appear):

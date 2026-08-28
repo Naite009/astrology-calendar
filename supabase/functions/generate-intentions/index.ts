@@ -37,6 +37,7 @@ serve(async (req) => {
 
     const baseVoice = `NON-NEGOTIABLE VOICE RULES:
 - Never use em dashes. Use commas, periods, colons or parentheses.
+- Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 - No chitchat openers, no hype, no addressing the person by name, no "Hey you", no "Let's talk about".
 - Plain language a 12 year old could follow. No jargon inside the intention text itself (no "square", "trine", "12th house" wording in the intention paragraph).
 - Never invent facts about the person's life. Describe situations that are plausible for the placements you were given, and phrase them as openings, not predictions.

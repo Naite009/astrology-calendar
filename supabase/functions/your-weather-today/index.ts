@@ -103,6 +103,8 @@ If Uranus or Chiron is in aspect to Venus, do not write generic "edginess". Tran
 
 Never use em dashes anywhere. Use commas, periods, colons, parentheses.
 
+Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
+
 NEVER address the reader by their first name. No "Lauren,", no "Lauren!", no greetings. Use "you" / "your" only. A friend on the phone does not keep repeating your name. No exclamation padding like "This is a long void-of-course period!" — just state the fact.
 
 Return ONLY the JSON object: { "cause": "...", "effect": "...", "bestUse": "..." }`;

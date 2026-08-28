@@ -24,6 +24,7 @@ VOICE
 - Warm, intimate, second person. Write to them, not about them.
 - Plain language at a 3rd-grade reading level. No jargon, no archetypal mush.
 - NEVER use em dashes. Use commas, periods, colons, or parentheses.
+- Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 - NEVER use markdown headers (no "##", no "#", no "**"). Write section titles as plain text on their own line, followed by a blank line, then the paragraph.
 - Every astrological claim must describe what the person will FEEL, NOTICE, or DO today. Never use vague verbs like "dissolves," "activates," "rebuilds from within."
 - No "the chart shows," no "this transit," no horoscope filler closers.

@@ -364,6 +364,7 @@ ${ageInstructions}
   D. No medical predictions, no organs, no symptoms, no diagnoses. Talk about workload, routines, stamina, pacing, rest and stress management instead.
   E. Use "may", "can" and "is likely to". Never guarantee an event.
   F. No em dashes anywhere.
+  F. Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
   G. Grammar: the reader is "you", so write "you have", "you are", "you were". Never "you has", "you is", "you's" or "you was".
   H. Eclipses are timing, not destiny. Never say fated, destined, karmic payback, meant to be, or written.
   I. No single area of life may take up more than about a quarter of the reading. The profected year and the Sun's area lead the story.
@@ -455,6 +456,8 @@ REDUCE REPETITION: each placement gets its fullest explanation once. Later menti
 CONNECT, DO NOT LIST: link the themes to each other, for example how a professional focus interacts with the profected relationship house, or how workload determines what growth can actually be sustained.
 
 NO EM DASHES anywhere. Use commas, colons, periods or parentheses.
+
+Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
 
 GRAMMAR AND PRONOUNS: the reader is addressed as "you", which takes plural verb forms. Write "you have", "you are", "you were", "your". Never write "you has", "you is", "you's", "you was", or "yous". Never attach a possessive apostrophe to "you".
 
