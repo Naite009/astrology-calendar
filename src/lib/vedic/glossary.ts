@@ -53,7 +53,7 @@ export const VEDIC_GLOSSARY: Record<string, string> = {
   Kendra: 'A corner house: the 1st, 4th, 7th or 10th. Classically the houses of action.',
   Trikona: 'A trine house: the 1st, 5th or 9th. Classically the houses of support and merit.',
   Dusthana: 'The 6th, 8th and 12th houses, where classical texts locate strain rather than reward.',
-  Moolatrikona: 'A favoured stretch of a graha\u2019s own sign, stronger than ordinary own-sign placement.',
+  Moolatrikona: 'A favored stretch of a graha\u2019s own sign, stronger than ordinary own-sign placement.',
   Shodashavarga: 'The full set of sixteen divisional charts.',
   Asta: 'Combustion. A graha too close to the Sun to act freely on its own initiative.',
   'Graha yuddha': 'A planetary war: two visible planets within one degree, where classical texts say one carries the position.',

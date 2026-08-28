@@ -1,7 +1,7 @@
 /**
  * Period and transit read as one statement, which is how Jyotish judges timing.
  * The dasha lord's own transit is weighted first, the sub-period lord second,
- * and unrelated slow transits are labelled as background.
+ * and unrelated slow transits are labeled as background.
  */
 
 import { DashaGocharaSynthesis } from '@/lib/vedic/dashaGocharaSynthesis';

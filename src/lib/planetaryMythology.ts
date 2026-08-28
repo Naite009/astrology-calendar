@@ -222,7 +222,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
     dayOfWeek: 'Saturday',
     metals: ['Lead'],
     bodyParts: ['Bones', 'teeth', 'knees', 'skin (aging)'],
-    colors: ['Black', 'dark brown', 'grey'],
+    colors: ['Black', 'dark brown', 'gray'],
     animals: ['Goat', 'crow', 'crocodile'],
     tarotCorrespondence: 'The World (XXI)',
   },

@@ -15,7 +15,7 @@
  * These six components are combined into an honest 0 to 100 CONDITION INDEX.
  * It is deliberately not called Shadbala: full Shadbala also requires kala
  * bala sub-components that need sunrise, sunset and ayana data this app does
- * not compute for every chart. The index is labelled as a condition index
+ * not compute for every chart. The index is labeled as a condition index
  * everywhere it is displayed, and its components are always shown alongside it.
  */
 

@@ -172,7 +172,7 @@ export const VedicOverview = ({ chart, oneMinute, themes }: Props) => {
                         </ul>
                       ) : (
                         <p className="mt-2 text-[13px] text-muted-foreground">
-                          Nothing in the tropical chart independently emphasises this, so it is not claimed as agreement.
+                          Nothing in the tropical chart independently emphasizes this, so it is not claimed as agreement.
                         </p>
                       )}
                     </div>

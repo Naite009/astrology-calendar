@@ -6,7 +6,7 @@
  * the 1900-2100 window, which is far inside the tolerance that matters for
  * sign, nakshatra and pada placement. The one place a mode choice genuinely
  * changes a reading is the fine divisions (D30, D45, D60), where a degree of
- * difference can move a placement, so the mode is always labelled on screen.
+ * difference can move a placement, so the mode is always labeled on screen.
  *
  * Sidereal longitude = tropical longitude - ayanamsa (mod 360).
  */

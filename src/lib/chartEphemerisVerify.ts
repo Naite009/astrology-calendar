@@ -249,7 +249,7 @@ export function verifyChartAgainstEphemeris(input: VerifyInput): ChartVerificati
       results.push({
         body, label, entered: enteredPos, computed: null, deltaArcmin: null,
         status: 'unavailable',
-        note: !birthTime ? 'Needs an exact birth time.' : 'Birth place not recognised, so coordinates are unknown.',
+        note: !birthTime ? 'Needs an exact birth time.' : 'Birth place not recognized, so coordinates are unknown.',
       });
       continue;
     }

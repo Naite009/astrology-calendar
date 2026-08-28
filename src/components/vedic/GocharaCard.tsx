@@ -19,7 +19,7 @@ const NET_LABEL = {
 } as const;
 
 const QUALITY_CLS = {
-  favourable: 'border-emerald-500/40 bg-emerald-500/5',
+  favorable: 'border-emerald-500/40 bg-emerald-500/5',
   mixed: 'border-border bg-secondary/15',
   difficult: 'border-amber-500/40 bg-amber-500/5',
 } as const;

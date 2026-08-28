@@ -49,7 +49,7 @@ const DEITY: Record<string, [string, string]> = {
   Shatabhisha: ['Varuna', 'the cosmic waters and oaths, so this mansion carries healing, boundaries and working at a distance'],
   'Purva Bhadrapada': ['Aja Ekapada', 'the one-footed goat, so this mansion carries intensity, unusual perspective and transformation'],
   'Uttara Bhadrapada': ['Ahir Budhnya', 'the serpent of the deep, so this mansion carries depth, patience and quiet wisdom'],
-  Revati: ['Pushan', 'the protector of travellers, so this mansion carries safe passage, kindness and completing a journey'],
+  Revati: ['Pushan', 'the protector of travelers, so this mansion carries safe passage, kindness and completing a journey'],
 };
 
 const GANA: Record<string, Gana> = {};
@@ -121,27 +121,27 @@ export type TaraName = typeof TARA_NAMES[number];
 
 const TARA_PLAIN: Record<TaraName, string> = {
   Janma: 'the birth star itself. Personal, exposed, and better for rest and inner work than for launching something public.',
-  Sampat: 'the wealth star. Classically favourable for gain, purchases and building resources.',
+  Sampat: 'the wealth star. Classically favorable for gain, purchases and building resources.',
   Vipat: 'the danger star. Classically a poor choice for risk, travel or a first move.',
-  Kshema: 'the well-being star. Classically favourable for health, comfort and steady progress.',
+  Kshema: 'the well-being star. Classically favorable for health, comfort and steady progress.',
   Pratyari: 'the obstacle star. Classically a time when opposition and friction show up more.',
-  Sadhaka: 'the achievement star. Classically favourable for finishing things and getting agreement.',
+  Sadhaka: 'the achievement star. Classically favorable for finishing things and getting agreement.',
   Vadha: 'the difficulty star. Classically the weakest of the nine for starting anything important.',
-  Mitra: 'the friend star. Classically favourable for people, alliances and asking for help.',
+  Mitra: 'the friend star. Classically favorable for people, alliances and asking for help.',
   'Ati Mitra': 'the best friend star. Classically the most supportive of the nine.',
 };
 
 export interface TaraBala {
   index: number;         // 1-9
   name: TaraName;
-  quality: 'favourable' | 'mixed' | 'challenging';
+  quality: 'favorable' | 'mixed' | 'challenging';
   plain: string;
 }
 
 const QUALITY: Record<TaraName, TaraBala['quality']> = {
-  Janma: 'mixed', Sampat: 'favourable', Vipat: 'challenging', Kshema: 'favourable',
-  Pratyari: 'challenging', Sadhaka: 'favourable', Vadha: 'challenging',
-  Mitra: 'favourable', 'Ati Mitra': 'favourable',
+  Janma: 'mixed', Sampat: 'favorable', Vipat: 'challenging', Kshema: 'favorable',
+  Pratyari: 'challenging', Sadhaka: 'favorable', Vadha: 'challenging',
+  Mitra: 'favorable', 'Ati Mitra': 'favorable',
 };
 
 /**

@@ -28,7 +28,7 @@ export interface ComprehensiveRelationshipAnalysis {
   compositeChart: CompositeChart;
   davisonChart?: DavisonChart;
 
-  // Analyses
+  // Analyzes
   synastryAnalysis: any; // Your existing synastry analysis
   karmicAnalysis: KarmicAnalysis;
   compositeAnalysis: CompositeAnalysis;

@@ -56,7 +56,7 @@ export const YearStoryPanel = ({ analysis, year }: Props) => {
       {story.hierarchy.length > 0 && (
         <div className="border border-border rounded-sm p-5 bg-card">
           <h4 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            What the Chart Emphasises Most
+            What the Chart Emphasizes Most
           </h4>
           <ul className="space-y-2">
             {story.hierarchy.map(row => (

@@ -1055,7 +1055,7 @@ const AiPairReadingView = ({
           <CardContent className="space-y-4 text-sm">
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                What you are practising
+                What you are practicing
               </div>
               <ul className="space-y-1.5">
                 {reading.bothAreLearning.parentIsLearning.map((e, i) => (
@@ -1068,7 +1068,7 @@ const AiPairReadingView = ({
             </div>
             <div>
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                What {toName} is practising
+                What {toName} is practicing
               </div>
               <ul className="space-y-1.5">
                 {reading.bothAreLearning.childIsLearning.map((e, i) => (

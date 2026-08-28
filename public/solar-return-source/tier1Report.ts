@@ -90,7 +90,7 @@ const MOON_WORD: Record<string, string> = {
 const SUN_HOUSE_BODY: Record<number, string> = {
   1: 'This is a year where your sense of self takes center stage. You may feel a pull to reinvent, refresh, or simply show up more fully as who you are.',
   2: 'This year draws your attention to what you value — your resources, your time, and your sense of security. Building something tangible matters now.',
-  3: 'This is a year of words, ideas, and connections. You may feel drawn to learn something new, speak up more, or explore your neighbourhood of thought.',
+  3: 'This is a year of words, ideas, and connections. You may feel drawn to learn something new, speak up more, or explore your neighborhood of thought.',
   4: 'This year turns your attention inward — toward home, family, and what nourishes you at the deepest level. Creating a sense of belonging matters now.',
   5: 'This is a year to follow what genuinely delights you. Joy, creativity, and self-expression are not luxuries — they are the point.',
   6: 'This year asks you to refine your daily rhythm. Health, habits, and how you show up each day become the quiet foundation for everything else.',

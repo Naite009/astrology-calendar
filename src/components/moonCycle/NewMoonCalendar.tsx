@@ -39,7 +39,7 @@ export const NewMoonCalendar = ({
     [year, natalChart?.id],
   );
 
-  // Patterns across a five-year window centred on the visible year, so a
+  // Patterns across a five-year window centered on the visible year, so a
   // repeating house or planet shows up even with no journal entries.
   const windowSummaries = useMemo(() => {
     const out = [];

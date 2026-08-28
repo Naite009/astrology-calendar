@@ -2311,7 +2311,7 @@ const buildEmptySummaryFallback = (
         const lbl = (w?.label || "").trim();
         const desc = (w?.description || "").trim();
         const haystack = `${lbl} ${desc}`;
-        // Honour an explicit `nature: "challenging"` flag if the schema
+        // Honor an explicit `nature: "challenging"` flag if the schema
         // ever grows one. Otherwise infer from planet+aspect regex.
         const explicitlyChallenging = typeof w?.nature === "string" && /challeng|hard|caution/i.test(w.nature);
         const inferredHard = HARD_OUTER_RE.test(haystack) && HARD_ASPECT_RE.test(haystack);

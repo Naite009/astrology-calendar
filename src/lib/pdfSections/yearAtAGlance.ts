@@ -8,7 +8,7 @@ import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
 import { computeOverlayData, drawMainArenaBanner } from '@/lib/pdfSections/yearPriorityPDF';
 
 type Color = [number, number, number];
-const INK:   Color = [58,  54,  50]; // Charcoal grey
+const INK:   Color = [58,  54,  50]; // Charcoal gray
 const MUTED: Color = [130, 125, 118];
 const RULE:  Color = [200, 195, 188];
 const GOLD:  Color = [184, 150, 62];

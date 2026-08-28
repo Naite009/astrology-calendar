@@ -42,8 +42,8 @@ export const YogaCard = ({ yogas, name }: Props) => {
 
       <p className="mb-4 text-sm leading-relaxed text-foreground/85">
         {strong.length
-          ? `${name} has ${yogas.length} recognised combination${yogas.length > 1 ? 's' : ''} here, and ${strong.length === 1 ? 'one of them is' : `${strong.length} of them are`} strongly supported rather than technically present. Read the strong ones first and treat the rest as background texture.`
-          : `${name} has ${yogas.length} recognised combination${yogas.length > 1 ? 's' : ''} here, none of them dominant. That is common, and it usually means the chart is read through its house lords and periods rather than through one headline pattern.`}
+          ? `${name} has ${yogas.length} recognized combination${yogas.length > 1 ? 's' : ''} here, and ${strong.length === 1 ? 'one of them is' : `${strong.length} of them are`} strongly supported rather than technically present. Read the strong ones first and treat the rest as background texture.`
+          : `${name} has ${yogas.length} recognized combination${yogas.length > 1 ? 's' : ''} here, none of them dominant. That is common, and it usually means the chart is read through its house lords and periods rather than through one headline pattern.`}
       </p>
 
       <div className="space-y-2">

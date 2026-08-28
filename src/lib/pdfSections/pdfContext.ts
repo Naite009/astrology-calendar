@@ -6,7 +6,7 @@ type Color = [number, number, number];
 // ─── V3 EDITORIAL PALETTE ───────────────────────────────────────────
 const CREAM: Color = [250, 247, 242];
 const CARD_BG: Color = [245, 241, 234];
-const INK: Color = [58, 54, 50]; // Charcoal grey for print safety
+const INK: Color = [58, 54, 50]; // Charcoal gray for print safety
 const MUTED: Color = [130, 125, 118];
 const GOLD: Color = [184, 150, 62];
 const RULE: Color = [200, 195, 188];

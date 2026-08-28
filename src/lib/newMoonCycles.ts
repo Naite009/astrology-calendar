@@ -194,7 +194,7 @@ export function getSkyContacts(date: Date, lon: number): SkyContact[] {
   return contacts.sort((a, b) => a.orb - b.orb);
 }
 
-/** Sign groupings of 3 or more bodies in the sky (never labelled a stellium). */
+/** Sign groupings of 3 or more bodies in the sky (never labeled a stellium). */
 export function getSignConcentrations(date: Date): SignConcentration[] {
   const positions = getPlanetaryPositions(date) as any;
   const map: Record<string, string[]> = {};

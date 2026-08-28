@@ -462,7 +462,7 @@ ASPECT CHART SOURCE: every aspect must name both charts explicitly, for example 
 
 ECLIPSES: describe eclipses as timing that brings something already building to a head. Never call anything fated, destined, karmic payback, meant to be, or written. No language that removes the reader's choice.
 
-DO NOT LET ONE HOUSE SWALLOW THE READING: no single house may dominate more than roughly a quarter of the text. The profected house and the Sun's house lead the reading. A house that is emphasised only because the Time Lord sits there is HOW the year gets worked out, not WHAT the year is about.
+DO NOT LET ONE HOUSE SWALLOW THE READING: no single house may dominate more than roughly a quarter of the text. The profected house and the Sun's house lead the reading. A house that is emphasized only because the Time Lord sits there is HOW the year gets worked out, not WHAT the year is about.
 
 CLOSE WITH: a section called "What You Need to Know" covering what is changing, what matters most, what may be challenging, where the opportunity is, and what to pay attention to. Then end with the single reflection question supplied in the data, or one just as specific.
 `;

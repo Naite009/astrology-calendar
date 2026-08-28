@@ -29,11 +29,11 @@ const LABELS: Record<number, { label: string; plain: (h: number) => string }> = 
   },
   2: {
     label: 'Arudha of the 2nd (A2), your perceived resources',
-    plain: h => `How wealthy or resourced people assume you are is coloured by house ${h}. This is perception rather than the actual balance.`,
+    plain: h => `How wealthy or resourced people assume you are is colored by house ${h}. This is perception rather than the actual balance.`,
   },
   7: {
     label: 'Arudha of the 7th (A7 or Darapada), the perceived partnership',
-    plain: h => `How your relationships appear from outside is coloured by house ${h}. This describes the visible shape of partnership, not its private quality.`,
+    plain: h => `How your relationships appear from outside is colored by house ${h}. This describes the visible shape of partnership, not its private quality.`,
   },
   10: {
     label: 'Arudha of the 10th (A10), your perceived work',

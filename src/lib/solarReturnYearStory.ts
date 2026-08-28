@@ -38,7 +38,7 @@ export interface YearTheme {
 export interface YearStory {
   coreStory: string;
   themes: YearTheme[];
-  /** Ordered "what the chart emphasises most" list, for transparency */
+  /** Ordered "what the chart emphasizes most" list, for transparency */
   hierarchy: { label: string; detail: string }[];
   whatYouNeedToKnow: { heading: string; body: string }[];
   reflectionQuestion: string;
@@ -54,7 +54,7 @@ const TRAD_RULER: Record<string, string> = {
   Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
 };
 
-/** Sign to the house whose life area it naturally colours */
+/** Sign to the house whose life area it naturally colors */
 const SIGN_NATURAL_HOUSE: Record<string, number> = {
   Aries: 1, Taurus: 2, Gemini: 3, Cancer: 4, Leo: 5, Virgo: 6,
   Libra: 7, Scorpio: 8, Sagittarius: 9, Capricorn: 10, Aquarius: 11, Pisces: 12,
@@ -173,7 +173,7 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
     const w = (PLANET_WEIGHT[ang.planet] || 3) * 0.9;
     add(actual, w, 'angular',
       `${ang.planet} is angular, within ${ang.orb}° of the ${ang.angle}, which raises its volume all year.`);
-    // A planet conjunct an angle also colours that angle's house, at lower weight,
+    // A planet conjunct an angle also colors that angle's house, at lower weight,
     // without moving the planet out of its real house.
     if (actual !== ang.house) {
       add(ang.house, w * 0.5, 'angular-spillover',
@@ -388,7 +388,7 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
       break;
     case 7:
       parts.push('Relationships and agreements can become more consequential this year.');
-      if (isProf) parts.push('The annual profection activates this house, which puts romantic partnerships, important one to one connections, business partners, clients and contracts near the centre of the year.');
+      if (isProf) parts.push('The annual profection activates this house, which puts romantic partnerships, important one to one connections, business partners, clients and contracts near the center of the year.');
       if (ctx.timeLordHouse === 6) parts.push('Because the Time Lord sits in the sixth house, practical realities like time, workload and routine may be what reveals which relationships and agreements can actually be sustained.');
       parts.push('Questions of commitment, reciprocity and long term compatibility may carry more weight than usual. That is not a prediction of marriage or of ending anything.');
       break;
@@ -412,21 +412,21 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
       parts.push('Your sense of security, belonging and what you want your private life to feel like may change substantially, even while the visible story is about something else.');
       break;
     case 1:
-      parts.push('Identity, presence and how you meet people are emphasised.');
+      parts.push('Identity, presence and how you meet people are emphasized.');
       if (ctx.ascSign) parts.push(`${ctx.ascSign} rising on the return shapes the approach you lead with this year.`);
       break;
     case 8:
-      parts.push('Depth, shared resources and psychological change are emphasised.');
+      parts.push('Depth, shared resources and psychological change are emphasized.');
       parts.push('You may find yourself dealing with what is actually underneath a situation rather than its surface, including joint money, trust and control.');
       break;
     case 5:
       parts.push('Creativity, romance and self-expression carry more weight this year.');
       break;
     case 3:
-      parts.push('Communication, learning and everyday contact are emphasised.');
+      parts.push('Communication, learning and everyday contact are emphasized.');
       break;
     case 9:
-      parts.push('Travel, study and your working worldview are emphasised.');
+      parts.push('Travel, study and your working worldview are emphasized.');
       break;
     case 11:
       parts.push('Who you spend your life around, and what you are aiming at next, moves to the front of the year.');
@@ -436,7 +436,7 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
       break;
   }
 
-  if (hasSun && house !== 10) parts.push(`The Solar Return Sun is here, which keeps this area near the centre of the year.`);
+  if (hasSun && house !== 10) parts.push(`The Solar Return Sun is here, which keeps this area near the center of the year.`);
   return parts.join(' ');
 }
 
@@ -446,7 +446,7 @@ function buildCoreStory(themes: YearTheme[], ctx: StoryContext): string {
   const [t1, t2, t3] = themes;
   const parts: string[] = [];
 
-  parts.push(`This can be a year organised around ${areaPhrase(t1.house)}${t2 ? `, with ${areaPhrase(t2.house)} close behind` : ''}.`);
+  parts.push(`This can be a year organized around ${areaPhrase(t1.house)}${t2 ? `, with ${areaPhrase(t2.house)} close behind` : ''}.`);
 
   if (ctx.sunHouse) {
     parts.push(`The Solar Return Sun in the ${ordinal(ctx.sunHouse)} house${ctx.sunSign ? ` in ${ctx.sunSign}` : ''} sets that focus, and it is repeated by other independent signatures rather than resting on one placement.`);
@@ -533,7 +533,7 @@ function buildWhatYouNeedToKnow(themes: YearTheme[], ctx: StoryContext): { headi
     heading: 'What to pay attention to',
     body: [
       t.includes(2) && t.includes(10) ? 'The link between what you earn, what you believe you are worth, and what you are willing to accept professionally.' : '',
-      t.includes(7) ? 'Reciprocity in your closest relationships and agreements, including the practical division of labour.' : '',
+      t.includes(7) ? 'Reciprocity in your closest relationships and agreements, including the practical division of labor.' : '',
       t.includes(6) ? 'Your workload, sleep, pacing and the difference between busy and effective.' : '',
       t.includes(12) || t.includes(4) ? 'A quieter internal restructuring around security, home, old patterns and the kind of life you actually want.' : '',
     ].filter(Boolean).join(' ') || 'The small, repeated decisions rather than the dramatic ones.',

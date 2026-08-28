@@ -46,7 +46,7 @@ export const srJupiterInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   5: {
     title: 'The Year of Love, Fun and Fertility',
     overview: 'Jupiter in the 5th house is spectacular for romance, creativity, and pleasure. New love affairs, rekindled passions, and increased fertility are all hallmarks. Fun is not optional — it is what the universe is prescribing.',
-    practical: 'A new romantic encounter or the return of an old flame is likely — provided realistic conditions for romance exist. Even if the exact person you want does not appear, Jupiter finds ways to bring joy. Sports, theatre, cinema, dining out, concerts, and creative hobbies all increase. Fertility dramatically increases (both male and female) — unplanned pregnancies are possible. Good news about children. Teachers receive satisfaction from students. You may overcome a previous inability (learning to swim, overcoming a phobia).',
+    practical: 'A new romantic encounter or the return of an old flame is likely — provided realistic conditions for romance exist. Even if the exact person you want does not appear, Jupiter finds ways to bring joy. Sports, theater, cinema, dining out, concerts, and creative hobbies all increase. Fertility dramatically increases (both male and female) — unplanned pregnancies are possible. Good news about children. Teachers receive satisfaction from students. You may overcome a previous inability (learning to swim, overcoming a phobia).',
     caution: 'Jupiter here does not guarantee romantic success if external conditions are unfavorable (the furs-in-the-tropics principle). Also, the fertility increase is real — plan accordingly.',
     source: 'Ciro Discepolo',
   },
