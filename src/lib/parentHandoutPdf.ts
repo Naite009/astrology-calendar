@@ -122,6 +122,7 @@ export function buildHandoutContent({
   parentName,
   childName,
 }: HandoutInput): HandoutContent {
+  void parentName;
   // Rhythms: prefer the first-class field, fall back to arrow lines in prose.
   let parentRhythm = clean(r.rhythms?.parent);
   let childRhythm = clean(r.rhythms?.child);
@@ -140,7 +141,11 @@ export function buildHandoutContent({
   const moonChild = (() => {
     const summary = clean(r.moonBridge?.summary);
     const parts = summary.match(/[^.!?]+[.!?]*/g) ?? [];
-    const childPart = parts.find((p) => p.includes(childName)) ?? parts[1] ?? "";
+    // Only use a Moon-bridge sentence that actually describes this child.
+    const childPart =
+      parts.find((p) => p.includes(childName) && /Moon/i.test(p)) ??
+      parts.find((p) => /Moon/i.test(p) && !p.includes(parentName)) ??
+      "";
     return clean(childPart);
   })();
   const emotionalLanguage =
