@@ -605,6 +605,12 @@ JSON SCHEMA:
 {
   "essence": [string, ...3-5 items, each one sentence headlining the most important dynamic in plain English, no jargon],
   "ageNote": string (1-2 sentences naming the developmental stage and how it shapes the reading),
+  "keyMessage": string (REQUIRED. 1-2 sentences, max 45 words. The single most important thing this parent should remember about THIS relationship, written for a one-page printed handout. It must be specific to these two charts (traceable to a named contact you used, though you do NOT name the astrology here), plain-English, warm but honest, and balanced: it may name what the parent can do differently AND what remains a fair expectation of the child. No jargon, no astrology symbols, no therapy vocabulary, no absolute psychological claims, no promises about the future.),
+  "rhythms": {
+    "parent": string (3-5 arrow steps for the parent per the ARROW TRANSLATION STYLE RULE, WITHOUT the name prefix, e.g. "talk → find harmony → restore equilibrium". Must match this parent's named placements.),
+    "child": string (3-5 arrow steps for the child, WITHOUT the name prefix, e.g. "overwhelmed → retreat → organize facts → maybe talk later". Must match this child's named placements.)
+  },
+
   "childMechanism": {
     "corePattern": [
       { "placement": string (e.g. "Cancer Moon"), "does": string (one clause describing the INTERNAL MECHANISM using verbs like processes, absorbs, scans, defends, regulates, organizes — never adjectives) }
@@ -1038,6 +1044,12 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
         for (const [re, rep] of BRITISH_TO_US) {
           out = out.replace(re, (m, g1) => preserveCase(m, rep.replace("$1", g1 ?? "")));
         }
+        // House style: no em dashes anywhere in user-facing copy.
+        out = out
+          .replace(/\s*\u2014\s*(?=[A-Z])/g, ". ")
+          .replace(/\s*\u2014\s*/g, ", ")
+          .replace(/,\s*,/g, ",")
+          .replace(/,\s*\./g, ".");
         return out.replace(/\s{2,}/g, " ").trim();
       }
       if (Array.isArray(s)) return s.map(softenText);
@@ -1217,13 +1229,20 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
           (r) => !!r?.label && !!r?.meaning?.trim() && isTraceable(r.label!),
         )
       : [];
+    const ASPECT_GLYPH: Record<string, string> = {
+      conjunction: "\u260C", opposition: "\u260D", trine: "\u25B3",
+      square: "\u25A1", sextile: "\u26B9", quincunx: "\u26BB", semisextile: "\u26BA",
+    };
+    let injected = 0;
     for (const a of supportiveInNarrative) {
+      if (injected >= 2) break;
+      const glyph = ASPECT_GLYPH[a.aspect] ?? "";
       const already = traceRows.some(
         (r) =>
           !!r.label &&
           r.label.includes(a.fromPlanet) &&
           r.label.includes(a.toPlanet) &&
-          r.label.toLowerCase().includes(a.aspect),
+          (r.label.toLowerCase().includes(a.aspect) || (!!glyph && r.label.includes(glyph))),
       );
       if (already) continue;
       traceRows.push({
@@ -1232,8 +1251,10 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
         meaning: `An easier channel between you: this contact tends to make ${a.toPlanet.toLowerCase() === "moon" ? "settling down" : "meeting each other"} less effortful when things are calm.`,
         tone: "supportive",
       });
+      injected++;
       validationLog.push("supportive_contact_injected");
     }
+
     // Difficult rows built on wide orbs get labeled as secondary rather than headline.
     traceRows = traceRows.map((r) =>
       typeof r.orb === "number" && r.orb >= 7 && !/wider|secondary/i.test(r.meaning ?? "")
@@ -1242,10 +1263,55 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     );
     pl.traceableAspects = traceRows.slice(0, 6);
 
+    // ─── Handout fields: keyMessage + rhythms are first-class, never optional ──
+    const arrowsFrom = (s: unknown): { parent?: string; child?: string } => {
+      if (typeof s !== "string") return {};
+      const lines = s.split("\n").map((l) => l.trim()).filter((l) => l.includes("→"));
+      const strip = (l: string) => l.replace(/^[^:]{1,40}:\s*/, "").trim();
+      if (lines.length >= 2) return { parent: strip(lines[0]), child: strip(lines[1]) };
+      return {};
+    };
+    const rhythms = (pl.rhythms ?? {}) as { parent?: string; child?: string };
+    if (!rhythms.parent?.includes("→") || !rhythms.child?.includes("→")) {
+      const fallback =
+        arrowsFrom((pl.connectionMisfire as { framing?: string } | null)?.framing) ??
+        {};
+      const fb2 = Object.keys(fallback).length
+        ? fallback
+        : arrowsFrom((pl.repairProfile as { plainEnglish?: string } | null)?.plainEnglish);
+      if (fb2.parent && fb2.child) {
+        pl.rhythms = { parent: fb2.parent, child: fb2.child };
+        validationLog.push("rhythms_recovered_from_narrative");
+      } else if (!rhythms.parent || !rhythms.child) {
+        pl.rhythms = null;
+        validationLog.push("rhythms_unavailable");
+      }
+    }
+    const keyMsg = typeof pl.keyMessage === "string" ? pl.keyMessage.trim() : "";
+    if (keyMsg.split(/\s+/).length < 8) {
+      const practice = typeof pl.practice === "string" ? pl.practice : "";
+      const firstTwo = practice.split(/(?<=\.)\s+/).slice(0, 2).join(" ").trim();
+      pl.keyMessage = firstTwo || null;
+      validationLog.push(firstTwo ? "key_message_recovered_from_practice" : "key_message_missing");
+    } else {
+      // Keep it printable, but only ever cut at a sentence boundary so the
+      // handout never shows a half-finished thought.
+      const parts = keyMsg.match(/[^.!?]+[.!?]+/g) ?? [keyMsg];
+      let out = "";
+      for (const p of parts) {
+        const next = (out + " " + p).trim();
+        if (out && next.split(/\s+/).length > 48) break;
+        out = next;
+      }
+      pl.keyMessage = out || parts[0].trim();
+    }
+
+
     if (validationLog.length) {
       console.warn("[family-pair-reading] needs section validation:", validationLog);
       (payload as Record<string, unknown>)._validation_log = validationLog;
     }
+
 
     // Counts must agree with what the reading actually contains.
     const sectionCount = Array.isArray(pl.sections) ? (pl.sections as unknown[]).length : 0;

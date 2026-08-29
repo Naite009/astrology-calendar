@@ -588,6 +588,11 @@ export interface PerceptionTranslation {
 export interface PairReadingResponse {
   essence: string[];
   ageNote: string;
+  /** One memorable, chart-specific takeaway used by the printable parent handout. */
+  keyMessage?: string | null;
+  /** Arrow sequences (no name prefix) for the handout's rhythm band. */
+  rhythms?: { parent: string; child: string } | null;
+
   sections: PairReadingSection[];
   practice: string;
   respondsBestWhen?: string[];
