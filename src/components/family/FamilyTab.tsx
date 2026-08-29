@@ -119,6 +119,9 @@ import {
 import { migrateFamilySystemReading } from "@/lib/familySystemMigration";
 import { ChildPortraitCard } from "./ChildPortrait";
 import { TodayForPersonPanel } from "./TodayForPersonPanel";
+import { FileDown } from "lucide-react";
+import { downloadParentHandout } from "@/lib/parentHandoutPdf";
+
 
 /**
  * Renders one pair (parent↔child or sibling↔sibling) with the role-aware
@@ -1618,9 +1621,40 @@ const AiPairReadingView = ({
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-primary/60 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileDown className="h-4 w-4 text-primary" />
+            Take the Short Version With You
+          </CardTitle>
+          <CardDescription className="pt-1">
+            A designed one-page guide with your different rhythms, what {toName} needs, what {toName} is
+            learning, what helps in conflict, and the one message to remember.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => {
+              try {
+                downloadParentHandout({ reading, parentName: fromName, childName: toName });
+                toast.success("Parent guide downloaded");
+              } catch (e) {
+                console.error(e);
+                toast.error("Could not create the handout");
+              }
+            }}
+            className="w-full sm:w-auto"
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            Create Parent Handout (PDF)
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
 
 const FamilySystemReadingView = ({ reading, members }: { reading: FamilySystemReadingResponse; members: { chart: NatalChart; role: FamilyRole }[] }) => {
   return (
