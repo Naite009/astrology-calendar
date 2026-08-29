@@ -142,16 +142,18 @@ export function buildHandoutContent({
     const parts = summary.match(/[^.!?]+[.!?]*/g) ?? [];
     // Only use a Moon-bridge sentence that actually describes this child.
     const childPart =
-      parts.find((p) => p.includes(childName) && /Moon/i.test(p)) ??
-      parts.find((p) => /Moon/i.test(p) && !p.includes(parentName)) ??
+      parts.find((p) => p.includes(childName.split(/\s+/)[0]) && /Moon/i.test(p)) ??
+      parts.find((p) => /Moon/i.test(p) && !p.includes(parentName.split(/\s+/)[0])) ??
       "";
     // Drop any comparative clause about the parent so the line is about the child.
     let out = clean(childPart);
-    if (parentName && out.includes(parentName)) {
+    const parentFirst = parentName.split(/\s+/)[0];
+    const childFirst = childName.split(/\s+/)[0];
+    if (parentFirst && out.includes(parentFirst)) {
       const clause = out
         .split(/\b(?:whereas|while|but)\b/i)
         .map((x) => x.trim())
-        .find((x) => x.includes(childName));
+        .find((x) => x.includes(childFirst));
       if (clause) out = clause.charAt(0).toUpperCase() + clause.slice(1);
     }
     return out.replace(/^,\s*/, "");
