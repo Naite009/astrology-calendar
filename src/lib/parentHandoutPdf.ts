@@ -122,7 +122,6 @@ export function buildHandoutContent({
   parentName,
   childName,
 }: HandoutInput): HandoutContent {
-  void parentName;
   // Rhythms: prefer the first-class field, fall back to arrow lines in prose.
   let parentRhythm = clean(r.rhythms?.parent);
   let childRhythm = clean(r.rhythms?.child);
@@ -146,7 +145,16 @@ export function buildHandoutContent({
       parts.find((p) => p.includes(childName) && /Moon/i.test(p)) ??
       parts.find((p) => /Moon/i.test(p) && !p.includes(parentName)) ??
       "";
-    return clean(childPart);
+    // Drop any comparative clause about the parent so the line is about the child.
+    let out = clean(childPart);
+    if (parentName && out.includes(parentName)) {
+      const clause = out
+        .split(/\b(?:whereas|while|but)\b/i)
+        .map((x) => x.trim())
+        .find((x) => x.includes(childName));
+      if (clause) out = clause.charAt(0).toUpperCase() + clause.slice(1);
+    }
+    return out.replace(/^,\s*/, "");
   })();
   const emotionalLanguage =
     [moonChild, sentences(r.perceptionTranslation?.underneath ?? "", 1)]
