@@ -65,7 +65,12 @@ const withoutArrows = (s?: string | null) =>
 /** Shortens a bullet to a printable length at a word boundary. */
 function shorten(s: string, maxWords: number): string {
   // Parenthetical chart citations belong in the on-screen report, not the handout.
-  const base = clean(s).replace(/\s*\([^)]*\)?\s*/g, " ").replace(/\s{2,}/g, " ").trim();
+  const base = clean(s)
+    .replace(/\s*\([^)]*\)?\s*/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.,;:!?])/g, "$1")
+    .replace(/[.,;:]+$/, "")
+    .trim();
   const words = base.split(/\s+/);
   if (words.length <= maxWords) return base.replace(/[,;:]$/, "");
   // Cut at the last clean word boundary, dropping dangling connectors.
