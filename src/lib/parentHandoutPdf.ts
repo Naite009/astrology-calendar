@@ -235,10 +235,22 @@ export function buildHandoutContent({
   const picked = [...soft.slice(0, 2), ...hard.slice(0, 2)]
     .sort((a, b) => a.orb - b.orb)
     .slice(0, 4);
-  const sourceLabels = picked
-    .map((t) => compactAspect(t.label, t.orb))
-    .filter((l, i, a) => a.findIndex((x) => x.split(" ").slice(0, 3).join(" ") === l.split(" ").slice(0, 3).join(" ")) === i)
-    .slice(0, 3);
+  const dedupe = (list: typeof trace) =>
+    list.filter(
+      (t, i, a) =>
+        a.findIndex((x) => compactAspect(x.label, x.orb) === compactAspect(t.label, t.orb)) === i,
+    );
+  let chosen = dedupe(picked).slice(0, 3);
+  // Keep both tones visible so the page is never all-supportive or all-difficult.
+  const ensureTone = (pool: typeof trace) => {
+    if (!pool.length || chosen.some((t) => pool.includes(t))) return;
+    chosen = dedupe([pool[0], ...chosen]).slice(0, 3);
+  };
+  ensureTone(soft);
+  ensureTone(hard);
+  const sourceLabels = chosen
+    .sort((a, b) => a.orb - b.orb)
+    .map((t) => compactAspect(t.label, t.orb));
 
   const needs = (
     r.whatThisChildNeedsFromYou?.lines?.map((l) => l.text) ??
