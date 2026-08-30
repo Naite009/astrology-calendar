@@ -252,9 +252,16 @@ Deno.serve(async (req) => {
     const seen = new Set<string>();
     const picked: CrossAspect[] = [];
     const NARRATIVE_CAP = 9;
-    // Pass 1: every sub-1° contact is guaranteed representation (deduped by pair).
+    const MINOR = new Set(["quincunx", "semisextile"]);
+    const MINOR_CAP = 3;
+    const minorCount = () => picked.filter((p) => MINOR.has(p.aspect)).length;
+    // Pass 1: every sub-1° contact is guaranteed representation (deduped by
+    // pair), except generational outer-to-outer noise and an overload of minor
+    // aspects, neither of which describes the relationship itself.
     for (const a of allRanked) {
       const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (scoreAspect(a) <= 1) continue;
+      if (MINOR.has(a.aspect) && minorCount() >= MINOR_CAP) continue;
       if (a.orb < 1 && !seen.has(key)) {
         picked.push(a);
         seen.add(key);
@@ -272,6 +279,8 @@ Deno.serve(async (req) => {
       if (seen.has(key)) continue;
       const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
       if (pairAlreadyUsed && a.orb >= 3) continue;
+      if (scoreAspect(a) <= 1) continue;
+      if (MINOR.has(a.aspect) && minorCount() >= MINOR_CAP) continue;
       if (a.orb >= 6 && toneOf(a) === "difficult") {
         deferred.push(a);
         continue;
