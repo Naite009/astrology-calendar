@@ -243,6 +243,10 @@ Deno.serve(async (req) => {
       }
     }
     // Pass 2: fill remaining slots by rank, avoiding duplicate planet pairs.
+    // Wide (>= 6 degrees) difficult contacts are held back while tighter
+    // material is still available, so a loose square can never headline over a
+    // 0-2 degree contact.
+    const deferred: CrossAspect[] = [];
     for (const a of allRanked) {
       if (picked.length >= NARRATIVE_CAP) break;
       const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
@@ -250,21 +254,55 @@ Deno.serve(async (req) => {
       if (seen.has(key)) continue;
       const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
       if (pairAlreadyUsed && a.orb >= 3) continue;
+      if (a.orb >= 6 && toneOf(a) === "difficult") {
+        deferred.push(a);
+        continue;
+      }
       picked.push(a);
       seen.add(key);
     }
-    // Balance rule: unless the pair genuinely has no supportive contact, at
-    // least one strong supportive contact must reach the narrative.
-    if (picked.every((a) => toneOf(a) === "difficult")) {
-      const bestSoft = allRanked.find((a) => toneOf(a) === "supportive");
-      if (bestSoft) {
-        const key = `${bestSoft.fromPlanet}|${bestSoft.toPlanet}|${bestSoft.aspect}`;
-        if (!seen.has(key)) {
-          picked.splice(Math.min(2, picked.length), 0, bestSoft);
-          seen.add(key);
+    // Balance rule: supportive contacts are not decoration. When the pair has
+    // supportive material, at least two supportive contacts (or all of them, if
+    // fewer exist) reach the narrative, and one lands in the opening three.
+    const softAvailable = allRanked.filter((a) => toneOf(a) === "supportive");
+    const softTarget = Math.min(2, softAvailable.length);
+    for (const bestSoft of softAvailable) {
+      const softInNarrative = picked.filter((a) => toneOf(a) === "supportive").length;
+      if (softInNarrative >= softTarget) break;
+      const key = `${bestSoft.fromPlanet}|${bestSoft.toPlanet}|${bestSoft.aspect}`;
+      if (seen.has(key)) continue;
+      // Drop the widest difficult pick rather than growing past the cap.
+      if (picked.length >= NARRATIVE_CAP) {
+        let worst = -1;
+        for (let i = 0; i < picked.length; i++) {
+          if (toneOf(picked[i]) !== "difficult") continue;
+          if (worst < 0 || picked[i].orb > picked[worst].orb) worst = i;
         }
+        if (worst < 0) break;
+        picked.splice(worst, 1);
       }
+      picked.splice(Math.min(softInNarrative + 1, picked.length), 0, bestSoft);
+      seen.add(key);
     }
+    // A supportive contact must appear in the first three sections when one exists.
+    if (
+      picked.length > 3 &&
+      picked.slice(0, 3).every((a) => toneOf(a) === "difficult") &&
+      picked.some((a) => toneOf(a) === "supportive")
+    ) {
+      const idx = picked.findIndex((a) => toneOf(a) === "supportive");
+      const [soft] = picked.splice(idx, 1);
+      picked.splice(2, 0, soft);
+    }
+    // Deferred wide difficult contacts fill any slot still empty at the end.
+    for (const a of deferred) {
+      if (picked.length >= NARRATIVE_CAP) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (seen.has(key)) continue;
+      picked.push(a);
+      seen.add(key);
+    }
+
     const aspects = picked.slice(0, NARRATIVE_CAP);
     // Real contacts left out only because they are wider. Surfaced briefly so
     // the reading never pretends they do not exist.
