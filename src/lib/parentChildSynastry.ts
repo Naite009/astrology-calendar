@@ -115,6 +115,7 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
     if (lum(from) || lum(to)) return 3;
     if (["Venus", "Jupiter"].includes(from) || ["Venus", "Jupiter"].includes(to)) return 3;
     if (personal(from) && personal(to)) return 3;
+    if (angle(from) || angle(to)) return 3;
     return 2;
   }
 
@@ -133,6 +134,7 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   if (isHard && pair("Uranus", "Moon")) return 3;
   if (isHard && pair("Uranus", "Mercury")) return 3;
   if (isHard && personal(from) && personal(to)) return 3;
+  if (angle(from) || angle(to)) return 3;
   if (from === "NorthNode" || to === "NorthNode" || from === "SouthNode" || to === "SouthNode") return 2;
   return 2;
 }

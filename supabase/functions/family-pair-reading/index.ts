@@ -198,6 +198,7 @@ Deno.serve(async (req) => {
         if (LUM(f) || LUM(t)) return 3;
         if (["Venus", "Jupiter"].includes(f) || ["Venus", "Jupiter"].includes(t)) return 3;
         if (PERSONAL(f) && PERSONAL(t)) return 3;
+        if (ANGLE(f) || ANGLE(t)) return 3;
         return 2;
       }
       // Saturn hard Sun/Moon = +5
@@ -225,6 +226,8 @@ Deno.serve(async (req) => {
       if (isHard && LUM(f) && LUM(t)) return 4;
       // Personal-planet hard contacts = +3
       if (isHard && PERSONAL(f) && PERSONAL(t)) return 3;
+      // Angle contacts to any body still describe visible presence = +3
+      if (ANGLE(f) || ANGLE(t)) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
       // Default qualifying hard contact
