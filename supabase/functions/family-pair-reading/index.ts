@@ -324,12 +324,17 @@ Deno.serve(async (req) => {
     const aspects = picked.slice(0, NARRATIVE_CAP);
     // Real contacts left out only because they are wider. Surfaced briefly so
     // the reading never pretends they do not exist.
+    // Only genuinely loose contacts (>= 5 degrees) may be described as "wide".
+    // A 1-2 degree contact that simply lost a slot is a secondary contact, not a
+    // background one, and calling it wide misstates the math.
     const widerContacts = allRanked
       .filter((a) => !aspects.includes(a))
       .slice(0, 5)
       .map(
         (a) =>
-          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): real but wide, background influence only.`,
+          a.orb >= 5
+            ? `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): real but wide, background influence only.`
+            : `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): exact but secondary, present in the background of the nine featured contacts.`,
       );
     const supportiveInNarrative = aspects.filter((a) => toneOf(a) === "supportive");
 
@@ -934,7 +939,7 @@ ${parentRetroBlock}
 CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
 
-WIDER CONTACTS (real but looser — background only, never a section):
+OTHER REAL CONTACTS (not featured as sections; wide ones are background, tight ones are secondary):
 ${widerContacts.length ? widerContacts.join("\n") : "(none)"}
 
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})
