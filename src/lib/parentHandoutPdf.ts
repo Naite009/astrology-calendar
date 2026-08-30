@@ -595,7 +595,7 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── How We Are Different (processing rhythms)
   let y = 54;
   s.frame(M, y, CW, rhythmH, CARD, GOLD);
-  s.smallCaps("How We Are Different", M + 6, y + 7, GOLD, 7.4, "left", CW * 0.45);
+  s.smallCaps("Your Different Rhythms", M + 6, y + 7, GOLD, 7.4, "left", CW * 0.45);
   d.setFont("times", "italic");
   d.setFontSize(8.2);
   d.setTextColor(...SOFT);
@@ -648,15 +648,15 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── Balanced mini-panels
   s.frame(M, y, colW, layout.panelH, CARD, GOLD);
   s.frame(colX2, y, colW, layout.panelH, CARD, SAGE);
-  s.smallCaps(`What ${childFirstName} Needs From Me`, M + 5, y + 7, GOLD, 7, "left", colW - 10);
-  s.smallCaps(`What ${childFirstName} Is Learning From Me`, colX2 + 5, y + 7, SAGE, 7, "left", colW - 10);
+  s.smallCaps(`What ${childFirstName} Needs From You`, M + 5, y + 7, GOLD, 7, "left", colW - 10);
+  s.smallCaps(`What ${childFirstName} Is Learning`, colX2 + 5, y + 7, SAGE, 7, "left", colW - 10);
   s.bulletList(c.needs, M + 5, y + 13.5, colW - 10, layout.caps.panel, GOLD);
   s.bulletList(c.learning, colX2 + 5, y + 13.5, colW - 10, layout.caps.panel, SAGE);
   y += layout.panelH + 5;
 
   // ── What makes things harder / what helps
   s.smallCaps("What Makes Things Harder", M, y, BURGUNDY, 7.4);
-  s.smallCaps("What Helps", colX2, y, SAGE, 7.4);
+  s.smallCaps("When Things Get Hard", colX2, y, SAGE, 7.4);
   s.hair(M, y + 2.4, M + colW);
   s.hair(colX2, y + 2.4, colX2 + colW);
   s.bulletList(c.harder, M, y + 9, colW - 2, layout.caps.hard, BURGUNDY, 8.8, 4.3);
@@ -666,8 +666,8 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── Parent's responsibility / child's responsibility
   const boundH = Math.min(layout.boundH, MSG_TOP - 5 - y);
   s.frame(M, y, CW, boundH, undefined, BURGUNDY);
-  s.smallCaps(`${parentFirstName}'s Responsibility`, M + 6, y + 7, BURGUNDY, 7, "left", colW - 12);
-  s.smallCaps(`${childFirstName}'s Responsibility`, colX2 + 1, y + 7, SAGE, 7, "left", colW - 8);
+  s.smallCaps("What Is Yours", M + 6, y + 7, BURGUNDY, 7, "left", colW - 12);
+  s.smallCaps("What Is Not Yours", colX2 + 1, y + 7, SAGE, 7, "left", colW - 8);
   const endL = s.bulletList(c.yours, M + 6, y + 13, colW - 12, layout.caps.bound, BURGUNDY, 8.4, 4.0);
   const endR = s.bulletList(c.notYours, colX2 + 1, y + 13, colW - 8, layout.caps.bound, SAGE, 8.4, 4.0);
   const noteY = Math.max(endL, endR) + 1.5;
