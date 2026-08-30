@@ -98,13 +98,23 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   const withAny = (set: string[], other: string) =>
     (set.includes(from) && to === other) || (set.includes(to) && from === other);
   const lum = (p: string) => p === "Sun" || p === "Moon";
+  const angle = (p: string) => p === "Ascendant" || p === "MC";
+  const personal = (p: string) => ["Sun", "Moon", "Mercury", "Venus", "Mars"].includes(p);
+  const outer = (p: string) => ["Uranus", "Neptune", "Pluto", "Chiron", "NorthNode", "SouthNode"].includes(p);
+
+  // Generation-to-generation outer contacts carry almost no personal signal, so
+  // they must never crowd out a personal-planet contact even when very tight.
+  if (outer(from) && outer(to)) return 1;
 
   // Supportive contacts carry real weight. Under-weighting them was what made
   // readings drift into "this relationship is mostly difficult".
   if (isSoft) {
     if (lum(from) && lum(to)) return 4;
+    if (angle(from) && personal(to)) return 4;
+    if (angle(to) && personal(from)) return 4;
     if (lum(from) || lum(to)) return 3;
     if (["Venus", "Jupiter"].includes(from) || ["Venus", "Jupiter"].includes(to)) return 3;
+    if (personal(from) && personal(to)) return 3;
     return 2;
   }
 
@@ -113,15 +123,20 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   if (isHard && withAny(["Chiron"], "Sun")) return 4;
   if (isHard && withAny(["Chiron"], "Moon")) return 4;
   if (pair("Pluto", "Moon")) return 4;
+  if (isHard && angle(from) && personal(to)) return 4;
+  if (isHard && angle(to) && personal(from)) return 4;
+  if (isHard && lum(from) && lum(to)) return 4;
   if (isHard && pair("Moon", "Neptune")) return 3;
   if (pair("Mercury", "Chiron")) return 3;
   if (isHard && pair("Mars", "Saturn")) return 3;
   if (isHard && pair("Mars", "Moon")) return 3;
   if (isHard && pair("Uranus", "Moon")) return 3;
   if (isHard && pair("Uranus", "Mercury")) return 3;
+  if (isHard && personal(from) && personal(to)) return 3;
   if (from === "NorthNode" || to === "NorthNode" || from === "SouthNode" || to === "SouthNode") return 2;
   return 2;
 }
+
 
 /**
  * Tightness multiplier. Orb is decisive, not decorative: a sub-1° contact is
