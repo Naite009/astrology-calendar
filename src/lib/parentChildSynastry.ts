@@ -53,82 +53,6 @@ export interface FamilySynastryReport {
   essenceLines: string[];
 }
 
-interface CuratedPair {
-  from: string;
-  to: string;
-  framingKey: string;
-}
-
-/**
- * Curated cross-aspect rows, FROM → TO. Keep the list focused — these are the
- * aspects that meaningfully describe how the FROM person's energy lands on the
- * TO person's nervous system.
- */
-const PARENT_TO_CHILD_PAIRS: CuratedPair[] = [
-  { from: "Sun", to: "Moon", framingKey: "sun-moon" },
-  { from: "Sun", to: "Sun", framingKey: "sun-sun" },
-  { from: "Moon", to: "Sun", framingKey: "moon-sun" },
-  { from: "Moon", to: "Moon", framingKey: "moon-moon" },
-  { from: "Ascendant", to: "Sun", framingKey: "asc-sun" },
-  { from: "Mars", to: "Moon", framingKey: "mars-moon" },
-  { from: "Mercury", to: "Moon", framingKey: "mercury-moon" },
-  { from: "Saturn", to: "Sun", framingKey: "saturn-sun" },
-  { from: "Saturn", to: "Moon", framingKey: "saturn-moon" },
-  { from: "Moon", to: "Venus", framingKey: "moon-venus" },
-  { from: "Venus", to: "Moon", framingKey: "venus-moon" },
-  { from: "Jupiter", to: "Sun", framingKey: "jupiter-sun" },
-  { from: "Pluto", to: "Sun", framingKey: "pluto-sun" },
-  { from: "Pluto", to: "Moon", framingKey: "pluto-moon" },
-  { from: "Neptune", to: "Sun", framingKey: "neptune-sun" },
-  { from: "Neptune", to: "Moon", framingKey: "neptune-moon" },
-  { from: "Chiron", to: "Sun", framingKey: "chiron-sun" },
-  { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
-  { from: "NorthNode", to: "Sun", framingKey: "node-sun" },
-  { from: "NorthNode", to: "Moon", framingKey: "node-moon" },
-  // Uranus contacts: unpredictability, reactivity, and nervous-system speed
-  // between the two charts. Previously missing entirely.
-  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
-  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
-  { from: "Uranus", to: "Sun", framingKey: "uranus-sun" },
-  // Supportive-capable channels. Without these, a chart whose only tight
-  // easy contacts run through Mercury, Venus, or Jupiter looked like a
-  // relationship made entirely of hard aspects, which is a selection artifact.
-  { from: "Sun", to: "Mercury", framingKey: "sun-mercury" },
-  { from: "Sun", to: "Venus", framingKey: "sun-venus" },
-  { from: "Moon", to: "Mercury", framingKey: "moon-mercury" },
-  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
-  { from: "Venus", to: "Venus", framingKey: "venus-venus" },
-  { from: "Venus", to: "Sun", framingKey: "venus-sun" },
-  { from: "Venus", to: "Mercury", framingKey: "venus-mercury" },
-  { from: "Jupiter", to: "Moon", framingKey: "jupiter-moon" },
-  { from: "Jupiter", to: "Mercury", framingKey: "jupiter-mercury" },
-  { from: "Jupiter", to: "Venus", framingKey: "jupiter-venus" },
-  { from: "Saturn", to: "Venus", framingKey: "saturn-venus" },
-  { from: "Saturn", to: "Mercury", framingKey: "saturn-mercury" },
-  { from: "Mars", to: "Mercury", framingKey: "mars-mercury" },
-  { from: "Mars", to: "Sun", framingKey: "mars-sun" },
-  { from: "Neptune", to: "Mercury", framingKey: "neptune-mercury" },
-  { from: "Pluto", to: "Mercury", framingKey: "pluto-mercury" },
-  { from: "Chiron", to: "Mercury", framingKey: "chiron-mercury" },
-
-];
-
-/** Sibling-specific pair set — drops Saturn-authority, adds Mercury↔Mercury. */
-const SIBLING_PAIRS: CuratedPair[] = [
-  { from: "Sun", to: "Sun", framingKey: "sun-sun" },
-  { from: "Moon", to: "Moon", framingKey: "moon-moon" },
-  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
-  { from: "Sun", to: "Moon", framingKey: "sun-moon" },
-  { from: "Moon", to: "Sun", framingKey: "moon-sun" },
-  { from: "Mars", to: "Moon", framingKey: "mars-moon" },
-  { from: "Venus", to: "Moon", framingKey: "venus-moon" },
-  { from: "Mercury", to: "Moon", framingKey: "mercury-moon" },
-  { from: "Jupiter", to: "Sun", framingKey: "jupiter-sun" },
-  { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
-  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
-  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
-];
-
 const ASPECTS = [
   { name: "conjunction", angle: 0, symbol: "☌" },
   { name: "opposition", angle: 180, symbol: "☍" },
@@ -148,7 +72,7 @@ const FAMILY_MINOR_ASPECTS = [
   { name: "semisextile", angle: 30, symbol: "⚺" },
 ] as const;
 
-const MINOR_ELIGIBLE = new Set(["Sun", "Moon", "Mercury", "Mars"]);
+const MINOR_ELIGIBLE = new Set(["Sun", "Moon", "Mercury", "Mars", "Ascendant", "MC"]);
 
 function familyMinorOrbLimit(p1: string, p2: string): number | null {
   const lum = (p: string) => p === "Sun" || p === "Moon";
@@ -776,7 +700,7 @@ export function buildPairReadingPayload(
 
   // Widen the candidate pool so the server can see every meaningful curated
   // contact. The server ranks and caps the narrative itself.
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 30).map((r) => {
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 40).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;
