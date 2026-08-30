@@ -257,11 +257,57 @@ function bestAspect(deg1: number, deg2: number, p1: string, p2: string) {
   return null;
 }
 
-function pairsForRoles(fromRole: FamilyRole, toRole: FamilyRole): CuratedPair[] {
-  if (fromRole === "sibling" || toRole === "sibling") return SIBLING_PAIRS;
-  return PARENT_TO_CHILD_PAIRS;
+/**
+ * Bodies included in the full cross-chart matrix. SouthNode is deliberately
+ * excluded: every SouthNode contact is the mirror of a NorthNode contact, so
+ * including it would double-count the same axis.
+ */
+const FAMILY_BODIES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars",
+  "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto",
+  "Chiron", "NorthNode", "Ascendant", "MC",
+] as const;
+
+/** Sibling readings stay narrower: no angles, no Pluto/Neptune authority layer. */
+const SIBLING_BODIES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars",
+  "Jupiter", "Saturn", "Uranus", "Chiron", "NorthNode",
+] as const;
+
+const FRAMING_ALIAS: Record<string, string> = {
+  Sun: "sun", Moon: "moon", Mercury: "mercury", Venus: "venus", Mars: "mars",
+  Jupiter: "jupiter", Saturn: "saturn", Uranus: "uranus", Neptune: "neptune",
+  Pluto: "pluto", Chiron: "chiron", NorthNode: "node", SouthNode: "southnode",
+  Ascendant: "asc", MC: "mc",
+};
+
+function framingKeyFor(from: string, to: string): string {
+  return `${FRAMING_ALIAS[from] ?? from.toLowerCase()}-${FRAMING_ALIAS[to] ?? to.toLowerCase()}`;
 }
 
+/**
+ * Position map for one chart, including the MC derived from the 10th cusp so
+ * angle contacts are calculable even when planets.MC is absent.
+ */
+function bodyDegrees(chart: NatalChart): Record<string, number> {
+  const out: Record<string, number> = {};
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  for (const name of Object.keys(planets)) {
+    const d = toAbsoluteDegree(planets[name]);
+    if (d != null) out[name] = d;
+  }
+  if (out.MC == null) {
+    const c = chart.houseCusps?.house10 as { sign?: string; degree?: number; minutes?: number } | undefined;
+    if (c?.sign) {
+      const idx = ZODIAC_SIGNS.indexOf(c.sign);
+      if (idx >= 0) out.MC = idx * 30 + (c.degree ?? 0) + (c.minutes ?? 0) / 60;
+    }
+  }
+  return out;
+}
+
+/** Max rows kept after ranking. Generous, because the server caps the narrative. */
+const MAX_ROWS = 40;
 
 export function computeFamilySynastry(
   fromChart: NatalChart,
@@ -269,53 +315,68 @@ export function computeFamilySynastry(
   fromRole: FamilyRole,
   toRole: FamilyRole,
 ): FamilySynastryReport {
-  const pairs = pairsForRoles(fromRole, toRole);
+  const bodies: readonly string[] =
+    fromRole === "sibling" || toRole === "sibling" ? SIBLING_BODIES : FAMILY_BODIES;
+
+  const fromDeg = bodyDegrees(fromChart);
+  const toDeg = bodyDegrees(toChart);
   const rows: FamilyAspectRow[] = [];
 
-  for (const pair of pairs) {
-    const fromPos = (fromChart.planets as Record<string, NatalPlanetPosition | undefined>)[pair.from];
-    const toPos = (toChart.planets as Record<string, NatalPlanetPosition | undefined>)[pair.to];
-    const d1 = toAbsoluteDegree(fromPos);
-    const d2 = toAbsoluteDegree(toPos);
-    if (d1 == null || d2 == null) continue;
-    const asp = bestAspect(d1, d2, pair.from, pair.to);
-    if (!asp) continue;
-    const interp = PARENT_CHILD_INTERPRETATIONS[pair.framingKey]?.[asp.name] ?? null;
-    rows.push({
-      fromPlanet: pair.from,
-      toPlanet: pair.to,
-      aspect: asp.name,
-      orb: asp.orb,
-      symbol: asp.symbol,
-      framingKey: pair.framingKey,
-      interpretation: interp,
-    });
+  // FULL MATRIX. Every valid aspect between the tracked bodies is calculated
+  // first; interpretive weighting happens afterwards. No curated whitelist can
+  // erase a tight contact before it is ever measured.
+  for (const from of bodies) {
+    const d1 = fromDeg[from];
+    if (d1 == null) continue;
+    for (const to of bodies) {
+      const d2 = toDeg[to];
+      if (d2 == null) continue;
+      // Angle-to-angle cross contacts are geometry artifacts, not relationship
+      // information, so they are the one excluded combination.
+      if ((from === "Ascendant" || from === "MC") && (to === "Ascendant" || to === "MC")) continue;
+      const asp = bestAspect(d1, d2, from, to);
+      if (!asp) continue;
+      const framingKey = framingKeyFor(from, to);
+      rows.push({
+        fromPlanet: from,
+        toPlanet: to,
+        aspect: asp.name,
+        orb: asp.orb,
+        symbol: asp.symbol,
+        framingKey,
+        interpretation: PARENT_CHILD_INTERPRETATIONS[framingKey]?.[asp.name] ?? null,
+      });
+    }
   }
 
-  // Rank by importance AND tightness (see familyAspectRankScore). Anything
-  // inside 1° is guaranteed to sit above looser contacts, so a very tight
-  // aspect can never be buried under a "heavier" but wide one.
+  // Rank by importance AND tightness (see familyAspectRankScore). Orb is
+  // decisive: a sub-1° contact always outranks a heavier but wide one.
   rows.sort(
     (a, b) =>
       familyAspectRankScore(b.fromPlanet, b.toPlanet, b.aspect, b.orb) -
       familyAspectRankScore(a.fromPlanet, a.toPlanet, a.aspect, a.orb),
   );
 
-  // Balance rule: if the top of the list is all difficult contacts but a real
-  // supportive contact exists, promote the strongest supportive one into view.
+  // Balance rule: the visible head of the list must include supportive contacts
+  // when real supportive contacts exist, otherwise the relationship reads as
+  // entirely difficult purely as a selection artifact.
   const TOP = 5;
-  const head = rows.slice(0, TOP);
-  if (head.length && head.every((r) => familyAspectTone(r.aspect) === "difficult")) {
-    const bestSoftIdx = rows.findIndex((r) => familyAspectTone(r.aspect) === "supportive");
-    if (bestSoftIdx >= TOP) {
-      const [soft] = rows.splice(bestSoftIdx, 1);
-      rows.splice(Math.min(2, rows.length), 0, soft);
-    }
+  const WANTED_SOFT = 2;
+  for (let i = 0; i < WANTED_SOFT; i++) {
+    const head = rows.slice(0, TOP);
+    const softInHead = head.filter((r) => familyAspectTone(r.aspect) === "supportive").length;
+    if (softInHead > i) continue;
+    const idx = rows.findIndex(
+      (r, ri) => ri >= TOP && familyAspectTone(r.aspect) === "supportive",
+    );
+    if (idx < 0) break;
+    const [soft] = rows.splice(idx, 1);
+    rows.splice(Math.min(i + 1, rows.length), 0, soft);
   }
 
+  const trimmed = rows.slice(0, MAX_ROWS);
 
-
-  const essenceLines = rows
+  const essenceLines = trimmed
     .slice(0, 3)
     .map(r => {
       const verb = r.interpretation?.essenceVerb ?? "shapes";
@@ -327,10 +388,11 @@ export function computeFamilySynastry(
     toName: toChart.name,
     fromRole,
     toRole,
-    rows,
+    rows: trimmed,
     essenceLines,
   };
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Child Moon Profile (deterministic, no AI)
