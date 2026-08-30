@@ -183,12 +183,22 @@ Deno.serve(async (req) => {
         (f === p1 && t === p2) || (f === p2 && t === p1);
       const involvesAny = (set: string[], other: string) =>
         (set.includes(f) && t === other) || (set.includes(t) && f === other);
+      const ANGLE = (p: string) => p === "Ascendant" || p === "MC";
+      const PERSONAL = (p: string) => ["Sun", "Moon", "Mercury", "Venus", "Mars"].includes(p);
+      const OUTER = (p: string) =>
+        ["Uranus", "Neptune", "Pluto", "Chiron", "NorthNode", "SouthNode"].includes(p);
+      // Outer-to-outer contacts are generational, not personal: never headline.
+      if (OUTER(f) && OUTER(t)) return 1;
       // Supportive contacts carry real weight so the reading cannot drift into
       // "this relationship is mostly difficult" purely from scoring bias.
       if (SOFT.has(asp)) {
         if (LUM(f) && LUM(t)) return 4;
+        if (ANGLE(f) && PERSONAL(t)) return 4;
+        if (ANGLE(t) && PERSONAL(f)) return 4;
         if (LUM(f) || LUM(t)) return 3;
         if (["Venus", "Jupiter"].includes(f) || ["Venus", "Jupiter"].includes(t)) return 3;
+        if (PERSONAL(f) && PERSONAL(t)) return 3;
+        if (ANGLE(f) || ANGLE(t)) return 3;
         return 2;
       }
       // Saturn hard Sun/Moon = +5
@@ -210,6 +220,14 @@ Deno.serve(async (req) => {
       // Uranus contacts = +3 (unpredictability against regulation / processing)
       if (isHard && involves("Uranus", "Moon")) return 3;
       if (isHard && involves("Uranus", "Mercury")) return 3;
+      // Angle contacts to personal planets = +4
+      if (isHard && ANGLE(f) && PERSONAL(t)) return 4;
+      if (isHard && ANGLE(t) && PERSONAL(f)) return 4;
+      if (isHard && LUM(f) && LUM(t)) return 4;
+      // Personal-planet hard contacts = +3
+      if (isHard && PERSONAL(f) && PERSONAL(t)) return 3;
+      // Angle contacts to any body still describe visible presence = +3
+      if (ANGLE(f) || ANGLE(t)) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
       // Default qualifying hard contact
@@ -234,9 +252,16 @@ Deno.serve(async (req) => {
     const seen = new Set<string>();
     const picked: CrossAspect[] = [];
     const NARRATIVE_CAP = 9;
-    // Pass 1: every sub-1° contact is guaranteed representation (deduped by pair).
+    const MINOR = new Set(["quincunx", "semisextile"]);
+    const MINOR_CAP = 3;
+    const minorCount = () => picked.filter((p) => MINOR.has(p.aspect)).length;
+    // Pass 1: every sub-1° contact is guaranteed representation (deduped by
+    // pair), except generational outer-to-outer noise and an overload of minor
+    // aspects, neither of which describes the relationship itself.
     for (const a of allRanked) {
       const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (scoreAspect(a) <= 1) continue;
+      if (MINOR.has(a.aspect) && minorCount() >= MINOR_CAP) continue;
       if (a.orb < 1 && !seen.has(key)) {
         picked.push(a);
         seen.add(key);
@@ -254,6 +279,8 @@ Deno.serve(async (req) => {
       if (seen.has(key)) continue;
       const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
       if (pairAlreadyUsed && a.orb >= 3) continue;
+      if (scoreAspect(a) <= 1) continue;
+      if (MINOR.has(a.aspect) && minorCount() >= MINOR_CAP) continue;
       if (a.orb >= 6 && toneOf(a) === "difficult") {
         deferred.push(a);
         continue;
@@ -306,12 +333,17 @@ Deno.serve(async (req) => {
     const aspects = picked.slice(0, NARRATIVE_CAP);
     // Real contacts left out only because they are wider. Surfaced briefly so
     // the reading never pretends they do not exist.
+    // Only genuinely loose contacts (>= 5 degrees) may be described as "wide".
+    // A 1-2 degree contact that simply lost a slot is a secondary contact, not a
+    // background one, and calling it wide misstates the math.
     const widerContacts = allRanked
       .filter((a) => !aspects.includes(a))
       .slice(0, 5)
       .map(
         (a) =>
-          `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): real but wide, background influence only.`,
+          a.orb >= 5
+            ? `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): real but wide, background influence only.`
+            : `${body.fromName}'s ${a.fromPlanet} ${a.symbol} ${body.toName}'s ${a.toPlanet} (${a.aspect}, ${a.orb.toFixed(1)}°): exact but secondary, present in the background of the nine featured contacts.`,
       );
     const supportiveInNarrative = aspects.filter((a) => toneOf(a) === "supportive");
 
@@ -916,7 +948,7 @@ ${parentRetroBlock}
 CROSS-ASPECTS (pre-scored, ranked by weight × tightness — bracketed weight is deterministic):
 ${aspectLines}
 
-WIDER CONTACTS (real but looser — background only, never a section):
+OTHER REAL CONTACTS (not featured as sections; wide ones are background, tight ones are secondary):
 ${widerContacts.length ? widerContacts.join("\n") : "(none)"}
 
 OVERALL INTENSITY: ${overallIntensity} (total signature weight = ${totalScore}, high-weight count = ${highWeightCount})

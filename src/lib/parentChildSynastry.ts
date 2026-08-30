@@ -53,82 +53,6 @@ export interface FamilySynastryReport {
   essenceLines: string[];
 }
 
-interface CuratedPair {
-  from: string;
-  to: string;
-  framingKey: string;
-}
-
-/**
- * Curated cross-aspect rows, FROM → TO. Keep the list focused — these are the
- * aspects that meaningfully describe how the FROM person's energy lands on the
- * TO person's nervous system.
- */
-const PARENT_TO_CHILD_PAIRS: CuratedPair[] = [
-  { from: "Sun", to: "Moon", framingKey: "sun-moon" },
-  { from: "Sun", to: "Sun", framingKey: "sun-sun" },
-  { from: "Moon", to: "Sun", framingKey: "moon-sun" },
-  { from: "Moon", to: "Moon", framingKey: "moon-moon" },
-  { from: "Ascendant", to: "Sun", framingKey: "asc-sun" },
-  { from: "Mars", to: "Moon", framingKey: "mars-moon" },
-  { from: "Mercury", to: "Moon", framingKey: "mercury-moon" },
-  { from: "Saturn", to: "Sun", framingKey: "saturn-sun" },
-  { from: "Saturn", to: "Moon", framingKey: "saturn-moon" },
-  { from: "Moon", to: "Venus", framingKey: "moon-venus" },
-  { from: "Venus", to: "Moon", framingKey: "venus-moon" },
-  { from: "Jupiter", to: "Sun", framingKey: "jupiter-sun" },
-  { from: "Pluto", to: "Sun", framingKey: "pluto-sun" },
-  { from: "Pluto", to: "Moon", framingKey: "pluto-moon" },
-  { from: "Neptune", to: "Sun", framingKey: "neptune-sun" },
-  { from: "Neptune", to: "Moon", framingKey: "neptune-moon" },
-  { from: "Chiron", to: "Sun", framingKey: "chiron-sun" },
-  { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
-  { from: "NorthNode", to: "Sun", framingKey: "node-sun" },
-  { from: "NorthNode", to: "Moon", framingKey: "node-moon" },
-  // Uranus contacts: unpredictability, reactivity, and nervous-system speed
-  // between the two charts. Previously missing entirely.
-  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
-  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
-  { from: "Uranus", to: "Sun", framingKey: "uranus-sun" },
-  // Supportive-capable channels. Without these, a chart whose only tight
-  // easy contacts run through Mercury, Venus, or Jupiter looked like a
-  // relationship made entirely of hard aspects, which is a selection artifact.
-  { from: "Sun", to: "Mercury", framingKey: "sun-mercury" },
-  { from: "Sun", to: "Venus", framingKey: "sun-venus" },
-  { from: "Moon", to: "Mercury", framingKey: "moon-mercury" },
-  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
-  { from: "Venus", to: "Venus", framingKey: "venus-venus" },
-  { from: "Venus", to: "Sun", framingKey: "venus-sun" },
-  { from: "Venus", to: "Mercury", framingKey: "venus-mercury" },
-  { from: "Jupiter", to: "Moon", framingKey: "jupiter-moon" },
-  { from: "Jupiter", to: "Mercury", framingKey: "jupiter-mercury" },
-  { from: "Jupiter", to: "Venus", framingKey: "jupiter-venus" },
-  { from: "Saturn", to: "Venus", framingKey: "saturn-venus" },
-  { from: "Saturn", to: "Mercury", framingKey: "saturn-mercury" },
-  { from: "Mars", to: "Mercury", framingKey: "mars-mercury" },
-  { from: "Mars", to: "Sun", framingKey: "mars-sun" },
-  { from: "Neptune", to: "Mercury", framingKey: "neptune-mercury" },
-  { from: "Pluto", to: "Mercury", framingKey: "pluto-mercury" },
-  { from: "Chiron", to: "Mercury", framingKey: "chiron-mercury" },
-
-];
-
-/** Sibling-specific pair set — drops Saturn-authority, adds Mercury↔Mercury. */
-const SIBLING_PAIRS: CuratedPair[] = [
-  { from: "Sun", to: "Sun", framingKey: "sun-sun" },
-  { from: "Moon", to: "Moon", framingKey: "moon-moon" },
-  { from: "Mercury", to: "Mercury", framingKey: "mercury-mercury" },
-  { from: "Sun", to: "Moon", framingKey: "sun-moon" },
-  { from: "Moon", to: "Sun", framingKey: "moon-sun" },
-  { from: "Mars", to: "Moon", framingKey: "mars-moon" },
-  { from: "Venus", to: "Moon", framingKey: "venus-moon" },
-  { from: "Mercury", to: "Moon", framingKey: "mercury-moon" },
-  { from: "Jupiter", to: "Sun", framingKey: "jupiter-sun" },
-  { from: "Chiron", to: "Moon", framingKey: "chiron-moon" },
-  { from: "Uranus", to: "Moon", framingKey: "uranus-moon" },
-  { from: "Uranus", to: "Mercury", framingKey: "uranus-mercury" },
-];
-
 const ASPECTS = [
   { name: "conjunction", angle: 0, symbol: "☌" },
   { name: "opposition", angle: 180, symbol: "☍" },
@@ -148,7 +72,7 @@ const FAMILY_MINOR_ASPECTS = [
   { name: "semisextile", angle: 30, symbol: "⚺" },
 ] as const;
 
-const MINOR_ELIGIBLE = new Set(["Sun", "Moon", "Mercury", "Mars"]);
+const MINOR_ELIGIBLE = new Set(["Sun", "Moon", "Mercury", "Mars", "Ascendant", "MC"]);
 
 function familyMinorOrbLimit(p1: string, p2: string): number | null {
   const lum = (p: string) => p === "Sun" || p === "Moon";
@@ -174,13 +98,24 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   const withAny = (set: string[], other: string) =>
     (set.includes(from) && to === other) || (set.includes(to) && from === other);
   const lum = (p: string) => p === "Sun" || p === "Moon";
+  const angle = (p: string) => p === "Ascendant" || p === "MC";
+  const personal = (p: string) => ["Sun", "Moon", "Mercury", "Venus", "Mars"].includes(p);
+  const outer = (p: string) => ["Uranus", "Neptune", "Pluto", "Chiron", "NorthNode", "SouthNode"].includes(p);
+
+  // Generation-to-generation outer contacts carry almost no personal signal, so
+  // they must never crowd out a personal-planet contact even when very tight.
+  if (outer(from) && outer(to)) return 1;
 
   // Supportive contacts carry real weight. Under-weighting them was what made
   // readings drift into "this relationship is mostly difficult".
   if (isSoft) {
     if (lum(from) && lum(to)) return 4;
+    if (angle(from) && personal(to)) return 4;
+    if (angle(to) && personal(from)) return 4;
     if (lum(from) || lum(to)) return 3;
     if (["Venus", "Jupiter"].includes(from) || ["Venus", "Jupiter"].includes(to)) return 3;
+    if (personal(from) && personal(to)) return 3;
+    if (angle(from) || angle(to)) return 3;
     return 2;
   }
 
@@ -189,15 +124,21 @@ export function familyAspectWeight(from: string, to: string, aspect: string): nu
   if (isHard && withAny(["Chiron"], "Sun")) return 4;
   if (isHard && withAny(["Chiron"], "Moon")) return 4;
   if (pair("Pluto", "Moon")) return 4;
+  if (isHard && angle(from) && personal(to)) return 4;
+  if (isHard && angle(to) && personal(from)) return 4;
+  if (isHard && lum(from) && lum(to)) return 4;
   if (isHard && pair("Moon", "Neptune")) return 3;
   if (pair("Mercury", "Chiron")) return 3;
   if (isHard && pair("Mars", "Saturn")) return 3;
   if (isHard && pair("Mars", "Moon")) return 3;
   if (isHard && pair("Uranus", "Moon")) return 3;
   if (isHard && pair("Uranus", "Mercury")) return 3;
+  if (isHard && personal(from) && personal(to)) return 3;
+  if (angle(from) || angle(to)) return 3;
   if (from === "NorthNode" || to === "NorthNode" || from === "SouthNode" || to === "SouthNode") return 2;
   return 2;
 }
+
 
 /**
  * Tightness multiplier. Orb is decisive, not decorative: a sub-1° contact is
@@ -257,11 +198,57 @@ function bestAspect(deg1: number, deg2: number, p1: string, p2: string) {
   return null;
 }
 
-function pairsForRoles(fromRole: FamilyRole, toRole: FamilyRole): CuratedPair[] {
-  if (fromRole === "sibling" || toRole === "sibling") return SIBLING_PAIRS;
-  return PARENT_TO_CHILD_PAIRS;
+/**
+ * Bodies included in the full cross-chart matrix. SouthNode is deliberately
+ * excluded: every SouthNode contact is the mirror of a NorthNode contact, so
+ * including it would double-count the same axis.
+ */
+const FAMILY_BODIES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars",
+  "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto",
+  "Chiron", "NorthNode", "Ascendant", "MC",
+] as const;
+
+/** Sibling readings stay narrower: no angles, no Pluto/Neptune authority layer. */
+const SIBLING_BODIES = [
+  "Sun", "Moon", "Mercury", "Venus", "Mars",
+  "Jupiter", "Saturn", "Uranus", "Chiron", "NorthNode",
+] as const;
+
+const FRAMING_ALIAS: Record<string, string> = {
+  Sun: "sun", Moon: "moon", Mercury: "mercury", Venus: "venus", Mars: "mars",
+  Jupiter: "jupiter", Saturn: "saturn", Uranus: "uranus", Neptune: "neptune",
+  Pluto: "pluto", Chiron: "chiron", NorthNode: "node", SouthNode: "southnode",
+  Ascendant: "asc", MC: "mc",
+};
+
+function framingKeyFor(from: string, to: string): string {
+  return `${FRAMING_ALIAS[from] ?? from.toLowerCase()}-${FRAMING_ALIAS[to] ?? to.toLowerCase()}`;
 }
 
+/**
+ * Position map for one chart, including the MC derived from the 10th cusp so
+ * angle contacts are calculable even when planets.MC is absent.
+ */
+function bodyDegrees(chart: NatalChart): Record<string, number> {
+  const out: Record<string, number> = {};
+  const planets = chart.planets as Record<string, NatalPlanetPosition | undefined>;
+  for (const name of Object.keys(planets)) {
+    const d = toAbsoluteDegree(planets[name]);
+    if (d != null) out[name] = d;
+  }
+  if (out.MC == null) {
+    const c = chart.houseCusps?.house10 as { sign?: string; degree?: number; minutes?: number } | undefined;
+    if (c?.sign) {
+      const idx = ZODIAC_SIGNS.indexOf(c.sign);
+      if (idx >= 0) out.MC = idx * 30 + (c.degree ?? 0) + (c.minutes ?? 0) / 60;
+    }
+  }
+  return out;
+}
+
+/** Max rows kept after ranking. Generous, because the server caps the narrative. */
+const MAX_ROWS = 40;
 
 export function computeFamilySynastry(
   fromChart: NatalChart,
@@ -269,53 +256,68 @@ export function computeFamilySynastry(
   fromRole: FamilyRole,
   toRole: FamilyRole,
 ): FamilySynastryReport {
-  const pairs = pairsForRoles(fromRole, toRole);
+  const bodies: readonly string[] =
+    fromRole === "sibling" || toRole === "sibling" ? SIBLING_BODIES : FAMILY_BODIES;
+
+  const fromDeg = bodyDegrees(fromChart);
+  const toDeg = bodyDegrees(toChart);
   const rows: FamilyAspectRow[] = [];
 
-  for (const pair of pairs) {
-    const fromPos = (fromChart.planets as Record<string, NatalPlanetPosition | undefined>)[pair.from];
-    const toPos = (toChart.planets as Record<string, NatalPlanetPosition | undefined>)[pair.to];
-    const d1 = toAbsoluteDegree(fromPos);
-    const d2 = toAbsoluteDegree(toPos);
-    if (d1 == null || d2 == null) continue;
-    const asp = bestAspect(d1, d2, pair.from, pair.to);
-    if (!asp) continue;
-    const interp = PARENT_CHILD_INTERPRETATIONS[pair.framingKey]?.[asp.name] ?? null;
-    rows.push({
-      fromPlanet: pair.from,
-      toPlanet: pair.to,
-      aspect: asp.name,
-      orb: asp.orb,
-      symbol: asp.symbol,
-      framingKey: pair.framingKey,
-      interpretation: interp,
-    });
+  // FULL MATRIX. Every valid aspect between the tracked bodies is calculated
+  // first; interpretive weighting happens afterwards. No curated whitelist can
+  // erase a tight contact before it is ever measured.
+  for (const from of bodies) {
+    const d1 = fromDeg[from];
+    if (d1 == null) continue;
+    for (const to of bodies) {
+      const d2 = toDeg[to];
+      if (d2 == null) continue;
+      // Angle-to-angle cross contacts are geometry artifacts, not relationship
+      // information, so they are the one excluded combination.
+      if ((from === "Ascendant" || from === "MC") && (to === "Ascendant" || to === "MC")) continue;
+      const asp = bestAspect(d1, d2, from, to);
+      if (!asp) continue;
+      const framingKey = framingKeyFor(from, to);
+      rows.push({
+        fromPlanet: from,
+        toPlanet: to,
+        aspect: asp.name,
+        orb: asp.orb,
+        symbol: asp.symbol,
+        framingKey,
+        interpretation: PARENT_CHILD_INTERPRETATIONS[framingKey]?.[asp.name] ?? null,
+      });
+    }
   }
 
-  // Rank by importance AND tightness (see familyAspectRankScore). Anything
-  // inside 1° is guaranteed to sit above looser contacts, so a very tight
-  // aspect can never be buried under a "heavier" but wide one.
+  // Rank by importance AND tightness (see familyAspectRankScore). Orb is
+  // decisive: a sub-1° contact always outranks a heavier but wide one.
   rows.sort(
     (a, b) =>
       familyAspectRankScore(b.fromPlanet, b.toPlanet, b.aspect, b.orb) -
       familyAspectRankScore(a.fromPlanet, a.toPlanet, a.aspect, a.orb),
   );
 
-  // Balance rule: if the top of the list is all difficult contacts but a real
-  // supportive contact exists, promote the strongest supportive one into view.
+  // Balance rule: the visible head of the list must include supportive contacts
+  // when real supportive contacts exist, otherwise the relationship reads as
+  // entirely difficult purely as a selection artifact.
   const TOP = 5;
-  const head = rows.slice(0, TOP);
-  if (head.length && head.every((r) => familyAspectTone(r.aspect) === "difficult")) {
-    const bestSoftIdx = rows.findIndex((r) => familyAspectTone(r.aspect) === "supportive");
-    if (bestSoftIdx >= TOP) {
-      const [soft] = rows.splice(bestSoftIdx, 1);
-      rows.splice(Math.min(2, rows.length), 0, soft);
-    }
+  const WANTED_SOFT = 2;
+  for (let i = 0; i < WANTED_SOFT; i++) {
+    const head = rows.slice(0, TOP);
+    const softInHead = head.filter((r) => familyAspectTone(r.aspect) === "supportive").length;
+    if (softInHead > i) continue;
+    const idx = rows.findIndex(
+      (r, ri) => ri >= TOP && familyAspectTone(r.aspect) === "supportive",
+    );
+    if (idx < 0) break;
+    const [soft] = rows.splice(idx, 1);
+    rows.splice(Math.min(i + 1, rows.length), 0, soft);
   }
 
+  const trimmed = rows.slice(0, MAX_ROWS);
 
-
-  const essenceLines = rows
+  const essenceLines = trimmed
     .slice(0, 3)
     .map(r => {
       const verb = r.interpretation?.essenceVerb ?? "shapes";
@@ -327,10 +329,11 @@ export function computeFamilySynastry(
     toName: toChart.name,
     fromRole,
     toRole,
-    rows,
+    rows: trimmed,
     essenceLines,
   };
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Child Moon Profile (deterministic, no AI)
@@ -714,7 +717,7 @@ export function buildPairReadingPayload(
 
   // Widen the candidate pool so the server can see every meaningful curated
   // contact. The server ranks and caps the narrative itself.
-  const aspects: CrossAspectPayload[] = report.rows.slice(0, 30).map((r) => {
+  const aspects: CrossAspectPayload[] = report.rows.slice(0, 40).map((r) => {
     const fp = fromPlanets[r.fromPlanet];
     const tp = toPlanets[r.toPlanet];
     const fromAbs = fp?.sign ? ZODIAC_SIGNS.indexOf(fp.sign) * 30 + (fp.degree ?? 0) + (fp.minutes ?? 0) / 60 : null;
