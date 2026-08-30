@@ -1344,14 +1344,21 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     }
 
 
-    // Counts must agree with what the reading actually contains.
+    // Counts must agree with what the reading actually contains. aspectsUsed is
+    // the number of aspect sections actually written, never the number we asked
+    // for, so the UI can never claim coverage that is not on the page.
     const sectionCount = Array.isArray(pl.sections) ? (pl.sections as unknown[]).length : 0;
+    if (sectionCount !== aspects.length) {
+      validationLog.push(`aspect_section_count_mismatch:${sectionCount}/${aspects.length}`);
+      (payload as Record<string, unknown>)._validation_log = validationLog;
+    }
 
     return new Response(
       JSON.stringify({
         ...payload,
         ageYears,
-        aspectsUsed: sectionCount || aspects.length,
+        aspectsUsed: sectionCount,
+
         aspectsConsidered: body.aspects.length,
         aspectsRanked: aspects.length,
         traceableCount: (pl.traceableAspects as unknown[]).length,
