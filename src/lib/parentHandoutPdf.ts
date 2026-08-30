@@ -136,8 +136,12 @@ export function buildHandoutContent({
   childName,
 }: HandoutInput): HandoutContent {
   // Rhythms: prefer the first-class field, fall back to arrow lines in prose.
-  let parentRhythm = clean(r.rhythms?.parent);
-  let childRhythm = clean(r.rhythms?.child);
+  // Models sometimes prefix the sequence with the person's name; strip it so the
+  // band never reads "Lauren Newman: Lauren: observe > ...".
+  const stripNamePrefix = (t: string, name: string) =>
+    clean(t).replace(new RegExp(`^\\s*(?:${name.split(/\s+/).join("|")})\\s*:\\s*`, "i"), "");
+  let parentRhythm = stripNamePrefix(clean(r.rhythms?.parent), parentName);
+  let childRhythm = stripNamePrefix(clean(r.rhythms?.child), childName);
   if (!parentRhythm || !childRhythm) {
     const source = `${r.connectionMisfire?.framing ?? ""}\n${r.repairProfile?.plainEnglish ?? ""}`;
     const arrows = source
@@ -664,15 +668,16 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   s.frame(M, y, CW, boundH, undefined, BURGUNDY);
   s.smallCaps(`${parentFirstName}'s Responsibility`, M + 6, y + 7, BURGUNDY, 7, "left", colW - 12);
   s.smallCaps(`${childFirstName}'s Responsibility`, colX2 + 1, y + 7, SAGE, 7, "left", colW - 8);
-  s.bulletList(c.yours, M + 6, y + 13, colW - 12, layout.caps.bound, BURGUNDY, 8.4, 4.0);
-  s.bulletList(c.notYours, colX2 + 1, y + 13, colW - 8, layout.caps.bound, SAGE, 8.4, 4.0);
-  if (c.notMineToCarry) {
+  const endL = s.bulletList(c.yours, M + 6, y + 13, colW - 12, layout.caps.bound, BURGUNDY, 8.4, 4.0);
+  const endR = s.bulletList(c.notYours, colX2 + 1, y + 13, colW - 8, layout.caps.bound, SAGE, 8.4, 4.0);
+  const noteY = Math.max(endL, endR) + 1.5;
+  if (c.notMineToCarry && noteY <= y + boundH - 1.5) {
     d.setFont("times", "italic");
     d.setFontSize(7.8);
     d.setTextColor(...SOFT);
     const note = `Not mine to carry: ${c.notMineToCarry}`;
     const line = (d.splitTextToSize(note, CW - 14) as string[])[0];
-    d.text(line, M + 6, y + boundH - 4);
+    d.text(line, M + 6, Math.max(noteY, y + boundH - 4));
   }
 
 
