@@ -243,6 +243,10 @@ Deno.serve(async (req) => {
       }
     }
     // Pass 2: fill remaining slots by rank, avoiding duplicate planet pairs.
+    // Wide (>= 6 degrees) difficult contacts are held back while tighter
+    // material is still available, so a loose square can never headline over a
+    // 0-2 degree contact.
+    const deferred: CrossAspect[] = [];
     for (const a of allRanked) {
       if (picked.length >= NARRATIVE_CAP) break;
       const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
@@ -250,21 +254,55 @@ Deno.serve(async (req) => {
       if (seen.has(key)) continue;
       const pairAlreadyUsed = picked.some((p) => `${p.fromPlanet}|${p.toPlanet}` === pairKey);
       if (pairAlreadyUsed && a.orb >= 3) continue;
+      if (a.orb >= 6 && toneOf(a) === "difficult") {
+        deferred.push(a);
+        continue;
+      }
       picked.push(a);
       seen.add(key);
     }
-    // Balance rule: unless the pair genuinely has no supportive contact, at
-    // least one strong supportive contact must reach the narrative.
-    if (picked.every((a) => toneOf(a) === "difficult")) {
-      const bestSoft = allRanked.find((a) => toneOf(a) === "supportive");
-      if (bestSoft) {
-        const key = `${bestSoft.fromPlanet}|${bestSoft.toPlanet}|${bestSoft.aspect}`;
-        if (!seen.has(key)) {
-          picked.splice(Math.min(2, picked.length), 0, bestSoft);
-          seen.add(key);
+    // Balance rule: supportive contacts are not decoration. When the pair has
+    // supportive material, at least two supportive contacts (or all of them, if
+    // fewer exist) reach the narrative, and one lands in the opening three.
+    const softAvailable = allRanked.filter((a) => toneOf(a) === "supportive");
+    const softTarget = Math.min(2, softAvailable.length);
+    for (const bestSoft of softAvailable) {
+      const softInNarrative = picked.filter((a) => toneOf(a) === "supportive").length;
+      if (softInNarrative >= softTarget) break;
+      const key = `${bestSoft.fromPlanet}|${bestSoft.toPlanet}|${bestSoft.aspect}`;
+      if (seen.has(key)) continue;
+      // Drop the widest difficult pick rather than growing past the cap.
+      if (picked.length >= NARRATIVE_CAP) {
+        let worst = -1;
+        for (let i = 0; i < picked.length; i++) {
+          if (toneOf(picked[i]) !== "difficult") continue;
+          if (worst < 0 || picked[i].orb > picked[worst].orb) worst = i;
         }
+        if (worst < 0) break;
+        picked.splice(worst, 1);
       }
+      picked.splice(Math.min(softInNarrative + 1, picked.length), 0, bestSoft);
+      seen.add(key);
     }
+    // A supportive contact must appear in the first three sections when one exists.
+    if (
+      picked.length > 3 &&
+      picked.slice(0, 3).every((a) => toneOf(a) === "difficult") &&
+      picked.some((a) => toneOf(a) === "supportive")
+    ) {
+      const idx = picked.findIndex((a) => toneOf(a) === "supportive");
+      const [soft] = picked.splice(idx, 1);
+      picked.splice(2, 0, soft);
+    }
+    // Deferred wide difficult contacts fill any slot still empty at the end.
+    for (const a of deferred) {
+      if (picked.length >= NARRATIVE_CAP) break;
+      const key = `${a.fromPlanet}|${a.toPlanet}|${a.aspect}`;
+      if (seen.has(key)) continue;
+      picked.push(a);
+      seen.add(key);
+    }
+
     const aspects = picked.slice(0, NARRATIVE_CAP);
     // Real contacts left out only because they are wider. Surfaced briefly so
     // the reading never pretends they do not exist.
@@ -1009,7 +1047,25 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
       [/\balways feels\b/gi, "often feels"],
       [/\bnever feels\b/gi, "rarely feels"],
       [/\bhis brain is wired so that he cannot\b/gi, "his wiring may make it hard to"],
+      // Clinical / diagnostic overclaims.
+      [/\b(he|she|they) (?:is|are) (anxious|depressed|traumatized|avoidant|dysregulated)\b/gi,
+        "$1 may look $2"],
+      [/\b(has|have) (anxiety|depression|trauma|adhd|autism|a disorder)\b/gi, "may show signs of $2"],
+      [/\bthis (proves|confirms)\b/gi, "this suggests"],
+      [/\bthe chart (proves|shows that he|shows that she)\b/gi, "the chart suggests"],
+      // Private-mind claims: no reading knows what someone privately knows or wants.
+      [/\bhe (knows|feels|thinks|wants) that\b/gi, "he may sense that"],
+      [/\bshe (knows|feels|thinks|wants) that\b/gi, "she may sense that"],
+      [/\bdeep down (he|she|they) (knows|feels|wants)\b/gi, "$1 may quietly $2"],
+      [/\bdoes not love\b/gi, "may struggle to show love"],
+      [/\bhe is unable to\b/gi, "he may find it hard to"],
+      [/\bshe is unable to\b/gi, "she may find it hard to"],
+      // Neuro-clinical framing is not something a chart can establish.
+      [/\bis a real neurological (state|reality|condition)\b/gi, "is a genuine blank, not a dodge"],
+      [/\bneurologic(al|ally)\b/gi, "genuine"],
+      [/\bnervous system (shutdown|collapse|failure)\b/gi, "overload"],
     ];
+
     const BRITISH_TO_US: [RegExp, string][] = [
       [/\bbehaviour(s|al|ally)?\b/gi, "behavior$1"],
       [/\bfavour(s|ite|ites|ed|ing)?\b/gi, "favor$1"],
@@ -1071,34 +1127,51 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     // phrase "but has to" and cause markers in BOTH fields, which rejected
     // clearly specific mechanisms (e.g. Cancer Moon + Aquarius Mercury/Mars).
     const CONTRAST_MARKERS =
-      /\b(but|while|even though|although|yet|however|at the same time|instead of|rather than|versus|vs\.?|though)\b/i;
+      /\b(but|while|whereas|even though|although|yet|however|at the same time|instead of|rather than|versus|vs\.?|though|torn between|pull(ed)? between|tension between|caught between|wants? .{0,40}\bneeds?\b)\b/i;
+    // Cause and effect shows up in plain speech as participles too ("leaving him
+    // stuck", "meaning he argues"), not only as "because"/"so".
     const CAUSE_EFFECT_MARKERS =
-      /\b(so|because|since|which makes|which means|this creates|so that|which is why|leads to|results in|then)\b/i;
+      /\b(so|because|since|which makes|which means|this creates|so that|which is why|leads?( to)?|leading to|results? in|then|meaning|leaving|leaves|making|makes|causes?|causing|ends? up|turns? into|by the time|until)\b/i;
     const NAMES_ASTROLOGY =
       /\b(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Node|Ascendant|Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b|\b(house\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+house|H\d{1,2})\b/i;
+    type MechPart = { placement?: string; does?: string };
     const cm = (payload as Record<string, unknown>).childMechanism as
       | {
           theConflict?: string;
           inRealLife?: string;
           underStress?: string;
-          corePattern?: string;
-          parts?: { placement?: string; does?: string }[];
+          // Live schema returns corePattern as {placement, does} rows; older
+          // drafts sent a plain string or a "parts" array. Accept all three so
+          // the gate never rejects a valid mechanism on shape alone.
+          corePattern?: string | MechPart[];
+          parts?: MechPart[];
         }
       | undefined;
+    const partText = (list?: string | MechPart[]) =>
+      typeof list === "string"
+        ? list
+        : (list ?? []).map((p) => `${p?.placement ?? ""} ${p?.does ?? ""}`).join(" ");
     const mechanismText = [
       cm?.theConflict,
       cm?.inRealLife,
       cm?.underStress,
-      cm?.corePattern,
-      ...(cm?.parts ?? []).map((p) => `${p?.placement ?? ""} ${p?.does ?? ""}`),
+      partText(cm?.corePattern),
+      partText(cm?.parts),
     ]
       .filter(Boolean)
       .join(" ");
     const narrativeText = `${cm?.inRealLife ?? ""} ${cm?.underStress ?? ""}`.trim();
-    const conflictOk = !!cm?.theConflict && CONTRAST_MARKERS.test(cm.theConflict);
-    const causeOk = !!narrativeText && CAUSE_EFFECT_MARKERS.test(narrativeText);
+    const conflictOk =
+      !!cm?.theConflict &&
+      (CONTRAST_MARKERS.test(cm.theConflict) || CONTRAST_MARKERS.test(mechanismText));
+    // Cause and effect may live in the conflict statement itself.
+    const causeOk =
+      !!narrativeText &&
+      (CAUSE_EFFECT_MARKERS.test(narrativeText) ||
+        CAUSE_EFFECT_MARKERS.test(cm?.theConflict ?? ""));
     const specificOk = NAMES_ASTROLOGY.test(mechanismText) && narrativeText.length >= 60;
     const mechanismValid = conflictOk && causeOk && specificOk;
+
     if (!mechanismValid) {
       console.warn("[family-pair-reading] mechanism gate", { conflictOk, causeOk, specificOk });
     }
@@ -1313,14 +1386,21 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     }
 
 
-    // Counts must agree with what the reading actually contains.
+    // Counts must agree with what the reading actually contains. aspectsUsed is
+    // the number of aspect sections actually written, never the number we asked
+    // for, so the UI can never claim coverage that is not on the page.
     const sectionCount = Array.isArray(pl.sections) ? (pl.sections as unknown[]).length : 0;
+    if (sectionCount !== aspects.length) {
+      validationLog.push(`aspect_section_count_mismatch:${sectionCount}/${aspects.length}`);
+      (payload as Record<string, unknown>)._validation_log = validationLog;
+    }
 
     return new Response(
       JSON.stringify({
         ...payload,
         ageYears,
-        aspectsUsed: sectionCount || aspects.length,
+        aspectsUsed: sectionCount,
+
         aspectsConsidered: body.aspects.length,
         aspectsRanked: aspects.length,
         traceableCount: (pl.traceableAspects as unknown[]).length,
