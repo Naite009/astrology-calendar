@@ -81,13 +81,18 @@ function shorten(s: string, maxWords: number): string {
     .replace(/\s+([.,;:!?])/g, "$1")
     .replace(/[.,;:]+$/, "")
     .trim();
-  const words = base.split(/\s+/);
-  if (words.length <= maxWords) return base.replace(/[,;:]$/, "");
+  // Model bullets often arrive as lower-case fragments ("respects his need to
+  // ..."); printed as a bullet they should read as a line, so lift the first
+  // letter unless the word is deliberately lower-case (an acronym stays intact).
+  const capped = base.replace(/^([a-z])/, (m) => m.toUpperCase());
+  const words = capped.split(/\s+/);
+  if (words.length <= maxWords) return capped.replace(/[,;:]$/, "");
   // Cut at the last clean word boundary, dropping dangling connectors.
   const kept = words.slice(0, maxWords);
   while (kept.length && /^(and|or|but|to|of|for|the|a|when|that|his|her|their|because|instead|even)$/i.test(kept[kept.length - 1])) kept.pop();
   return kept.join(" ").replace(/[,;:]$/, "") + "\u2026";
 }
+
 
 /** Compact auditable aspect label, e.g. "Saturn \u25B3 Venus 0.2\u00B0". */
 const PLANET_RE =
