@@ -1629,8 +1629,8 @@ const AiPairReadingView = ({
             Take the Short Version With You
           </CardTitle>
           <CardDescription className="pt-1">
-            A designed one-page guide with your different rhythms, what {toName} needs, what {toName} is
-            learning, what helps in conflict, and the one message to remember.
+            A designed one-page guide: how you are different, each of your emotional languages, what {toName}
+            needs, what {toName} is learning, what helps, who is responsible for what, and the one message to remember.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1647,7 +1647,7 @@ const AiPairReadingView = ({
             className="w-full sm:w-auto"
           >
             <FileDown className="h-4 w-4 mr-2" />
-            Create Parent Handout (PDF)
+            Create Beautiful Parent PDF
           </Button>
         </CardContent>
       </Card>
