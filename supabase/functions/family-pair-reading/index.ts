@@ -183,12 +183,21 @@ Deno.serve(async (req) => {
         (f === p1 && t === p2) || (f === p2 && t === p1);
       const involvesAny = (set: string[], other: string) =>
         (set.includes(f) && t === other) || (set.includes(t) && f === other);
+      const ANGLE = (p: string) => p === "Ascendant" || p === "MC";
+      const PERSONAL = (p: string) => ["Sun", "Moon", "Mercury", "Venus", "Mars"].includes(p);
+      const OUTER = (p: string) =>
+        ["Uranus", "Neptune", "Pluto", "Chiron", "NorthNode", "SouthNode"].includes(p);
+      // Outer-to-outer contacts are generational, not personal: never headline.
+      if (OUTER(f) && OUTER(t)) return 1;
       // Supportive contacts carry real weight so the reading cannot drift into
       // "this relationship is mostly difficult" purely from scoring bias.
       if (SOFT.has(asp)) {
         if (LUM(f) && LUM(t)) return 4;
+        if (ANGLE(f) && PERSONAL(t)) return 4;
+        if (ANGLE(t) && PERSONAL(f)) return 4;
         if (LUM(f) || LUM(t)) return 3;
         if (["Venus", "Jupiter"].includes(f) || ["Venus", "Jupiter"].includes(t)) return 3;
+        if (PERSONAL(f) && PERSONAL(t)) return 3;
         return 2;
       }
       // Saturn hard Sun/Moon = +5
@@ -210,6 +219,12 @@ Deno.serve(async (req) => {
       // Uranus contacts = +3 (unpredictability against regulation / processing)
       if (isHard && involves("Uranus", "Moon")) return 3;
       if (isHard && involves("Uranus", "Mercury")) return 3;
+      // Angle contacts to personal planets = +4
+      if (isHard && ANGLE(f) && PERSONAL(t)) return 4;
+      if (isHard && ANGLE(t) && PERSONAL(f)) return 4;
+      if (isHard && LUM(f) && LUM(t)) return 4;
+      // Personal-planet hard contacts = +3
+      if (isHard && PERSONAL(f) && PERSONAL(t)) return 3;
       // Node contacts = +2
       if (f === "NorthNode" || t === "NorthNode" || f === "SouthNode" || t === "SouthNode") return 2;
       // Default qualifying hard contact
