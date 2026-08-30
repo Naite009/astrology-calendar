@@ -1060,6 +1060,10 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
       [/\bdoes not love\b/gi, "may struggle to show love"],
       [/\bhe is unable to\b/gi, "he may find it hard to"],
       [/\bshe is unable to\b/gi, "she may find it hard to"],
+      // Neuro-clinical framing is not something a chart can establish.
+      [/\bis a real neurological (state|reality|condition)\b/gi, "is a genuine blank, not a dodge"],
+      [/\bneurologic(al|ally)\b/gi, "genuine"],
+      [/\bnervous system (shutdown|collapse|failure)\b/gi, "overload"],
     ];
 
     const BRITISH_TO_US: [RegExp, string][] = [
