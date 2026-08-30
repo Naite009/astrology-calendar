@@ -81,13 +81,18 @@ function shorten(s: string, maxWords: number): string {
     .replace(/\s+([.,;:!?])/g, "$1")
     .replace(/[.,;:]+$/, "")
     .trim();
-  const words = base.split(/\s+/);
-  if (words.length <= maxWords) return base.replace(/[,;:]$/, "");
+  // Model bullets often arrive as lower-case fragments ("respects his need to
+  // ..."); printed as a bullet they should read as a line, so lift the first
+  // letter unless the word is deliberately lower-case (an acronym stays intact).
+  const capped = base.replace(/^([a-z])/, (m) => m.toUpperCase());
+  const words = capped.split(/\s+/);
+  if (words.length <= maxWords) return capped.replace(/[,;:]$/, "");
   // Cut at the last clean word boundary, dropping dangling connectors.
   const kept = words.slice(0, maxWords);
   while (kept.length && /^(and|or|but|to|of|for|the|a|when|that|his|her|their|because|instead|even)$/i.test(kept[kept.length - 1])) kept.pop();
   return kept.join(" ").replace(/[,;:]$/, "") + "\u2026";
 }
+
 
 /** Compact auditable aspect label, e.g. "Saturn \u25B3 Venus 0.2\u00B0". */
 const PLANET_RE =
@@ -153,28 +158,38 @@ export function buildHandoutContent({
     childRhythm = childRhythm || arrows[1] || "";
   }
 
-  // The child's emotional language: Moon bridge + what may be underneath.
-  const moonChild = (() => {
-    const summary = clean(r.moonBridge?.summary);
-    const parts = splitSentences(summary);
-    // Only use a Moon-bridge sentence that actually describes this child.
-    const childPart =
-      parts.find((p) => p.includes(childName.split(/\s+/)[0]) && /Moon/i.test(p)) ??
-      parts.find((p) => /Moon/i.test(p) && !p.includes(parentName.split(/\s+/)[0])) ??
-      "";
-    // Drop any comparative clause about the parent so the line is about the child.
-    let out = clean(childPart);
-    const parentFirst = parentName.split(/\s+/)[0];
-    const childFirst = childName.split(/\s+/)[0];
-    if (parentFirst && out.includes(parentFirst)) {
-      const clause = out
-        .split(/\b(?:whereas|while|but)\b/i)
-        .map((x) => x.trim())
-        .find((x) => x.includes(childFirst));
-      if (clause) out = clause.charAt(0).toUpperCase() + clause.slice(1);
-    }
-    return out.replace(/^,\s*/, "");
-  })();
+  const parentFirst = parentName.split(/\s+/)[0];
+  const childFirst = childName.split(/\s+/)[0];
+
+  /**
+   * The Moon bridge is usually one comparative sentence ("Your Libra Moon ...,
+   * whereas his Cancer Moon ..."). Split it so the two columns never print the
+   * same sentence twice.
+   */
+  const splitComparison = (sentence: string) => {
+    const clauses = clean(sentence)
+      .split(/\b(?:whereas|while|but|whereas as)\b/i)
+      .map((x) => x.trim().replace(/^,\s*/, ""))
+      .filter(Boolean);
+    const isChild = (t: string) =>
+      new RegExp(`\\b(${childFirst}|he|she|they|his|her|their)\\b`, "i").test(t) &&
+      !/\byou(r)?\b/i.test(t);
+    const isParent = (t: string) =>
+      /\byou(r)?\b/i.test(t) || new RegExp(`\\b${parentFirst}\\b`, "i").test(t);
+    const cap = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : "");
+    return {
+      child: cap(clauses.find(isChild) ?? ""),
+      parent: cap(clauses.find(isParent) ?? ""),
+    };
+  };
+
+  const moonParts = splitSentences(r.moonBridge?.summary ?? "").filter((p) => /Moon/i.test(p));
+  const bridge = moonParts.map(splitComparison);
+  const finish = (t: string) =>
+    t ? clean(t).replace(/[,;:]\s*$/, "").replace(/([^.!?])$/, "$1.") : "";
+
+  // The child's emotional language: Moon clause + what may be underneath.
+  const moonChild = finish(bridge.find((b) => b.child)?.child ?? "");
   const emotionalLanguage =
     [moonChild, sentences(r.perceptionTranslation?.underneath ?? "", 1)]
       .filter(Boolean)
@@ -182,27 +197,9 @@ export function buildHandoutContent({
     sentences(r.pressureProfile?.plainEnglish ?? "", 2) ||
     sentences(r.essence?.[1] ?? r.essence?.[0] ?? "", 2);
 
-  // The parent's own emotional language, drawn from the Moon bridge.
+  // The parent's own emotional language, drawn from the same bridge but from
+  // the clause that describes the parent.
   const parentEmotionalLanguage = (() => {
-    const parts = splitSentences(r.moonBridge?.summary ?? "");
-    const parentFirst = parentName.split(/\s+/)[0];
-    const childFirst = childName.split(/\s+/)[0];
-    let pick =
-      parts.find((p) => p.includes(parentFirst) && /Moon/i.test(p)) ??
-      parts.find((p) => /Moon/i.test(p) && !p.includes(childFirst)) ??
-      "";
-    if (pick && childFirst && pick.includes(childFirst)) {
-      const clause = pick
-        .split(/\b(?:whereas|while|but)\b/i)
-        .map((x) => x.trim())
-        .find((x) => x.includes(parentFirst));
-      if (clause) pick = clause.charAt(0).toUpperCase() + clause.slice(1);
-    }
-    // A second line only if it is genuinely about the parent, so this column
-    // never drifts into describing the child.
-    const second =
-      parts.find((p) => p !== pick && p.includes(parentFirst) && !p.includes(childFirst)) ??
-      sentences(clean(r.connectionMisfire?.parentIntent), 1);
     const toSecondPerson = (t: string) =>
       clean(
         t
@@ -210,13 +207,15 @@ export function buildHandoutContent({
           .replace(new RegExp(`\\b${parentFirst} is\\b`, "g"), "you are")
           .replace(new RegExp(`\\b${parentFirst}\\b`, "g"), "you"),
       ).replace(/^([a-z])/, (m) => m.toUpperCase());
-    const joined = [pick, second]
-      .filter(Boolean)
-      .map(toSecondPerson)
-      .map((t) => t.replace(/[,;:]\s*$/, "").replace(/([^.!?])$/, "$1."))
-      .join(" ");
+    const first = finish(toSecondPerson(bridge.find((b) => b.parent)?.parent ?? ""));
+    const second = finish(
+      toSecondPerson(sentences(clean(r.connectionMisfire?.parentIntent), 1)),
+    );
+    const joined = [first, second].filter(Boolean).join(" ");
     return joined || sentences(clean(r.repairProfile?.plainEnglish), 2);
   })();
+
+
 
   // The dynamic: honest framing first, then how the parent's intent lands.
   const dynamic =
@@ -595,7 +594,7 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── How We Are Different (processing rhythms)
   let y = 54;
   s.frame(M, y, CW, rhythmH, CARD, GOLD);
-  s.smallCaps("How We Are Different", M + 6, y + 7, GOLD, 7.4, "left", CW * 0.45);
+  s.smallCaps("Your Different Rhythms", M + 6, y + 7, GOLD, 7.4, "left", CW * 0.45);
   d.setFont("times", "italic");
   d.setFontSize(8.2);
   d.setTextColor(...SOFT);
@@ -648,15 +647,15 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── Balanced mini-panels
   s.frame(M, y, colW, layout.panelH, CARD, GOLD);
   s.frame(colX2, y, colW, layout.panelH, CARD, SAGE);
-  s.smallCaps(`What ${childFirstName} Needs From Me`, M + 5, y + 7, GOLD, 7, "left", colW - 10);
-  s.smallCaps(`What ${childFirstName} Is Learning From Me`, colX2 + 5, y + 7, SAGE, 7, "left", colW - 10);
+  s.smallCaps(`What ${childFirstName} Needs From You`, M + 5, y + 7, GOLD, 7, "left", colW - 10);
+  s.smallCaps(`What ${childFirstName} Is Learning`, colX2 + 5, y + 7, SAGE, 7, "left", colW - 10);
   s.bulletList(c.needs, M + 5, y + 13.5, colW - 10, layout.caps.panel, GOLD);
   s.bulletList(c.learning, colX2 + 5, y + 13.5, colW - 10, layout.caps.panel, SAGE);
   y += layout.panelH + 5;
 
   // ── What makes things harder / what helps
   s.smallCaps("What Makes Things Harder", M, y, BURGUNDY, 7.4);
-  s.smallCaps("What Helps", colX2, y, SAGE, 7.4);
+  s.smallCaps("When Things Get Hard", colX2, y, SAGE, 7.4);
   s.hair(M, y + 2.4, M + colW);
   s.hair(colX2, y + 2.4, colX2 + colW);
   s.bulletList(c.harder, M, y + 9, colW - 2, layout.caps.hard, BURGUNDY, 8.8, 4.3);
@@ -666,8 +665,8 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
   // ── Parent's responsibility / child's responsibility
   const boundH = Math.min(layout.boundH, MSG_TOP - 5 - y);
   s.frame(M, y, CW, boundH, undefined, BURGUNDY);
-  s.smallCaps(`${parentFirstName}'s Responsibility`, M + 6, y + 7, BURGUNDY, 7, "left", colW - 12);
-  s.smallCaps(`${childFirstName}'s Responsibility`, colX2 + 1, y + 7, SAGE, 7, "left", colW - 8);
+  s.smallCaps("What Is Yours", M + 6, y + 7, BURGUNDY, 7, "left", colW - 12);
+  s.smallCaps("What Is Not Yours", colX2 + 1, y + 7, SAGE, 7, "left", colW - 8);
   const endL = s.bulletList(c.yours, M + 6, y + 13, colW - 12, layout.caps.bound, BURGUNDY, 8.4, 4.0);
   const endR = s.bulletList(c.notYours, colX2 + 1, y + 13, colW - 8, layout.caps.bound, SAGE, 8.4, 4.0);
   const noteY = Math.max(endL, endR) + 1.5;
