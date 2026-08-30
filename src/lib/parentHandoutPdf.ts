@@ -575,7 +575,6 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
       layout = trial;
     }
   }
-  if (process.env.HANDOUT_DEBUG) console.log("final plan", layout.caps, layout.total, CONTENT_BOTTOM);
 
   // ── How We Are Different (processing rhythms)
   let y = 54;
@@ -601,8 +600,8 @@ export function generateParentHandout(input: HandoutInput): jsPDF {
     const line = (d.splitTextToSize(printable, CW - 14 - lw) as string[])[0];
     d.text(line, M + 8 + lw, ry);
   };
-  if (c.parentRhythm) rhythmRow(parentName, c.parentRhythm, y + 13.5, BURGUNDY);
-  if (c.childRhythm) rhythmRow(childName, c.childRhythm, y + 19.5, SAGE);
+  if (c.parentRhythm) rhythmRow(parentName, c.parentRhythm, y + 12.8, BURGUNDY);
+  if (c.childRhythm) rhythmRow(childName, c.childRhythm, y + 18.4, SAGE);
   y += rhythmH + 6;
 
   // ── Two columns: child's emotional language / parent's emotional language
