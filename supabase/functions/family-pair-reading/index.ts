@@ -1085,34 +1085,51 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
     // phrase "but has to" and cause markers in BOTH fields, which rejected
     // clearly specific mechanisms (e.g. Cancer Moon + Aquarius Mercury/Mars).
     const CONTRAST_MARKERS =
-      /\b(but|while|even though|although|yet|however|at the same time|instead of|rather than|versus|vs\.?|though)\b/i;
+      /\b(but|while|whereas|even though|although|yet|however|at the same time|instead of|rather than|versus|vs\.?|though|torn between|pull(ed)? between|tension between|caught between|wants? .{0,40}\bneeds?\b)\b/i;
+    // Cause and effect shows up in plain speech as participles too ("leaving him
+    // stuck", "meaning he argues"), not only as "because"/"so".
     const CAUSE_EFFECT_MARKERS =
-      /\b(so|because|since|which makes|which means|this creates|so that|which is why|leads to|results in|then)\b/i;
+      /\b(so|because|since|which makes|which means|this creates|so that|which is why|leads?( to)?|leading to|results? in|then|meaning|leaving|leaves|making|makes|causes?|causing|ends? up|turns? into|by the time|until)\b/i;
     const NAMES_ASTROLOGY =
       /\b(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Node|Ascendant|Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b|\b(house\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+house|H\d{1,2})\b/i;
+    type MechPart = { placement?: string; does?: string };
     const cm = (payload as Record<string, unknown>).childMechanism as
       | {
           theConflict?: string;
           inRealLife?: string;
           underStress?: string;
-          corePattern?: string;
-          parts?: { placement?: string; does?: string }[];
+          // Live schema returns corePattern as {placement, does} rows; older
+          // drafts sent a plain string or a "parts" array. Accept all three so
+          // the gate never rejects a valid mechanism on shape alone.
+          corePattern?: string | MechPart[];
+          parts?: MechPart[];
         }
       | undefined;
+    const partText = (list?: string | MechPart[]) =>
+      typeof list === "string"
+        ? list
+        : (list ?? []).map((p) => `${p?.placement ?? ""} ${p?.does ?? ""}`).join(" ");
     const mechanismText = [
       cm?.theConflict,
       cm?.inRealLife,
       cm?.underStress,
-      cm?.corePattern,
-      ...(cm?.parts ?? []).map((p) => `${p?.placement ?? ""} ${p?.does ?? ""}`),
+      partText(cm?.corePattern),
+      partText(cm?.parts),
     ]
       .filter(Boolean)
       .join(" ");
     const narrativeText = `${cm?.inRealLife ?? ""} ${cm?.underStress ?? ""}`.trim();
-    const conflictOk = !!cm?.theConflict && CONTRAST_MARKERS.test(cm.theConflict);
-    const causeOk = !!narrativeText && CAUSE_EFFECT_MARKERS.test(narrativeText);
+    const conflictOk =
+      !!cm?.theConflict &&
+      (CONTRAST_MARKERS.test(cm.theConflict) || CONTRAST_MARKERS.test(mechanismText));
+    // Cause and effect may live in the conflict statement itself.
+    const causeOk =
+      !!narrativeText &&
+      (CAUSE_EFFECT_MARKERS.test(narrativeText) ||
+        CAUSE_EFFECT_MARKERS.test(cm?.theConflict ?? ""));
     const specificOk = NAMES_ASTROLOGY.test(mechanismText) && narrativeText.length >= 60;
     const mechanismValid = conflictOk && causeOk && specificOk;
+
     if (!mechanismValid) {
       console.warn("[family-pair-reading] mechanism gate", { conflictOk, causeOk, specificOk });
     }
