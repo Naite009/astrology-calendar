@@ -1009,7 +1009,21 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
       [/\balways feels\b/gi, "often feels"],
       [/\bnever feels\b/gi, "rarely feels"],
       [/\bhis brain is wired so that he cannot\b/gi, "his wiring may make it hard to"],
+      // Clinical / diagnostic overclaims.
+      [/\b(he|she|they) (?:is|are) (anxious|depressed|traumatized|avoidant|dysregulated)\b/gi,
+        "$1 may look $2"],
+      [/\b(has|have) (anxiety|depression|trauma|adhd|autism|a disorder)\b/gi, "may show signs of $2"],
+      [/\bthis (proves|confirms)\b/gi, "this suggests"],
+      [/\bthe chart (proves|shows that he|shows that she)\b/gi, "the chart suggests"],
+      // Private-mind claims: no reading knows what someone privately knows or wants.
+      [/\bhe (knows|feels|thinks|wants) that\b/gi, "he may sense that"],
+      [/\bshe (knows|feels|thinks|wants) that\b/gi, "she may sense that"],
+      [/\bdeep down (he|she|they) (knows|feels|wants)\b/gi, "$1 may quietly $2"],
+      [/\bdoes not love\b/gi, "may struggle to show love"],
+      [/\bhe is unable to\b/gi, "he may find it hard to"],
+      [/\bshe is unable to\b/gi, "she may find it hard to"],
     ];
+
     const BRITISH_TO_US: [RegExp, string][] = [
       [/\bbehaviour(s|al|ally)?\b/gi, "behavior$1"],
       [/\bfavour(s|ite|ites|ed|ing)?\b/gi, "favor$1"],
