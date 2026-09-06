@@ -164,12 +164,18 @@ export function formatMoonHouseSchedule(
   const signChange = findNextMoonSignChange(now);
   const nextSign = signChange.newSign;
   const when = (d: Date) => formatWhen(d, now, tz, tzAbbr);
+  // "at 3:47 PM" for today, but "tomorrow at 12:49 PM" already reads correctly.
+  const atWhen = (d: Date) => {
+    const w = when(d);
+    return /^\d/.test(w) ? `at ${w}` : w;
+  };
   // The schedule window is capped at 24h; only promise an ingress inside it.
   const ingressInWindow =
     signChange.time.getTime() <= segs[segs.length - 1].to.getTime() + 60_000;
   const tail = ingressInWindow
-    ? `until Moon enters ${nextSign} at ${when(signChange.time)}.`
-    : `for the rest of the day. Moon enters ${nextSign} ${when(signChange.time)}.`;
+    ? `until Moon enters ${nextSign} ${atWhen(signChange.time)}.`
+    : `for the rest of the day. Moon enters ${nextSign} ${atWhen(signChange.time)}.`;
+
 
   if (segs.length === 1) {
     return `Moon in ${sign}: in your ${ord(segs[0].house)} house ${tail}`;
