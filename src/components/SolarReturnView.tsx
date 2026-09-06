@@ -710,7 +710,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
   };
 
   // ── Auto-Calculate Solar Return ────────────────────────────────────
-  const handleAutoCalculate = () => {
+  const handleAutoCalculate = async () => {
     setAutoCalcError(null);
 
     // Need natal Sun position
@@ -720,36 +720,56 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       return;
     }
 
-    // Resolve lat/lng from location string or stored coordinates
+    // Resolve precise lat/lng for the place the person will be on their
+    // birthday. Explicit "lat, lng" wins; otherwise the shared place resolver
+    // (city database, then online geocoder). Falls back to the natal chart's
+    // stored birthplace coordinates, then to resolving the birthplace name.
     let lat: number | null = null;
     let lng: number | null = null;
+    let placeNote = '';
 
-    // Check for "lat, lng" coordinate format in location field
-    const coordMatch = location.match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
+    const coordMatch = location.match(/^\s*([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)\s*$/);
     if (coordMatch) {
       lat = parseFloat(coordMatch[1]);
       lng = parseFloat(coordMatch[2]);
     } else if (location.trim()) {
-      const coords = getCoordinatesFromLocation(location);
-      if (coords) { lat = coords.lat; lng = coords.lon; }
+      setIsAutoCalc(true);
+      try {
+        const place = await resolveBirthPlace(location);
+        if (place && place.confidence !== 'low') {
+          lat = place.latitude; lng = place.longitude; placeNote = place.canonicalName;
+        }
+      } catch { /* fall through to birthplace */ }
+      setIsAutoCalc(false);
     }
 
-    // Fall back to birth location if SR location not resolved
     if (lat === null || lng === null) {
-      const birthCoordMatch = (natalChart.birthLocation || '').match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
-      if (birthCoordMatch) {
-        lat = parseFloat(birthCoordMatch[1]);
-        lng = parseFloat(birthCoordMatch[2]);
+      if (typeof natalChart.latitude === 'number' && typeof natalChart.longitude === 'number') {
+        lat = natalChart.latitude; lng = natalChart.longitude; placeNote = natalChart.birthLocation || '';
       } else {
-        const birthCoords = getCoordinatesFromLocation(natalChart.birthLocation || '');
-        if (birthCoords) { lat = birthCoords.lat; lng = birthCoords.lon; }
+        const birthCoordMatch = (natalChart.birthLocation || '').match(/^\s*([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)\s*$/);
+        if (birthCoordMatch) {
+          lat = parseFloat(birthCoordMatch[1]);
+          lng = parseFloat(birthCoordMatch[2]);
+        } else if (natalChart.birthLocation) {
+          try {
+            const birthPlace = await resolveBirthPlace(natalChart.birthLocation);
+            if (birthPlace && birthPlace.confidence !== 'low') {
+              lat = birthPlace.latitude; lng = birthPlace.longitude; placeNote = birthPlace.canonicalName;
+            }
+          } catch { /* handled below */ }
+        }
+      }
+      if (lat !== null && location.trim() && !coordMatch) {
+        toast.message(`Could not place "${location}" precisely; using the birthplace instead.`);
       }
     }
 
     if (lat === null || lng === null) {
-      setAutoCalcError('Could not determine location coordinates. Enter a city name or "lat, lng" coordinates in the SR Location field.');
+      setAutoCalcError('Could not determine precise coordinates for that place. Enter a recognizable city (City, State/Country) or "lat, lng" coordinates in the SR Location field.');
       return;
     }
+    if (placeNote) toast.message(`Solar return location: ${placeNote}`);
 
     setIsAutoCalc(true);
     try {
