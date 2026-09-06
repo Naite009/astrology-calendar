@@ -49,28 +49,15 @@ export const UserForm = ({ initialData, onSave, onClose }: UserFormProps) => {
     }
   }, [formData.birthLocation, formData.birthDate]);
 
-  // Get DST-aware label for selected timezone
+  // DST-aware label for the selected zone, evaluated at the local birth moment
+  // through the shared zone rules (never the browser's own zone).
   const currentTzLabel = useMemo(() => {
     if (autoDetectedTz) return autoDetectedTz.label;
-    const result = lookupTimezone('', formData.birthDate);
-    // For manual selection, compute the label based on the selected timezone
     if (formData.timezone && formData.birthDate) {
-      // Create a temporary lookup to get the proper label
-      const tempDate = new Date(formData.birthDate + 'T12:00:00');
-      const offset = (() => {
-        try {
-          const utcDate = new Date(tempDate.toLocaleString('en-US', { timeZone: 'UTC' }));
-          const tzDate = new Date(tempDate.toLocaleString('en-US', { timeZone: formData.timezone }));
-          return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
-        } catch {
-          return 0;
-        }
-      })();
-      const offsetStr = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
-      return offsetStr;
+      return getTimezoneInfoForDate(formData.timezone, formData.birthDate, formData.birthTime || undefined).label;
     }
     return null;
-  }, [formData.timezone, formData.birthDate, autoDetectedTz]);
+  }, [formData.timezone, formData.birthDate, formData.birthTime, autoDetectedTz]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
