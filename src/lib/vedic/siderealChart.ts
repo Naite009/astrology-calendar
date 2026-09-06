@@ -64,12 +64,22 @@ function norm360(v: number): number {
   return ((v % 360) + 360) % 360;
 }
 
+/**
+ * Birth instant for the sidereal chart. Uses the shared normalization path
+ * (birthplace zone rules, historical DST, half-hour zones) so the Vedic tab
+ * cannot disagree with the tropical chart. Legacy records that carry only a
+ * numeric offset still resolve through that path; a record with neither zone
+ * nor offset falls back to reading the clock time as UTC, with a warning.
+ */
 export function buildBirthMoment(chart: NatalChart): Date {
+  const shared = birthMomentOf(chart);
+  if (shared) return shared;
   const [y, m, d] = (chart.birthDate || '2000-01-01').split('-').map(Number);
   const [hh, mm] = (chart.birthTime || '12:00').split(':').map(Number);
   const offset = typeof chart.timezoneOffset === 'number' ? chart.timezoneOffset : 0;
-  // Half-hour zones (+05:30, +07:30) need the offset in minutes, because
-  // Date.UTC truncates a fractional hour argument.
+  if (typeof console !== 'undefined') {
+    console.warn(`[siderealChart] No resolvable birthplace zone for ${chart.name || 'chart'}; using stored offset ${offset}h.`);
+  }
   return new Date(Date.UTC(y || 2000, (m || 1) - 1, d || 1, hh || 12, (mm || 0) - Math.round(offset * 60)));
 }
 
