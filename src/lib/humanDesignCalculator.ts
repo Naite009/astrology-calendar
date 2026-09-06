@@ -841,21 +841,25 @@ export function calculateHumanDesignChart(
   timezone: string,
   timezoneOffset: number
 ): HumanDesignChart {
-  // Parse birth date and time (these represent a *local clock time* in the selected birth timezone)
+  // Birth date and time are the *local clock time* in the birth zone. Convert
+  // with the zone's historical rules at that exact moment (DST changeover
+  // nights, fractional zones). The numeric offset is only a fallback for
+  // records that carry no valid zone id.
   const [year, month, day] = birthDate.split('-').map(Number);
-  const [hours, minutes] = birthTime.split(':').map(Number);
-
-  // IMPORTANT: do NOT use `new Date(year, ...)` here.
-  // That constructor interprets the parts in the *browser's* timezone, which will shift results
-  // for users calculating a chart in a different timezone than their current device.
-  //
-  // Instead, treat the input as a timezone-naive timestamp and convert to UTC using the
-  // precomputed timezone offset (DST-aware) for the *birth location/timezone*.
-  //
-  // offset is hours from UTC for the birth timezone (e.g., New York in EDT = -4).
-  // local = UTC + offset  =>  UTC = local - offset
-  const utcMs = Date.UTC(year, month - 1, day, hours, minutes) - timezoneOffset * 60 * 60 * 1000;
-  const utcDate = new Date(utcMs);
+  const [hours, minutes, seconds] = birthTime.split(':').map(Number);
+  let utcDate: Date | null = null;
+  if (isValidTimeZone(timezone)) {
+    const conv = localToUtc(timezone, { year, month, day, hour: hours || 0, minute: minutes || 0, second: seconds || 0 }, 'earlier');
+    if (conv.resolved) utcDate = conv.resolved.utc;
+    else if (conv.status === 'nonexistent' && conv.suggestedLocal) {
+      utcDate = localToUtc(timezone, conv.suggestedLocal, 'earlier').resolved?.utc ?? null;
+    }
+  }
+  if (!utcDate) {
+    // Never `new Date(year, ...)`: that would read the parts in the browser's zone.
+    utcDate = new Date(Date.UTC(year, month - 1, day, hours || 0, (minutes || 0) - Math.round(timezoneOffset * 60), seconds || 0));
+  }
+  
   
   // Calculate Design date (88° before birth)
   const designDate = calculateDesignDate(utcDate);
