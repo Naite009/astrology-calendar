@@ -163,7 +163,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     setIsCalculating(true);
 
     try {
-      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate).offset;
+      // Offset at the actual local birth moment (kept for display/legacy fields;
+      // the calculator converts with the zone id itself).
+      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate, formData.birthTime).offset;
 
       const chart = calculateHumanDesignChart(
         formData.name,
