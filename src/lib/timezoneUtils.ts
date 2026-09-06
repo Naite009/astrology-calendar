@@ -351,17 +351,20 @@ export function lookupTimezone(location: string, birthDate?: string, birthTime?:
       .replace(/,\s*/g, ' ')
       .replace(/\s+/g, ' ');
 
+    const words = normalizedLocation.split(' ');
     let match = LOCATION_TIMEZONE_MAP[normalizedLocation];
     if (!match) {
       // Whole-word containment only, so "la" never matches inside "village".
-      const words = normalizedLocation.split(' ');
       for (const [key, value] of Object.entries(LOCATION_TIMEZONE_MAP)) {
         const keyWords = key.split(' ');
         if (key.length >= 4 && keyWords.every(w => words.includes(w))) { match = value; break; }
       }
     }
     if (!match) {
-      const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
+      // Whole-word match only: "nowhere land" must not match Louisiana's "la".
+      const zone = US_STATE_TIMEZONES.find(s =>
+        s.terms.some(t => t.trim().split(' ').every(w => words.includes(w))),
+      );
       if (zone) match = { timezone: zone.timezone } as typeof match;
     }
     if (match) {
