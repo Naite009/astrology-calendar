@@ -2,6 +2,7 @@
 // Uses astronomy-engine for precise ephemeris calculations
 
 import * as Astronomy from 'astronomy-engine';
+import { isValidTimeZone, localToUtc } from './time/zonedTime';
 import {
   HumanDesignChart,
   HDPlanetaryActivation,
