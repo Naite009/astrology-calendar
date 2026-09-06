@@ -1,15 +1,15 @@
 # Accuracy suite
 
-Run: 2026-08-24T00:48:09.499Z
+Run: 2026-09-06T17:41:56.339Z
 People: 20 | Sky moment for readings: 2026-06-15
 
 ## Headline
 
 | Area | Score | Detail |
 | --- | --- | --- |
-| Chart math | 99.9% | 279/280 positions inside tolerance, 1 close, 0 off |
+| Chart math | 100.0% | 280/280 positions inside tolerance, 0 close, 0 off |
 | Structural invariants | 100.0% | 140/140 held |
-| Reading voice | 100.0% | 0 errors, 2 warnings across 260 blocks, 14 rules |
+| Reading voice | 100.0% | 0 errors, 1 warnings across 260 blocks, 14 rules |
 
 ## Per person
 
@@ -34,10 +34,10 @@ People: 20 | Sky moment for readings: 2026-06-15
 | Reference 17 Toronto 1959 | 1959-04-26 13:37 Toronto, Canada (America/Toronto) | 100.0% | none | all ok | 0 |
 | Reference 18 Singapore 1966 | 1966-12-05 22:10 Singapore (Asia/Singapore) | 100.0% | none | all ok | 0 |
 | Reference 19 Miami 2019 | 2019-08-08 03:33 Miami, FL, USA (America/New_York) | 100.0% | none | all ok | 0 |
-| Reference 20 Berlin 1937 | 1937-02-11 12:00 Berlin, Germany (Europe/Berlin) | 97.6% | none | all ok | 0 |
+| Reference 20 Berlin 1937 | 1937-02-11 12:00 Berlin, Germany (Europe/Berlin) | 100.0% | none | all ok | 0 |
 
 ## Writing rules triggered
 
 | Rule | Severity | Hits |
 | --- | --- | --- |
-| readable-sentences | warning | 2 |
+| readable-sentences | warning | 1 |

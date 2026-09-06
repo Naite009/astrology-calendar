@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T00:48:09.499Z",
+  "generatedAt": "2026-09-06T17:41:56.339Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -13,14 +13,14 @@
           "expectedOffset": -5,
           "resolvedOffset": -5,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/New_York GMT-5 (-5h), UTC 1955-03-15T07:20:00.000Z, place New York, NY (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 353.9374,
-            "actual": 353.94305555555553,
-            "deltaArcmin": 0.33933333332697657,
+            "actual": 353.9372222222222,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
@@ -35,64 +35,64 @@
           {
             "body": "Mercury",
             "expected": 326.8908,
-            "actual": 326.8958333333333,
-            "deltaArcmin": 0.30200000000149885,
+            "actual": 326.8905555555555,
+            "deltaArcmin": 0.014666666666016681,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 312.1374,
-            "actual": 312.1422222222222,
-            "deltaArcmin": 0.28933333333043265,
+            "actual": 312.1377777777778,
+            "deltaArcmin": 0.022666666666282254,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 41.7519,
-            "actual": 41.75555555555555,
-            "deltaArcmin": 0.2193333333298142,
+            "actual": 41.75194444444445,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 109.8845,
-            "actual": 109.88138888888888,
-            "deltaArcmin": 0.18666666666831588,
+            "actual": 109.88388888888889,
+            "deltaArcmin": 0.0366666666650417,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 231.0103,
-            "actual": 231.00722222222223,
-            "deltaArcmin": 0.1846666666665442,
+            "actual": 231.0102777777778,
+            "deltaArcmin": 0.0013333333345144638,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 113.7271,
-            "actual": 113.72333333333333,
-            "deltaArcmin": 0.22600000000238651,
+            "actual": 113.72611111111111,
+            "deltaArcmin": 0.059333333331323956,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 207.7246,
-            "actual": 207.71694444444444,
-            "deltaArcmin": 0.45933333333778137,
+            "actual": 207.72166666666666,
+            "deltaArcmin": 0.17599999999902138,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 144.9057,
-            "actual": 144.9011111111111,
-            "deltaArcmin": 0.2753333333316732,
+            "actual": 144.90611111111113,
+            "deltaArcmin": 0.02466666666805395,
             "limit": 8,
             "status": "pass"
           },
@@ -108,8 +108,8 @@
           {
             "body": "NorthNode",
             "expected": 271.5377,
-            "actual": 272.1955555555556,
-            "deltaArcmin": 39.471333333340226,
+            "actual": 271.50916666666666,
+            "deltaArcmin": 1.7120000000022628,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -117,8 +117,8 @@
           {
             "body": "Ascendant",
             "expected": 275.824,
-            "actual": 275.8347222222222,
-            "deltaArcmin": 0.6433333333302471,
+            "actual": 275.82805778799695,
+            "deltaArcmin": 0.24346727981992444,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -126,8 +126,8 @@
           {
             "body": "Midheaven",
             "expected": 210.2153,
-            "actual": 210.21666666666667,
-            "deltaArcmin": 0.08199999999760621,
+            "actual": 210.2200174569491,
+            "deltaArcmin": 0.2830474169422814,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -152,7 +152,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Capricorn 2°12' / Cancer 2°12'"
+            "detail": "Capricorn 1°31' / Cancer 1°31'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -162,12 +162,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Gemini 28°04'"
+            "detail": "Vertex Leo 15°25'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -5h, app used -5h"
+            "detail": "expected -5h at 1955-03-15T07:20:00Z; America/New_York GMT-5 (-5h), UTC 1955-03-15T07:20:00.000Z, place New York, NY (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -300,14 +300,14 @@
           "expectedOffset": -7,
           "resolvedOffset": -7,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Los_Angeles PDT (-7h), UTC 1978-07-04T19:00:00.000Z, place Los Angeles, CA (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 102.432,
-            "actual": 102.4375,
-            "deltaArcmin": 0.32999999999901775,
+            "actual": 102.43166666666667,
+            "deltaArcmin": 0.019999999997253326,
             "limit": 6,
             "status": "pass"
           },
@@ -322,56 +322,56 @@
           {
             "body": "Mercury",
             "expected": 123.1086,
-            "actual": 123.11416666666666,
-            "deltaArcmin": 0.33400000000256114,
+            "actual": 123.10888888888888,
+            "deltaArcmin": 0.01733333333504561,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 141.6198,
-            "actual": 141.62416666666667,
-            "deltaArcmin": 0.262000000000171,
+            "actual": 141.61972222222224,
+            "deltaArcmin": 0.004666666663979413,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 161.6605,
-            "actual": 161.66333333333333,
-            "deltaArcmin": 0.1700000000005275,
+            "actual": 161.66055555555556,
+            "deltaArcmin": 0.003333333329464949,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 106.5499,
-            "actual": 106.55472222222222,
-            "deltaArcmin": 0.28933333333043265,
+            "actual": 106.54888888888888,
+            "deltaArcmin": 0.06066666666583842,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 147.6017,
-            "actual": 147.6052777777778,
-            "deltaArcmin": 0.21466666666583478,
+            "actual": 147.6013888888889,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 222.4333,
-            "actual": 222.42999999999998,
-            "deltaArcmin": 0.19800000000486762,
+            "actual": 222.43277777777777,
+            "deltaArcmin": 0.03133333333380506,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 256.2555,
-            "actual": 256.24694444444447,
-            "deltaArcmin": 0.5133333333310475,
+            "actual": 256.25194444444446,
+            "deltaArcmin": 0.21333333333132032,
             "limit": 6,
             "status": "pass"
           },
@@ -395,8 +395,8 @@
           {
             "body": "NorthNode",
             "expected": 180.7692,
-            "actual": 180.45027777777776,
-            "deltaArcmin": 19.13533333333362,
+            "actual": 180.1472222222222,
+            "deltaArcmin": 37.31866666666974,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -404,8 +404,8 @@
           {
             "body": "Ascendant",
             "expected": 179.3146,
-            "actual": 179.31472222222223,
-            "deltaArcmin": 0.0073333333330083406,
+            "actual": 179.3148326536409,
+            "deltaArcmin": 0.013959218451873312,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -413,8 +413,8 @@
           {
             "body": "Midheaven",
             "expected": 89.254,
-            "actual": 89.25,
-            "deltaArcmin": 0.24000000000114596,
+            "actual": 89.25423872938904,
+            "deltaArcmin": 0.014323763341508311,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -424,7 +424,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Virgo 29°19', 7th Pisces 29°19'"
+            "detail": "1st Virgo 29°18', 7th Pisces 29°18'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -439,7 +439,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Libra 0°27' / Aries 0°27'"
+            "detail": "Libra 0°09' / Aries 0°09'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -449,12 +449,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 29°28'"
+            "detail": "Vertex Pisces 27°32'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -7h, app used -7h"
+            "detail": "expected -7h at 1978-07-04T19:00:00Z; America/Los_Angeles PDT (-7h), UTC 1978-07-04T19:00:00.000Z, place Los Angeles, CA (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -524,7 +524,7 @@
           },
           {
             "source": "planetSynthesis.Mars",
-            "charCount": 884,
+            "charCount": 882,
             "findings": [],
             "errorCount": 0,
             "warningCount": 0,
@@ -587,14 +587,14 @@
           "expectedOffset": -6,
           "resolvedOffset": -6,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Chicago CST (-6h), UTC 1988-11-23T05:59:00.000Z, place Chicago, IL (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 241.1696,
-            "actual": 241.17527777777778,
-            "deltaArcmin": 0.34066666666831225,
+            "actual": 241.16944444444442,
+            "deltaArcmin": 0.009333333334780036,
             "limit": 6,
             "status": "pass"
           },
@@ -609,64 +609,64 @@
           {
             "body": "Mercury",
             "expected": 236.5608,
-            "actual": 236.56666666666666,
-            "deltaArcmin": 0.35199999999804277,
+            "actual": 236.56111111111113,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 209.6109,
-            "actual": 209.6161111111111,
-            "deltaArcmin": 0.31266666666397214,
+            "actual": 209.61111111111111,
+            "deltaArcmin": 0.012666666671066196,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 3.9709,
-            "actual": 3.9694444444444446,
-            "deltaArcmin": 0.08733333333566407,
+            "actual": 3.9725,
+            "deltaArcmin": 0.09600000000318687,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 61.0304,
-            "actual": 61.02444444444444,
-            "deltaArcmin": 0.3573333333361006,
+            "actual": 61.030277777777776,
+            "deltaArcmin": 0.0073333333330083406,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 271.1275,
-            "actual": 271.1327777777778,
-            "deltaArcmin": 0.31666666666751553,
+            "actual": 271.1277777777778,
+            "deltaArcmin": 0.016666666667788377,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 269.4694,
-            "actual": 269.4730555555555,
-            "deltaArcmin": 0.2193333333298142,
+            "actual": 269.4680555555555,
+            "deltaArcmin": 0.08066666666991296,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 278.535,
-            "actual": 278.53861111111115,
-            "deltaArcmin": 0.21666666666760648,
+            "actual": 278.5338888888889,
+            "deltaArcmin": 0.06666666667115351,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 223.2522,
-            "actual": 223.25805555555556,
-            "deltaArcmin": 0.35133333333760675,
+            "actual": 223.2525,
+            "deltaArcmin": 0.01800000000230284,
             "limit": 8,
             "status": "pass"
           },
@@ -682,8 +682,8 @@
           {
             "body": "NorthNode",
             "expected": 339.8383,
-            "actual": 340.63694444444445,
-            "deltaArcmin": 47.91866666666692,
+            "actual": 340.4788888888889,
+            "deltaArcmin": 38.43533333333653,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -691,8 +691,8 @@
           {
             "body": "Ascendant",
             "expected": 160.0674,
-            "actual": 160.06805555555556,
-            "deltaArcmin": 0.03933333333407063,
+            "actual": 160.06859977081922,
+            "deltaArcmin": 0.07198624915190521,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -700,8 +700,8 @@
           {
             "body": "Midheaven",
             "expected": 66.4106,
-            "actual": 66.41666666666667,
-            "deltaArcmin": 0.36400000000185173,
+            "actual": 66.41205959858445,
+            "deltaArcmin": 0.08757591506764584,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -716,7 +716,7 @@
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Gemini 6°25', 4th Sagittarius 6°25'"
+            "detail": "10th Gemini 6°24', 4th Sagittarius 6°24'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -726,7 +726,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Pisces 10°38' / Virgo 10°38'"
+            "detail": "Pisces 10°29' / Virgo 10°29'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -736,12 +736,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 11°20'"
+            "detail": "Vertex Aquarius 11°50'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -6h, app used -6h"
+            "detail": "expected -6h at 1988-11-23T05:59:00Z; America/Chicago CST (-6h), UTC 1988-11-23T05:59:00.000Z, place Chicago, IL (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -874,14 +874,14 @@
           "expectedOffset": 1,
           "resolvedOffset": 1,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Europe/London GMT+1 (+1h), UTC 1969-06-01T07:08:00.000Z, place London (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 70.6099,
-            "actual": 70.61527777777778,
-            "deltaArcmin": 0.3226666666660094,
+            "actual": 70.60972222222222,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
@@ -896,64 +896,64 @@
           {
             "body": "Mercury",
             "expected": 66.247,
-            "actual": 66.25333333333333,
-            "deltaArcmin": 0.3800000000023829,
+            "actual": 66.24777777777778,
+            "deltaArcmin": 0.04666666666707897,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 26.0323,
-            "actual": 26.037222222222223,
-            "deltaArcmin": 0.29533333333574774,
+            "actual": 26.033055555555556,
+            "deltaArcmin": 0.04533333333256451,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 249.7839,
-            "actual": 249.78083333333333,
-            "deltaArcmin": 0.18399999999928696,
+            "actual": 249.7863888888889,
+            "deltaArcmin": 0.14933333333601695,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 176.2237,
-            "actual": 176.2227777777778,
-            "deltaArcmin": 0.055333333334601775,
+            "actual": 176.22444444444446,
+            "deltaArcmin": 0.044666666665307275,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 33.8832,
-            "actual": 33.886944444444445,
-            "deltaArcmin": 0.22466666666787205,
+            "actual": 33.8825,
+            "deltaArcmin": 0.04200000000309956,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 179.8842,
-            "actual": 179.88083333333333,
-            "deltaArcmin": 0.2020000000015898,
+            "actual": 179.88250000000002,
+            "deltaArcmin": 0.10200000000168075,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 236.9736,
-            "actual": 236.96305555555554,
-            "deltaArcmin": 0.6326666666677738,
+            "actual": 236.9686111111111,
+            "deltaArcmin": 0.2993333333324699,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 172.4092,
-            "actual": 172.40805555555556,
-            "deltaArcmin": 0.06866666666610399,
+            "actual": 172.40916666666666,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 8,
             "status": "pass"
           },
@@ -969,8 +969,8 @@
           {
             "body": "NorthNode",
             "expected": 356.602,
-            "actual": 357.7175,
-            "deltaArcmin": 66.92999999999984,
+            "actual": 357.2925,
+            "deltaArcmin": 41.430000000002565,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -978,8 +978,8 @@
           {
             "body": "Ascendant",
             "expected": 113.9692,
-            "actual": 113.96527777777779,
-            "deltaArcmin": 0.23533333333034534,
+            "actual": 113.97154488458887,
+            "deltaArcmin": 0.14069307533191022,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -987,8 +987,8 @@
           {
             "body": "Midheaven",
             "expected": 356.1492,
-            "actual": 356.15,
-            "deltaArcmin": 0.048000000001593435,
+            "actual": 356.1492407792525,
+            "deltaArcmin": 0.0024467551475026994,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -1003,7 +1003,7 @@
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Pisces 26°09', 4th Virgo 26°09'"
+            "detail": "10th Pisces 26°08', 4th Virgo 26°08'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -1013,7 +1013,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Pisces 27°43' / Virgo 27°43'"
+            "detail": "Pisces 27°18' / Virgo 27°18'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -1023,12 +1023,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Capricorn 14°35'"
+            "detail": "Vertex Sagittarius 9°31'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +1h, app used +1h"
+            "detail": "expected +1h at 1969-06-01T07:08:00Z; Europe/London GMT+1 (+1h), UTC 1969-06-01T07:08:00.000Z, place London (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -1161,14 +1161,14 @@
           "expectedOffset": 1,
           "resolvedOffset": 1,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Europe/Paris CET (+1h), UTC 1993-01-09T16:45:00.000Z, place Paris (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 289.4492,
-            "actual": 289.455,
-            "deltaArcmin": 0.3479999999944994,
+            "actual": 289.44916666666666,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 6,
             "status": "pass"
           },
@@ -1183,64 +1183,64 @@
           {
             "body": "Mercury",
             "expected": 280.9524,
-            "actual": 280.9577777777778,
-            "deltaArcmin": 0.3226666666660094,
+            "actual": 280.9522222222222,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 336.2123,
-            "actual": 336.21666666666664,
-            "deltaArcmin": 0.2619999999933498,
+            "actual": 336.2127777777778,
+            "deltaArcmin": 0.02866666666477613,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 106.9691,
-            "actual": 106.96277777777777,
-            "deltaArcmin": 0.37933333333512564,
+            "actual": 106.96861111111112,
+            "deltaArcmin": 0.029333333332033362,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 194.1119,
-            "actual": 194.11055555555555,
-            "deltaArcmin": 0.08066666666309175,
+            "actual": 194.11111111111111,
+            "deltaArcmin": 0.0473333333343362,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 317.2932,
-            "actual": 317.29833333333335,
-            "deltaArcmin": 0.3079999999999927,
+            "actual": 317.29305555555555,
+            "deltaArcmin": 0.008666666667522804,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 288.1861,
-            "actual": 288.1902777777778,
-            "deltaArcmin": 0.25066666667044046,
+            "actual": 288.18444444444447,
+            "deltaArcmin": 0.09933333333265182,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 288.6849,
-            "actual": 288.6911111111111,
-            "deltaArcmin": 0.3726666666625533,
+            "actual": 288.6852777777778,
+            "deltaArcmin": 0.022666666666282254,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 234.8554,
-            "actual": 234.85944444444445,
-            "deltaArcmin": 0.24266666666335368,
+            "actual": 234.85611111111112,
+            "deltaArcmin": 0.04266666666353558,
             "limit": 8,
             "status": "pass"
           },
@@ -1256,8 +1256,8 @@
           {
             "body": "NorthNode",
             "expected": 259.9603,
-            "actual": 261.4166666666667,
-            "deltaArcmin": 87.38200000000006,
+            "actual": 261.31444444444446,
+            "deltaArcmin": 81.24866666667003,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -1265,8 +1265,8 @@
           {
             "body": "Ascendant",
             "expected": 116.6193,
-            "actual": 116.62194444444444,
-            "deltaArcmin": 0.15866666666397578,
+            "actual": 116.62230033311232,
+            "deltaArcmin": 0.18001998674208153,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -1274,8 +1274,8 @@
           {
             "body": "Midheaven",
             "expected": 3.0823,
-            "actual": 3.0833333333333335,
-            "deltaArcmin": 0.062000000000352884,
+            "actual": 3.0873577359885758,
+            "deltaArcmin": 0.30346415931262527,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -1300,7 +1300,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Sagittarius 21°25' / Gemini 21°25'"
+            "detail": "Sagittarius 21°19' / Gemini 21°19'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -1310,12 +1310,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Capricorn 21°28'"
+            "detail": "Vertex Sagittarius 13°10'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +1h, app used +1h"
+            "detail": "expected +1h at 1993-01-09T16:45:00Z; Europe/Paris CET (+1h), UTC 1993-01-09T16:45:00.000Z, place Paris (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -1448,14 +1448,14 @@
           "expectedOffset": 11,
           "resolvedOffset": 11,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Australia/Sydney AEDT (+11h), UTC 2001-12-18T18:30:00.000Z, place Sydney (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 266.9085,
-            "actual": 266.9144444444444,
-            "deltaArcmin": 0.3566666666620222,
+            "actual": 266.9086111111111,
+            "deltaArcmin": 0.006666666665751109,
             "limit": 6,
             "status": "pass"
           },
@@ -1470,64 +1470,64 @@
           {
             "body": "Mercury",
             "expected": 274.6551,
-            "actual": 274.6613888888889,
-            "deltaArcmin": 0.37733333333335395,
+            "actual": 274.6555555555555,
+            "deltaArcmin": 0.027333333330261667,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 260.5128,
-            "actual": 260.51888888888885,
-            "deltaArcmin": 0.365333333329545,
+            "actual": 260.5133333333333,
+            "deltaArcmin": 0.03200000000106229,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 337.1975,
-            "actual": 337.1986111111111,
-            "deltaArcmin": 0.06666666667115351,
+            "actual": 337.19666666666666,
+            "deltaArcmin": 0.04999999999654392,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 102.4194,
-            "actual": 102.41472222222222,
-            "deltaArcmin": 0.28066666666290985,
+            "actual": 102.42027777777778,
+            "deltaArcmin": 0.05266666666557285,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 70.2604,
-            "actual": 70.25833333333334,
-            "deltaArcmin": 0.12400000000070577,
+            "actual": 70.26388888888889,
+            "deltaArcmin": 0.20933333333459814,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 321.8942,
-            "actual": 321.8952777777778,
-            "deltaArcmin": 0.0646666666625606,
+            "actual": 321.89194444444445,
+            "deltaArcmin": 0.1353333333372575,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 307.0108,
-            "actual": 307.0186111111111,
-            "deltaArcmin": 0.4686666666657402,
+            "actual": 307.01416666666665,
+            "deltaArcmin": 0.2019999999947686,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 255.5477,
-            "actual": 255.55333333333334,
-            "deltaArcmin": 0.3379999999992833,
+            "actual": 255.54777777777778,
+            "deltaArcmin": 0.004666666663979413,
             "limit": 8,
             "status": "pass"
           },
@@ -1543,8 +1543,8 @@
           {
             "body": "NorthNode",
             "expected": 87.0624,
-            "actual": 87.12888888888888,
-            "deltaArcmin": 3.9893333333338887,
+            "actual": 87.14861111111112,
+            "deltaArcmin": 5.172666666665009,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -1552,8 +1552,8 @@
           {
             "body": "Ascendant",
             "expected": 263.5089,
-            "actual": 263.505,
-            "deltaArcmin": 0.23399999999583088,
+            "actual": 263.50475169766696,
+            "deltaArcmin": 0.24889813998470345,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -1561,8 +1561,8 @@
           {
             "body": "Midheaven",
             "expected": 154.2684,
-            "actual": 154.26666666666668,
-            "deltaArcmin": 0.10399999999663123,
+            "actual": 154.26381141023148,
+            "deltaArcmin": 0.27531538611356154,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -1572,12 +1572,12 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Sagittarius 23°31', 7th Gemini 23°31'"
+            "detail": "1st Sagittarius 23°30', 7th Gemini 23°30'"
           },
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Virgo 4°16', 4th Pisces 4°16'"
+            "detail": "10th Virgo 4°15', 4th Pisces 4°15'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -1587,7 +1587,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Gemini 27°08' / Sagittarius 27°08'"
+            "detail": "Gemini 27°09' / Sagittarius 27°09'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -1597,12 +1597,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Cancer 13°37'"
+            "detail": "Vertex Taurus 13°30'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +11h, app used +11h"
+            "detail": "expected +11h at 2001-12-18T18:30:00Z; Australia/Sydney AEDT (+11h), UTC 2001-12-18T18:30:00.000Z, place Sydney (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -1735,14 +1735,14 @@
           "expectedOffset": -3,
           "resolvedOffset": -3,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Argentina/Buenos_Aires GMT-3 (-3h), UTC 1984-09-28T00:15:00.000Z, place Buenos Aires (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 185.0542,
-            "actual": 185.05972222222223,
-            "deltaArcmin": 0.3313333333335322,
+            "actual": 185.0538888888889,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 6,
             "status": "pass"
           },
@@ -1757,24 +1757,24 @@
           {
             "body": "Mercury",
             "expected": 174.9101,
-            "actual": 174.91583333333335,
-            "deltaArcmin": 0.3440000000045984,
+            "actual": 174.9102777777778,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 212.8651,
-            "actual": 212.87,
-            "deltaArcmin": 0.2940000000012333,
+            "actual": 212.86499999999998,
+            "deltaArcmin": 0.005999999998493877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 265.0695,
-            "actual": 265.0708333333333,
-            "deltaArcmin": 0.08000000000265572,
+            "actual": 265.0697222222222,
+            "deltaArcmin": 0.013333333331502217,
             "limit": 6,
             "status": "pass"
           },
@@ -1789,32 +1789,32 @@
           {
             "body": "Saturn",
             "expected": 224.0361,
-            "actual": 224.04055555555556,
-            "deltaArcmin": 0.26733333333140763,
+            "actual": 224.0361111111111,
+            "deltaArcmin": 0.0006666666672572319,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 250.2362,
-            "actual": 250.23777777777775,
-            "deltaArcmin": 0.0946666666686724,
+            "actual": 250.23527777777775,
+            "deltaArcmin": 0.055333333334601775,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 268.7446,
-            "actual": 268.7427777777778,
-            "deltaArcmin": 0.10933333333468909,
+            "actual": 268.74194444444447,
+            "deltaArcmin": 0.159333333331233,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 210.9967,
-            "actual": 211.0025,
-            "deltaArcmin": 0.3480000000013206,
+            "actual": 210.9972222222222,
+            "deltaArcmin": 0.03133333333380506,
             "limit": 8,
             "status": "pass"
           },
@@ -1830,8 +1830,8 @@
           {
             "body": "NorthNode",
             "expected": 60.1819,
-            "actual": 58.95027777777778,
-            "deltaArcmin": 73.89733333333197,
+            "actual": 58.75277777777778,
+            "deltaArcmin": 85.74733333333143,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -1839,8 +1839,8 @@
           {
             "body": "Ascendant",
             "expected": 35.256,
-            "actual": 35.253055555555555,
-            "deltaArcmin": 0.17666666666627862,
+            "actual": 35.25258167287234,
+            "deltaArcmin": 0.20509962765800083,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -1848,8 +1848,8 @@
           {
             "body": "Midheaven",
             "expected": 309.8895,
-            "actual": 309.8833333333333,
-            "deltaArcmin": 0.3700000000003456,
+            "actual": 309.8853343561753,
+            "deltaArcmin": 0.24993862948576862,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -1874,7 +1874,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Taurus 28°57' / Scorpio 28°57'"
+            "detail": "Taurus 28°45' / Scorpio 28°45'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -1884,12 +1884,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Libra 28°13'"
+            "detail": "Vertex Sagittarius 21°25'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -3h, app used -3h"
+            "detail": "expected -3h at 1984-09-28T00:15:00Z; America/Argentina/Buenos_Aires GMT-3 (-3h), UTC 1984-09-28T00:15:00.000Z, place Buenos Aires (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -2022,14 +2022,14 @@
           "expectedOffset": 5.5,
           "resolvedOffset": 5.5,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Asia/Kolkata IST (+5.5h), UTC 1996-04-02T09:20:00.000Z, place Mumbai (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 12.9192,
-            "actual": 12.924722222222222,
-            "deltaArcmin": 0.3313333333335322,
+            "actual": 12.919166666666666,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 6,
             "status": "pass"
           },
@@ -2044,64 +2044,64 @@
           {
             "body": "Mercury",
             "expected": 18.2984,
-            "actual": 18.304444444444446,
-            "deltaArcmin": 0.36266666666733727,
+            "actual": 18.298611111111114,
+            "deltaArcmin": 0.012666666664244985,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 58.7872,
-            "actual": 58.79111111111111,
-            "deltaArcmin": 0.23466666666990932,
+            "actual": 58.78722222222222,
+            "deltaArcmin": 0.0013333333345144638,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 6.801,
-            "actual": 6.8069444444444445,
-            "deltaArcmin": 0.3566666666688434,
+            "actual": 6.801111111111111,
+            "deltaArcmin": 0.006666666665751109,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 286.0709,
-            "actual": 286.0722222222222,
-            "deltaArcmin": 0.07933333332857728,
+            "actual": 286.07194444444445,
+            "deltaArcmin": 0.06266666666761012,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 359.3971,
-            "actual": 359.4022222222222,
-            "deltaArcmin": 0.3073333333259143,
+            "actual": 359.39666666666665,
+            "deltaArcmin": 0.026000000002568413,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 304.0391,
-            "actual": 304.0391666666667,
-            "deltaArcmin": 0.004000000003543391,
+            "actual": 304.0369444444445,
+            "deltaArcmin": 0.1293333333319424,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 297.552,
-            "actual": 297.5552777777778,
-            "deltaArcmin": 0.19666666667035315,
+            "actual": 297.5538888888889,
+            "deltaArcmin": 0.11333333333141127,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 242.9044,
-            "actual": 242.9013888888889,
-            "deltaArcmin": 0.180666666669822,
+            "actual": 242.905,
+            "deltaArcmin": 0.03599999999778447,
             "limit": 8,
             "status": "pass"
           },
@@ -2117,8 +2117,8 @@
           {
             "body": "NorthNode",
             "expected": 197.5441,
-            "actual": 197.19055555555556,
-            "deltaArcmin": 21.212666666665427,
+            "actual": 197.13777777777776,
+            "deltaArcmin": 24.37933333333376,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -2126,8 +2126,8 @@
           {
             "body": "Ascendant",
             "expected": 137.0182,
-            "actual": 137.01944444444445,
-            "deltaArcmin": 0.07466666666459787,
+            "actual": 137.01933326248945,
+            "deltaArcmin": 0.0679957493684924,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -2135,8 +2135,8 @@
           {
             "body": "Midheaven",
             "expected": 46.3441,
-            "actual": 46.35,
-            "deltaArcmin": 0.35399999999981446,
+            "actual": 46.34487947804752,
+            "deltaArcmin": 0.04676868285287128,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -2151,7 +2151,7 @@
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Taurus 16°21', 4th Scorpio 16°21'"
+            "detail": "10th Taurus 16°20', 4th Scorpio 16°20'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -2161,7 +2161,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Libra 17°11' / Aries 17°11'"
+            "detail": "Libra 17°08' / Aries 17°08'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -2171,12 +2171,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 8°01'"
+            "detail": "Vertex Scorpio 24°30'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +5.5h, app used +5.5h"
+            "detail": "expected +5.5h at 1996-04-02T09:20:00Z; Asia/Kolkata IST (+5.5h), UTC 1996-04-02T09:20:00.000Z, place Mumbai (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -2309,14 +2309,14 @@
           "expectedOffset": 9,
           "resolvedOffset": 9,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Asia/Tokyo GMT+9 (+9h), UTC 1972-10-07T21:00:00.000Z, place Tokyo (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 194.6833,
-            "actual": 194.6888888888889,
-            "deltaArcmin": 0.3353333333370756,
+            "actual": 194.68333333333334,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 6,
             "status": "pass"
           },
@@ -2331,64 +2331,64 @@
           {
             "body": "Mercury",
             "expected": 207.5227,
-            "actual": 207.52833333333334,
-            "deltaArcmin": 0.3379999999992833,
+            "actual": 207.5227777777778,
+            "deltaArcmin": 0.004666666670800623,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 152.8902,
-            "actual": 152.89416666666665,
-            "deltaArcmin": 0.23799999999937427,
+            "actual": 152.89,
+            "deltaArcmin": 0.011999999996987754,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 184.4591,
-            "actual": 184.46444444444444,
-            "deltaArcmin": 0.3206666666642377,
+            "actual": 184.45888888888888,
+            "deltaArcmin": 0.012666666671066196,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 271.3244,
-            "actual": 271.32694444444445,
-            "deltaArcmin": 0.1526666666654819,
+            "actual": 271.3255555555555,
+            "deltaArcmin": 0.06933333332654001,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 80.5732,
-            "actual": 80.57083333333333,
-            "deltaArcmin": 0.1420000000030086,
+            "actual": 80.57333333333332,
+            "deltaArcmin": 0.008000000000265572,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 198.4478,
-            "actual": 198.4525,
-            "deltaArcmin": 0.2819999999974243,
+            "actual": 198.44694444444445,
+            "deltaArcmin": 0.051333333331058384,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 243.2688,
-            "actual": 243.2686111111111,
-            "deltaArcmin": 0.011333333336551732,
+            "actual": 243.26472222222222,
+            "deltaArcmin": 0.24466666666512538,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 182.3943,
-            "actual": 182.40055555555557,
-            "deltaArcmin": 0.37533333333158225,
+            "actual": 182.3947222222222,
+            "deltaArcmin": 0.02533333333531118,
             "limit": 8,
             "status": "pass"
           },
@@ -2404,8 +2404,8 @@
           {
             "body": "NorthNode",
             "expected": 291.756,
-            "actual": 292.5908333333333,
-            "deltaArcmin": 50.090000000000146,
+            "actual": 292.17861111111114,
+            "deltaArcmin": 25.35666666666657,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -2413,8 +2413,8 @@
           {
             "body": "Ascendant",
             "expected": 197.6236,
-            "actual": 197.62694444444446,
-            "deltaArcmin": 0.20066666666707533,
+            "actual": 197.62670803545228,
+            "deltaArcmin": 0.18648212713287649,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -2422,8 +2422,8 @@
           {
             "body": "Midheaven",
             "expected": 109.6318,
-            "actual": 109.63333333333334,
-            "deltaArcmin": 0.09199999999964348,
+            "actual": 109.63523235827557,
+            "deltaArcmin": 0.20594149653788918,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -2448,7 +2448,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Capricorn 22°35' / Cancer 22°35'"
+            "detail": "Capricorn 22°11' / Cancer 22°11'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -2458,12 +2458,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aries 14°25'"
+            "detail": "Vertex Taurus 20°18'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +9h, app used +9h"
+            "detail": "expected +9h at 1972-10-07T21:00:00Z; Asia/Tokyo GMT+9 (+9h), UTC 1972-10-07T21:00:00.000Z, place Tokyo (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -2596,14 +2596,14 @@
           "expectedOffset": 1,
           "resolvedOffset": 1,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Europe/Stockholm GMT+1 (+1h), UTC 1961-05-29T23:00:00.000Z, place Stockholm (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 68.3058,
-            "actual": 68.31138888888889,
-            "deltaArcmin": 0.3353333333302544,
+            "actual": 68.30583333333333,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 6,
             "status": "pass"
           },
@@ -2618,64 +2618,64 @@
           {
             "body": "Mercury",
             "expected": 91.4067,
-            "actual": 91.41166666666668,
-            "deltaArcmin": 0.29799999999795546,
+            "actual": 91.40666666666667,
+            "deltaArcmin": 0.0020000000017716957,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 24.6286,
-            "actual": 24.633055555555558,
-            "deltaArcmin": 0.26733333333140763,
+            "actual": 24.628888888888888,
+            "deltaArcmin": 0.01733333333504561,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 132.8167,
-            "actual": 132.81916666666666,
-            "deltaArcmin": 0.14800000000150249,
+            "actual": 132.81694444444443,
+            "deltaArcmin": 0.014666666666016681,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 307.1263,
-            "actual": 307.12305555555554,
-            "deltaArcmin": 0.19466666666858146,
+            "actual": 307.12611111111113,
+            "deltaArcmin": 0.011333333336551732,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 299.5268,
-            "actual": 299.5227777777778,
-            "deltaArcmin": 0.24133333332883922,
+            "actual": 299.5261111111111,
+            "deltaArcmin": 0.041333333329021116,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 142.0701,
-            "actual": 142.07194444444445,
-            "deltaArcmin": 0.11066666666920355,
+            "actual": 142.07055555555556,
+            "deltaArcmin": 0.027333333337082877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 219.1929,
-            "actual": 219.18444444444444,
-            "deltaArcmin": 0.5073333333325536,
+            "actual": 219.18944444444446,
+            "deltaArcmin": 0.20733333333282644,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 155.5785,
-            "actual": 155.57972222222222,
-            "deltaArcmin": 0.0733333333300834,
+            "actual": 155.57944444444445,
+            "deltaArcmin": 0.05666666666911624,
             "limit": 8,
             "status": "pass"
           },
@@ -2691,8 +2691,8 @@
           {
             "body": "NorthNode",
             "expected": 151.4569,
-            "actual": 151.51166666666666,
-            "deltaArcmin": 3.285999999998239,
+            "actual": 150.99277777777777,
+            "deltaArcmin": 27.847333333329516,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -2700,8 +2700,8 @@
           {
             "body": "Ascendant",
             "expected": 299.7719,
-            "actual": 299.7888888888889,
-            "deltaArcmin": 1.0193333333290866,
+            "actual": 299.77777740052926,
+            "deltaArcmin": 0.35264403175460757,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -2709,8 +2709,8 @@
           {
             "body": "Midheaven",
             "expected": 251.811,
-            "actual": 251.81666666666666,
-            "deltaArcmin": 0.340000000001055,
+            "actual": 251.8084955408774,
+            "deltaArcmin": 0.1502675473579984,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -2725,7 +2725,7 @@
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Sagittarius 11°49', 4th Gemini 11°49'"
+            "detail": "10th Sagittarius 11°48', 4th Gemini 11°48'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -2735,7 +2735,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Virgo 1°31' / Pisces 1°31'"
+            "detail": "Virgo 0°60' / Pisces 0°60'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -2745,12 +2745,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Virgo 1°46'"
+            "detail": "Vertex Virgo 12°57'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +1h, app used +1h"
+            "detail": "expected +1h at 1961-05-29T23:00:00Z; Europe/Stockholm GMT+1 (+1h), UTC 1961-05-29T23:00:00.000Z, place Stockholm (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -2883,14 +2883,14 @@
           "expectedOffset": 2,
           "resolvedOffset": 2,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Africa/Johannesburg SAST (+2h), UTC 2010-02-14T09:11:00.000Z, place Johannesburg (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 325.5644,
-            "actual": 325.5702777777778,
-            "deltaArcmin": 0.3526666666721212,
+            "actual": 325.56472222222226,
+            "deltaArcmin": 0.019333333336817304,
             "limit": 6,
             "status": "pass"
           },
@@ -2905,64 +2905,64 @@
           {
             "body": "Mercury",
             "expected": 305.7754,
-            "actual": 305.78027777777777,
-            "deltaArcmin": 0.2926666666667188,
+            "actual": 305.775,
+            "deltaArcmin": 0.024000000000796717,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 333.6026,
-            "actual": 333.60833333333335,
-            "deltaArcmin": 0.3440000000045984,
+            "actual": 333.6027777777778,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 124.087,
-            "actual": 124.08222222222221,
-            "deltaArcmin": 0.28666666666822493,
+            "actual": 124.08749999999999,
+            "deltaArcmin": 0.029999999999290594,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 336.3455,
-            "actual": 336.35055555555556,
-            "deltaArcmin": 0.3033333333360133,
+            "actual": 336.34472222222223,
+            "deltaArcmin": 0.04666666666707897,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 183.7773,
-            "actual": 183.7711111111111,
-            "deltaArcmin": 0.37133333333486007,
+            "actual": 183.77583333333334,
+            "deltaArcmin": 0.08799999999610009,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 354.8626,
-            "actual": 354.8675,
-            "deltaArcmin": 0.2940000000012333,
+            "actual": 354.8625,
+            "deltaArcmin": 0.005999999998493877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 326.1372,
-            "actual": 326.1475,
-            "deltaArcmin": 0.6179999999949359,
+            "actual": 326.14166666666665,
+            "deltaArcmin": 0.26799999999866486,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 274.7319,
-            "actual": 274.73555555555555,
-            "deltaArcmin": 0.2193333333298142,
+            "actual": 274.7319444444444,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 8,
             "status": "pass"
           },
@@ -2978,8 +2978,8 @@
           {
             "body": "NorthNode",
             "expected": 289.2807,
-            "actual": 290.63166666666666,
-            "deltaArcmin": 81.05799999999817,
+            "actual": 290.79111111111115,
+            "deltaArcmin": 90.62466666666751,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -2987,8 +2987,8 @@
           {
             "body": "Ascendant",
             "expected": 35.6476,
-            "actual": 35.65138888888889,
-            "deltaArcmin": 0.22733333333690098,
+            "actual": 35.65141076920702,
+            "deltaArcmin": 0.2286461524204242,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -2996,8 +2996,8 @@
           {
             "body": "Midheaven",
             "expected": 307.6706,
-            "actual": 307.6666666666667,
-            "deltaArcmin": 0.23599999999760257,
+            "actual": 307.6747835812952,
+            "deltaArcmin": 0.2510148777082577,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -3022,7 +3022,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Capricorn 20°38' / Cancer 20°38'"
+            "detail": "Capricorn 20°47' / Cancer 20°47'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -3032,12 +3032,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Libra 23°06'"
+            "detail": "Vertex Capricorn 9°22'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +2h, app used +2h"
+            "detail": "expected +2h at 2010-02-14T09:11:00Z; Africa/Johannesburg SAST (+2h), UTC 2010-02-14T09:11:00.000Z, place Johannesburg (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -3170,14 +3170,14 @@
           "expectedOffset": -7,
           "resolvedOffset": -7,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Denver GMT-7 (-7h), UTC 1946-08-19T17:03:00.000Z, place Denver, CO (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 146.0902,
-            "actual": 146.09583333333333,
-            "deltaArcmin": 0.3379999999992833,
+            "actual": 146.0902777777778,
+            "deltaArcmin": 0.004666666663979413,
             "limit": 6,
             "status": "pass"
           },
@@ -3192,64 +3192,64 @@
           {
             "body": "Mercury",
             "expected": 127.6818,
-            "actual": 127.68722222222223,
-            "deltaArcmin": 0.32533333333503833,
+            "actual": 127.68194444444445,
+            "deltaArcmin": 0.008666666667522804,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 191.2166,
-            "actual": 191.21972222222223,
-            "deltaArcmin": 0.18733333333557312,
+            "actual": 191.21583333333334,
+            "deltaArcmin": 0.04599999999982174,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 186.412,
-            "actual": 186.41611111111112,
-            "deltaArcmin": 0.24666666666689707,
+            "actual": 186.41166666666666,
+            "deltaArcmin": 0.020000000004074536,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 203.2357,
-            "actual": 203.23722222222221,
-            "deltaArcmin": 0.09133333333238625,
+            "actual": 203.23416666666665,
+            "deltaArcmin": 0.09199999999964348,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 122.1467,
-            "actual": 122.15111111111112,
-            "deltaArcmin": 0.2646666666691999,
+            "actual": 122.14611111111111,
+            "deltaArcmin": 0.03533333333052724,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 81.1478,
-            "actual": 81.15111111111112,
-            "deltaArcmin": 0.19866666666530364,
+            "actual": 81.14861111111112,
+            "deltaArcmin": 0.04866666666885067,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 186.8538,
-            "actual": 186.85777777777778,
-            "deltaArcmin": 0.2386666666666315,
+            "actual": 186.85333333333332,
+            "deltaArcmin": 0.0279999999975189,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 131.859,
-            "actual": 131.8647222222222,
-            "deltaArcmin": 0.34333333333051996,
+            "actual": 131.85916666666665,
+            "deltaArcmin": 0.010000000002037268,
             "limit": 8,
             "status": "pass"
           },
@@ -3265,8 +3265,8 @@
           {
             "body": "NorthNode",
             "expected": 77.2617,
-            "actual": 78.9388888888889,
-            "deltaArcmin": 100.63133333333099,
+            "actual": 78.26694444444445,
+            "deltaArcmin": 60.314666666665744,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -3274,8 +3274,8 @@
           {
             "body": "Ascendant",
             "expected": 202.5297,
-            "actual": 202.5275,
-            "deltaArcmin": 0.13200000000097134,
+            "actual": 202.52650101622737,
+            "deltaArcmin": 0.19193902635379345,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -3283,8 +3283,8 @@
           {
             "body": "Midheaven",
             "expected": 116.1972,
-            "actual": 116.2,
-            "deltaArcmin": 0.1679999999987558,
+            "actual": 116.19330055803329,
+            "deltaArcmin": 0.23396651800339896,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -3294,12 +3294,12 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Libra 22°32', 7th Aries 22°32'"
+            "detail": "1st Libra 22°31', 7th Aries 22°31'"
           },
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Cancer 26°12', 4th Capricorn 26°12'"
+            "detail": "10th Cancer 26°11', 4th Capricorn 26°11'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -3309,7 +3309,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Gemini 18°56' / Sagittarius 18°56'"
+            "detail": "Gemini 18°16' / Sagittarius 18°16'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -3319,12 +3319,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aries 20°10'"
+            "detail": "Vertex Taurus 25°05'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -7h, app used -7h"
+            "detail": "expected -7h at 1946-08-19T17:03:00Z; America/Denver GMT-7 (-7h), UTC 1946-08-19T17:03:00.000Z, place Denver, CO (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -3457,14 +3457,14 @@
           "expectedOffset": -10,
           "resolvedOffset": -10,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Pacific/Honolulu HST (-10h), UTC 1999-03-22T05:20:00.000Z, place Honolulu, HI (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 1.1412,
-            "actual": 1.1466666666666667,
-            "deltaArcmin": 0.32799999999724605,
+            "actual": 1.1411111111111112,
+            "deltaArcmin": 0.005333333331236645,
             "limit": 6,
             "status": "pass"
           },
@@ -3479,64 +3479,64 @@
           {
             "body": "Mercury",
             "expected": 356.5159,
-            "actual": 356.52194444444444,
-            "deltaArcmin": 0.36266666666733727,
+            "actual": 356.5161111111111,
+            "deltaArcmin": 0.012666666671066196,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 34.5979,
-            "actual": 34.602222222222224,
-            "deltaArcmin": 0.25933333333114206,
+            "actual": 34.597500000000004,
+            "deltaArcmin": 0.024000000000796717,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 222.1204,
-            "actual": 222.11722222222224,
-            "deltaArcmin": 0.19066666666503806,
+            "actual": 222.12166666666667,
+            "deltaArcmin": 0.07599999999911233,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 8.6478,
-            "actual": 8.654722222222222,
-            "deltaArcmin": 0.4153333333329101,
+            "actual": 8.649166666666666,
+            "deltaArcmin": 0.08199999999760621,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 32.2656,
-            "actual": 32.269999999999996,
-            "deltaArcmin": 0.2640000000019427,
+            "actual": 32.265277777777776,
+            "deltaArcmin": 0.019333333329996094,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 315.3476,
-            "actual": 315.3486111111111,
-            "deltaArcmin": 0.06066666666583842,
+            "actual": 315.34472222222223,
+            "deltaArcmin": 0.17266666666273522,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 303.8058,
-            "actual": 303.81111111111113,
-            "deltaArcmin": 0.3186666666692872,
+            "actual": 303.80805555555554,
+            "deltaArcmin": 0.1353333333372575,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 250.4769,
-            "actual": 250.475,
-            "deltaArcmin": 0.1139999999986685,
+            "actual": 250.47722222222222,
+            "deltaArcmin": 0.019333333329996094,
             "limit": 8,
             "status": "pass"
           },
@@ -3552,8 +3552,8 @@
           {
             "body": "NorthNode",
             "expected": 140.1511,
-            "actual": 141.42444444444445,
-            "deltaArcmin": 76.40066666666598,
+            "actual": 141.41111111111113,
+            "deltaArcmin": 75.60066666666671,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -3561,8 +3561,8 @@
           {
             "body": "Ascendant",
             "expected": 190.6339,
-            "actual": 190.63111111111112,
-            "deltaArcmin": 0.16733333333149858,
+            "actual": 190.63121282070728,
+            "deltaArcmin": 0.16123075756240723,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -3570,8 +3570,8 @@
           {
             "body": "Midheaven",
             "expected": 100.4986,
-            "actual": 100.5,
-            "deltaArcmin": 0.0839999999993779,
+            "actual": 100.4960996952251,
+            "deltaArcmin": 0.15001828649474191,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -3581,12 +3581,12 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Libra 10°38', 7th Aries 10°38'"
+            "detail": "1st Libra 10°37', 7th Aries 10°37'"
           },
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Cancer 10°30', 4th Capricorn 10°30'"
+            "detail": "10th Cancer 10°29', 4th Capricorn 10°29'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -3606,12 +3606,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aries 5°53'"
+            "detail": "Vertex Leo 1°20'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -10h, app used -10h"
+            "detail": "expected -10h at 1999-03-22T05:20:00Z; Pacific/Honolulu HST (-10h), UTC 1999-03-22T05:20:00.000Z, place Honolulu, HI (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -3751,14 +3751,14 @@
           "expectedOffset": -5,
           "resolvedOffset": -5,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Mexico_City CDT (-5h), UTC 2005-06-30T09:44:00.000Z, place Mexico City (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 98.6999,
-            "actual": 98.70527777777778,
-            "deltaArcmin": 0.3226666666660094,
+            "actual": 98.69972222222222,
+            "deltaArcmin": 0.0106666666692945,
             "limit": 6,
             "status": "pass"
           },
@@ -3773,64 +3773,64 @@
           {
             "body": "Mercury",
             "expected": 123.139,
-            "actual": 123.14416666666668,
-            "deltaArcmin": 0.3100000000017644,
+            "actual": 123.1388888888889,
+            "deltaArcmin": 0.006666666665751109,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 122.6236,
-            "actual": 122.62888888888888,
-            "deltaArcmin": 0.31733333333477276,
+            "actual": 122.6236111111111,
+            "deltaArcmin": 0.0006666666672572319,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 12.4918,
-            "actual": 12.491666666666665,
-            "deltaArcmin": 0.008000000000265572,
+            "actual": 12.491388888888888,
+            "deltaArcmin": 0.02466666666805395,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 189.8529,
-            "actual": 189.8511111111111,
-            "deltaArcmin": 0.10733333333291739,
+            "actual": 189.8513888888889,
+            "deltaArcmin": 0.09066666666512901,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 117.9518,
-            "actual": 117.95722222222223,
-            "deltaArcmin": 0.32533333333503833,
+            "actual": 117.95194444444445,
+            "deltaArcmin": 0.008666666667522804,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 340.6702,
-            "actual": 340.6666666666667,
-            "deltaArcmin": 0.21199999999680585,
+            "actual": 340.6691666666667,
+            "deltaArcmin": 0.062000000000352884,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 317.1714,
-            "actual": 317.17111111111114,
-            "deltaArcmin": 0.01733333333504561,
+            "actual": 317.17555555555555,
+            "deltaArcmin": 0.249333333335926,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 262.757,
-            "actual": 262.75138888888887,
-            "deltaArcmin": 0.33666666667159006,
+            "actual": 262.75694444444446,
+            "deltaArcmin": 0.003333333329464949,
             "limit": 8,
             "status": "pass"
           },
@@ -3846,8 +3846,8 @@
           {
             "body": "NorthNode",
             "expected": 18.7713,
-            "actual": 19.384166666666665,
-            "deltaArcmin": 36.77200000000312,
+            "actual": 19.45611111111111,
+            "deltaArcmin": 41.088666666666995,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -3855,8 +3855,8 @@
           {
             "body": "Ascendant",
             "expected": 65.2109,
-            "actual": 65.21000000000001,
-            "deltaArcmin": 0.05400000000008731,
+            "actual": 65.21084378902884,
+            "deltaArcmin": 0.0033726582682902517,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -3864,8 +3864,8 @@
           {
             "body": "Midheaven",
             "expected": 323.0901,
-            "actual": 323.0833333333333,
-            "deltaArcmin": 0.4059999999981301,
+            "actual": 323.08824550655595,
+            "deltaArcmin": 0.11126960664341823,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -3875,7 +3875,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Gemini 5°13', 7th Sagittarius 5°13'"
+            "detail": "1st Gemini 5°12', 7th Sagittarius 5°12'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -3890,7 +3890,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Aries 19°23' / Libra 19°23'"
+            "detail": "Aries 19°27' / Libra 19°27'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -3900,12 +3900,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aquarius 6°23'"
+            "detail": "Vertex Libra 26°33'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -5h, app used -5h"
+            "detail": "expected -5h at 2005-06-30T09:44:00Z; America/Mexico_City CDT (-5h), UTC 2005-06-30T09:44:00.000Z, place Mexico City (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -4038,14 +4038,14 @@
           "expectedOffset": 3,
           "resolvedOffset": 3,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Europe/Moscow GMT+3 (+3h), UTC 1980-07-19T13:00:00.000Z, place Moscow (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 116.9892,
-            "actual": 116.995,
-            "deltaArcmin": 0.3480000000013206,
+            "actual": 116.98944444444444,
+            "deltaArcmin": 0.014666666666016681,
             "limit": 6,
             "status": "pass"
           },
@@ -4060,64 +4060,64 @@
           {
             "body": "Mercury",
             "expected": 105.6516,
-            "actual": 105.65805555555556,
-            "deltaArcmin": 0.3873333333353912,
+            "actual": 105.6525,
+            "deltaArcmin": 0.05400000000008731,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 78.8665,
-            "actual": 78.8711111111111,
-            "deltaArcmin": 0.27666666666618767,
+            "actual": 78.86694444444444,
+            "deltaArcmin": 0.026666666663004435,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 184.9847,
-            "actual": 184.98666666666665,
-            "deltaArcmin": 0.11800000000221189,
+            "actual": 184.98472222222222,
+            "deltaArcmin": 0.0013333333345144638,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 159.2478,
-            "actual": 159.25222222222223,
-            "deltaArcmin": 0.26533333333645714,
+            "actual": 159.24805555555554,
+            "deltaArcmin": 0.015333333333273913,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 172.8897,
-            "actual": 172.89166666666665,
-            "deltaArcmin": 0.11800000000221189,
+            "actual": 172.88861111111112,
+            "deltaArcmin": 0.06533333333663904,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 231.55,
-            "actual": 231.54638888888888,
-            "deltaArcmin": 0.21666666666760648,
+            "actual": 231.54861111111111,
+            "deltaArcmin": 0.08333333333212067,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 260.3753,
-            "actual": 260.36694444444447,
-            "deltaArcmin": 0.5013333333272385,
+            "actual": 260.3713888888889,
+            "deltaArcmin": 0.23466666666990932,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 199.0874,
-            "actual": 199.08972222222224,
-            "deltaArcmin": 0.13933333333397968,
+            "actual": 199.0888888888889,
+            "deltaArcmin": 0.08933333333061455,
             "limit": 8,
             "status": "pass"
           },
@@ -4133,8 +4133,8 @@
           {
             "body": "NorthNode",
             "expected": 141.2789,
-            "actual": 140.68194444444444,
-            "deltaArcmin": 35.81733333332977,
+            "actual": 140.42277777777778,
+            "deltaArcmin": 51.36733333333268,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -4142,8 +4142,8 @@
           {
             "body": "Ascendant",
             "expected": 233.0035,
-            "actual": 233.0038888888889,
-            "deltaArcmin": 0.023333333333539485,
+            "actual": 233.00349935861254,
+            "deltaArcmin": 0.00003848324922728352,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -4151,8 +4151,8 @@
           {
             "body": "Midheaven",
             "expected": 169.2234,
-            "actual": 169.21666666666667,
-            "deltaArcmin": 0.4040000000031796,
+            "actual": 169.22079761818077,
+            "deltaArcmin": 0.15614290915209494,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -4177,7 +4177,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Leo 20°41' / Aquarius 20°41'"
+            "detail": "Leo 20°25' / Aquarius 20°25'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -4187,12 +4187,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Gemini 6°29'"
+            "detail": "Vertex Cancer 6°32'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +3h, app used +3h"
+            "detail": "expected +3h at 1980-07-19T13:00:00Z; Europe/Moscow GMT+3 (+3h), UTC 1980-07-19T13:00:00.000Z, place Moscow (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -4325,14 +4325,14 @@
           "expectedOffset": 4,
           "resolvedOffset": 4,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Asia/Dubai GMT+4 (+4h), UTC 2014-10-31T05:25:00.000Z, place Dubai (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 217.7115,
-            "actual": 217.71694444444444,
-            "deltaArcmin": 0.3266666666695528,
+            "actual": 217.71138888888888,
+            "deltaArcmin": 0.006666666665751109,
             "limit": 6,
             "status": "pass"
           },
@@ -4347,64 +4347,64 @@
           {
             "body": "Mercury",
             "expected": 199.2534,
-            "actual": 199.25916666666666,
-            "deltaArcmin": 0.3459999999995489,
+            "actual": 199.2536111111111,
+            "deltaArcmin": 0.012666666664244985,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 219.2193,
-            "actual": 219.225,
-            "deltaArcmin": 0.3419999999960055,
+            "actual": 219.21916666666667,
+            "deltaArcmin": 0.008000000000265572,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 273.5427,
-            "actual": 273.54638888888894,
-            "deltaArcmin": 0.2213333333384071,
+            "actual": 273.54305555555555,
+            "deltaArcmin": 0.02133333333176779,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 140.3267,
-            "actual": 140.3275,
-            "deltaArcmin": 0.048000000001593435,
+            "actual": 140.32638888888889,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 233.7839,
-            "actual": 233.78944444444446,
-            "deltaArcmin": 0.3326666666680467,
+            "actual": 233.7838888888889,
+            "deltaArcmin": 0.0006666666672572319,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 13.6039,
-            "actual": 13.59888888888889,
-            "deltaArcmin": 0.3006666666669844,
+            "actual": 13.604166666666666,
+            "deltaArcmin": 0.016000000000531145,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 334.8706,
-            "actual": 334.87305555555554,
-            "deltaArcmin": 0.14733333333424525,
+            "actual": 334.87555555555554,
+            "deltaArcmin": 0.2973333333306982,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 281.3658,
-            "actual": 281.36833333333334,
-            "deltaArcmin": 0.15199999999822467,
+            "actual": 281.3655555555556,
+            "deltaArcmin": 0.014666666666016681,
             "limit": 8,
             "status": "pass"
           },
@@ -4420,8 +4420,8 @@
           {
             "body": "NorthNode",
             "expected": 198.2086,
-            "actual": 198.91111111111113,
-            "deltaArcmin": 42.15066666666644,
+            "actual": 199.12805555555556,
+            "deltaArcmin": 55.167333333336046,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -4429,8 +4429,8 @@
           {
             "body": "Ascendant",
             "expected": 255.833,
-            "actual": 255.83305555555555,
-            "deltaArcmin": 0.003333333329464949,
+            "actual": 255.8348332923885,
+            "deltaArcmin": 0.10999754330896394,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -4438,8 +4438,8 @@
           {
             "body": "Midheaven",
             "expected": 175.6012,
-            "actual": 175.6,
-            "deltaArcmin": 0.07200000000239015,
+            "actual": 175.60243743599528,
+            "deltaArcmin": 0.07424615972013271,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -4464,7 +4464,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Libra 18°55' / Aries 18°55'"
+            "detail": "Libra 19°08' / Aries 19°08'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -4474,12 +4474,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Taurus 17°38'"
+            "detail": "Vertex Leo 8°02'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +4h, app used +4h"
+            "detail": "expected +4h at 2014-10-31T05:25:00Z; Asia/Dubai GMT+4 (+4h), UTC 2014-10-31T05:25:00.000Z, place Dubai (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -4573,18 +4573,11 @@
           },
           {
             "source": "planetSynthesis.Uranus",
-            "charCount": 816,
-            "findings": [
-              {
-                "rule": "readable-sentences",
-                "severity": "warning",
-                "message": "Longest sentence runs 48 words. Break it up.",
-                "excerpt": "…pattern here is a square to Pluto at 2.22°. It is not exact, so it works more like a recurring tug than a constant pull: every time you try to break…"
-              }
-            ],
+            "charCount": 703,
+            "findings": [],
             "errorCount": 0,
-            "warningCount": 1,
-            "score": 0.95
+            "warningCount": 0,
+            "score": 1
           },
           {
             "source": "planetSynthesis.Neptune",
@@ -4604,8 +4597,8 @@
           }
         ],
         "errorCount": 0,
-        "warningCount": 1,
-        "score": 0.9961538461538461
+        "warningCount": 0,
+        "score": 1
       }
     },
     {
@@ -4619,14 +4612,14 @@
           "expectedOffset": -4,
           "resolvedOffset": -4,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/Toronto GMT-4 (-4h), UTC 1959-04-26T17:37:00.000Z, place Toronto (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 35.7369,
-            "actual": 35.7425,
-            "deltaArcmin": 0.3359999999975116,
+            "actual": 35.73694444444445,
+            "deltaArcmin": 0.0026666666690289276,
             "limit": 6,
             "status": "pass"
           },
@@ -4641,64 +4634,64 @@
           {
             "body": "Mercury",
             "expected": 8.6821,
-            "actual": 8.6875,
-            "deltaArcmin": 0.32400000000052387,
+            "actual": 8.6825,
+            "deltaArcmin": 0.024000000000796717,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 73.9445,
-            "actual": 73.94861111111112,
-            "deltaArcmin": 0.24666666666689707,
+            "actual": 73.94444444444444,
+            "deltaArcmin": 0.0033333333362861595,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 99.2699,
-            "actual": 99.2725,
-            "deltaArcmin": 0.15600000000176806,
+            "actual": 99.27,
+            "deltaArcmin": 0.005999999998493877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 239.7778,
-            "actual": 239.77444444444447,
-            "deltaArcmin": 0.20133333333433256,
+            "actual": 239.77944444444447,
+            "deltaArcmin": 0.09866666666539459,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 276.982,
-            "actual": 276.97777777777776,
-            "deltaArcmin": 0.2533333333394694,
+            "actual": 276.98027777777776,
+            "deltaArcmin": 0.10333333333619521,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 132.2412,
-            "actual": 132.24166666666665,
-            "deltaArcmin": 0.0279999999975189,
+            "actual": 132.2422222222222,
+            "deltaArcmin": 0.06133333333309565,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 215.5923,
-            "actual": 215.5836111111111,
-            "deltaArcmin": 0.521333333331313,
+            "actual": 215.58944444444447,
+            "deltaArcmin": 0.17133333332822076,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 151.7421,
-            "actual": 151.74027777777778,
-            "deltaArcmin": 0.10933333333468909,
+            "actual": 151.74305555555554,
+            "deltaArcmin": 0.05733333332955226,
             "limit": 8,
             "status": "pass"
           },
@@ -4714,8 +4707,8 @@
           {
             "body": "NorthNode",
             "expected": 191.9255,
-            "actual": 193.4933333333333,
-            "deltaArcmin": 94.06999999999698,
+            "actual": 192.9075,
+            "deltaArcmin": 58.919999999998254,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -4723,8 +4716,8 @@
           {
             "body": "Ascendant",
             "expected": 140.7967,
-            "actual": 140.79555555555555,
-            "deltaArcmin": 0.06866666666610399,
+            "actual": 140.79638555665036,
+            "deltaArcmin": 0.018866600980800285,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -4732,8 +4725,8 @@
           {
             "body": "Midheaven",
             "expected": 41.2692,
-            "actual": 41.266666666666666,
-            "deltaArcmin": 0.15199999999822467,
+            "actual": 41.2693193462045,
+            "deltaArcmin": 0.007160772272527538,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -4743,7 +4736,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Leo 20°48', 7th Aquarius 20°48'"
+            "detail": "1st Leo 20°47', 7th Aquarius 20°47'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -4758,7 +4751,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Libra 13°30' / Aries 13°30'"
+            "detail": "Libra 12°54' / Aries 12°54'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -4768,12 +4761,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aquarius 21°52'"
+            "detail": "Vertex Capricorn 11°30'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -4h, app used -4h"
+            "detail": "expected -4h at 1959-04-26T17:37:00Z; America/Toronto GMT-4 (-4h), UTC 1959-04-26T17:37:00.000Z, place Toronto (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -4906,14 +4899,14 @@
           "expectedOffset": 7.5,
           "resolvedOffset": 7.5,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Asia/Singapore GMT+7:30 (+7.5h), UTC 1966-12-05T14:40:00.000Z, place Singapore (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 253.0132,
-            "actual": 253.01916666666668,
-            "deltaArcmin": 0.35799999999653664,
+            "actual": 253.01333333333332,
+            "deltaArcmin": 0.008000000000265572,
             "limit": 6,
             "status": "pass"
           },
@@ -4928,64 +4921,64 @@
           {
             "body": "Mercury",
             "expected": 232.6375,
-            "actual": 232.64194444444445,
-            "deltaArcmin": 0.2666666666709716,
+            "actual": 232.63666666666666,
+            "deltaArcmin": 0.04999999999654392,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 259.5549,
-            "actual": 259.56083333333333,
-            "deltaArcmin": 0.35600000000158616,
+            "actual": 259.5552777777778,
+            "deltaArcmin": 0.022666666673103464,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 180.8415,
-            "actual": 180.84361111111113,
-            "deltaArcmin": 0.1266666666697347,
+            "actual": 180.84194444444447,
+            "deltaArcmin": 0.026666666669825645,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 124.1519,
-            "actual": 124.14694444444446,
-            "deltaArcmin": 0.2973333333306982,
+            "actual": 124.15055555555556,
+            "deltaArcmin": 0.08066666666309175,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 352.9854,
-            "actual": 352.9841666666667,
-            "deltaArcmin": 0.07400000000416185,
+            "actual": 352.985,
+            "deltaArcmin": 0.024000000000796717,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 174.1392,
-            "actual": 174.13861111111112,
-            "deltaArcmin": 0.03533333333052724,
+            "actual": 174.1375,
+            "deltaArcmin": 0.10200000000168075,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 232.6782,
-            "actual": 232.67944444444444,
-            "deltaArcmin": 0.07466666666459787,
+            "actual": 232.67388888888888,
+            "deltaArcmin": 0.2586666666638848,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 170.5577,
-            "actual": 170.55861111111113,
-            "deltaArcmin": 0.05466666666734454,
+            "actual": 170.5577777777778,
+            "deltaArcmin": 0.004666666663979413,
             "limit": 8,
             "status": "pass"
           },
@@ -5001,8 +4994,8 @@
           {
             "body": "NorthNode",
             "expected": 44.7204,
-            "actual": 46.33416666666667,
-            "deltaArcmin": 96.8260000000032,
+            "actual": 45.905277777777776,
+            "deltaArcmin": 71.09266666666372,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -5010,8 +5003,8 @@
           {
             "body": "Ascendant",
             "expected": 125.8577,
-            "actual": 125.85527777777777,
-            "deltaArcmin": 0.14533333333247356,
+            "actual": 125.8542686986882,
+            "deltaArcmin": 0.20587807870924735,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -5019,8 +5012,8 @@
           {
             "body": "Midheaven",
             "expected": 40.1828,
-            "actual": 40.18333333333333,
-            "deltaArcmin": 0.03200000000106229,
+            "actual": 40.17993658627,
+            "deltaArcmin": 0.1718048237989933,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -5035,7 +5028,7 @@
           {
             "name": "Midheaven and IC are opposite",
             "ok": true,
-            "detail": "10th Taurus 10°11', 4th Scorpio 10°11'"
+            "detail": "10th Taurus 10°10', 4th Scorpio 10°10'"
           },
           {
             "name": "House cusps run forward in zodiacal order",
@@ -5045,7 +5038,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Taurus 16°20' / Scorpio 16°20'"
+            "detail": "Taurus 15°54' / Scorpio 15°54'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -5055,12 +5048,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Pisces 27°24'"
+            "detail": "Vertex Libra 2°47'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +7.5h, app used +7.5h"
+            "detail": "expected +7.5h at 1966-12-05T14:40:00Z; Asia/Singapore GMT+7:30 (+7.5h), UTC 1966-12-05T14:40:00.000Z, place Singapore (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -5193,14 +5186,14 @@
           "expectedOffset": -4,
           "resolvedOffset": -4,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: America/New_York EDT (-4h), UTC 2019-08-08T07:33:00.000Z, place Miami, FL (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 135.4924,
-            "actual": 135.49805555555554,
-            "deltaArcmin": 0.3393333333337978,
+            "actual": 135.49249999999998,
+            "deltaArcmin": 0.005999999998493877,
             "limit": 6,
             "status": "pass"
           },
@@ -5215,64 +5208,64 @@
           {
             "body": "Mercury",
             "expected": 116.6695,
-            "actual": 116.67444444444445,
-            "deltaArcmin": 0.296666666663441,
+            "actual": 116.66916666666667,
+            "deltaArcmin": 0.019999999997253326,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 133.8524,
-            "actual": 133.85805555555555,
-            "deltaArcmin": 0.3393333333337978,
+            "actual": 133.8525,
+            "deltaArcmin": 0.005999999998493877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 143.7103,
-            "actual": 143.71583333333334,
-            "deltaArcmin": 0.33200000000078944,
+            "actual": 143.71027777777778,
+            "deltaArcmin": 0.0013333333345144638,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 254.5214,
-            "actual": 254.52055555555557,
-            "deltaArcmin": 0.05066666666380115,
+            "actual": 254.52333333333334,
+            "deltaArcmin": 0.1160000000004402,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 285.1899,
-            "actual": 285.18444444444447,
-            "deltaArcmin": 0.3273333333299888,
+            "actual": 285.18944444444446,
+            "deltaArcmin": 0.027333333337082877,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 36.6093,
-            "actual": 36.60916666666667,
-            "deltaArcmin": 0.008000000000265572,
+            "actual": 36.61027777777778,
+            "deltaArcmin": 0.058666666664066724,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 348.157,
-            "actual": 348.15638888888884,
-            "deltaArcmin": 0.0366666666650417,
+            "actual": 348.1611111111111,
+            "deltaArcmin": 0.24666666666689707,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 291.3142,
-            "actual": 291.3088888888889,
-            "deltaArcmin": 0.3186666666692872,
+            "actual": 291.3138888888889,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 8,
             "status": "pass"
           },
@@ -5288,8 +5281,8 @@
           {
             "body": "NorthNode",
             "expected": 105.9584,
-            "actual": 107.10166666666666,
-            "deltaArcmin": 68.59600000000228,
+            "actual": 107.345,
+            "deltaArcmin": 83.19600000000264,
             "limit": 120,
             "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
@@ -5297,8 +5290,8 @@
           {
             "body": "Ascendant",
             "expected": 91.5196,
-            "actual": 91.51722222222222,
-            "deltaArcmin": 0.14266666667026584,
+            "actual": 91.51563015334045,
+            "deltaArcmin": 0.2381907995709298,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -5306,8 +5299,8 @@
           {
             "body": "Midheaven",
             "expected": 348.6724,
-            "actual": 348.6666666666667,
-            "deltaArcmin": 0.3439999999977772,
+            "actual": 348.6680984235914,
+            "deltaArcmin": 0.2580945845147653,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -5317,7 +5310,7 @@
           {
             "name": "Ascendant and Descendant are opposite",
             "ok": true,
-            "detail": "1st Cancer 1°31', 7th Capricorn 1°31'"
+            "detail": "1st Cancer 1°30', 7th Capricorn 1°30'"
           },
           {
             "name": "Midheaven and IC are opposite",
@@ -5332,7 +5325,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Cancer 17°06' / Capricorn 17°06'"
+            "detail": "Cancer 17°21' / Capricorn 17°21'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -5342,12 +5335,12 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Aquarius 3°48'"
+            "detail": "Vertex Scorpio 14°49'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected -4h, app used -4h"
+            "detail": "expected -4h at 2019-08-08T07:33:00Z; America/New_York EDT (-4h), UTC 2019-08-08T07:33:00.000Z, place Miami, FL (0.0 km)"
           }
         ],
         "passCount": 14,
@@ -5480,14 +5473,14 @@
           "expectedOffset": 1,
           "resolvedOffset": 1,
           "ok": true,
-          "detail": "Matches tzdata."
+          "detail": "Matches tzdata: Europe/Berlin GMT+1 (+1h), UTC 1937-02-11T11:00:00.000Z, place Berlin (0.0 km)."
         },
         "bodies": [
           {
             "body": "Sun",
             "expected": 322.326,
-            "actual": 322.33194444444445,
-            "deltaArcmin": 0.3566666666620222,
+            "actual": 322.3261111111111,
+            "deltaArcmin": 0.006666666665751109,
             "limit": 6,
             "status": "pass"
           },
@@ -5502,64 +5495,64 @@
           {
             "body": "Mercury",
             "expected": 296.9311,
-            "actual": 296.93666666666667,
-            "deltaArcmin": 0.33400000000256114,
+            "actual": 296.9316666666667,
+            "deltaArcmin": 0.033999999996012775,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Venus",
             "expected": 9.0123,
-            "actual": 9.016666666666667,
-            "deltaArcmin": 0.262000000000171,
+            "actual": 9.012777777777778,
+            "deltaArcmin": 0.02866666666477613,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Mars",
             "expected": 228.436,
-            "actual": 228.43583333333333,
-            "deltaArcmin": 0.010000000002037268,
+            "actual": 228.4363888888889,
+            "deltaArcmin": 0.023333333333539485,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Jupiter",
             "expected": 285.9833,
-            "actual": 285.98833333333334,
-            "deltaArcmin": 0.30200000000149885,
+            "actual": 285.98361111111114,
+            "deltaArcmin": 0.018666666669560072,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Saturn",
             "expected": 351.2856,
-            "actual": 351.2894444444445,
-            "deltaArcmin": 0.23066666666636593,
+            "actual": 351.2844444444445,
+            "deltaArcmin": 0.06933333332654001,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Uranus",
             "expected": 35.9733,
-            "actual": 35.97638888888889,
-            "deltaArcmin": 0.18533333333380142,
+            "actual": 35.975,
+            "deltaArcmin": 0.10200000000168075,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Neptune",
             "expected": 168.2654,
-            "actual": 168.2613888888889,
-            "deltaArcmin": 0.2406666666684032,
+            "actual": 168.26638888888888,
+            "deltaArcmin": 0.059333333331323956,
             "limit": 6,
             "status": "pass"
           },
           {
             "body": "Pluto",
             "expected": 117.1205,
-            "actual": 117.11555555555555,
-            "deltaArcmin": 0.2966666666702622,
+            "actual": 117.12083333333332,
+            "deltaArcmin": 0.019999999997253326,
             "limit": 8,
             "status": "pass"
           },
@@ -5575,17 +5568,17 @@
           {
             "body": "NorthNode",
             "expected": 261.3426,
-            "actual": 263.5111111111111,
-            "deltaArcmin": 130.11066666666693,
+            "actual": 262.5455555555556,
+            "deltaArcmin": 72.17733333333626,
             "limit": 120,
-            "status": "close",
+            "status": "pass",
             "note": "Reference value is the mean node; the app uses the true node, which swings up to 1.7 degrees either side."
           },
           {
             "body": "Ascendant",
             "expected": 84.2171,
-            "actual": 84.2063888888889,
-            "deltaArcmin": 0.6426666666629899,
+            "actual": 84.22127748196476,
+            "deltaArcmin": 0.2506489178881566,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
@@ -5593,8 +5586,8 @@
           {
             "body": "Midheaven",
             "expected": 317.0381,
-            "actual": 317.03333333333336,
-            "deltaArcmin": 0.2860000000009677,
+            "actual": 317.04305144102466,
+            "deltaArcmin": 0.2970864614803759,
             "limit": 30,
             "status": "pass",
             "note": "Same coordinate rounding as the Ascendant."
@@ -5619,7 +5612,7 @@
           {
             "name": "North and South Node are exactly opposite",
             "ok": true,
-            "detail": "Sagittarius 23°31' / Gemini 23°31'"
+            "detail": "Sagittarius 22°33' / Gemini 22°33'"
           },
           {
             "name": "Every body’s sign matches its own longitude",
@@ -5629,18 +5622,18 @@
           {
             "name": "Vertex is not the Antivertex (never equal to the Ascendant)",
             "ok": true,
-            "detail": "Vertex Sagittarius 9°04'"
+            "detail": "Vertex Scorpio 10°10'"
           },
           {
-            "name": "Timezone and daylight saving resolved correctly",
+            "name": "Timezone, daylight saving and birthplace resolved correctly",
             "ok": true,
-            "detail": "expected +1h, app used +1h"
+            "detail": "expected +1h at 1937-02-11T11:00:00Z; Europe/Berlin GMT+1 (+1h), UTC 1937-02-11T11:00:00.000Z, place Berlin (0.0 km)"
           }
         ],
-        "passCount": 13,
-        "closeCount": 1,
+        "passCount": 14,
+        "closeCount": 0,
         "failCount": 0,
-        "score": 0.9761904761904762
+        "score": 1
       },
       "reading": {
         "id": "ref20",
@@ -5760,22 +5753,22 @@
   "totals": {
     "peopleCount": 20,
     "bodyChecks": 280,
-    "bodyPass": 279,
-    "bodyClose": 1,
+    "bodyPass": 280,
+    "bodyClose": 0,
     "bodyFail": 0,
     "invariantChecks": 140,
     "invariantPass": 140,
-    "mathScore": 0.9988095238095238,
+    "mathScore": 1,
     "readingBlocks": 260,
     "lintErrors": 0,
-    "lintWarnings": 2,
-    "readingScore": 0.9996153846153846,
+    "lintWarnings": 1,
+    "readingScore": 0.9998076923076923,
     "rulesChecked": 14
   },
   "ruleBreakdown": [
     {
       "rule": "readable-sentences",
-      "hits": 2,
+      "hits": 1,
       "severity": "warning"
     }
   ]
