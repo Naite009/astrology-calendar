@@ -232,9 +232,18 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
                 <MoonIcon className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">Where today's Moon lands for {firstName}</span>
               </div>
+              {data.justChanged && (
+                <p className="text-xs font-medium text-primary mb-1">{data.justChanged}</p>
+              )}
               {data.moonHouseLine && (
                 <p className="text-sm text-foreground leading-relaxed">{data.moonHouseLine}</p>
               )}
+              {data.upcoming.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Next: {data.upcoming.map(u => u.label).join(" · ")}
+                </p>
+              )}
+
               <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                 {data.guidance.reflection}
               </p>
