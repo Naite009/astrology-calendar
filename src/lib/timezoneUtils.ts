@@ -361,7 +361,10 @@ export function lookupTimezone(location: string, birthDate?: string, birthTime?:
       }
     }
     if (!match) {
-      const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
+      // Whole-word match only: "nowhere land" must not match Louisiana's "la".
+      const zone = US_STATE_TIMEZONES.find(s =>
+        s.terms.some(t => words.includes(t.trim()) || t.trim().split(' ').every(w => words.includes(w))),
+      );
       if (zone) match = { timezone: zone.timezone } as typeof match;
     }
     if (match) {
