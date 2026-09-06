@@ -236,175 +236,146 @@ const LOCATION_TIMEZONE_MAP: Record<string, { timezone: string; label: string }>
   'mexico': { timezone: 'America/Mexico_City', label: 'CST' },
 };
 
-// Calculate offset for a timezone at a specific date
+/**
+ * Offset in hours for a zone at a UTC instant, from the zone database (via
+ * Intl), never from string round-trips through the browser's own zone.
+ */
 function getTimezoneOffset(timezone: string, date: Date): number {
   try {
-    // Get the offset by comparing UTC and local time
-    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
-    const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
-    const diffMs = tzDate.getTime() - utcDate.getTime();
-    return diffMs / (1000 * 60 * 60); // Convert to hours
+    return zoneOffsetSeconds(timezone, date.getTime()) / 3600;
   } catch {
     return 0;
   }
 }
 
-// Check if a date is in DST for a given timezone
-function isDST(timezone: string, date: Date): boolean {
-  // Compare offset in January (winter) vs the given date
-  const january = new Date(date.getFullYear(), 0, 15, 12, 0, 0);
-  const july = new Date(date.getFullYear(), 6, 15, 12, 0, 0);
-  
-  const januaryOffset = getTimezoneOffset(timezone, january);
-  const julyOffset = getTimezoneOffset(timezone, july);
-  const dateOffset = getTimezoneOffset(timezone, date);
-  
-  // DST is when the offset matches the "summer" offset (larger offset = more hours ahead)
-  // For northern hemisphere (like US), July has DST
-  // For southern hemisphere (like Australia), January has DST
-  const summerOffset = Math.max(januaryOffset, julyOffset);
-  const winterOffset = Math.min(januaryOffset, julyOffset);
-  
-  // If there's no difference, this timezone doesn't observe DST
-  if (januaryOffset === julyOffset) return false;
-  
-  // Check if current date's offset matches the summer (DST) offset
-  return dateOffset === summerOffset;
-}
+const fmtOffsetHours = (offset: number): string => {
+  const sign = offset >= 0 ? '+' : '-';
+  const abs = Math.abs(offset);
+  const h = Math.floor(abs);
+  const m = Math.round((abs - h) * 60);
+  return m ? `UTC${sign}${h}:${String(m).padStart(2, '0')}` : `UTC${sign}${h}`;
+};
 
-// Get a specific DST-aware label for display
+const LONG_NAMES: Record<string, string> = {
+  EST: 'Eastern Standard', EDT: 'Eastern Daylight', CST: 'Central Standard', CDT: 'Central Daylight',
+  MST: 'Mountain Standard', MDT: 'Mountain Daylight', PST: 'Pacific Standard', PDT: 'Pacific Daylight',
+  AKST: 'Alaska Standard', AKDT: 'Alaska Daylight', HST: 'Hawaii Standard',
+  GMT: 'Greenwich Mean', BST: 'British Summer', CET: 'Central European', CEST: 'Central European Summer',
+  AEST: 'Eastern Standard', AEDT: 'Eastern Daylight', NZST: 'NZ Standard', NZDT: 'NZ Daylight',
+};
+
+/** "EDT (Eastern Daylight) UTC-4" style label at a UTC instant. */
 function getDSTAwareLabel(timezone: string, date: Date): string {
-  const inDST = isDST(timezone, date);
   const offset = getTimezoneOffset(timezone, date);
-  const offsetStr = offset >= 0 ? `UTC+${offset}` : `UTC${offset}`;
-  
-  // Map specific timezones to their standard/daylight names
-  const dstLabels: Record<string, { standard: string; daylight: string }> = {
-    'America/New_York': { standard: 'EST (Eastern Standard)', daylight: 'EDT (Eastern Daylight)' },
-    'America/Chicago': { standard: 'CST (Central Standard)', daylight: 'CDT (Central Daylight)' },
-    'America/Denver': { standard: 'MST (Mountain Standard)', daylight: 'MDT (Mountain Daylight)' },
-    'America/Los_Angeles': { standard: 'PST (Pacific Standard)', daylight: 'PDT (Pacific Daylight)' },
-    'America/Toronto': { standard: 'EST (Eastern Standard)', daylight: 'EDT (Eastern Daylight)' },
-    'America/Vancouver': { standard: 'PST (Pacific Standard)', daylight: 'PDT (Pacific Daylight)' },
-    'Europe/London': { standard: 'GMT (Greenwich Mean)', daylight: 'BST (British Summer)' },
-    'Europe/Paris': { standard: 'CET (Central European)', daylight: 'CEST (Central European Summer)' },
-    'Europe/Berlin': { standard: 'CET (Central European)', daylight: 'CEST (Central European Summer)' },
-    'Australia/Sydney': { standard: 'AEST (Eastern Standard)', daylight: 'AEDT (Eastern Daylight)' },
-    'Pacific/Auckland': { standard: 'NZST (NZ Standard)', daylight: 'NZDT (NZ Daylight)' },
-  };
-  
-  const labels = dstLabels[timezone];
-  if (labels) {
-    return inDST ? `${labels.daylight} ${offsetStr}` : `${labels.standard} ${offsetStr}`;
-  }
-  
-  // For timezones without DST or not in our map
-  return `${offsetStr}`;
+  const offsetStr = fmtOffsetHours(offset);
+  const abbr = zoneAbbreviation(timezone, date.getTime());
+  if (!abbr || /^(GMT|UTC)[+-]/.test(abbr)) return offsetStr;
+  const long = LONG_NAMES[abbr];
+  return long ? `${abbr} (${long}) ${offsetStr}` : `${abbr} ${offsetStr}`;
 }
 
-// Public helper: get DST-aware label/offset for a timezone on a specific birth date.
-// This is used by forms to display the correct "EDT UTC-4" vs "EST UTC-5".
+/**
+ * The UTC instant for a local civil date and time in a zone. When no time is
+ * given, noon is used. Ambiguous (fall-back) readings take the first
+ * occurrence; nonexistent (spring-forward) readings take the first real
+ * reading after the jump. Forms that need to ask the user should go through
+ * birthDataNormalization instead; this helper only labels and previews.
+ */
+export function localInstantForZone(timezone: string, birthDate?: string, birthTime?: string): Date | null {
+  if (!birthDate) return null;
+  const [year, month, day] = birthDate.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  const [hh, mm, ss] = (birthTime || '12:00').split(':').map(Number);
+  const parts: CivilParts = { year, month, day, hour: hh || 0, minute: mm || 0, second: ss || 0 };
+  const conv = localToUtc(timezone, parts, 'earlier');
+  if (conv.resolved) return conv.resolved.utc;
+  if (conv.status === 'nonexistent' && conv.suggestedLocal) {
+    const again = localToUtc(timezone, conv.suggestedLocal, 'earlier');
+    return again.resolved?.utc ?? null;
+  }
+  return null;
+}
+
+// Public helper: get DST-aware label/offset for a timezone at a specific
+// local birth date and time ("EDT UTC-4" vs "EST UTC-5", evaluated at the
+// actual moment, so a birth on a changeover night gets the right side).
 export function getTimezoneInfoForDate(
   timezone: string,
-  birthDate?: string
+  birthDate?: string,
+  birthTime?: string,
 ): { offset: number; label: string } {
-  let dateToCheck: Date;
-  if (birthDate) {
-    const [year, month, day] = birthDate.split('-').map(Number);
-    dateToCheck = new Date(year, month - 1, day, 12, 0, 0);
-  } else {
-    dateToCheck = new Date();
-  }
-
-  const offset = getTimezoneOffset(timezone, dateToCheck);
-  const label = getDSTAwareLabel(timezone, dateToCheck);
+  const instant = localInstantForZone(timezone, birthDate, birthTime) ?? new Date();
+  const offset = getTimezoneOffset(timezone, instant);
+  const label = getDSTAwareLabel(timezone, instant);
   return { offset, label };
 }
 
 /**
- * US state-level zones. Used only when the city map has no entry, so a small
- * birth town still gets the correct zone instead of blocking calculation.
- * State names and postal codes are matched inside the normalized string
- * (commas are already stripped, so "newton nj" contains " nj").
+ * US state-level zones. Used only when the offline place resolver and the
+ * city map have no entry, so a small birth town still gets the correct zone
+ * instead of blocking calculation. State names and postal codes are matched
+ * inside the normalized string (commas are already stripped, so "newton nj"
+ * contains " nj").
  */
 const US_STATE_TIMEZONES: Array<{ terms: string[]; timezone: string }> = [
   { terms: ['new jersey', ' nj', 'new york', ' ny', 'connecticut', ' ct', 'pennsylvania', ' pa', 'delaware', ' de', 'maryland', ' md', 'washington dc', ' dc', 'virginia', ' va', 'west virginia', ' wv', 'massachusetts', ' ma', 'vermont', ' vt', 'new hampshire', ' nh', 'maine', ' me', 'rhode island', ' ri', 'north carolina', ' nc', 'south carolina', ' sc', 'georgia', ' ga', 'florida', ' fl', 'ohio', ' oh', 'michigan', ' mi', 'indiana', ' in'], timezone: 'America/New_York' },
   { terms: ['illinois', ' il', 'wisconsin', ' wi', 'minnesota', ' mn', 'iowa', ' ia', 'missouri', ' mo', 'arkansas', ' ar', 'louisiana', ' la', 'mississippi', ' ms', 'alabama', ' al', 'tennessee', ' tn', 'kentucky', ' ky', 'texas', ' tx', 'oklahoma', ' ok', 'kansas', ' ks', 'nebraska', ' ne', 'south dakota', ' sd', 'north dakota', ' nd'], timezone: 'America/Chicago' },
-  { terms: ['colorado', ' co', 'new mexico', ' nm', 'utah', ' ut', 'wyoming', ' wy', 'montana', ' mt', 'idaho', ' id', 'arizona', ' az'], timezone: 'America/Denver' },
+  { terms: ['colorado', ' co', 'new mexico', ' nm', 'utah', ' ut', 'wyoming', ' wy', 'montana', ' mt', 'idaho', ' id'], timezone: 'America/Denver' },
+  { terms: ['arizona', ' az'], timezone: 'America/Phoenix' },
   { terms: ['california', ' ca', 'oregon', ' or', 'nevada', ' nv', 'washington state', ' wa'], timezone: 'America/Los_Angeles' },
   { terms: ['alaska', ' ak'], timezone: 'America/Anchorage' },
   { terms: ['hawaii', ' hi'], timezone: 'Pacific/Honolulu' },
 ];
 
-export function lookupTimezone(location: string, birthDate?: string): TimezoneResult | null {
-
+/**
+ * Zone for a typed birthplace. The offline place resolver (coordinates plus
+ * boundary map) is asked first, then the alias map, then US states. The
+ * offset and label are evaluated at the local birth time when given.
+ */
+export function lookupTimezone(location: string, birthDate?: string, birthTime?: string): TimezoneResult | null {
   if (!location) return null;
-  
-  // Normalize the location string
-  const normalizedLocation = location.toLowerCase().trim()
-    .replace(/,\s*/g, ' ')
-    .replace(/\s+/g, ' ');
-  
-  // Try exact match first
-  let match = LOCATION_TIMEZONE_MAP[normalizedLocation];
-  
-  // Try partial matches if no exact match
-  if (!match) {
-    // Check if any key is contained in the location
-    for (const [key, value] of Object.entries(LOCATION_TIMEZONE_MAP)) {
-      if (normalizedLocation.includes(key) || key.includes(normalizedLocation)) {
-        match = value;
-        break;
+
+  let timezone: string | null = null;
+  let label: string | undefined;
+
+  const resolved = resolveBirthPlaceOffline(location);
+  if (resolved) timezone = resolved.timezone;
+
+  if (!timezone) {
+    const normalizedLocation = location.toLowerCase().trim()
+      .replace(/,\s*/g, ' ')
+      .replace(/\s+/g, ' ');
+
+    let match = LOCATION_TIMEZONE_MAP[normalizedLocation];
+    if (!match) {
+      // Whole-word containment only, so "la" never matches inside "village".
+      const words = normalizedLocation.split(' ');
+      for (const [key, value] of Object.entries(LOCATION_TIMEZONE_MAP)) {
+        const keyWords = key.split(' ');
+        if (key.length >= 4 && keyWords.every(w => words.includes(w))) { match = value; break; }
       }
     }
-  }
-  
-  // Try splitting by common separators and checking parts
-  if (!match) {
-    const parts = normalizedLocation.split(/[,\s]+/);
-    for (const part of parts) {
-      if (part.length > 2 && LOCATION_TIMEZONE_MAP[part]) {
-        match = LOCATION_TIMEZONE_MAP[part];
-        break;
-      }
+    if (!match) {
+      const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
+      if (zone) match = { timezone: zone.timezone } as typeof match;
+    }
+    if (match) {
+      timezone = match.timezone;
+      label = match.label;
     }
   }
 
-  // State-level fallback, so a small town the city map never heard of still
-  // resolves the right zone (and the right historical DST rule for the date).
-  if (!match) {
-    const zone = US_STATE_TIMEZONES.find(s => s.terms.some(t => normalizedLocation.includes(t)));
-    if (zone) match = { timezone: zone.timezone } as typeof match;
-  }
+  if (!timezone) return null;
 
-  if (!match) return null;
-
-  
-  // Calculate the actual offset for the given date
-  // Parse the date string carefully to avoid timezone issues
-  let dateToCheck: Date;
-  if (birthDate) {
-    const [year, month, day] = birthDate.split('-').map(Number);
-    dateToCheck = new Date(year, month - 1, day, 12, 0, 0);
-  } else {
-    dateToCheck = new Date();
-  }
-  
-  const offset = getTimezoneOffset(match.timezone, dateToCheck);
-  const label = getDSTAwareLabel(match.timezone, dateToCheck);
-  
-  return {
-    timezone: match.timezone,
-    offset,
-    label,
-  };
+  const info = getTimezoneInfoForDate(timezone, birthDate, birthTime);
+  return { timezone, offset: info.offset, label: info.label || label || timezone };
 }
 
 // Export list of available timezones with their current offsets
 export function getAvailableTimezones(): Array<{ value: string; label: string; offset: number }> {
   const now = new Date();
   const uniqueTimezones = new Map<string, { value: string; label: string; offset: number }>();
-  
+
   for (const data of Object.values(LOCATION_TIMEZONE_MAP)) {
     if (!uniqueTimezones.has(data.timezone)) {
       const offset = getTimezoneOffset(data.timezone, now);
@@ -415,6 +386,6 @@ export function getAvailableTimezones(): Array<{ value: string; label: string; o
       });
     }
   }
-  
+
   return Array.from(uniqueTimezones.values()).sort((a, b) => a.offset - b.offset);
 }
