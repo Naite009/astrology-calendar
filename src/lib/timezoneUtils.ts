@@ -1,5 +1,10 @@
-// Timezone lookup based on location and date
-// Maps common locations to their timezone identifiers
+// Timezone lookup based on location and date.
+// Zone identifiers come from the offline place resolver first (coordinates +
+// boundary map), then this alias map. All offsets are evaluated at the real
+// local birth instant through the shared zone rules in time/zonedTime.
+
+import { localToUtc, zoneOffsetSeconds, zoneAbbreviation, type CivilParts } from './time/zonedTime';
+import { resolveBirthPlaceOffline } from './geo/birthPlace';
 
 interface TimezoneResult {
   timezone: string;
