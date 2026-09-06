@@ -12,7 +12,11 @@ import { CalendarDays, Moon as MoonIcon, AlertTriangle, Heart } from "lucide-rea
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { calculateTransitAspects, type TransitAspect } from "@/lib/transitAspects";
-import { formatMoonHouseSchedule } from "@/lib/moonHouseSchedule";
+import {
+  formatMoonHouseSchedule,
+  getMoonUpcomingChanges,
+  getJustChangedNote,
+} from "@/lib/moonHouseSchedule";
 import { buildPersonalDailyGuidance } from "@/lib/personalDailyGuidance";
 
 const PLANET_GLYPH: Record<string, string> = {
