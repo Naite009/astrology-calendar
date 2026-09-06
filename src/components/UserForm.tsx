@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, Info } from 'lucide-react';
 import { UserData } from '@/hooks/useUserData';
-import { lookupTimezone } from '@/lib/timezoneUtils';
+import { lookupTimezone, getTimezoneInfoForDate } from '@/lib/timezoneUtils';
 
 interface UserFormProps {
   initialData: UserData | null;
