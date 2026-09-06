@@ -378,15 +378,22 @@ export const resolveCity = (raw: string | null | undefined): ResolvedCity | null
   // 2) Fuzzy match. Score every alias and pick the best.
   let bestKey = "";
   let bestScore = 0;
+  const queryWords = query.split(" ");
+  const queryFirst = queryWords[0];
   for (const key of ALIAS_KEYS) {
     let score = similarity(query, key);
-    // Bonus for substring containment (e.g. "wynwyd pa" → "wynwyd pa" alias).
-    if (key.includes(query) || query.includes(key)) {
+    // Bonus for containment, but only on whole words and only for keys long
+    // enough to be a real name: a two-letter alias like "la" must never match
+    // because it happens to appear inside an unrelated word ("village").
+    const keyWords = key.split(" ");
+    const wholeWordContained =
+      key.length >= 4 &&
+      (keyWords.every(w => queryWords.includes(w)) || queryWords.every(w => keyWords.includes(w)));
+    if (wholeWordContained) {
       score = Math.max(score, 0.85);
     }
     // Bonus when first word matches (city name shared, suffix differs).
-    const queryFirst = query.split(" ")[0];
-    const keyFirst = key.split(" ")[0];
+    const keyFirst = keyWords[0];
     if (queryFirst.length >= 4 && queryFirst === keyFirst) {
       score = Math.max(score, 0.78);
     }

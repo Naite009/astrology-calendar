@@ -5,61 +5,57 @@
  * Ascendant, house cusps, North Node, Chiron) and still get complete reports.
  * Everything else (South Node, Lilith, Ceres, Pallas, Juno, Vesta, Eris,
  * Vertex, Part of Fortune, and Chiron / North Node when skipped) is
- * deterministic from the birth moment, so we compute it here with
- * astronomy-engine and the ephemeris tables instead of asking for it.
+ * deterministic from the birth moment, so it is computed here through the
+ * shared pipeline (birthDataNormalization -> ephemerisEngine): local civil
+ * time at the birthplace, historical zone rules, one UTC instant.
  *
- * Manually entered values always win. Derived values are listed in
- * `derivedBodies` so the UI can label them as calculated.
+ * Manually entered or imported values always win; only empty slots are
+ * filled. Derived values are listed in `derivedBodies` so the UI can label
+ * them as calculated. Bodies outside the ephemeris data range are left empty
+ * rather than approximated.
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { resolveBirthMomentSync, type BirthMoment } from './birthDataNormalization';
+import { calculateNatalFromMoment, toStoredPosition, type CuspKey } from './natalChartCalculation';
 import {
-  getDetailedNodePosition,
-  getDetailedChironPosition,
-  getDetailedLilithPosition,
-  getDetailedCeresPosition,
-  getDetailedPallasPosition,
-  getDetailedJunoPosition,
-  getDetailedVestaPosition,
-  calculateVertex,
-  calculatePartOfFortune,
-  getCoordinatesFromLocation,
-  calculatePlacidusHouseCusps,
-} from './astrology';
-import { getAccurateAsteroidPosition } from './asteroidEphemeris';
+  circularSeparation,
+  longitudeToSignPosition,
+  partOfFortuneLongitude,
+  signPositionToLongitude,
+  norm360,
+} from './ephemerisEngine';
 
 const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
-const absDeg = (p?: { sign: string; degree: number; minutes?: number }): number | null => {
-  if (!p?.sign) return null;
-  const idx = SIGNS.indexOf(p.sign);
-  if (idx === -1) return null;
-  return idx * 30 + (p.degree || 0) + (p.minutes || 0) / 60;
-};
-
-const toPos = (
-  p: { sign: string; degree: number; minutes: number; seconds?: number; isRetrograde?: boolean },
-): NatalPlanetPosition => ({
-  sign: p.sign,
-  degree: p.degree,
-  minutes: p.minutes,
-  seconds: p.seconds ?? 0,
-  isRetrograde: p.isRetrograde ?? false,
-});
+const absDeg = (p?: { sign: string; degree: number; minutes?: number; seconds?: number } | null): number | null =>
+  p?.sign ? signPositionToLongitude({ sign: p.sign, degree: p.degree || 0, minutes: p.minutes || 0, seconds: p.seconds || 0 }) : null;
 
 const hasSign = (p?: NatalPlanetPosition | null): boolean => !!p?.sign && SIGNS.includes(p.sign);
 
-/** UTC birth moment. Charts without a birth time fall back to noon local. */
+/** Normalized birth moment for a stored chart (stored metadata or offline city table). */
+export const birthMomentFor = (chart: NatalChart): BirthMoment =>
+  resolveBirthMomentSync({
+    birthDate: chart.birthDate,
+    birthTime: chart.birthTime,
+    birthLocation: chart.birthLocation,
+    timezoneId: chart.timezoneId,
+    latitude: chart.latitude,
+    longitude: chart.longitude,
+    placeName: chart.placeName,
+    placeConfidence: chart.placeConfidence,
+    dstFold: chart.dstFold,
+    timezoneOffset: chart.timezoneOffset,
+    houseSystem: chart.houseSystem,
+    nodeVariant: chart.nodeVariant,
+  });
+
+/** UTC birth instant, or null when the record cannot be normalized. Charts without a time use noon local. */
 export const birthMomentOf = (chart: NatalChart): Date | null => {
   if (!chart?.birthDate) return null;
-  const [y, m, d] = chart.birthDate.split('-').map(Number);
-  if (!y || !m || !d) return null;
-  const [hh, mm] = (chart.birthTime || '12:00').split(':').map(Number);
-  const offset = typeof chart.timezoneOffset === 'number' ? chart.timezoneOffset : 0;
-  // Offsets can be fractional (+05:30, +07:30), and Date.UTC truncates a
-  // fractional hour argument, so convert the whole offset to minutes first.
-  return new Date(Date.UTC(y, m - 1, d, hh || 0, (mm || 0) - Math.round(offset * 60)));
+  const m = birthMomentFor(chart);
+  return m.status === 'ok' ? m.utc : null;
 };
 
 /** Bodies this module can fill in when they are missing. */
@@ -73,6 +69,11 @@ export interface AutoFillResult<T> {
   derived: string[];
 }
 
+const cuspFromLongitude = (lon: number): { sign: string; degree: number; minutes: number } => {
+  const sp = longitudeToSignPosition(lon);
+  return { sign: sp.sign, degree: sp.degree, minutes: sp.minutes };
+};
+
 /**
  * Fill every derivable body that is missing from a chart.
  * Returns the same object reference when nothing had to change.
@@ -80,111 +81,89 @@ export interface AutoFillResult<T> {
 export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
   if (!chart || !chart.planets || !chart.birthDate) return chart;
 
-  const date = birthMomentOf(chart);
-  if (!date || isNaN(date.getTime())) return chart;
+  const moment = birthMomentFor(chart);
+  if (moment.status !== 'ok' || !moment.utc) return chart;
 
-  const planets = { ...chart.planets };
+  const calc = calculateNatalFromMoment(moment);
+  const planets = { ...chart.planets } as Record<string, NatalPlanetPosition>;
   const derived: string[] = [];
-  const add = (name: string, value: NatalPlanetPosition | null) => {
+  const add = (name: string, value: NatalPlanetPosition | null | undefined) => {
     if (!value || !hasSign(value)) return;
-    (planets as Record<string, NatalPlanetPosition>)[name] = value;
+    planets[name] = value;
     derived.push(name);
   };
-
-  const safe = <R,>(fn: () => R): R | null => {
-    try {
-      return fn();
-    } catch {
-      return null;
-    }
+  const fromCalc = (key: string): NatalPlanetPosition | null => {
+    const p = calc.positions[key];
+    if (!p) return null;
+    const stored = toStoredPosition(p);
+    return { ...stored, isRetrograde: stored.isRetrograde ?? false };
   };
 
-  if (!hasSign(planets.NorthNode)) {
-    const nn = safe(() => getDetailedNodePosition(date));
-    add('NorthNode', nn ? toPos({ ...nn, isRetrograde: true }) : null);
-  }
+  if (!hasSign(planets.NorthNode)) add('NorthNode', fromCalc('NorthNode'));
 
-  // South Node is always exactly opposite the North Node.
+  // South Node is always exactly opposite the North Node the user gave us.
   if (!hasSign(planets.SouthNode) && hasSign(planets.NorthNode)) {
-    const nn = planets.NorthNode!;
+    const nn = planets.NorthNode;
     const oppIdx = (SIGNS.indexOf(nn.sign) + 6) % 12;
     add('SouthNode', {
       sign: SIGNS[oppIdx],
       degree: nn.degree,
       minutes: nn.minutes || 0,
       seconds: nn.seconds || 0,
-      isRetrograde: true,
+      isRetrograde: nn.isRetrograde ?? true,
     });
   }
 
-  if (!hasSign(planets.Chiron)) add('Chiron', safe(() => toPos(getDetailedChironPosition(date))));
-  if (!hasSign(planets.Lilith)) add('Lilith', safe(() => toPos(getDetailedLilithPosition(date) as any)));
-  if (!hasSign(planets.Ceres)) add('Ceres', safe(() => toPos(getDetailedCeresPosition(date))));
-  if (!hasSign(planets.Pallas)) add('Pallas', safe(() => toPos(getDetailedPallasPosition(date))));
-  if (!hasSign(planets.Juno)) add('Juno', safe(() => toPos(getDetailedJunoPosition(date))));
-  if (!hasSign(planets.Vesta)) add('Vesta', safe(() => toPos(getDetailedVestaPosition(date))));
-  if (!hasSign(planets.Eris)) {
-    add('Eris', safe(() => toPos(getAccurateAsteroidPosition('eris', date))));
+  for (const key of ['Chiron', 'Lilith', 'Ceres', 'Pallas', 'Juno', 'Vesta', 'Eris'] as const) {
+    if (!hasSign(planets[key])) add(key, fromCalc(key));
   }
 
-  // Angles-dependent points need coordinates and a real birth time.
-  const coords = chart.birthLocation ? safe(() => getCoordinatesFromLocation(chart.birthLocation)) : null;
+  // Angles: only when the shared engine could compute them (precise place,
+  // real birth time). A typed Ascendant is exact and always wins.
   let houseCusps = chart.houseCusps;
+  const typedAsc = absDeg(planets.Ascendant);
+  const calcAsc = calc.angles?.ascendant ?? null;
+  const ascAgrees = calcAsc !== null && (typedAsc === null || circularSeparation(calcAsc, typedAsc) < 2);
 
   // House cusps drive every house-based report, so never leave them empty.
   if (!houseCusps?.house1?.sign) {
-    const placidus = coords && chart.birthTime
-      ? safe(() => calculatePlacidusHouseCusps(date, coords.lat, coords.lon))
-      : null;
-    const typedAsc = absDeg(planets.Ascendant);
-    const placidusAsc = placidus ? absDeg((placidus as any).house1) : null;
-
-    // Placidus from the birth data, but only when it agrees with a typed
-    // Ascendant (city-level coordinates are approximate, a typed Asc is exact).
-    const agrees =
-      placidusAsc !== null &&
-      (typedAsc === null || Math.abs(((placidusAsc - typedAsc + 540) % 360) - 180) < 2);
-
-    if (placidus && agrees) {
+    if (calc.houseCusps && ascAgrees) {
       const built: Record<string, { sign: string; degree: number; minutes: number }> = {};
       for (let i = 1; i <= 12; i++) {
-        const c = (placidus as any)[`house${i}`];
-        if (c?.sign) built[`house${i}`] = { sign: c.sign, degree: c.degree ?? 0, minutes: c.minutes ?? 0 };
+        const c = calc.houseCusps[`house${i}` as CuspKey];
+        built[`house${i}`] = { sign: c.sign, degree: c.degree, minutes: c.minutes };
       }
-      if (built.house1) {
-        houseCusps = built as NatalChart['houseCusps'];
-        derived.push('houseCusps');
-      }
+      houseCusps = built as NatalChart['houseCusps'];
+      derived.push('houseCusps');
     } else if (typedAsc !== null) {
-      // Equal houses from the typed Ascendant: exact on house 1 and never wrong
-      // about which sign each house starts in by more than the system choice.
+      // Equal houses from the typed Ascendant: exact on house 1, and honest
+      // about the fact that the birthplace was not precise enough for Placidus.
       const built: Record<string, { sign: string; degree: number; minutes: number }> = {};
-      for (let i = 0; i < 12; i++) {
-        const lon = (typedAsc + i * 30) % 360;
-        const deg = lon % 30;
-        const d = Math.floor(deg);
-        built[`house${i + 1}`] = {
-          sign: SIGNS[Math.floor(lon / 30)],
-          degree: d,
-          minutes: Math.round((deg - d) * 60),
-        };
-      }
+      for (let i = 0; i < 12; i++) built[`house${i + 1}`] = cuspFromLongitude(norm360(typedAsc + i * 30));
       houseCusps = built as NatalChart['houseCusps'];
       derived.push('houseCusps(equal)');
     }
   }
 
-
-  if (coords && chart.birthTime && !hasSign(planets.Vertex)) {
-    add('Vertex', safe(() => toPos(calculateVertex(date, coords.lat, coords.lon))));
+  // Ascendant when neither it nor house 1 was given: take house 1 (filled or typed).
+  if (!hasSign(planets.Ascendant) && houseCusps?.house1?.sign) {
+    add('Ascendant', { sign: houseCusps.house1.sign, degree: houseCusps.house1.degree, minutes: houseCusps.house1.minutes || 0, seconds: 0, isRetrograde: false });
   }
 
+  if (!hasSign(planets.Vertex) && calc.angles && ascAgrees) add('Vertex', fromCalc('Vertex'));
+
+  // Part of Fortune from the values the chart actually carries (typed Asc,
+  // Sun, Moon), so it stays consistent with the source chart.
   if (!hasSign(planets.PartOfFortune)) {
     const asc = absDeg(houseCusps?.house1 || planets.Ascendant);
     const sun = absDeg(planets.Sun);
     const moon = absDeg(planets.Moon);
     if (asc !== null && sun !== null && moon !== null) {
-      add('PartOfFortune', safe(() => toPos(calculatePartOfFortune(asc, sun, moon, date, coords?.lat ?? 0))));
+      const pof = partOfFortuneLongitude(asc, sun, moon);
+      const sp = longitudeToSignPosition(pof.longitude);
+      add('PartOfFortune', { sign: sp.sign, degree: sp.degree, minutes: sp.minutes, seconds: sp.seconds, isRetrograde: false });
+    } else {
+      add('PartOfFortune', fromCalc('PartOfFortune'));
     }
   }
 

@@ -6,13 +6,10 @@
  * This module never writes anything: it grades.
  */
 
-import {
-  calculateNatalChart,
-  detectTimezoneFromLocation,
-  calculateAscendant,
-  calculatePlacidusHouseCusps,
-} from '../astrology';
 import { autoFillChartBodies } from '../chartAutoFill';
+import { resolveBirthMomentSync, type BirthMoment } from '../birthDataNormalization';
+import { calculateNatalFromMoment, toStoredPosition, toStoredCusp, type CuspKey } from '../natalChartCalculation';
+import { computeAngles } from '../ephemerisEngine';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import type { ReferencePerson } from '@/test/fixtures/referencePeople';
 
@@ -116,24 +113,63 @@ export const formatArcmin = (v: number | null): string => {
   return `${Math.floor(v / 60)}\u00b0${String(Math.round(v % 60)).padStart(2, '0')}'`;
 };
 
-/** Build the app's own chart for a reference person, exactly as the app would. */
-export function buildReferenceChart(person: ReferencePerson): NatalChart {
-  const resolved = detectTimezoneFromLocation(
-    person.birthLocation,
-    new Date(`${person.birthDate}T12:00:00Z`),
-  );
-  const offset = typeof resolved?.offset === 'number' ? resolved.offset : person.utcOffsetHours;
+export interface ReferenceBuild {
+  chart: NatalChart;
+  moment: BirthMoment;
+  /** True when the birthplace text alone resolved to coordinates and a zone. */
+  placeResolved: boolean;
+  /** Kilometers between the resolved coordinates and the fixture's coordinates. */
+  placeDistanceKm: number | null;
+}
 
-  const positions = calculateNatalChart(
-    person.birthDate,
-    person.birthTime,
-    offset,
-    person.birthLocation,
-  ) as Record<string, { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean }>;
+const distanceKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+};
 
+/**
+ * Build the app's own chart for a reference person exactly as the app would:
+ * the birthplace text is resolved to coordinates and an IANA zone, the local
+ * time is converted with historical rules, and every body comes from the
+ * shared engine. If the text cannot be resolved offline, the fixture's own
+ * coordinates and zone are used so the math is still graded, and the failure
+ * is reported in the timezone/place block.
+ */
+export function buildReferenceChartDetailed(person: ReferencePerson): ReferenceBuild {
+  let moment = resolveBirthMomentSync({
+    birthDate: person.birthDate,
+    birthTime: person.birthTime,
+    birthLocation: person.birthLocation,
+  });
+  const placeResolved = moment.status === 'ok' && !!moment.place && moment.place.confidence === 'high';
+  if (!placeResolved) {
+    moment = resolveBirthMomentSync({
+      birthDate: person.birthDate,
+      birthTime: person.birthTime,
+      birthLocation: person.birthLocation,
+      timezoneId: person.timezone,
+      latitude: person.lat,
+      longitude: person.lon,
+      placeName: person.birthLocation,
+      placeConfidence: 'high',
+    });
+  }
+  const placeDistanceKm = moment.place ? distanceKm(moment.place.latitude, moment.place.longitude, person.lat, person.lon) : null;
+
+  const calc = calculateNatalFromMoment(moment);
   const planets: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(positions)) {
-    if (value?.sign) planets[key] = value;
+  for (const [key, value] of Object.entries(calc.positions)) planets[key] = toStoredPosition(value);
+
+  const houseCusps: Record<string, { sign: string; degree: number; minutes: number }> = {};
+  if (calc.houseCusps) {
+    for (let h = 1; h <= 12; h++) {
+      const c = toStoredCusp(calc.houseCusps[`house${h}` as CuspKey]);
+      houseCusps[`house${h}`] = { sign: c.sign, degree: c.degree, minutes: c.minutes };
+    }
   }
 
   const base: NatalChart = {
@@ -142,43 +178,41 @@ export function buildReferenceChart(person: ReferencePerson): NatalChart {
     birthDate: person.birthDate,
     birthTime: person.birthTime,
     birthLocation: person.birthLocation,
-    timezoneOffset: offset,
+    timezoneOffset: moment.zone ? moment.zone.offsetSeconds / 3600 : undefined,
+    timezoneId: moment.zone?.id,
+    latitude: moment.place?.latitude,
+    longitude: moment.place?.longitude,
+    placeName: moment.place?.canonicalName,
+    placeConfidence: moment.place?.confidence,
+    placeSource: moment.place?.source,
+    houseSystem: calc.settings.houseSystem,
+    nodeVariant: calc.settings.nodeVariant,
     planets: planets as NatalChart['planets'],
+    ...(calc.houseCusps ? { houseCusps: houseCusps as NatalChart['houseCusps'] } : {}),
   } as NatalChart;
 
-  return autoFillChartBodies(base);
+  return { chart: autoFillChartBodies(base), moment, placeResolved, placeDistanceKm };
 }
 
-const utcMoment = (person: ReferencePerson, offset: number): Date => {
-  const [y, m, d] = person.birthDate.split('-').map(Number);
-  const [hh, mm] = person.birthTime.split(':').map(Number);
-  // Fractional offsets must go through the minutes argument: Date.UTC
-  // truncates a fractional hour and would silently drop 30 minutes.
-  return new Date(Date.UTC(y, m - 1, d, hh || 0, (mm || 0) - Math.round(offset * 60)));
-};
+export function buildReferenceChart(person: ReferencePerson): NatalChart {
+  return buildReferenceChartDetailed(person).chart;
+}
 
 /** Grade one reference person's chart math. */
 export function auditPersonMath(person: ReferencePerson): PersonMathAudit {
-  const chart = buildReferenceChart(person);
-  const resolvedOffset = typeof chart.timezoneOffset === 'number' ? chart.timezoneOffset : null;
-  const tzOk = resolvedOffset !== null && Math.abs(resolvedOffset - person.utcOffsetHours) < 0.01;
+  const { chart, moment, placeResolved, placeDistanceKm } = buildReferenceChartDetailed(person);
+  const resolvedOffset = moment.zone ? moment.zone.offsetSeconds / 3600 : null;
+  const expectedUtc = new Date(person.utc).getTime();
+  const utcMatches = moment.utc !== null && Math.abs(moment.utc.getTime() - expectedUtc) < 1000;
+  const zoneMatches = moment.zone?.id === person.timezone;
+  const placeClose = placeDistanceKm !== null && placeDistanceKm < 30;
+  const tzOk = utcMatches && placeResolved && zoneMatches && placeClose;
 
-  const moment = utcMoment(person, resolvedOffset ?? person.utcOffsetHours);
-  const midheaven = (() => {
-    try {
-      const cusps = calculatePlacidusHouseCusps(moment, person.lat, person.lon) as unknown as Record<string, { sign: string; degree: number; minutes: number }>;
-      return absLongitude(cusps.house10);
-    } catch {
-      return null;
-    }
-  })();
-  const ascendant = (() => {
-    try {
-      return absLongitude(calculateAscendant(moment, person.lat, person.lon));
-    } catch {
-      return null;
-    }
-  })();
+  // Angles are graded at the fixture's own coordinates so this line tests the
+  // sidereal-time and house math, not the city lookup (that is graded above).
+  const angles = moment.utc ? computeAngles(moment.utc, person.lat, person.lon, 'placidus') : null;
+  const midheaven = angles ? angles.mc : null;
+  const ascendant = angles ? angles.ascendant : null;
 
   const bodies: BodyAudit[] = [];
   for (const [body, expected] of Object.entries(person.expected)) {
@@ -263,10 +297,20 @@ export function auditPersonMath(person: ReferencePerson): PersonMathAudit {
     detail: vertex === null ? 'No Vertex computed.' : `Vertex ${fmtLon(vertex)}`,
   });
 
+  const fmtOffset = (h: number | null) => (h === null ? 'none' : `${h >= 0 ? '+' : ''}${h}h`);
+  const tzProblems: string[] = [];
+  if (!placeResolved) tzProblems.push(`"${person.birthLocation}" did not resolve offline; fixture coordinates were used`);
+  if (!zoneMatches) tzProblems.push(`zone ${moment.zone?.id ?? 'none'} instead of ${person.timezone}`);
+  if (!utcMatches) tzProblems.push(`UTC ${moment.utc?.toISOString() ?? 'none'} instead of ${person.utc}`);
+  if (!placeClose) tzProblems.push(`coordinates ${placeDistanceKm === null ? 'missing' : `${placeDistanceKm.toFixed(0)} km`} from the reference`);
+  const tzDetail = tzOk
+    ? `${moment.zone?.id} ${moment.zone?.abbreviation} (${fmtOffset(resolvedOffset)}), UTC ${moment.utc?.toISOString()}, place ${moment.place?.canonicalName} (${placeDistanceKm?.toFixed(1)} km)`
+    : tzProblems.join('; ');
+
   invariants.push({
-    name: 'Timezone and daylight saving resolved correctly',
+    name: 'Timezone, daylight saving and birthplace resolved correctly',
     ok: tzOk,
-    detail: `expected ${person.utcOffsetHours >= 0 ? '+' : ''}${person.utcOffsetHours}h, app used ${resolvedOffset === null ? 'none' : `${resolvedOffset >= 0 ? '+' : ''}${resolvedOffset}h`}`,
+    detail: `expected ${fmtOffset(person.utcOffsetHours)} at ${person.utc}; ${tzDetail}`,
   });
 
   const passCount = bodies.filter((b) => b.status === 'pass').length;
@@ -285,7 +329,7 @@ export function auditPersonMath(person: ReferencePerson): PersonMathAudit {
       expectedOffset: person.utcOffsetHours,
       resolvedOffset,
       ok: tzOk,
-      detail: tzOk ? 'Matches tzdata.' : 'Offset disagrees with tzdata, so every position shifts.',
+      detail: tzOk ? `Matches tzdata: ${tzDetail}.` : `${tzProblems.join('; ')}. Every position shifts when this is wrong.`,
     },
     bodies,
     invariants,

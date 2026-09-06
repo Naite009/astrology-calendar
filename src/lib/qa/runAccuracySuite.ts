@@ -19,7 +19,7 @@ import {
   toAbsoluteDegree,
   type ChartPlanet,
 } from '../chartDecoderLogic';
-import { calculateNatalChart } from '../astrology';
+import { computeBodies, longitudeToSignPosition } from '../ephemerisEngine';
 
 /** Fixed sky moment so the suite is reproducible run to run. */
 export const AUDIT_SKY_DATE = '2026-06-15';
@@ -108,17 +108,17 @@ export interface SuiteReport {
   ruleBreakdown: Array<{ rule: string; hits: number; severity: 'error' | 'warning' }>;
 }
 
-/** The transiting sky used for the daily-guidance readings. */
+/** The transiting sky used for the daily-guidance readings: a fixed UTC noon. */
 export function auditSky(): { moonSign: string; moonDegree: number; moonMinutes: number; mercurySign: string } {
-  const sky = calculateNatalChart(AUDIT_SKY_DATE, '12:00', 0, 'London, UK') as Record<
-    string,
-    { sign: string; degree: number; minutes: number }
-  >;
+  const utc = new Date(`${AUDIT_SKY_DATE}T12:00:00Z`);
+  const sky = computeBodies(utc, ['Moon', 'Mercury']);
+  const moon = sky.Moon.ok ? longitudeToSignPosition(sky.Moon.longitude) : null;
+  const mercury = sky.Mercury.ok ? longitudeToSignPosition(sky.Mercury.longitude) : null;
   return {
-    moonSign: sky.Moon?.sign ?? 'Aries',
-    moonDegree: sky.Moon?.degree ?? 0,
-    moonMinutes: sky.Moon?.minutes ?? 0,
-    mercurySign: sky.Mercury?.sign ?? 'Gemini',
+    moonSign: moon?.sign ?? 'Aries',
+    moonDegree: moon?.degree ?? 0,
+    moonMinutes: moon?.minutes ?? 0,
+    mercurySign: mercury?.sign ?? 'Gemini',
   };
 }
 
