@@ -1098,7 +1098,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
             {timezoneAutoDetected && formData.timezone && formData.birthDate && (
               <div className="rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-                Using <span className="font-medium text-foreground">{getTimezoneInfoForDate(formData.timezone, formData.birthDate).label}</span> for {formData.birthDate}
+                Using <span className="font-medium text-foreground">{getTimezoneInfoForDate(formData.timezone, formData.birthDate, formData.birthTime).label}</span> for {formData.birthDate}{formData.birthTime ? ` at ${formData.birthTime}` : ''}
               </div>
             )}
             <select
