@@ -120,9 +120,17 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
 
   const chart = charts.find(c => c.id === selectedId) || null;
 
+  // The Moon moves about half a degree an hour, so this card re-reads the sky
+  // every minute instead of freezing at whatever time the page was opened.
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const data = useMemo(() => {
     if (!chart) return null;
-    const now = new Date();
+    const now = new Date(nowTick);
     const positions = getPlanetaryPositions(now);
     const aspects = calculateTransitAspects(now, positions, chart);
 
@@ -139,6 +147,8 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
     const anxietyHits = sorted.filter(anxietyFlag).slice(0, 4);
 
     const moonHouseLine = formatMoonHouseSchedule(chart, now) || "";
+    const upcoming = getMoonUpcomingChanges(chart, now);
+    const justChanged = getJustChangedNote(chart, now);
     const moon = positions.moon;
     const guidance = buildPersonalDailyGuidance({
       moonSign: moon?.signName || moon?.sign || "",
@@ -150,13 +160,14 @@ export function TodayForPersonPanel({ charts, defaultName }: Props) {
       transitAspects: aspects,
     });
 
-    return { moonHouseLine, moonAspects, slowAspects, anxietyHits, guidance };
-  }, [chart]);
+    return { moonHouseLine, upcoming, justChanged, moonAspects, slowAspects, anxietyHits, guidance };
+  }, [chart, nowTick]);
 
   const firstName = (chart?.name || "").split(" ")[0] || "them";
-  const today = new Date().toLocaleDateString("en-US", {
+  const today = new Date(nowTick).toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
   });
+
 
   return (
     <Card className="border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
