@@ -47,9 +47,14 @@ export const BirthMomentPreview = ({
       const utcDateKey = utcDateStr;
       const dateDiffers = localDateKey !== utcDateKey;
 
-      // Offset display
-      const offsetSign = offsetHours >= 0 ? '+' : '';
-      const offsetDisplay = `UTC${offsetSign}${offsetHours}`;
+      // Offset display (fractional zones shown as hh:mm)
+      const offsetSign = offsetHours >= 0 ? '+' : '-';
+      const absOff = Math.abs(offsetHours);
+      const offH = Math.floor(absOff);
+      const offM = Math.round((absOff - offH) * 60);
+      const offsetDisplay = offM
+        ? `UTC${offsetSign}${offH}:${String(offM).padStart(2, '0')}`
+        : `UTC${offsetSign}${offH}`;
 
       return {
         localDateStr,
