@@ -24,8 +24,45 @@ const formatTime = (d: Date, tz?: string): string =>
     ...(tz ? { timeZone: tz } : {}),
   });
 
+/** Calendar day key in the display zone, so "today" means the viewer's today. */
+const dayKey = (d: Date, tz?: string): string =>
+  d.toLocaleDateString('en-CA', { ...(tz ? { timeZone: tz } : {}) });
+
+/** Short zone label ("EDT") for the display zone, so we never hard-code ET. */
+export const zoneAbbr = (d: Date, tz?: string): string => {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      ...(tz ? { timeZone: tz } : {}),
+      timeZoneName: 'short',
+    }).formatToParts(d);
+    return parts.find((p) => p.type === 'timeZoneName')?.value || '';
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Time plus the day when it is not today, so a next-day ingress can never read
+ * as if it happens this afternoon.
+ */
+export const formatWhen = (d: Date, now: Date, tz?: string, tzAbbr?: string): string => {
+  const abbr = tzAbbr || zoneAbbr(d, tz);
+  const clock = `${formatTime(d, tz)}${abbr ? ` ${abbr}` : ''}`;
+  const today = dayKey(now, tz);
+  const target = dayKey(d, tz);
+  if (target === today) return clock;
+  const tomorrow = dayKey(new Date(now.getTime() + 24 * 60 * 60 * 1000), tz);
+  if (target === tomorrow) return `tomorrow at ${clock}`;
+  const weekday = d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    ...(tz ? { timeZone: tz } : {}),
+  });
+  return `${weekday} at ${clock}`;
+};
+
 const ord = (n: number) =>
   n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+
 
 export interface MoonHouseSegment {
   from: Date;
