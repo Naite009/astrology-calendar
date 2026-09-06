@@ -163,7 +163,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     setIsCalculating(true);
 
     try {
-      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate).offset;
+      // Offset at the actual local birth moment (kept for display/legacy fields;
+      // the calculator converts with the zone id itself).
+      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate, formData.birthTime).offset;
 
       const chart = calculateHumanDesignChart(
         formData.name,
@@ -1096,7 +1098,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
 
             {timezoneAutoDetected && formData.timezone && formData.birthDate && (
               <div className="rounded border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-                Using <span className="font-medium text-foreground">{getTimezoneInfoForDate(formData.timezone, formData.birthDate).label}</span> for {formData.birthDate}
+                Using <span className="font-medium text-foreground">{getTimezoneInfoForDate(formData.timezone, formData.birthDate, formData.birthTime).label}</span> for {formData.birthDate}{formData.birthTime ? ` at ${formData.birthTime}` : ''}
               </div>
             )}
             <select
@@ -1113,7 +1115,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <option key={tz.value} value={tz.value}>
                   {(() => {
                     const info = formData.birthDate
-                      ? getTimezoneInfoForDate(tz.value, formData.birthDate)
+                      ? getTimezoneInfoForDate(tz.value, formData.birthDate, formData.birthTime)
                       : getTimezoneInfoForDate(tz.value);
                     return `${tz.label} (${info.label})`;
                   })()}

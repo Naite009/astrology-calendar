@@ -1,6 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
-import { detectTimezoneFromLocation, isUSDaylightSavingTime } from './astrology';
+import { resolveBirthMomentSync } from './birthDataNormalization';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -269,39 +269,25 @@ export interface SecondaryProgressions {
   planets: Record<string, ProgressedPlanet>;
 }
 
-// Parse birth date from chart with timezone awareness
-// Returns a Date object adjusted to UTC for accurate ephemeris calculations
+// The birth instant, normalized once through the shared pipeline: local civil
+// time at the birthplace, IANA zone rules for that historical date (DST
+// included), precise coordinates when the chart has them. Returns null when
+// the moment cannot be established rather than treating the clock time as UTC.
 const parseBirthDate = (chart: NatalChart): Date | null => {
   try {
-    const [year, month, day] = chart.birthDate.split('-').map(Number);
-    const timeParts = chart.birthTime?.split(':').map(Number) || [12, 0];
-    const [hour, minute] = timeParts;
-    
-    // Create a local date first to check DST
-    const localDate = new Date(year, month - 1, day, hour, minute);
-    
-    // Try to detect timezone from birth location
-    let timezoneOffset = 0; // Default to UTC if unknown
-    
-    if (chart.birthLocation) {
-      const detected = detectTimezoneFromLocation(chart.birthLocation, localDate);
-      if (detected) {
-        timezoneOffset = detected.offset;
-      }
-    }
-    
-    // Convert local birth time to UTC
-    // If birth was at 17:50 EST (UTC-5), UTC time is 22:50
-    // We create the UTC date by subtracting the offset hours
-    const utcDate = new Date(Date.UTC(
-      year, 
-      month - 1, 
-      day, 
-      hour - timezoneOffset, // Subtract offset to get UTC
-      minute
-    ));
-    
-    return utcDate;
+    const moment = resolveBirthMomentSync({
+      birthDate: chart.birthDate,
+      birthTime: chart.birthTime,
+      birthLocation: chart.birthLocation,
+      timezoneId: chart.timezoneId,
+      latitude: chart.latitude,
+      longitude: chart.longitude,
+      placeName: chart.placeName,
+      placeConfidence: chart.placeConfidence,
+      dstFold: chart.dstFold,
+      timezoneOffset: chart.timezoneOffset,
+    });
+    return moment.status === 'ok' ? moment.utc : null;
   } catch {
     return null;
   }
@@ -316,19 +302,9 @@ export const calculateSecondaryProgressions = (
   const birthDate = parseBirthDate(natalChart);
   if (!birthDate) return null;
   
-  // Convert currentDate to UTC for consistent comparison
-  // Since birthDate is now in UTC, we need currentDate in UTC too
-  const currentDateUTC = new Date(Date.UTC(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate(),
-    currentDate.getHours(),
-    currentDate.getMinutes()
-  ));
-  
-  // Calculate precise age in days (including fractional days)
-  // Both dates are now in UTC for accurate comparison
-  const msSinceBirth = currentDateUTC.getTime() - birthDate.getTime();
+  // Both values are true instants; no zone shifting is needed (rebuilding the
+  // current time from its local fields used to add the browser's offset).
+  const msSinceBirth = currentDate.getTime() - birthDate.getTime();
   const daysSinceBirth = msSinceBirth / (1000 * 60 * 60 * 24);
   const ageInYears = daysSinceBirth / 365.25;
   

@@ -85,20 +85,23 @@ export const slowBodyLongitude = (body: SlowBody, date: Date): number | null => 
   return ((lon % 360) + 360) % 360;
 };
 
-/** True (osculating) North Node longitude in degrees. */
+/**
+ * True (osculating) North Node longitude in degrees, ecliptic and equinox of
+ * date. The Moon's position and velocity are rotated from the J2000 equator
+ * into the true ecliptic of date first; an earlier version rotated by the
+ * fixed J2000 obliquity, which left the node in the J2000 frame and drifted
+ * by precession (about 0.84 arc-minutes per year away from 2000).
+ */
 export const trueNodeLongitude = (date: Date): number | null => {
   try {
-    const eps = 23.4392911 * Math.PI / 180;
-    const toEcliptic = (v: Astronomy.Vector) => ({
-      x: v.x,
-      y: v.y * Math.cos(eps) + v.z * Math.sin(eps),
-      z: -v.y * Math.sin(eps) + v.z * Math.cos(eps),
-    });
+    const time = Astronomy.MakeTime(date);
+    const rot = Astronomy.Rotation_EQJ_ECT(time);
+    const at = (ms: number) => Astronomy.RotateVector(rot, Astronomy.GeoMoon(Astronomy.MakeTime(new Date(ms))));
 
     const step = 0.02 * 86400000; // milliseconds
-    const before = toEcliptic(Astronomy.GeoMoon(new Date(date.getTime() - step)));
-    const after = toEcliptic(Astronomy.GeoMoon(new Date(date.getTime() + step)));
-    const mid = toEcliptic(Astronomy.GeoMoon(date));
+    const before = at(date.getTime() - step);
+    const after = at(date.getTime() + step);
+    const mid = at(date.getTime());
 
     const v = { x: after.x - before.x, y: after.y - before.y, z: after.z - before.z };
 

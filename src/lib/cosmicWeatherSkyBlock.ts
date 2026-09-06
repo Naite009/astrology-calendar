@@ -7,6 +7,7 @@
 import * as Astronomy from "astronomy-engine";
 import { findNextMoonSignChange } from "./voidOfCourseMoon";
 import { getDetailedChironPosition, getDetailedNodePosition } from "./astrology";
+import { localToUtc } from "./time/zonedTime";
 
 const ZODIAC = [
   { name: "Aries", symbol: "♈" },
@@ -66,40 +67,24 @@ function fmtPos(lon: number): { sign: string; symbol: string; deg: number; min: 
   return { sign: z.name, symbol: z.symbol, deg, min };
 }
 
-function isEasternDSTAtLocalTime(year: number, month: number, day: number, hour: number, minute = 0): boolean {
-  const secondSundayMarch = (() => {
-    const first = new Date(Date.UTC(year, 2, 1));
-    const dow = first.getUTCDay();
-    const firstSun = 1 + ((7 - dow) % 7);
-    return firstSun + 7;
-  })();
-
-  const firstSundayNov = (() => {
-    const first = new Date(Date.UTC(year, 10, 1));
-    const dow = first.getUTCDay();
-    return 1 + ((7 - dow) % 7);
-  })();
-
-  if (month > 2 && month < 10) return true;
-  if (month < 2 || month > 10) return false;
-
-  if (month === 2) {
-    if (day > secondSundayMarch) return true;
-    if (day < secondSundayMarch) return false;
-    return hour >= 2;
-  }
-
-  if (day < firstSundayNov) return true;
-  if (day > firstSundayNov) return false;
-  return hour < 2 || (hour === 1 && minute <= 59);
-}
-
+/**
+ * The UTC instant for a wall-clock time in US Eastern on the calendar date
+ * carried by `date` (year/month/day are read from the Date as given). The
+ * conversion uses the zone database rules for America/New_York rather than a
+ * hand-written DST rule, so changeover nights and any future rule changes are
+ * handled correctly. During the fall-back hour the first occurrence is used;
+ * in the spring-forward gap the first real time after the jump is used.
+ */
 export function getEasternDateAtTime(date: Date, hour: number, minute = 0): Date {
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  const d = date.getDate();
-  const offsetHours = isEasternDSTAtLocalTime(y, m, d, hour, minute) ? 4 : 5;
-  return new Date(Date.UTC(y, m, d, hour + offsetHours, minute, 0));
+  const parts = { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate(), hour, minute, second: 0 };
+  const conv = localToUtc('America/New_York', parts, 'earlier');
+  if (conv.resolved) return conv.resolved.utc;
+  if (conv.status === 'nonexistent' && conv.suggestedLocal) {
+    const again = localToUtc('America/New_York', conv.suggestedLocal, 'earlier');
+    if (again.resolved) return again.resolved.utc;
+  }
+  // Unreachable with a valid zone id; keep a deterministic fallback anyway.
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day, hour + 5, minute, 0));
 }
 
 /**

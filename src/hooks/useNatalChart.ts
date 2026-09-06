@@ -66,13 +66,38 @@ export interface ProfilePronouns {
   reflexive?: string;  // herself / himself / themself
 }
 
+/** Which house system the stored cusps follow. */
+export type ChartHouseSystem = 'placidus' | 'whole-sign' | 'equal' | 'porphyry';
+
 export interface NatalChart {
   id: string;
   name: string;
+  /** Local civil date at the birthplace, YYYY-MM-DD. */
   birthDate: string;
+  /** Local civil time at the birthplace, HH:MM or HH:MM:SS. Empty when unknown. */
   birthTime: string;
   birthLocation: string;
-  timezoneOffset?: number; // hours offset from UTC (e.g., -5 for EST)
+  /**
+   * Legacy fixed offset in hours. Kept for old records and for display only;
+   * every calculation uses timezoneId + tz rules (see birthDataNormalization).
+   */
+  timezoneOffset?: number;
+  /** IANA zone id of the birthplace, e.g. "America/Los_Angeles". */
+  timezoneId?: string;
+  /** Precise birthplace coordinates in decimal degrees. */
+  latitude?: number;
+  longitude?: number;
+  /** Canonical birthplace name as resolved ("West Hills, California, United States"). */
+  placeName?: string;
+  /** How trustworthy the coordinates are; 'low' means region-level only. */
+  placeConfidence?: 'high' | 'medium' | 'low';
+  placeSource?: 'stored' | 'geocoder' | 'offline-city' | 'offline-region' | 'manual';
+  /** Chosen reading for a birth time inside a fall-back overlap. */
+  dstFold?: 'earlier' | 'later';
+  /** House system the stored cusps follow (default Placidus). */
+  houseSystem?: ChartHouseSystem;
+  /** Node definition the stored North Node follows (default true node). */
+  nodeVariant?: 'true' | 'mean';
   chartImageBase64?: string; // Original uploaded chart image
   // Optional pronouns for the person this chart describes. When omitted,
   // downstream copy falls back to name-safe singular phrasing.

@@ -1,9 +1,24 @@
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
-import { getAccurateAsteroidPosition } from './asteroidEphemeris';
-import { trueNodeLongitude } from './ephemeris/slowBodies';
+import { getAccurateAsteroidPosition, getAsteroidPosition, type AsteroidBody } from './asteroidEphemeris';
 import { calculatePlacidusHouses, getCoordinatesFromLocation as getExtendedCoordinates, PlacidusHouses } from './placidusHouses';
 import { getEffectiveOrb as getOrbForPair } from './aspectOrbs';
+import { CITY_COORDINATES } from './geo/cityCoordinates';
+import { resolveBirthPlaceOffline } from './geo/birthPlace';
+import { describeInstantInZone, localToUtc } from './time/zonedTime';
+import {
+  computeAngles,
+  computeBodies,
+  partOfFortuneLongitude,
+  trueNodeLongitude as engineTrueNodeLongitude,
+  meanNodeLongitude,
+  PLANET_KEYS,
+  type BodyKey,
+} from './ephemerisEngine';
+import { calculateNatalFromInput, toStoredPosition } from './natalChartCalculation';
+
+// The shared city table lives in geo/cityCoordinates.ts; re-exported for old imports.
+export { CITY_COORDINATES };
 // Zodiac signs mapping
 const ZODIAC_SIGNS = [
   { name: 'Aries', symbol: '♈' },
@@ -170,16 +185,15 @@ export const longitudeToZodiac = (longitude: number): ZodiacPosition => {
   };
 };
 
-// Calculate North and South Node positions (Mean Node - more accurate formula)
+// North and South Node positions. True (osculating) node, matching every
+// natal calculation in the app; the mean node is only a fallback.
 export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; south: ExtendedZodiacPosition } => {
-  // Julian centuries from J2000.0
-  const jd = date.getTime() / 86400000 + 2440587.5;
-  const T = (jd - 2451545.0) / 36525;
-  
-  // Mean longitude of ascending node (more accurate formula from Meeus)
-  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
-  
-  const normalizedNode = ((omega % 360) + 360) % 360;
+  let normalizedNode: number;
+  try {
+    normalizedNode = engineTrueNodeLongitude(date);
+  } catch {
+    normalizedNode = meanNodeLongitude(date);
+  }
   const northNode = longitudeToZodiac(normalizedNode);
   
   const southNodeLon = (normalizedNode + 180) % 360;
@@ -194,53 +208,40 @@ export const getNodePositions = (date: Date): { north: ExtendedZodiacPosition; s
 // Get detailed North Node position for natal chart
 export const getDetailedNodePosition = (date: Date): { sign: string; degree: number; minutes: number; seconds: number } => {
   // True node (the Moon's instantaneous orbital plane), which is what chart
-  // services print as "Node". The mean node below is only a fallback.
-  const trueNode = trueNodeLongitude(date);
-  if (trueNode !== null) return getDetailedPosition(trueNode);
-
-  const jd = date.getTime() / 86400000 + 2440587.5;
-  const T = (jd - 2451545.0) / 36525;
-  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450000;
-  const normalizedNode = ((omega % 360) + 360) % 360;
-  return getDetailedPosition(normalizedNode);
+  // services print as "Node". The mean node is only a fallback.
+  try {
+    return getDetailedPosition(engineTrueNodeLongitude(date));
+  } catch {
+    return getDetailedPosition(meanNodeLongitude(date));
+  }
 };
 
 
-// Calculate Chiron position using ephemeris lookup table (accurate interpolated data)
-export const getChironPosition = (date: Date): ExtendedZodiacPosition => {
-  const pos = getAccurateAsteroidPosition('chiron', date);
-  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
-  return {
-    ...longitudeToZodiac(longitude),
-    longitude,
-    planetSymbol: '⚷',
-    name: 'Chiron'
+const extendedSlowBody = (body: AsteroidBody, date: Date, planetSymbol: string, name: string): ExtendedZodiacPosition => {
+  const r = getAsteroidPosition(body, date);
+  if (r.available === false) throw new RangeError(r.reason);
+  return { ...longitudeToZodiac(r.longitude), longitude: r.longitude, planetSymbol, name };
+};
+
+/** Same as the strict getter but returns undefined outside the supported data window. */
+export const getSlowBodyPositionSafe = (body: AsteroidBody, date: Date): ExtendedZodiacPosition | undefined => {
+  const r = getAsteroidPosition(body, date);
+  if (r.available === false) return undefined;
+  const meta: Record<AsteroidBody, { symbol: string; name: string }> = {
+    chiron: { symbol: '⚷', name: 'Chiron' }, lilith: { symbol: '⚸', name: 'Black Moon Lilith' }, eris: { symbol: '⯰', name: 'Eris' },
+    ceres: { symbol: '⚳', name: 'Ceres' }, pallas: { symbol: '⚴', name: 'Pallas' }, juno: { symbol: '⚵', name: 'Juno' }, vesta: { symbol: '⚶', name: 'Vesta' },
   };
+  return { ...longitudeToZodiac(r.longitude), longitude: r.longitude, planetSymbol: meta[body].symbol, name: meta[body].name };
 };
 
-// Calculate Black Moon Lilith position using ephemeris lookup table (accurate interpolated data)
-export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => {
-  const pos = getAccurateAsteroidPosition('lilith', date);
-  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
-  return {
-    ...longitudeToZodiac(longitude),
-    longitude,
-    planetSymbol: '⚸',
-    name: 'Black Moon Lilith'
-  };
-};
+// Chiron from the JPL Horizons table (1920-2060). Throws a RangeError outside that window.
+export const getChironPosition = (date: Date): ExtendedZodiacPosition => extendedSlowBody('chiron', date, '⚷', 'Chiron');
 
-// Calculate Eris position using ephemeris lookup table (accurate interpolated data)
-export const getErisPosition = (date: Date): ExtendedZodiacPosition => {
-  const pos = getAccurateAsteroidPosition('eris', date);
-  const longitude = ZODIAC_SIGNS.findIndex(s => s.name === pos.sign) * 30 + pos.degree + pos.minutes / 60 + pos.seconds / 3600;
-  return {
-    ...longitudeToZodiac(longitude),
-    longitude,
-    planetSymbol: '⯰',
-    name: 'Eris'
-  };
-};
+// Mean Black Moon Lilith (mean lunar apogee), valid for any date.
+export const getBlackMoonLilith = (date: Date): ExtendedZodiacPosition => extendedSlowBody('lilith', date, '⚸', 'Black Moon Lilith');
+
+// Eris from the JPL Horizons table (1920-2060). Throws a RangeError outside that window.
+export const getErisPosition = (date: Date): ExtendedZodiacPosition => extendedSlowBody('eris', date, '⯰', 'Eris');
 
 // Get detailed position with degrees, minutes, seconds
 export const getDetailedPosition = (longitude: number): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
@@ -337,96 +338,11 @@ export const calculatePlacidusHouseCusps = (
   return calculatePlacidusHouses(date, latitude, longitude);
 };
 
-// City coordinates database for Ascendant calculation
-export const CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
-  // US Cities - Eastern
-  'new york': { lat: 40.7128, lon: -74.0060 },
-  'boston': { lat: 42.3601, lon: -71.0589 },
-  'philadelphia': { lat: 39.9526, lon: -75.1652 },
-  'miami': { lat: 25.7617, lon: -80.1918 },
-  'atlanta': { lat: 33.7490, lon: -84.3880 },
-  'washington': { lat: 38.9072, lon: -77.0369 },
-  'detroit': { lat: 42.3314, lon: -83.0458 },
-  'cleveland': { lat: 41.4993, lon: -81.6944 },
-  'pittsburgh': { lat: 40.4406, lon: -79.9959 },
-  'charlotte': { lat: 35.2271, lon: -80.8431 },
-  'orlando': { lat: 28.5383, lon: -81.3792 },
-  'raleigh': { lat: 35.7796, lon: -78.6382 },
-  'baltimore': { lat: 39.2904, lon: -76.6122 },
-  'tampa': { lat: 27.9506, lon: -82.4572 },
-  'jacksonville': { lat: 30.3322, lon: -81.6557 },
-  // US Cities - Central
-  'chicago': { lat: 41.8781, lon: -87.6298 },
-  'houston': { lat: 29.7604, lon: -95.3698 },
-  'dallas': { lat: 32.7767, lon: -96.7970 },
-  'san antonio': { lat: 29.4241, lon: -98.4936 },
-  'austin': { lat: 30.2672, lon: -97.7431 },
-  'minneapolis': { lat: 44.9778, lon: -93.2650 },
-  'milwaukee': { lat: 43.0389, lon: -87.9065 },
-  'kansas city': { lat: 39.0997, lon: -94.5786 },
-  'st louis': { lat: 38.6270, lon: -90.1994 },
-  'new orleans': { lat: 29.9511, lon: -90.0715 },
-  'nashville': { lat: 36.1627, lon: -86.7816 },
-  'memphis': { lat: 35.1495, lon: -90.0490 },
-  'oklahoma city': { lat: 35.4676, lon: -97.5164 },
-  // US Cities - Mountain
-  'denver': { lat: 39.7392, lon: -104.9903 },
-  'phoenix': { lat: 33.4484, lon: -112.0740 },
-  'albuquerque': { lat: 35.0844, lon: -106.6504 },
-  'salt lake city': { lat: 40.7608, lon: -111.8910 },
-  'tucson': { lat: 32.2226, lon: -110.9747 },
-  'las vegas': { lat: 36.1699, lon: -115.1398 },
-  'el paso': { lat: 31.7619, lon: -106.4850 },
-  'boise': { lat: 43.6150, lon: -116.2023 },
-  // US Cities - Pacific
-  'los angeles': { lat: 34.0522, lon: -118.2437 },
-  'san francisco': { lat: 37.7749, lon: -122.4194 },
-  'san diego': { lat: 32.7157, lon: -117.1611 },
-  'seattle': { lat: 47.6062, lon: -122.3321 },
-  'portland': { lat: 45.5152, lon: -122.6784 },
-  'sacramento': { lat: 38.5816, lon: -121.4944 },
-  'san jose': { lat: 37.3382, lon: -121.8863 },
-  'fresno': { lat: 36.7378, lon: -119.7871 },
-  // Alaska & Hawaii
-  'anchorage': { lat: 61.2181, lon: -149.9003 },
-  'honolulu': { lat: 21.3069, lon: -157.8583 },
-  // International Cities
-  'london': { lat: 51.5074, lon: -0.1278 },
-  'paris': { lat: 48.8566, lon: 2.3522 },
-  'berlin': { lat: 52.5200, lon: 13.4050 },
-  'rome': { lat: 41.9028, lon: 12.4964 },
-  'madrid': { lat: 40.4168, lon: -3.7038 },
-  'amsterdam': { lat: 52.3676, lon: 4.9041 },
-  'brussels': { lat: 50.8503, lon: 4.3517 },
-  'vienna': { lat: 48.2082, lon: 16.3738 },
-  'zurich': { lat: 47.3769, lon: 8.5417 },
-  'stockholm': { lat: 59.3293, lon: 18.0686 },
-  'oslo': { lat: 59.9139, lon: 10.7522 },
-  'copenhagen': { lat: 55.6761, lon: 12.5683 },
-  'dublin': { lat: 53.3498, lon: -6.2603 },
-  'lisbon': { lat: 38.7223, lon: -9.1393 },
-  'moscow': { lat: 55.7558, lon: 37.6173 },
-  'tokyo': { lat: 35.6762, lon: 139.6503 },
-  'beijing': { lat: 39.9042, lon: 116.4074 },
-  'shanghai': { lat: 31.2304, lon: 121.4737 },
-  'hong kong': { lat: 22.3193, lon: 114.1694 },
-  'singapore': { lat: 1.3521, lon: 103.8198 },
-  'sydney': { lat: -33.8688, lon: 151.2093 },
-  'melbourne': { lat: -37.8136, lon: 144.9631 },
-  'toronto': { lat: 43.6532, lon: -79.3832 },
-  'vancouver': { lat: 49.2827, lon: -123.1207 },
-  'montreal': { lat: 45.5017, lon: -73.5673 },
-  'mexico city': { lat: 19.4326, lon: -99.1332 },
-  'sao paulo': { lat: -23.5505, lon: -46.6333 },
-  'buenos aires': { lat: -34.6037, lon: -58.3816 },
-  'mumbai': { lat: 19.0760, lon: 72.8777 },
-  'delhi': { lat: 28.7041, lon: 77.1025 },
-  'cairo': { lat: 30.0444, lon: 31.2357 },
-  'johannesburg': { lat: -26.2041, lon: 28.0473 },
-  'dubai': { lat: 25.2048, lon: 55.2708 },
-  'tel aviv': { lat: 32.0853, lon: 34.7818 },
-};
-
+// Offline coordinate lookup (legacy). This matches town names inside the
+// text against the shared city table. It is region-level at best; anything
+// that needs an Ascendant or houses must go through geo/birthPlace.ts and
+// birthDataNormalization.ts, which resolve a precise place and say how
+// confident they are.
 // Get coordinates from location string
 export const getCoordinatesFromLocation = (location: string): { lat: number; lon: number } | null => {
   const lowerLocation = location.toLowerCase();
@@ -450,378 +366,118 @@ export const getCoordinatesFromLocation = (location: string): { lat: number; lon
 };
 
 
-// Calculate Ascendant using sidereal time
+/**
+ * Ascendant for a UTC instant and precise coordinates. Delegates to the shared
+ * engine (apparent sidereal time, true obliquity of date). `date` must already
+ * be the true UTC instant; never pass a local wall-clock Date here.
+ */
 export const calculateAscendant = (
   date: Date,
   latitude: number,
   longitude: number
 ): { sign: string; degree: number; minutes: number; seconds: number } => {
-  // Get Greenwich Sidereal Time
-  const gst = Astronomy.SiderealTime(date);
-  
-  // Convert GST to Local Sidereal Time (add longitude in hours)
-  const localLST = (gst + longitude / 15 + 24) % 24;
-  
-  // Convert to degrees (RAMC - Right Ascension of Medium Coeli)
-  const ramcDeg = localLST * 15;
-  
-  // Calculate obliquity of ecliptic (approximately 23.4°)
-  const obliquity = 23.4392911; // degrees for J2000
-  const obliqRad = obliquity * Math.PI / 180;
-  const latRad = latitude * Math.PI / 180;
-  
-  // Calculate Ascendant longitude
-  // Formula: tan(ASC) = cos(RAMC) / -(sin(ε) * tan(φ) + cos(ε) * sin(RAMC))
-  const ramcRad = ramcDeg * Math.PI / 180;
-  
-  const y = Math.cos(ramcRad);
-  const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
+  const a = computeAngles(date, latitude, longitude, 'placidus');
+  return getDetailedPosition(a.ascendant);
+};
 
-  // atan2 already returns the rising degree in the correct quadrant.
-  // Any extra 180 degree "adjustment" would return the Descendant instead.
-  let ascLon = Math.atan2(y, x) * 180 / Math.PI;
-
-  // Normalize to 0-360
-  ascLon = ((ascLon % 360) + 360) % 360;
-
-  
-  return getDetailedPosition(ascLon);
+/** Midheaven for a UTC instant and precise coordinates (shared engine). */
+export const calculateMidheaven = (
+  date: Date,
+  latitude: number,
+  longitude: number
+): { sign: string; degree: number; minutes: number; seconds: number } => {
+  const a = computeAngles(date, latitude, longitude, 'placidus');
+  return getDetailedPosition(a.mc);
 };
 
 /**
- * Calculate Vertex - The "fated encounter" point
- * The Vertex is the point where the prime vertical intersects the ecliptic on the western side
- * It represents fated encounters and destined meetings
+ * Vertex: where the prime vertical meets the ecliptic in the west. Shared
+ * engine formula, verified against a direct geometric intersection.
  */
 export const calculateVertex = (
   date: Date,
   latitude: number,
   longitude: number
 ): { sign: string; degree: number; minutes: number; seconds: number } => {
-  const gst = Astronomy.SiderealTime(date);
-  const localLST = (gst + longitude / 15 + 24) % 24;
-  const ramcDeg = localLST * 15;
-  
-  const obliquity = 23.4392911;
-  const obliqRad = obliquity * Math.PI / 180;
-  
-  // Vertex is calculated using colatitude (90 - latitude) as if looking from the equator
-  const colatitude = 90 - latitude;
-  const colatRad = colatitude * Math.PI / 180;
-  
-  const ramcRad = ramcDeg * Math.PI / 180;
-  
-  // Calculate anti-Ascendant (western horizon intersection)
-  // Antivertex is the rising degree computed with the colatitude.
-  // The Vertex is its opposite point, on the western side of the chart.
-  const y = Math.cos(ramcRad);
-  const x = -(Math.sin(obliqRad) * Math.tan(colatRad) + Math.cos(obliqRad) * Math.sin(ramcRad));
-
-  let vtxLon = Math.atan2(y, x) * 180 / Math.PI + 180;
-
-  // Normalize
-  vtxLon = ((vtxLon % 360) + 360) % 360;
-
-  
-  return getDetailedPosition(vtxLon);
+  const a = computeAngles(date, latitude, longitude, 'placidus');
+  return getDetailedPosition(a.vertex);
 };
 
 /**
- * Calculate Part of Fortune (Lot of Fortune)
- * Day births: ASC + Moon - Sun
- * Night births: ASC + Sun - Moon
- * Represents material fortune, prosperity, and where luck flows
+ * Part of Fortune (Lot of Fortune).
+ * Day births (Sun above the horizon, houses 7-12): ASC + Moon - Sun
+ * Night births (Sun below the horizon, houses 1-6): ASC + Sun - Moon
+ * Sect is decided from the Sun's position relative to the Ascendant; the
+ * earlier version had that test inverted.
  */
 export const calculatePartOfFortune = (
   ascLongitude: number,
   sunLongitude: number,
   moonLongitude: number,
-  date: Date,
-  latitude: number
+  _date?: Date,
+  _latitude?: number
 ): { sign: string; degree: number; minutes: number; seconds: number } => {
-  // Determine if day or night birth (Sun above/below horizon)
-  // Simple approximation: if Sun's longitude is between 0-180° from ASC, it's above horizon
-  let sunAbove = false;
-  let diff = sunLongitude - ascLongitude;
-  if (diff < 0) diff += 360;
-  sunAbove = diff < 180;
-  
-  let pofLongitude: number;
-  
-  if (sunAbove) {
-    // Day birth: ASC + Moon - Sun
-    pofLongitude = ascLongitude + moonLongitude - sunLongitude;
-  } else {
-    // Night birth: ASC + Sun - Moon
-    pofLongitude = ascLongitude + sunLongitude - moonLongitude;
-  }
-  
-  // Normalize to 0-360
-  pofLongitude = ((pofLongitude % 360) + 360) % 360;
-  
-  return getDetailedPosition(pofLongitude);
+  return getDetailedPosition(partOfFortuneLongitude(ascLongitude, sunLongitude, moonLongitude).longitude);
 };
 
-// US timezone regions for auto-detection
-const US_TIMEZONE_REGIONS: Record<string, { standard: number; daylight: number; abbrevStandard: string; abbrevDaylight: string }> = {
-  // Eastern
-  'new york': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'boston': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'philadelphia': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'miami': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'atlanta': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'washington': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'detroit': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'cleveland': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'pittsburgh': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'charlotte': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'orlando': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'raleigh': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'hackensack': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'newark': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  'jersey city': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', nj': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', ny': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', ma': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', ct': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', pa': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', fl': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', ga': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', nc': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', sc': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', va': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', md': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', dc': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', oh': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  ', mi': { standard: -5, daylight: -4, abbrevStandard: 'EST', abbrevDaylight: 'EDT' },
-  // Central
-  'chicago': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'houston': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'dallas': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'san antonio': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'austin': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'minneapolis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'milwaukee': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'kansas city': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'st louis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'new orleans': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'nashville': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'memphis': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  'oklahoma city': { standard: -6, daylight: -5, abbrevStandard: 'CST', abbrevDaylight: 'CDT' },
-  // Mountain
-  'denver': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
-  'phoenix': { standard: -7, daylight: -7, abbrevStandard: 'MST', abbrevDaylight: 'MST' }, // Arizona doesn't observe DST
-  'albuquerque': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
-  'salt lake city': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
-  'tucson': { standard: -7, daylight: -7, abbrevStandard: 'MST', abbrevDaylight: 'MST' }, // Arizona
-  'las vegas': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'el paso': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
-  'boise': { standard: -7, daylight: -6, abbrevStandard: 'MST', abbrevDaylight: 'MDT' },
-  // Pacific
-  'los angeles': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'san francisco': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'san diego': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'seattle': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'portland': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'sacramento': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'san jose': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  'fresno': { standard: -8, daylight: -7, abbrevStandard: 'PST', abbrevDaylight: 'PDT' },
-  // Alaska
-  'anchorage': { standard: -9, daylight: -8, abbrevStandard: 'AKST', abbrevDaylight: 'AKDT' },
-  // Hawaii
-  'honolulu': { standard: -10, daylight: -10, abbrevStandard: 'HST', abbrevDaylight: 'HST' }, // Hawaii doesn't observe DST
+/**
+ * Legacy helper kept for old call sites. Resolves the place offline, then
+ * asks the IANA zone rules (via Intl) what the offset really was on that
+ * date. There is no hand-written DST table any more; if the place is not
+ * recognized this returns null instead of guessing.
+ *
+ * Prefer resolveBirthMoment / resolveBirthMomentSync in birthDataNormalization.ts.
+ */
+export const detectTimezoneFromLocation = (
+  location: string,
+  date: Date,
+): { offset: number; abbrev: string; zoneId: string } | null => {
+  if (!location) return null;
+  const place = resolveBirthPlaceOffline(location);
+  if (!place?.timezone) return null;
+  const conv = localToUtc(place.timezone, {
+    year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate(),
+    hour: date.getHours(), minute: date.getMinutes(), second: 0,
+  }, 'earlier');
+  const utc = conv.resolved?.utc ?? (conv.status === 'nonexistent' && conv.candidates[0]?.utc) ?? null;
+  const at = utc ?? new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
+  const z = describeInstantInZone(place.timezone, at);
+  return { offset: z.offsetSeconds / 3600, abbrev: z.abbreviation, zoneId: place.timezone };
 };
 
-// Whether a US date fell inside daylight saving time, following the real
-// history rather than today's rule. Getting this wrong shifts every position
-// in the chart by an hour, so the eras are spelled out.
-//
-//   before 1918      no daylight saving
-//   1918-1919        last Sunday March to last Sunday October
-//   1920-1941        no federal daylight saving (local patchwork, assume standard)
-//   Feb 1942-Sep 1945 year-round "War Time"
-//   1946-1966        no federal rule (local patchwork, assume standard)
-//   1967-1973        last Sunday April to last Sunday October
-//   1974             6 January to last Sunday November (energy crisis)
-//   1975             23 February to last Sunday October (energy crisis)
-//   1976-1986        last Sunday April to last Sunday October
-//   1987-2006        first Sunday April to last Sunday October
-//   2007 onward      second Sunday March to first Sunday November
-export const isUSDaylightSavingTime = (date: Date): boolean => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
-  const dateNum = month * 100 + day;
-  const window = (startMonth: number, startDay: number, endMonth: number, endDay: number) =>
-    dateNum >= startMonth * 100 + startDay && dateNum < endMonth * 100 + endDay;
-
-  if (year < 1918) return false;
-  if (year <= 1919) {
-    return window(2, getLastSundayOfMonth(year, 2), 9, getLastSundayOfMonth(year, 9));
-  }
-  if (year < 1942) return false;
-  if (year === 1942) return dateNum >= 1 * 100 + 9;   // War Time from 9 February
-  if (year <= 1944) return true;                       // War Time all year
-  if (year === 1945) return dateNum < 8 * 100 + 30;    // ended 30 September
-  if (year <= 1966) return false;
-  if (year <= 1973) {
-    return window(3, getNthSundayOfMonth(year, 3, 1), 9, getLastSundayOfMonth(year, 9));
-  }
-  if (year === 1974) return window(0, 6, 10, getLastSundayOfMonth(year, 10));
-  if (year === 1975) return window(1, 23, 9, getLastSundayOfMonth(year, 9));
-  if (year <= 1986) {
-    return window(3, getLastSundayOfMonth(year, 3), 9, getLastSundayOfMonth(year, 9));
-  }
-  if (year <= 2006) {
-    return window(3, getNthSundayOfMonth(year, 3, 1), 9, getLastSundayOfMonth(year, 9));
-  }
-  return window(2, getNthSundayOfMonth(year, 2, 2), 10, getNthSundayOfMonth(year, 10, 1));
-};
-
-const getNthSundayOfMonth = (year: number, month: number, n: number): number => {
-  const firstDay = new Date(year, month, 1);
-  const firstSunday = 1 + (7 - firstDay.getDay()) % 7;
-  return firstSunday + (n - 1) * 7;
-};
-
-const getLastSundayOfMonth = (year: number, month: number): number => {
-  const lastDay = new Date(year, month + 1, 0);
-  const daysToSubtract = lastDay.getDay();
-  return lastDay.getDate() - daysToSubtract;
-};
-
-// Auto-detect timezone offset from location and date
-export const detectTimezoneFromLocation = (location: string, date: Date): { offset: number; abbrev: string } | null => {
-  const lowerLocation = location.toLowerCase();
-  
-  for (const [city, tz] of Object.entries(US_TIMEZONE_REGIONS)) {
-    if (lowerLocation.includes(city)) {
-      const isDST = isUSDaylightSavingTime(date);
-      return {
-        offset: isDST ? tz.daylight : tz.standard,
-        abbrev: isDST ? tz.abbrevDaylight : tz.abbrevStandard,
-      };
-    }
-  }
-  
-  return null;
-};
-
-// Calculate natal chart positions from birth date/time with timezone offset
+/**
+ * Natal positions from birth date, time and place.
+ *
+ * Legacy signature, new pipeline: the local civil time is converted with the
+ * birthplace's IANA zone rules (historical DST included) and every body,
+ * angle and derived point comes from the shared engine at that one UTC
+ * instant. The numeric offset is only used when the place cannot be
+ * resolved at all, and then angles are left out rather than guessed.
+ *
+ * Bodies outside their supported data window (Chiron and the asteroids
+ * before 1920 or after 2060) and angles without a precise place are simply
+ * absent from the result; nothing is filled with a placeholder.
+ */
 export const calculateNatalChart = (
-  birthDate: string, 
+  birthDate: string,
   birthTime: string,
-  timezoneOffsetHours: number = 0, // e.g., -5 for EST, -8 for PST
-  birthLocation: string = '' // Optional location for auto-detect
+  timezoneOffsetHours: number | null = null,
+  birthLocation: string = '',
+  stored: { timezoneId?: string | null; latitude?: number | null; longitude?: number | null; dstFold?: 'earlier' | 'later' | null } = {},
 ): Record<string, { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean }> => {
-  // Parse date and time
-  const [year, month, day] = birthDate.split('-').map(Number);
-  const [hours, minutes] = birthTime ? birthTime.split(':').map(Number) : [12, 0];
-  
-  // Try to auto-detect timezone if location provided
-  let finalOffset = timezoneOffsetHours;
-  let coordinates: { lat: number; lon: number } | null = null;
-  
-  if (birthLocation) {
-    const tempDate = new Date(year, month - 1, day);
-    const detected = detectTimezoneFromLocation(birthLocation, tempDate);
-    if (detected) {
-      finalOffset = detected.offset;
-    }
-    // Get coordinates for Ascendant calculation
-    coordinates = getCoordinatesFromLocation(birthLocation);
-  }
-  
-  // Convert local time to UTC by subtracting the timezone offset
-  // If someone was born at 10:00 AM in EST (-5), that's 15:00 UTC
-  // Offsets can be fractional (+05:30 India, +07:30 old Singapore). Date.UTC
-  // truncates a fractional hour argument, so shift the minutes instead.
-  const offsetMinutes = Math.round(finalOffset * 60);
-  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes - offsetMinutes, 0));
-  
-  const getPosition = (body: Astronomy.Body): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => {
-    try {
-      let longitude: number;
-      if (body === Astronomy.Body.Moon) {
-        const moon = Astronomy.GeoMoon(date);
-        const ecliptic = Astronomy.Ecliptic(moon);
-        longitude = ecliptic.elon;
-      } else {
-        const vector = Astronomy.GeoVector(body, date, false);
-        const ecliptic = Astronomy.Ecliptic(vector);
-        longitude = ecliptic.elon;
-      }
-      
-      const position = getDetailedPosition(longitude);
-      
-      // Check retrograde for applicable planets (not Sun or Moon)
-      if (body !== Astronomy.Body.Sun && body !== Astronomy.Body.Moon) {
-        const isRetro = isPlanetRetrograde(body, date);
-        return { ...position, isRetrograde: isRetro };
-      }
-      
-      return position;
-    } catch {
-      return { sign: 'Aries', degree: 0, minutes: 0, seconds: 0 };
-    }
-  };
-
-  const northNode = getDetailedNodePosition(date);
-  const chiron = getDetailedChironPosition(date);
-  const lilith = getDetailedLilithPosition(date);
-  const ceres = getDetailedCeresPosition(date);
-  const pallas = getDetailedPallasPosition(date);
-  const juno = getDetailedJunoPosition(date);
-  const vesta = getDetailedVestaPosition(date);
-  
-  // Calculate Ascendant, Vertex, and Part of Fortune if we have coordinates
-  let ascendant: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
-  let vertex: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
-  let partOfFortune: { sign: string; degree: number; minutes: number; seconds: number } = { sign: '', degree: 0, minutes: 0, seconds: 0 };
-  
-  // Get Sun and Moon longitudes for Part of Fortune
-  const sunPos = getPosition(Astronomy.Body.Sun);
-  const moonPos = getPosition(Astronomy.Body.Moon);
-  const sunLongitude = ZODIAC_SIGNS.findIndex(s => s.name === sunPos.sign) * 30 + sunPos.degree + (sunPos.minutes / 60);
-  const moonLongitude = ZODIAC_SIGNS.findIndex(s => s.name === moonPos.sign) * 30 + moonPos.degree + (moonPos.minutes / 60);
-  
-  if (coordinates) {
-    try {
-      ascendant = calculateAscendant(date, coordinates.lat, coordinates.lon);
-      
-      // Calculate Vertex (anti-Ascendant on the Western horizon)
-      vertex = calculateVertex(date, coordinates.lat, coordinates.lon);
-      
-      // Calculate Part of Fortune
-      const ascLongitude = ZODIAC_SIGNS.findIndex(s => s.name === ascendant.sign) * 30 + ascendant.degree + (ascendant.minutes / 60);
-      partOfFortune = calculatePartOfFortune(ascLongitude, sunLongitude, moonLongitude, date, coordinates.lat);
-    } catch {
-      // If calculation fails, leave empty for manual entry
-    }
-  }
-  
-  return {
-    Sun: sunPos,
-    Moon: moonPos,
-    Mercury: getPosition(Astronomy.Body.Mercury),
-    Venus: getPosition(Astronomy.Body.Venus),
-    Mars: getPosition(Astronomy.Body.Mars),
-    Jupiter: getPosition(Astronomy.Body.Jupiter),
-    Saturn: getPosition(Astronomy.Body.Saturn),
-    Uranus: getPosition(Astronomy.Body.Uranus),
-    Neptune: getPosition(Astronomy.Body.Neptune),
-    Pluto: getPosition(Astronomy.Body.Pluto),
-    NorthNode: northNode,
-    Chiron: chiron,
-    Lilith: lilith,
-    Ceres: ceres,
-    Pallas: pallas,
-    Juno: juno,
-    Vesta: vesta,
-    Ascendant: ascendant,
-    Vertex: vertex,
-    PartOfFortune: partOfFortune,
-  };
+  const calc = calculateNatalFromInput({
+    birthDate,
+    birthTime,
+    birthLocation,
+    timezoneOffset: typeof timezoneOffsetHours === 'number' ? timezoneOffsetHours : null,
+    timezoneId: stored.timezoneId ?? null,
+    latitude: stored.latitude ?? null,
+    longitude: stored.longitude ?? null,
+    dstFold: stored.dstFold ?? null,
+  });
+  const out: Record<string, { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean }> = {};
+  for (const [key, pos] of Object.entries(calc.positions)) out[key] = toStoredPosition(pos);
+  return out;
 };
 
 // Get all planetary positions for a date
@@ -834,42 +490,36 @@ export const getPlanetaryPositions = (date: Date): PlanetaryPositions => {
   const cached = POSITIONS_CACHE.get(cacheKey);
   if (cached) return cached;
 
-  const getPosition = (body: Astronomy.Body): ZodiacPosition => {
-    try {
-      if (body === Astronomy.Body.Moon) {
-        const moon = Astronomy.GeoMoon(date);
-        const ecliptic = Astronomy.Ecliptic(moon);
-        return longitudeToZodiac(ecliptic.elon);
-      }
-      const vector = Astronomy.GeoVector(body, date, false);
-      const ecliptic = Astronomy.Ecliptic(vector);
-      return longitudeToZodiac(ecliptic.elon);
-    } catch {
-      return { sign: '♈', signName: 'Aries', degree: 0, minutes: 0, rawDegree: 0, fullDegree: "0°00' ♈" };
-    }
+  // One engine call for the ten majors (apparent geocentric, ecliptic of date).
+  const bodies = computeBodies(date, PLANET_KEYS);
+  const getPosition = (key: BodyKey): ZodiacPosition => {
+    const r = bodies[key];
+    if (r.ok === true) return longitudeToZodiac(r.longitude);
+    throw new Error(`${key}: ${r.reason}`);
   };
 
   const nodes = getNodePositions(date);
-  const chiron = getChironPosition(date);
-  const lilith = getBlackMoonLilith(date);
-  const eris = getErisPosition(date);
+  // Slow bodies are omitted (not invented) outside their data window.
+  const chiron = getSlowBodyPositionSafe('chiron', date);
+  const lilith = getSlowBodyPositionSafe('lilith', date);
+  const eris = getSlowBodyPositionSafe('eris', date);
 
   const result: PlanetaryPositions = {
-    moon: getPosition(Astronomy.Body.Moon),
-    sun: getPosition(Astronomy.Body.Sun),
-    mercury: getPosition(Astronomy.Body.Mercury),
-    venus: getPosition(Astronomy.Body.Venus),
-    mars: getPosition(Astronomy.Body.Mars),
-    jupiter: getPosition(Astronomy.Body.Jupiter),
-    saturn: getPosition(Astronomy.Body.Saturn),
-    uranus: getPosition(Astronomy.Body.Uranus),
-    neptune: getPosition(Astronomy.Body.Neptune),
-    pluto: getPosition(Astronomy.Body.Pluto),
+    moon: getPosition('Moon'),
+    sun: getPosition('Sun'),
+    mercury: getPosition('Mercury'),
+    venus: getPosition('Venus'),
+    mars: getPosition('Mars'),
+    jupiter: getPosition('Jupiter'),
+    saturn: getPosition('Saturn'),
+    uranus: getPosition('Uranus'),
+    neptune: getPosition('Neptune'),
+    pluto: getPosition('Pluto'),
     northNode: nodes.north,
     southNode: nodes.south,
-    chiron,
-    lilith,
-    eris,
+    ...(chiron ? { chiron } : {}),
+    ...(lilith ? { lilith } : {}),
+    ...(eris ? { eris } : {}),
   };
 
   POSITIONS_CACHE.set(cacheKey, result);

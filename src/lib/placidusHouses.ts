@@ -1,11 +1,14 @@
-// Placidus House System Calculation
-// Mathematical implementation of the Placidus house system
+// House and angle mathematics (Placidus, Whole Sign, Equal, Porphyry).
+//
+// Everything here is driven by one sidereal basis: the apparent sidereal time
+// and true obliquity from astronomy-engine for the exact UTC instant. That is
+// the same basis the planets are reduced to, so angles, cusps, and bodies can
+// never disagree about "which sky" they describe.
+
+import * as Astronomy from 'astronomy-engine';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
-
-// Obliquity of the ecliptic (mean value for J2000.0)
-const OBLIQUITY = 23.4392911;
 
 // Zodiac signs
 const ZODIAC_SIGNS = [
@@ -13,84 +16,94 @@ const ZODIAC_SIGNS = [
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 
-// Convert Julian Day to centuries from J2000.0
-const julianCenturies = (jd: number): number => {
-  return (jd - 2451545.0) / 36525;
+export type HouseSystem = 'placidus' | 'whole-sign' | 'equal' | 'porphyry';
+
+export const HOUSE_SYSTEM_LABELS: Record<HouseSystem, string> = {
+  placidus: 'Placidus',
+  'whole-sign': 'Whole Sign',
+  equal: 'Equal',
+  porphyry: 'Porphyry',
 };
 
-// Date to Julian Day
-const dateToJD = (date: Date): number => {
-  return date.getTime() / 86400000 + 2440587.5;
-};
-
-// Calculate Greenwich Sidereal Time in degrees
-const greenwichSiderealTime = (jd: number): number => {
-  const T = julianCenturies(jd);
-  // Formula from the Astronomical Almanac
-  let gst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 
-            0.000387933 * T * T - T * T * T / 38710000;
-  return ((gst % 360) + 360) % 360;
-};
-
-// Calculate Local Sidereal Time in degrees
-const localSiderealTime = (jd: number, longitude: number): number => {
-  const gst = greenwichSiderealTime(jd);
-  return ((gst + longitude) % 360 + 360) % 360;
-};
+const norm360 = (x: number): number => ((x % 360) + 360) % 360;
 
 // Convert longitude to sign + degree
 const longitudeToPosition = (longitude: number): { sign: string; degree: number; minutes: number } => {
-  const normalizedLon = ((longitude % 360) + 360) % 360;
+  const normalizedLon = norm360(longitude);
   const signIndex = Math.floor(normalizedLon / 30);
   const degreeFloat = normalizedLon % 30;
   const degree = Math.floor(degreeFloat);
   const minutes = Math.round((degreeFloat - degree) * 60);
-  
-  return { 
-    sign: ZODIAC_SIGNS[signIndex], 
-    degree, 
-    minutes: minutes >= 60 ? 59 : minutes 
+
+  return {
+    sign: ZODIAC_SIGNS[signIndex],
+    degree,
+    minutes: minutes >= 60 ? 59 : minutes
   };
 };
 
-// Mean obliquity of the ecliptic for the date (Laskar), in degrees.
-const obliquityOfDate = (jd: number): number => {
-  const t = julianCenturies(jd);
-  const sec = 21.448 - t * (46.8150 + t * (0.00059 - t * 0.001813));
-  return 23 + (26 + sec / 60) / 60;
+/**
+ * The sidereal basis for one instant and place: apparent Greenwich sidereal
+ * time (includes nutation), the local RAMC, and the true obliquity of date.
+ */
+export interface SiderealBasis {
+  /** Apparent Greenwich sidereal time in hours. */
+  gastHours: number;
+  /** Right ascension of the local meridian in degrees. */
+  ramc: number;
+  /** True obliquity of the ecliptic in degrees. */
+  obliquity: number;
+}
+
+export const siderealBasis = (utc: Date, longitude: number): SiderealBasis => {
+  const time = Astronomy.MakeTime(utc);
+  const gastHours = Astronomy.SiderealTime(time);
+  const ramc = norm360(gastHours * 15 + longitude);
+  const obliquity = Astronomy.e_tilt(time).tobl;
+  return { gastHours, ramc, obliquity };
 };
 
 // Ecliptic longitude of the point on the ecliptic with this right ascension.
 const raToEclipticLongitude = (raDeg: number, obliquity: number): number => {
   const ra = raDeg * DEG_TO_RAD;
   const obl = obliquity * DEG_TO_RAD;
-  let lon = Math.atan2(Math.sin(ra), Math.cos(ra) * Math.cos(obl)) * RAD_TO_DEG;
-  lon = ((lon % 360) + 360) % 360;
+  let lon = norm360(Math.atan2(Math.sin(ra), Math.cos(ra) * Math.cos(obl)) * RAD_TO_DEG);
   // atan2 loses the half-turn, so keep the longitude in the same half of the
   // sky as the right ascension it came from.
-  const raNorm = ((raDeg % 360) + 360) % 360;
+  const raNorm = norm360(raDeg);
   if (Math.abs(((lon - raNorm + 540) % 360) - 180) > 90) lon = (lon + 180) % 360;
   return lon;
 };
 
-// Calculate Ascendant from local sidereal time.
-const calculateAscendant = (lst: number, latitude: number, obliquity: number): number => {
-  const lstRad = lst * DEG_TO_RAD;
+/**
+ * Rising degree for a given RAMC, geographic latitude and obliquity.
+ *
+ *   asc = atan2( cos(RAMC), -( sin(e) tan(lat) + cos(e) sin(RAMC) ) )
+ *
+ * No 180 degree "adjustment": atan2 already returns the rising point.
+ */
+export const ascendantFromRamc = (ramc: number, latitude: number, obliquity: number): number => {
+  const lstRad = ramc * DEG_TO_RAD;
   const latRad = latitude * DEG_TO_RAD;
   const obliqRad = obliquity * DEG_TO_RAD;
 
-  // Standard formula for the rising degree (not its opposite).
   const y = Math.cos(lstRad);
   const x = -(Math.sin(obliqRad) * Math.tan(latRad) + Math.cos(obliqRad) * Math.sin(lstRad));
-
-  let asc = Math.atan2(y, x) * RAD_TO_DEG;
-  asc = ((asc % 360) + 360) % 360;
-  return asc;
+  return norm360(Math.atan2(y, x) * RAD_TO_DEG);
 };
 
-// Calculate MC (Medium Coeli / Midheaven): the ecliptic degree on the meridian.
-const calculateMC = (lst: number, obliquity: number): number =>
-  raToEclipticLongitude(lst, obliquity);
+/** Midheaven: the ecliptic degree on the upper meridian. */
+export const mcFromRamc = (ramc: number, obliquity: number): number =>
+  raToEclipticLongitude(ramc, obliquity);
+
+/**
+ * Vertex: where the prime vertical meets the ecliptic in the west. It is the
+ * rising degree seen from the co-latitude with the meridian turned half way
+ * round, which is the standard construction (the same one Swiss Ephemeris
+ * uses): vertex = asc(RAMC + 180, 90 - latitude).
+ */
+export const vertexFromRamc = (ramc: number, latitude: number, obliquity: number): number =>
+  ascendantFromRamc(ramc + 180, 90 - latitude, obliquity);
 
 /**
  * Placidus intermediate cusps by true semi-arc trisection.
@@ -142,10 +155,10 @@ const placidusIntermediateCusp = (
   return raToEclipticLongitude(ra, obliquity);
 };
 
-/** Porphyry fallback: trisect each ecliptic quadrant. Used above the polar circle. */
+/** Porphyry: trisect each ecliptic quadrant. Also the fallback above the polar circle. */
 const porphyryCusps = (asc: number, mc: number): number[] => {
   const cusps: number[] = [];
-  const arc = (from: number, to: number) => ((to - from) % 360 + 360) % 360;
+  const arc = (from: number, to: number) => norm360(to - from);
   const q1 = arc(mc, asc); // MC to Ascendant, houses 11 and 12
   const q2 = arc(asc, (mc + 180) % 360); // Ascendant to IC, houses 2 and 3
   cusps[1] = asc;
@@ -158,6 +171,75 @@ const porphyryCusps = (asc: number, mc: number): number[] => {
   cusps[3] = (asc + (2 * q2) / 3) % 360;
   for (const h of [11, 12, 2, 3]) cusps[(h + 6) > 12 ? h - 6 : h + 6] = (cusps[h] + 180) % 360;
   return cusps;
+};
+
+export interface HouseCuspSet {
+  /** Cusp longitudes, index 1..12 (index 0 unused). */
+  cusps: number[];
+  ascendant: number;
+  mc: number;
+  vertex: number;
+  /** The system actually used (Placidus falls back to Porphyry above the polar circle). */
+  systemUsed: HouseSystem;
+  requested: HouseSystem;
+  ramc: number;
+  obliquity: number;
+}
+
+/**
+ * Cusps for any supported system from the sidereal basis. Pure: the same
+ * inputs always give the same cusps, which keeps every caller consistent.
+ */
+export const houseCuspsFromBasis = (
+  basis: SiderealBasis,
+  latitude: number,
+  system: HouseSystem = 'placidus',
+): HouseCuspSet => {
+  const { ramc, obliquity } = basis;
+  const asc = ascendantFromRamc(ramc, latitude, obliquity);
+  const mc = mcFromRamc(ramc, obliquity);
+  const vertex = vertexFromRamc(ramc, latitude, obliquity);
+
+  const cusps: number[] = [];
+  let systemUsed: HouseSystem = system;
+
+  if (system === 'whole-sign') {
+    const start = Math.floor(asc / 30) * 30;
+    for (let i = 1; i <= 12; i++) cusps[i] = (start + (i - 1) * 30) % 360;
+  } else if (system === 'equal') {
+    for (let i = 1; i <= 12; i++) cusps[i] = (asc + (i - 1) * 30) % 360;
+  } else if (system === 'porphyry') {
+    const p = porphyryCusps(asc, mc);
+    for (let i = 1; i <= 12; i++) cusps[i] = p[i];
+  } else {
+    cusps[1] = asc;
+    cusps[10] = mc;
+    cusps[4] = (mc + 180) % 360;
+    cusps[7] = (asc + 180) % 360;
+
+    let usedPorphyry = false;
+    for (const h of [11, 12, 2, 3] as const) {
+      const value = placidusIntermediateCusp(h, ramc, latitude, obliquity);
+      if (value === null) {
+        usedPorphyry = true;
+        break;
+      }
+      cusps[h] = value;
+    }
+
+    if (usedPorphyry) {
+      const fallback = porphyryCusps(asc, mc);
+      for (let i = 1; i <= 12; i++) cusps[i] = fallback[i];
+      systemUsed = 'porphyry';
+    } else {
+      cusps[5] = (cusps[11] + 180) % 360;
+      cusps[6] = (cusps[12] + 180) % 360;
+      cusps[8] = (cusps[2] + 180) % 360;
+      cusps[9] = (cusps[3] + 180) % 360;
+    }
+  }
+
+  return { cusps, ascendant: asc, mc, vertex, systemUsed, requested: system, ramc, obliquity };
 };
 
 // Main function to calculate all Placidus house cusps
@@ -176,63 +258,44 @@ export interface PlacidusHouses {
   house12: { sign: string; degree: number; minutes: number };
   ascendantLongitude: number;
   mcLongitude: number;
+  vertexLongitude: number;
+  /** Raw cusp longitudes, index 1..12. */
+  cuspLongitudes: number[];
+  systemUsed: HouseSystem;
 }
 
+/**
+ * Houses for a UTC instant and place. `date` must already be the true UTC
+ * instant of birth (see birthDataNormalization.ts); no zone math happens here.
+ */
 export const calculatePlacidusHouses = (
   date: Date,
   latitude: number,
-  longitude: number
+  longitude: number,
+  system: HouseSystem = 'placidus',
 ): PlacidusHouses => {
-  const jd = dateToJD(date);
-  const lst = localSiderealTime(jd, longitude);
-  const obliquity = obliquityOfDate(jd);
-
-  const asc = calculateAscendant(lst, latitude, obliquity);
-  const mc = calculateMC(lst, obliquity);
-
-  // Placidus proper, with a Porphyry fallback for latitudes where a cusp
-  // never rises (above roughly 66 degrees) so the chart still has 12 houses.
-  const cusps: number[] = [];
-  cusps[1] = asc;
-  cusps[10] = mc;
-  cusps[4] = (mc + 180) % 360;
-  cusps[7] = (asc + 180) % 360;
-
-  let usedPorphyry = false;
-  for (const h of [11, 12, 2, 3] as const) {
-    const value = placidusIntermediateCusp(h, lst, latitude, obliquity);
-    if (value === null) {
-      usedPorphyry = true;
-      break;
-    }
-    cusps[h] = value;
-  }
-
-  if (usedPorphyry) {
-    const fallback = porphyryCusps(asc, mc);
-    for (let i = 1; i <= 12; i++) cusps[i] = fallback[i];
-  } else {
-    cusps[5] = (cusps[11] + 180) % 360;
-    cusps[6] = (cusps[12] + 180) % 360;
-    cusps[8] = (cusps[2] + 180) % 360;
-    cusps[9] = (cusps[3] + 180) % 360;
-  }
+  const basis = siderealBasis(date, longitude);
+  const set = houseCuspsFromBasis(basis, latitude, system);
+  const c = set.cusps;
 
   return {
-    house1: longitudeToPosition(cusps[1]),
-    house2: longitudeToPosition(cusps[2]),
-    house3: longitudeToPosition(cusps[3]),
-    house4: longitudeToPosition(cusps[4]),
-    house5: longitudeToPosition(cusps[5]),
-    house6: longitudeToPosition(cusps[6]),
-    house7: longitudeToPosition(cusps[7]),
-    house8: longitudeToPosition(cusps[8]),
-    house9: longitudeToPosition(cusps[9]),
-    house10: longitudeToPosition(cusps[10]),
-    house11: longitudeToPosition(cusps[11]),
-    house12: longitudeToPosition(cusps[12]),
-    ascendantLongitude: asc,
-    mcLongitude: mc,
+    house1: longitudeToPosition(c[1]),
+    house2: longitudeToPosition(c[2]),
+    house3: longitudeToPosition(c[3]),
+    house4: longitudeToPosition(c[4]),
+    house5: longitudeToPosition(c[5]),
+    house6: longitudeToPosition(c[6]),
+    house7: longitudeToPosition(c[7]),
+    house8: longitudeToPosition(c[8]),
+    house9: longitudeToPosition(c[9]),
+    house10: longitudeToPosition(c[10]),
+    house11: longitudeToPosition(c[11]),
+    house12: longitudeToPosition(c[12]),
+    ascendantLongitude: set.ascendant,
+    mcLongitude: set.mc,
+    vertexLongitude: set.vertex,
+    cuspLongitudes: c,
+    systemUsed: set.systemUsed,
   };
 };
 

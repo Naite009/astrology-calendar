@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Clock, Globe, Calendar, AlertCircle } from 'lucide-react';
-import { getTimezoneInfoForDate } from '@/lib/timezoneUtils';
+import { getTimezoneInfoForDate, localInstantForZone } from '@/lib/timezoneUtils';
 
 interface BirthMomentPreviewProps {
   birthDate: string;
@@ -21,15 +21,12 @@ export const BirthMomentPreview = ({
       const [year, month, day] = birthDate.split('-').map(Number);
       const [hours, minutes] = birthTime.split(':').map(Number);
 
-      // Get timezone info for this date (DST-aware)
-      const tzInfo = getTimezoneInfoForDate(timezone, birthDate);
+      // Zone offset evaluated at the actual local birth moment (DST-aware),
+      // and the UTC instant from the same shared zone rules.
+      const tzInfo = getTimezoneInfoForDate(timezone, birthDate, birthTime);
       const offsetHours = tzInfo.offset;
-
-      // Compute the UTC moment from the local birth time
-      // Formula: UTC = local - offset (where offset is hours ahead of UTC)
-      const localMs = Date.UTC(year, month - 1, day, hours, minutes, 0);
-      const utcMs = localMs - offsetHours * 60 * 60 * 1000;
-      const utcDate = new Date(utcMs);
+      const utcDate = localInstantForZone(timezone, birthDate, birthTime);
+      if (!utcDate) return null;
 
       // Format local birth moment
       const localDateStr = new Date(year, month - 1, day).toLocaleDateString('en-US', {
@@ -50,9 +47,14 @@ export const BirthMomentPreview = ({
       const utcDateKey = utcDateStr;
       const dateDiffers = localDateKey !== utcDateKey;
 
-      // Offset display
-      const offsetSign = offsetHours >= 0 ? '+' : '';
-      const offsetDisplay = `UTC${offsetSign}${offsetHours}`;
+      // Offset display (fractional zones shown as hh:mm)
+      const offsetSign = offsetHours >= 0 ? '+' : '-';
+      const absOff = Math.abs(offsetHours);
+      const offH = Math.floor(absOff);
+      const offM = Math.round((absOff - offH) * 60);
+      const offsetDisplay = offM
+        ? `UTC${offsetSign}${offH}:${String(offM).padStart(2, '0')}`
+        : `UTC${offsetSign}${offH}`;
 
       return {
         localDateStr,

@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { X, Plus, Users, RefreshCw, Check, Eye, ChevronDown, ChevronUp, ClipboardPaste, Upload, Image, Loader2, Download, CloudOff, Cloud, LogIn, LogOut, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitChart, ProgressedPosition, ProfilePronouns } from '@/hooks/useNatalChart';
-import { getPlanetSymbol, calculateNatalChart, detectTimezoneFromLocation, calculatePlacidusHouseCusps } from '@/lib/astrology';
-import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
+import { getPlanetSymbol } from '@/lib/astrology';
+import { calculateNatalFromInputAsync, toStoredPosition, toStoredCusp } from '@/lib/natalChartCalculation';
+import { storedMetadataFromPlace, type DstFold, type StoredPlaceMetadata } from '@/lib/birthDataNormalization';
+import { circularSeparation, signPositionToLongitude } from '@/lib/ephemerisEngine';
 import { NatalChartNarrative } from './NatalChartNarrative';
 import { ChartVerificationPanel } from './ChartVerificationPanel';
+import type { VerifyPosition } from '@/lib/chartEphemerisVerify';
 import { toast } from 'sonner';
 
 const ZODIAC_SIGNS = [
@@ -95,23 +98,6 @@ const PLANET_SYMBOLS: Record<string, string> = {
   Salacia: '🝼',
 };
 
-const TIMEZONE_OPTIONS = [
-  { value: 0, label: 'UTC (0:00)' },
-  { value: -5, label: 'EST (UTC-5)' },
-  { value: -4, label: 'EDT (UTC-4)' },
-  { value: -6, label: 'CST (UTC-6)' },
-  { value: -5, label: 'CDT (UTC-5)' },
-  { value: -7, label: 'MST (UTC-7)' },
-  { value: -6, label: 'MDT (UTC-6)' },
-  { value: -8, label: 'PST (UTC-8)' },
-  { value: -7, label: 'PDT (UTC-7)' },
-  { value: 1, label: 'CET (UTC+1)' },
-  { value: 2, label: 'CEST (UTC+2)' },
-  { value: 5.5, label: 'IST (UTC+5:30)' },
-  { value: 8, label: 'CST China (UTC+8)' },
-  { value: 9, label: 'JST (UTC+9)' },
-  { value: 10, label: 'AEST (UTC+10)' },
-];
 
 // Planet name aliases for parsing astro.com data
 const PLANET_ALIASES: Record<string, string> = {
@@ -265,11 +251,24 @@ interface ChartLibraryProps {
 
 interface ChartFormData {
   name: string;
+  /** Local civil date at the birthplace, YYYY-MM-DD. */
   birthDate: string;
+  /** Local civil time at the birthplace, HH:MM or HH:MM:SS. */
   birthTime: string;
   birthLocation: string;
-  timezoneOffset: number;
-  detectedTimezone?: string;
+  /** Legacy whole-hour offset kept for old records; display only, never used to calculate. */
+  timezoneOffset?: number;
+  /** Resolved birthplace metadata (IANA zone + precise coordinates). */
+  timezoneId?: string;
+  latitude?: number;
+  longitude?: number;
+  placeName?: string;
+  placeConfidence?: NatalChart['placeConfidence'];
+  placeSource?: NatalChart['placeSource'];
+  /** Which reading applies when the birth time fell inside a fall-back overlap. */
+  dstFold?: DstFold;
+  houseSystem?: NatalChart['houseSystem'];
+  nodeVariant?: NatalChart['nodeVariant'];
   chartImageBase64?: string;
   pronouns?: ProfilePronouns;
   planets: Record<string, NatalPlanetPosition>;
@@ -279,6 +278,55 @@ interface ChartFormData {
   transits?: TransitChart;
   progressionDate?: string;
 }
+
+/** A pending offer to replace values the user typed or imported with calculated ones. */
+interface ReplaceOffer {
+  planets: Record<string, NatalPlanetPosition>;
+  houseCusps: Record<string, HouseCusp>;
+  details: string[];
+}
+
+const emptyForm = (): ChartFormData => ({
+  name: '',
+  birthDate: '',
+  birthTime: '',
+  birthLocation: '',
+  planets: emptyPlanets(),
+  houseCusps: emptyHouseCusps(),
+  interceptedSigns: [],
+});
+
+const formFromChart = (chart: NatalChart): ChartFormData => ({
+  name: chart.name,
+  birthDate: chart.birthDate,
+  birthTime: chart.birthTime,
+  birthLocation: chart.birthLocation,
+  timezoneOffset: chart.timezoneOffset,
+  timezoneId: chart.timezoneId,
+  latitude: chart.latitude,
+  longitude: chart.longitude,
+  placeName: chart.placeName,
+  placeConfidence: chart.placeConfidence,
+  placeSource: chart.placeSource,
+  dstFold: chart.dstFold,
+  houseSystem: chart.houseSystem,
+  nodeVariant: chart.nodeVariant,
+  chartImageBase64: chart.chartImageBase64,
+  pronouns: chart.pronouns,
+  // Merge stored planets with emptyPlanets() so every key (including TNOs) exists.
+  planets: { ...emptyPlanets(), ...(chart.planets as Record<string, NatalPlanetPosition>) },
+  houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
+  interceptedSigns: chart.interceptedSigns || [],
+  progressions: chart.progressions,
+  transits: chart.transits,
+  progressionDate: chart.progressionDate,
+});
+
+const positionLongitude = (p?: { sign?: string; degree?: number; minutes?: number; seconds?: number }): number | null =>
+  p?.sign ? signPositionToLongitude({ sign: p.sign, degree: p.degree || 0, minutes: p.minutes || 0, seconds: p.seconds || 0 }) : null;
+
+const fmtPos = (p: { sign: string; degree: number; minutes: number }): string =>
+  `${p.sign} ${p.degree}\u00b0${String(p.minutes).padStart(2, '0')}'`;
 
 // Preset pronoun sets surfaced in the chart edit form. Custom sets can
 // still be authored by editing chart.pronouns directly.
@@ -338,19 +386,12 @@ export const ChartLibrary = ({
   const [editingChart, setEditingChart] = useState<'new' | 'user' | NatalChart | null>(null);
   const [viewingChart, setViewingChart] = useState<NatalChart | null>(null);
   const [showTransits, setShowTransits] = useState(true);
-  // When true, the "Calculate from birth data" button will not overwrite a manually-entered Chiron.
-  const [preserveManualChiron, setPreserveManualChiron] = useState(true);
   const jsonImportInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState<ChartFormData>({
-    name: '',
-    birthDate: '',
-    birthTime: '',
-    birthLocation: '',
-    timezoneOffset: -5, // Default to EST
-    planets: emptyPlanets(),
-    houseCusps: emptyHouseCusps(),
-    interceptedSigns: [],
-  });
+  const [formData, setFormData] = useState<ChartFormData>(emptyForm());
+  const [calculating, setCalculating] = useState(false);
+  // Values the user typed or imported that disagree with the calculation.
+  // They are never replaced silently; the user decides.
+  const [replaceOffer, setReplaceOffer] = useState<ReplaceOffer | null>(null);
   const [showHousesSection, setShowHousesSection] = useState(false);
   const [showPointsSection, setShowPointsSection] = useState(false);
   const [showGoddessSection, setShowGoddessSection] = useState(false);
@@ -442,55 +483,13 @@ export const ChartLibrary = ({
     hasFormOpenedRef.current = true;
     isNewChartRef.current = chart === 'new';
     if (chart === 'new') {
-      setFormData({
-        name: '',
-        birthDate: '',
-        birthTime: '',
-        birthLocation: '',
-        timezoneOffset: -5,
-        chartImageBase64: undefined,
-        planets: emptyPlanets(),
-        houseCusps: emptyHouseCusps(),
-        interceptedSigns: [],
-        progressions: undefined,
-        transits: undefined,
-        progressionDate: undefined,
-      });
+      setFormData(emptyForm());
     } else if (chart === 'user' && userNatalChart) {
-      // Merge stored planets with emptyPlanets() to ensure all keys (including TNOs) exist
-      setFormData({
-        name: userNatalChart.name,
-        birthDate: userNatalChart.birthDate,
-        birthTime: userNatalChart.birthTime,
-        birthLocation: userNatalChart.birthLocation,
-        timezoneOffset: userNatalChart.timezoneOffset ?? -5,
-        chartImageBase64: userNatalChart.chartImageBase64,
-        pronouns: userNatalChart.pronouns,
-        planets: { ...emptyPlanets(), ...(userNatalChart.planets as Record<string, NatalPlanetPosition>) },
-        houseCusps: (userNatalChart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
-        interceptedSigns: userNatalChart.interceptedSigns || [],
-        progressions: userNatalChart.progressions,
-        transits: userNatalChart.transits,
-        progressionDate: userNatalChart.progressionDate,
-      });
+      setFormData(formFromChart(userNatalChart));
     } else if (typeof chart === 'object') {
-      // Merge stored planets with emptyPlanets() to ensure all keys (including TNOs) exist
-      setFormData({
-        name: chart.name,
-        birthDate: chart.birthDate,
-        birthTime: chart.birthTime,
-        birthLocation: chart.birthLocation,
-        timezoneOffset: chart.timezoneOffset ?? -5,
-        chartImageBase64: chart.chartImageBase64,
-        pronouns: chart.pronouns,
-        planets: { ...emptyPlanets(), ...(chart.planets as Record<string, NatalPlanetPosition>) },
-        houseCusps: (chart.houseCusps as Record<string, HouseCusp>) || emptyHouseCusps(),
-        interceptedSigns: chart.interceptedSigns || [],
-        progressions: chart.progressions,
-        transits: chart.transits,
-        progressionDate: chart.progressionDate,
-      });
+      setFormData(formFromChart(chart));
     }
+    setReplaceOffer(null);
     setEditingChart(chart);
     setSaveStatus('idle');
   };
@@ -508,104 +507,184 @@ export const ChartLibrary = ({
     }));
   };
 
-  const calculateFromBirthData = () => {
-    if (!formData.birthDate) return;
-    
-    // Auto-detect timezone based on location and date
-    let detectedTz: string | undefined;
-    if (formData.birthLocation && formData.birthDate) {
-      const [year, month, day] = formData.birthDate.split('-').map(Number);
-      const tempDate = new Date(year, month - 1, day);
-      const detected = detectTimezoneFromLocation(formData.birthLocation, tempDate);
-      if (detected) {
-        detectedTz = detected.abbrev;
-        setFormData(prev => ({ 
-          ...prev, 
-          timezoneOffset: detected.offset,
-          detectedTimezone: detected.abbrev
-        }));
-      }
-    }
-    
-    const calculatedPositions = calculateNatalChart(
-      formData.birthDate, 
-      formData.birthTime || '12:00',
-      formData.timezoneOffset,
-      formData.birthLocation
-    );
+  /** Persist the resolved place (zone id + coordinates) on the record. */
+  const applyPlaceMetadata = useCallback((meta: StoredPlaceMetadata) => {
+    setFormData(prev => ({
+      ...prev,
+      timezoneId: meta.timezoneId,
+      latitude: meta.latitude,
+      longitude: meta.longitude,
+      placeName: meta.placeName,
+      placeConfidence: meta.placeConfidence,
+      placeSource: meta.placeSource,
+    }));
+  }, []);
 
-    // Try to calculate Placidus houses if we have coordinates
-    const coords = getCoordinatesFromLocation(formData.birthLocation);
-    
-    const calculateHouseCusps = (): Record<string, HouseCusp> | null => {
-      if (!coords) {
-        // Fallback to Equal Houses from Ascendant if no coordinates found
-        const asc = calculatedPositions.Ascendant;
-        if (!asc?.sign) return null;
-        const signIndex = ZODIAC_SIGNS.indexOf(asc.sign);
-        if (signIndex === -1) return null;
-
-        const ascLon = signIndex * 30 + asc.degree + (asc.minutes || 0) / 60;
-        const cusps: Record<string, HouseCusp> = {};
-
-        for (let i = 1; i <= 12; i++) {
-          const lon = (ascLon + (i - 1) * 30) % 360;
-          const si = Math.floor(lon / 30);
-          const degFloat = lon % 30;
-          const deg = Math.floor(degFloat);
-          const min = Math.round((degFloat - deg) * 60);
-          cusps[`house${i}`] = { sign: ZODIAC_SIGNS[si], degree: deg, minutes: min === 60 ? 59 : min };
-        }
-        return cusps;
-      }
-      
-      // Use Placidus house calculation with coordinates
-      const [year, month, day] = formData.birthDate.split('-').map(Number);
-      const [hours, minutes] = (formData.birthTime || '12:00').split(':').map(Number);
-      const utcHours = hours - formData.timezoneOffset;
-      const birthDateTime = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0));
-      
-      const placidusHouses = calculatePlacidusHouseCusps(birthDateTime, coords.lat, coords.lon);
-      
-      return {
-        house1: placidusHouses.house1,
-        house2: placidusHouses.house2,
-        house3: placidusHouses.house3,
-        house4: placidusHouses.house4,
-        house5: placidusHouses.house5,
-        house6: placidusHouses.house6,
-        house7: placidusHouses.house7,
-        house8: placidusHouses.house8,
-        house9: placidusHouses.house9,
-        house10: placidusHouses.house10,
-        house11: placidusHouses.house11,
-        house12: placidusHouses.house12,
-      };
-    };
-    
-    setFormData(prev => {
-      const mergedPlanets = {
+  /** Copy one calculated body into the form (the panel only offers this when inputs are trustworthy). */
+  const applyVerifiedValue = useCallback((body: string, position: VerifyPosition, opts?: { silent?: boolean }) => {
+    setFormData(prev => ({
+      ...prev,
+      planets: {
         ...prev.planets,
-        ...calculatedPositions,
-      };
+        [body]: {
+          sign: position.sign,
+          degree: Math.floor(position.degree || 0),
+          minutes: Math.floor(position.minutes || 0),
+          seconds: Math.round(position.seconds || 0),
+          isRetrograde: Boolean(position.isRetrograde),
+        },
+      },
+    }));
+    if (!opts?.silent) toast.success(`${PLANET_LABELS[body] || body} set to the calculated value.`);
+  }, []);
 
-      // Chiron is not calculated from the same ephemeris as the main planets in this app,
-      // so if the user typed an astro.com-verified Chiron, keep it.
-      if (preserveManualChiron && prev.planets.Chiron?.sign) {
-        mergedPlanets.Chiron = prev.planets.Chiron;
+  /** Copy one calculated house cusp into the form. */
+  const applyVerifiedCusp = useCallback((house: string, position: VerifyPosition, opts?: { silent?: boolean }) => {
+    setFormData(prev => ({
+      ...prev,
+      houseCusps: {
+        ...prev.houseCusps,
+        [house]: {
+          sign: position.sign,
+          degree: Math.floor(position.degree || 0),
+          minutes: Math.floor(position.minutes || 0),
+        },
+      },
+    }));
+    if (!opts?.silent) toast.success(`${house.replace('house', 'House ')} cusp set to the calculated value.`);
+  }, []);
+
+
+  /**
+   * Calculate from birth data. Empty fields are filled straight away. Anything
+   * the user typed or imported is left alone; if it disagrees with the
+   * calculation, a replace offer is shown and nothing changes until they accept.
+   */
+  const calculateFromBirthData = async () => {
+    if (!formData.birthDate || calculating) return;
+    setCalculating(true);
+    setReplaceOffer(null);
+    try {
+      const calc = await calculateNatalFromInputAsync({
+        birthDate: formData.birthDate,
+        birthTime: formData.birthTime || null,
+        birthLocation: formData.birthLocation || null,
+        timezoneId: formData.timezoneId,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        placeName: formData.placeName,
+        placeConfidence: formData.placeConfidence,
+        dstFold: formData.dstFold,
+        timezoneOffset: formData.timezoneOffset,
+        houseSystem: formData.houseSystem,
+        nodeVariant: formData.nodeVariant,
+      });
+      const moment = calc.moment;
+
+      if (moment.status !== 'ok' || !moment.utc) {
+        toast.error(moment.warnings[0] || 'The birth date, time or place could not be interpreted.');
+        return;
+      }
+      if (moment.place && moment.place.source !== 'stored') {
+        applyPlaceMetadata(storedMetadataFromPlace(moment.place));
       }
 
-      // If user hasn't entered house cusps yet, auto-fill using Placidus (or Equal Houses as fallback).
-      const shouldAutoFillHouses = !prev.houseCusps?.house1?.sign;
-      const autoCusps = shouldAutoFillHouses ? calculateHouseCusps() : null;
+      const filledPlanets: Record<string, NatalPlanetPosition> = {};
+      const offerPlanets: Record<string, NatalPlanetPosition> = {};
+      const details: string[] = [];
 
-      return {
+      for (const [key, pos] of Object.entries(calc.positions)) {
+        const stored = toStoredPosition(pos);
+        const existing = formData.planets[key];
+        if (!existing?.sign) {
+          filledPlanets[key] = stored;
+          continue;
+        }
+        const existingLon = positionLongitude(existing);
+        if (existingLon === null) continue;
+        const delta = circularSeparation(existingLon, pos.longitude);
+        const tolerance = key === 'Ascendant' || key === 'Vertex' || key === 'PartOfFortune' ? 0.5 : 0.1;
+        if (delta > tolerance) {
+          offerPlanets[key] = stored;
+          details.push(`${PLANET_LABELS[key] || key}: you have ${fmtPos(existing)}, calculated ${fmtPos(stored)}`);
+        }
+      }
+
+      // House cusps: fill when empty. If the user typed an Ascendant that
+      // disagrees with the calculated one by more than 2 degrees, the
+      // calculated cusps would contradict it, so they are offered, not filled.
+      const filledCusps: Record<string, HouseCusp> = {};
+      const offerCusps: Record<string, HouseCusp> = {};
+      let cuspNote: string | null = null;
+      if (calc.houseCusps && calc.angles) {
+        const typedAscLon = positionLongitude(formData.planets.Ascendant);
+        const ascAgrees = typedAscLon === null || circularSeparation(typedAscLon, calc.angles.ascendant) <= 2;
+        const hasCusps = !!formData.houseCusps?.house1?.sign;
+        for (let h = 1; h <= 12; h++) {
+          const key = `house${h}` as const;
+          const c = calc.houseCusps[key];
+          const stored = toStoredCusp(c);
+          const cusp: HouseCusp = { sign: stored.sign, degree: stored.degree, minutes: stored.minutes };
+          const existing = formData.houseCusps[key];
+          if (!existing?.sign) {
+            if (ascAgrees) filledCusps[key] = cusp;
+            else offerCusps[key] = cusp;
+            continue;
+          }
+          const existingLon = positionLongitude(existing);
+          if (existingLon !== null && circularSeparation(existingLon, c.longitude) > 0.1) {
+            offerCusps[key] = cusp;
+          }
+        }
+        if (!ascAgrees && !hasCusps) {
+          cuspNote = `Your typed Ascendant is more than 2\u00b0 from the calculated one, so house cusps were not filled automatically.`;
+        }
+        if (Object.keys(offerCusps).length && hasCusps) {
+          details.push(`${Object.keys(offerCusps).length} house cusp${Object.keys(offerCusps).length === 1 ? '' : 's'} differ from the ${calc.settings.houseSystem} calculation`);
+        }
+      }
+
+      const filledCount = Object.keys(filledPlanets).length + (Object.keys(filledCusps).length ? 1 : 0);
+      setFormData(prev => ({
         ...prev,
-        planets: mergedPlanets,
-        ...(autoCusps ? { houseCusps: { ...prev.houseCusps, ...autoCusps } } : {}),
-        ...(detectedTz ? { detectedTimezone: detectedTz } : {}),
-      };
-    });
+        planets: { ...prev.planets, ...filledPlanets },
+        houseCusps: { ...prev.houseCusps, ...filledCusps },
+        houseSystem: prev.houseSystem || calc.settings.houseSystem,
+        nodeVariant: prev.nodeVariant || calc.settings.nodeVariant,
+      }));
+
+      if (Object.keys(offerPlanets).length || Object.keys(offerCusps).length) {
+        setReplaceOffer({ planets: offerPlanets, houseCusps: offerCusps, details: cuspNote ? [cuspNote, ...details] : details });
+      }
+
+      const unavailable = calc.unavailable.filter(u => !['SouthNode'].includes(u.key));
+      if (filledCount > 0) {
+        toast.success(`Filled ${Object.keys(filledPlanets).length} position${Object.keys(filledPlanets).length === 1 ? '' : 's'}${Object.keys(filledCusps).length ? ' and the house cusps' : ''} from the ephemeris.`);
+      } else if (!Object.keys(offerPlanets).length && !Object.keys(offerCusps).length) {
+        toast.success('Everything already matches the ephemeris.');
+      }
+      if (calc.anglesReason) toast.info(calc.anglesReason);
+      if (unavailable.length) {
+        toast.info(`Not calculated: ${unavailable.map(u => PLANET_LABELS[u.key] || u.key).join(', ')}. ${unavailable[0].reason}`);
+      }
+    } catch (err) {
+      console.error('[ChartLibrary] calculateFromBirthData failed', err);
+      toast.error('The calculation could not be completed. Check the birth date, time and place.');
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const acceptReplaceOffer = () => {
+    if (!replaceOffer) return;
+    setFormData(prev => ({
+      ...prev,
+      planets: { ...prev.planets, ...replaceOffer.planets },
+      houseCusps: { ...prev.houseCusps, ...replaceOffer.houseCusps },
+    }));
+    const n = Object.keys(replaceOffer.planets).length + Object.keys(replaceOffer.houseCusps).length;
+    toast.success(`Replaced ${n} value${n === 1 ? '' : 's'} with the calculated ones.`);
+    setReplaceOffer(null);
   };
 
   const handleClose = () => {
@@ -1429,35 +1508,56 @@ export const ChartLibrary = ({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Time</label>
+                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Time (local clock time)</label>
                   <input
                     type="time"
+                    step={1}
                     value={formData.birthTime}
-                    onChange={e => setFormData({ ...formData, birthTime: e.target.value })}
+                    // A fold decision only applies to one clock time; clear it when the time changes.
+                    onChange={e => setFormData({ ...formData, birthTime: e.target.value, dstFold: undefined })}
                     className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Timezone at Birth</label>
-                  <select
-                    value={formData.timezoneOffset}
-                    onChange={e => setFormData({ ...formData, timezoneOffset: Number(e.target.value) })}
-                    className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                  >
-                    {TIMEZONE_OPTIONS.map((tz, i) => (
-                      <option key={`${tz.value}-${i}`} value={tz.value}>{tz.label}</option>
-                    ))}
-                  </select>
+                  <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Time zone at birth</label>
+                  <div className="w-full border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                    {formData.timezoneId
+                      ? <span className="text-foreground">{formData.timezoneId}</span>
+                      : 'Found from the birthplace'}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Historical clock rules for the birthplace (including daylight saving) are applied automatically.
+                  </p>
                 </div>
                 <div className="space-y-2 col-span-2">
                   <label className="block text-[11px] uppercase tracking-widest text-muted-foreground">Birth Location</label>
                   <input
                     type="text"
                     value={formData.birthLocation}
-                    onChange={e => setFormData({ ...formData, birthLocation: e.target.value })}
-                    placeholder="City, Country (for reference)"
+                    // New text means a new place: drop stored coordinates so they are re-resolved.
+                    onChange={e => setFormData({
+                      ...formData,
+                      birthLocation: e.target.value,
+                      timezoneId: undefined,
+                      latitude: undefined,
+                      longitude: undefined,
+                      placeName: undefined,
+                      placeConfidence: undefined,
+                      placeSource: undefined,
+                      dstFold: undefined,
+                    })}
+                    placeholder="Town, State or Region, Country"
                     className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   />
+                  {formData.placeName && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Resolved as <span className="text-foreground">{formData.placeName}</span>
+                      {typeof formData.latitude === 'number' && typeof formData.longitude === 'number'
+                        ? ` (${formData.latitude.toFixed(4)}, ${formData.longitude.toFixed(4)})`
+                        : ''}
+                      {formData.placeConfidence && formData.placeConfidence !== 'high' ? `, ${formData.placeConfidence} confidence` : ''}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1649,39 +1749,58 @@ export const ChartLibrary = ({
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground">Core Planets</h3>
                   <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={preserveManualChiron}
-                        onChange={(e) => setPreserveManualChiron(e.target.checked)}
-                        className="rounded border-border"
-                      />
-                      Keep my Chiron
-                    </label>
-                    {formData.detectedTimezone && (
-                      <span className="text-[10px] text-green-600 bg-green-100 px-2 py-1 rounded">
-                        Auto-detected: {formData.detectedTimezone}
-                      </span>
-                    )}
                     <button
                       onClick={calculateFromBirthData}
-                      disabled={!formData.birthDate}
+                      disabled={!formData.birthDate || calculating}
                       className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw size={12} />
-                      Calculate from birth data
+                      {calculating ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                      {calculating ? 'Calculating' : 'Calculate from birth data'}
                     </button>
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground italic mb-3">
-                  Click "Calculate" to auto-fill main planets including Ascendant (requires recognized city). ℞ indicates retrograde.
+                  "Calculate" fills every empty position (planets, points, Ascendant and houses when the birthplace is a
+                  recognized town) from the birth date, local time and place. Values you typed or imported are never replaced
+                  without asking. ℞ indicates retrograde.
                 </p>
+
+                {replaceOffer && (
+                  <div className="mb-4 rounded-sm border border-amber-500/40 bg-amber-500/5 p-3 space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-amber-700">Some entered values differ from the calculation</p>
+                    <ul className="text-[11px] text-muted-foreground list-disc pl-5 space-y-0.5">
+                      {replaceOffer.details.slice(0, 8).map((d, i) => <li key={i}>{d}</li>)}
+                      {replaceOffer.details.length > 8 && <li>and {replaceOffer.details.length - 8} more</li>}
+                    </ul>
+                    <p className="text-[11px] text-muted-foreground">
+                      Your values are kept as they are. If the birth time and place above are right, the calculated values are
+                      usually the accurate ones; if the source chart is what you trust, keep yours.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={acceptReplaceOffer}
+                        className="text-[10px] uppercase tracking-widest border border-primary text-primary px-3 py-1 hover:bg-primary/10"
+                      >
+                        Replace with calculated values
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReplaceOffer(null)}
+                        className="text-[10px] uppercase tracking-widest border border-border text-muted-foreground px-3 py-1 hover:bg-muted"
+                      >
+                        Keep mine
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mb-4 rounded-sm border border-primary/20 bg-primary/5 p-3">
                   <p className="text-[10px] uppercase tracking-widest text-primary mb-1">You only need the basics</p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Enter the 10 core planets, the Ascendant, the house cusps, North Node and Chiron. On save, everything else
                     (South Node, Lilith, Ceres, Pallas, Juno, Vesta, Eris, Vertex, Part of Fortune, and house cusps if you skip them)
-                    is calculated from the birth date, time and place, so every tab and report stays complete. Anything you type in
+                    is calculated from the birth date, local time and place, so every tab and report stays complete. Anything you type in
                     by hand is always kept exactly as entered.
                   </p>
                 </div>
@@ -1689,28 +1808,27 @@ export const ChartLibrary = ({
                 {formData.birthDate && (
                   <div className="mb-4">
                     <ChartVerificationPanel
-                      birthDate={formData.birthDate}
-                      birthTime={formData.birthTime}
-                      birthLocation={formData.birthLocation}
-                      timezoneOffset={formData.timezoneOffset}
-                      planets={formData.planets as any}
-                      onApplyValue={(body, position, opts) => {
-                        setFormData(prev => ({
-                          ...prev,
-                          planets: {
-                            ...prev.planets,
-                            [body]: {
-                              sign: position.sign,
-                              degree: Math.floor(position.degree || 0),
-                              minutes: Math.round(position.minutes || 0),
-                              seconds: 0,
-                              isRetrograde: Boolean(position.isRetrograde),
-                            },
-                          },
-                        }));
-                        if (!opts?.silent) toast.success(`${body} set to the ephemeris value.`);
+                      birth={{
+                        birthDate: formData.birthDate,
+                        birthTime: formData.birthTime || null,
+                        birthLocation: formData.birthLocation || null,
+                        timezoneId: formData.timezoneId,
+                        latitude: formData.latitude,
+                        longitude: formData.longitude,
+                        placeName: formData.placeName,
+                        placeConfidence: formData.placeConfidence,
+                        dstFold: formData.dstFold,
+                        timezoneOffset: formData.timezoneOffset,
+                        houseSystem: formData.houseSystem,
+                        nodeVariant: formData.nodeVariant,
                       }}
-
+                      planets={formData.planets}
+                      houseCusps={formData.houseCusps}
+                      onApplyValue={applyVerifiedValue}
+                      onApplyCusp={applyVerifiedCusp}
+                      onPlaceResolved={applyPlaceMetadata}
+                      onChooseFold={(fold) => setFormData(prev => ({ ...prev, dstFold: fold }))}
+                      onSuggestTime={(time) => setFormData(prev => ({ ...prev, birthTime: time, dstFold: undefined }))}
                     />
                   </div>
                 )}
