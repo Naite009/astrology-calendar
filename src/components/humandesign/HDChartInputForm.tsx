@@ -1115,7 +1115,7 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
                 <option key={tz.value} value={tz.value}>
                   {(() => {
                     const info = formData.birthDate
-                      ? getTimezoneInfoForDate(tz.value, formData.birthDate)
+                      ? getTimezoneInfoForDate(tz.value, formData.birthDate, formData.birthTime)
                       : getTimezoneInfoForDate(tz.value);
                     return `${tz.label} (${info.label})`;
                   })()}
