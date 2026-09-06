@@ -215,13 +215,17 @@ export function getMoonUpcomingChanges(
   const segs = getMoonHouseSchedule(chart, now);
   if (!segs.length) return [];
   const when = (d: Date) => formatWhen(d, now, tz, tzAbbr);
+  const atWhen = (d: Date) => {
+    const w = when(d);
+    return /^\d/.test(w) ? `at ${w}` : w;
+  };
   const out: MoonUpcomingChange[] = [];
 
   segs.slice(1).forEach((s) => {
     out.push({
       kind: 'house',
       time: s.from,
-      label: `Moves into your ${ord(s.house)} house at ${when(s.from)}`,
+      label: `Moves into your ${ord(s.house)} house ${atWhen(s.from)}`,
     });
   });
 
@@ -229,8 +233,9 @@ export function getMoonUpcomingChanges(
   out.push({
     kind: 'sign',
     time: signChange.time,
-    label: `Moon enters ${signChange.newSign} at ${when(signChange.time)}`,
+    label: `Moon enters ${signChange.newSign} ${atWhen(signChange.time)}`,
   });
+
 
   return out.sort((a, b) => a.time.getTime() - b.time.getTime()).slice(0, 3);
 }
