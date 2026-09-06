@@ -10,6 +10,7 @@
 
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart } from '@/hooks/useNatalChart';
+import { birthMomentOf } from './chartAutoFill';
 
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const PLANETS_CORE = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'] as const;
