@@ -50,7 +50,7 @@ import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
 import { calculateSolarReturnAuto } from '@/lib/solarReturnAutoCalculator';
-import { getCoordinatesFromLocation } from '@/lib/placidusHouses';
+import { resolveBirthPlace } from '@/lib/geo/birthPlace';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
 import { TierPreviewContent } from '@/components/solarReturn/TierPreviewContent';
