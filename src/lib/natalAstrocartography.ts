@@ -205,52 +205,23 @@ function calculateASCAtLocation(gst: number, geoLongitude: number, geoLatitude: 
 }
 
 /**
- * Derive GST from natal chart's MC and birth location.
- * If we have birthDate + birthTime + timezone, we can compute it precisely.
+ * Greenwich sidereal time at birth. The birth instant comes from the shared
+ * normalization path (birthplace zone rules, historical DST), never from a
+ * default offset. Without a resolvable instant, fall back to the chart's MC.
  */
 function getGSTFromChart(chart: NatalChart): number | null {
-  // Try to compute from birth date/time first (most precise)
   if (chart.birthDate && chart.birthTime) {
     try {
-      // Parse birth date: could be "YYYY-MM-DD", "MM/DD/YYYY", etc.
-      const dateStr = chart.birthDate;
-      const timeStr = chart.birthTime;
-      
-      // Try to build a UTC date from birth date + time + timezone offset
-      const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-      if (timeParts) {
-        let hours = parseInt(timeParts[1]);
-        const mins = parseInt(timeParts[2]);
-        const ampm = timeParts[3];
-        if (ampm) {
-          if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
-          if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
-        }
-        
-        // Try to parse date
-        let d: Date | null = null;
-        const isoMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-        const usMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        
-        if (isoMatch) {
-          d = new Date(Date.UTC(parseInt(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]), hours, mins));
-        } else if (usMatch) {
-          d = new Date(Date.UTC(parseInt(usMatch[3]), parseInt(usMatch[1]) - 1, parseInt(usMatch[2]), hours, mins));
-        }
-        
-        if (d && !isNaN(d.getTime())) {
-          // Apply timezone offset if available
-          const tzOffset = chart.timezoneOffset ?? -6; // default CST
-          d = new Date(d.getTime() - tzOffset * 3600000);
-          
-          const gastHours = Astronomy.SiderealTime(d);
-          return ((gastHours * 15) % 360 + 360) % 360;
-        }
+      const utc = birthMomentOf(chart);
+      if (utc && !isNaN(utc.getTime())) {
+        const gastHours = Astronomy.SiderealTime(utc);
+        return ((gastHours * 15) % 360 + 360) % 360;
       }
     } catch {
       // Fall through to MC-based estimation
     }
   }
+  
   
   // Fallback: derive GST from the MC position and birth location
   const mc = chart.houseCusps?.house10;
