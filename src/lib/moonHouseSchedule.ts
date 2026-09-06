@@ -24,8 +24,45 @@ const formatTime = (d: Date, tz?: string): string =>
     ...(tz ? { timeZone: tz } : {}),
   });
 
+/** Calendar day key in the display zone, so "today" means the viewer's today. */
+const dayKey = (d: Date, tz?: string): string =>
+  d.toLocaleDateString('en-CA', { ...(tz ? { timeZone: tz } : {}) });
+
+/** Short zone label ("EDT") for the display zone, so we never hard-code ET. */
+export const zoneAbbr = (d: Date, tz?: string): string => {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      ...(tz ? { timeZone: tz } : {}),
+      timeZoneName: 'short',
+    }).formatToParts(d);
+    return parts.find((p) => p.type === 'timeZoneName')?.value || '';
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Time plus the day when it is not today, so a next-day ingress can never read
+ * as if it happens this afternoon.
+ */
+export const formatWhen = (d: Date, now: Date, tz?: string, tzAbbr?: string): string => {
+  const abbr = tzAbbr || zoneAbbr(d, tz);
+  const clock = `${formatTime(d, tz)}${abbr ? ` ${abbr}` : ''}`;
+  const today = dayKey(now, tz);
+  const target = dayKey(d, tz);
+  if (target === today) return clock;
+  const tomorrow = dayKey(new Date(now.getTime() + 24 * 60 * 60 * 1000), tz);
+  if (target === tomorrow) return `tomorrow at ${clock}`;
+  const weekday = d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    ...(tz ? { timeZone: tz } : {}),
+  });
+  return `${weekday} at ${clock}`;
+};
+
 const ord = (n: number) =>
   n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+
 
 export interface MoonHouseSegment {
   from: Date;
@@ -113,33 +150,111 @@ export function getMoonHouseSchedule(
  * Renders the Moon house schedule as a single human/AI-readable line, e.g.
  *   "Moon in Libra: in your 12th house until 3:47 PM EDT, then your 1st
  *    house until Moon enters Scorpio at 8:52 PM EDT."
+ * Times that fall on another day are labeled ("tomorrow at 12:49 PM EDT").
  */
 export function formatMoonHouseSchedule(
   chart: NatalChart,
   now: Date = new Date(),
   tz?: string,
-  tzAbbr: string = 'ET',
+  tzAbbr?: string,
 ): string {
   const segs = getMoonHouseSchedule(chart, now);
   if (!segs.length) return '';
   const sign = segs[0].sign;
   const signChange = findNextMoonSignChange(now);
   const nextSign = signChange.newSign;
-  const ingressTime = formatTime(signChange.time, tz);
+  const when = (d: Date) => formatWhen(d, now, tz, tzAbbr);
+  // "at 3:47 PM" for today, but "tomorrow at 12:49 PM" already reads correctly.
+  const atWhen = (d: Date) => {
+    const w = when(d);
+    return /^\d/.test(w) ? `at ${w}` : w;
+  };
+  // The schedule window is capped at 24h; only promise an ingress inside it.
+  const ingressInWindow =
+    signChange.time.getTime() <= segs[segs.length - 1].to.getTime() + 60_000;
+  const tail = ingressInWindow
+    ? `until Moon enters ${nextSign} ${atWhen(signChange.time)}.`
+    : `for the rest of the day. Moon enters ${nextSign} ${atWhen(signChange.time)}.`;
+
 
   if (segs.length === 1) {
-    return `Moon in ${sign}: in your ${ord(segs[0].house)} house until Moon enters ${nextSign} at ${ingressTime} ${tzAbbr}.`;
+    return `Moon in ${sign}: in your ${ord(segs[0].house)} house ${tail}`;
   }
   const parts: string[] = [`Moon in ${sign}:`];
   segs.forEach((s, i) => {
     const isLast = i === segs.length - 1;
     if (isLast) {
-      parts.push(`then your ${ord(s.house)} house until Moon enters ${nextSign} at ${ingressTime} ${tzAbbr}.`);
+      parts.push(`then your ${ord(s.house)} house ${tail}`);
     } else if (i === 0) {
-      parts.push(`in your ${ord(s.house)} house until ${formatTime(s.to, tz)} ${tzAbbr},`);
+      parts.push(`in your ${ord(s.house)} house until ${when(s.to)},`);
     } else {
-      parts.push(`then your ${ord(s.house)} house until ${formatTime(s.to, tz)} ${tzAbbr},`);
+      parts.push(`then your ${ord(s.house)} house until ${when(s.to)},`);
     }
   });
   return parts.join(' ');
 }
+
+export interface MoonUpcomingChange {
+  /** "house" = crosses a natal cusp, "sign" = Moon changes sign. */
+  kind: 'house' | 'sign';
+  time: Date;
+  label: string;
+}
+
+/**
+ * The next few Moon changes, for a live "what changes next" strip.
+ * House crossings come from the natal cusps; the sign change is appended even
+ * when it falls outside the 24h schedule window, with its day labeled.
+ */
+export function getMoonUpcomingChanges(
+  chart: NatalChart,
+  now: Date = new Date(),
+  tz?: string,
+  tzAbbr?: string,
+): MoonUpcomingChange[] {
+  const segs = getMoonHouseSchedule(chart, now);
+  if (!segs.length) return [];
+  const when = (d: Date) => formatWhen(d, now, tz, tzAbbr);
+  const atWhen = (d: Date) => {
+    const w = when(d);
+    return /^\d/.test(w) ? `at ${w}` : w;
+  };
+  const out: MoonUpcomingChange[] = [];
+
+  segs.slice(1).forEach((s) => {
+    out.push({
+      kind: 'house',
+      time: s.from,
+      label: `Moves into your ${ord(s.house)} house ${atWhen(s.from)}`,
+    });
+  });
+
+  const signChange = findNextMoonSignChange(now);
+  out.push({
+    kind: 'sign',
+    time: signChange.time,
+    label: `Moon enters ${signChange.newSign} ${atWhen(signChange.time)}`,
+  });
+
+
+  return out.sort((a, b) => a.time.getTime() - b.time.getTime()).slice(0, 3);
+}
+
+/**
+ * A house change inside the last hour, so the card can say the shift just
+ * happened instead of silently redrawing.
+ */
+export function getJustChangedNote(
+  chart: NatalChart,
+  now: Date = new Date(),
+): string | null {
+  const segs = getMoonHouseSchedule(chart, now);
+  if (!segs.length) return null;
+  const start = segs[0].from.getTime();
+  // segs[0].from is `now` by construction, so look one hour back instead.
+  const past = getMoonHouseSchedule(chart, new Date(now.getTime() - 60 * 60 * 1000));
+  if (!past.length || past[0].house === segs[0].house) return null;
+  void start;
+  return `Just moved into your ${ord(segs[0].house)} house.`;
+}
+
