@@ -19,3 +19,15 @@
 - Osculating (true) Lilith as a labeled optional variant
 - Human Design: cross-check one published chart end to end (type, authority, profile, cross) once a trusted reference with exact birth data is available
 - Mean node as a selectable natal setting in the Chart Library form (currently set only by paste import)
+
+## Done: shared interpretation standard (2026-09)
+- [x] Canonical rule block in supabase/functions/_shared/interpretationStandard.ts (chart grounding, constructive-first, tendency phrasing, no pathology, no determinism, four levels, synthesis over lists, tension held, evidence weight, cited factors, teaching traceability, jargon translation, no essentializing, no flattening)
+- [x] Full-chart section sequence + final-synthesis quality bar
+- [x] All 20 interpretive edge functions wrapped with withInterpretationStandard and deployed
+- [x] Client re-export at src/lib/interpretation/ (standard + guard + softenClaim + section order)
+- [x] lintInterpretiveText folded into src/lib/qa/readingLint.ts as interpretation-standard:* rules
+- [x] 48 regression tests (222 total passing), typecheck + build clean
+
+## Ready (interpretation quality)
+- Deterministic copy banks in src/lib (aspect/house/planet libraries, Solar Return, synastry, family, HD) still carry hand-written phrasing; they inherit the QA lint but not the prompt rules. Sweep them through softenClaim/lintInterpretiveText bank by bank.
+- Run lintInterpretiveText on AI output at request time (currently QA-suite only) once error budgets are agreed per surface.
