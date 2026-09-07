@@ -87,10 +87,19 @@ export interface DomainPlanet {
 export interface HouseEmphasis {
   house: number;
   theme: string;
+  /** Every body in the house (major planets + additional bodies/points). */
   planets: string[];
+  /** Major planets only — the count that drives stelliums and emphasis. */
+  majorPlanets?: string[];
+  /** Asteroids, nodes, Chiron, Lilith, derived points. */
+  additionalBodies?: string[];
+  isStellium?: boolean;
+  /** e.g. "4 major planets + Eris" */
+  countLabel?: string;
   intensity: 'High' | 'Medium' | 'Low' | 'Empty';
   description: string;
 }
+
 
 export interface NatalPowerPortrait {
   driveSource: string;
