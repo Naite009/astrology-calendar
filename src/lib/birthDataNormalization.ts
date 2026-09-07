@@ -43,6 +43,10 @@ import {
 } from './geo/birthPlace';
 import { ENGINE_INFO, DEFAULT_SETTINGS, type EphemerisSettings } from './ephemerisEngine';
 import { HOUSE_SYSTEM_LABELS } from './placidusHouses';
+import { distanceKm } from './geo/regionBounds';
+
+/** A stored place further than this from the source's printed coordinates is stale. */
+const STALE_STORED_KM = 25;
 
 export type TimePrecision = 'second' | 'minute' | 'unknown';
 export type DstFold = 'earlier' | 'later';
