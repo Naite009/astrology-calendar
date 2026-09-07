@@ -21,12 +21,15 @@ const AVA_INPUT = {
 
 function buildAvaChart(): NatalChart {
   const calc = calculateNatalFromInput({
-    localDate: AVA_INPUT.date,
-    localTime: AVA_INPUT.time,
+    birthDate: AVA_INPUT.date,
+    birthTime: AVA_INPUT.time,
+    birthLocation: AVA_INPUT.placeName,
     latitude: AVA_INPUT.latitude,
     longitude: AVA_INPUT.longitude,
     timezoneId: AVA_INPUT.timezoneId,
     placeName: AVA_INPUT.placeName,
+    placeConfidence: 'high',
+    placeSource: 'manual',
   } as any);
 
   const planets: Record<string, any> = {};
