@@ -23,7 +23,7 @@ import { slowBodyLongitude } from '@/lib/ephemeris/slowBodies';
 import { SLOW_BODY_RANGE_START, SLOW_BODY_RANGE_END, asteroidLongitude } from '@/lib/asteroidEphemeris';
 import { calculateSolarArc, calculateSolarArcChart } from '@/lib/solarArcDirections';
 import { calculateDavisonChart } from '@/lib/compositeChart';
-import { calculateHumanDesignChart, recomputeLegacyHdChart, getGateFromLongitude, HD_CALC_VERSION } from '@/lib/humanDesignCalculator';
+import { calculateHumanDesignChart, recomputeLegacyHdChart, getGateFromLongitude, legacyGateFromLongitudeV2, HD_CALC_VERSION } from '@/lib/humanDesignCalculator';
 import { birthMomentOf } from '@/lib/chartAutoFill';
 import { resolveBirthMomentSync } from '@/lib/birthDataNormalization';
 import { calculateNatalFromMoment } from '@/lib/natalChartCalculation';
@@ -238,7 +238,7 @@ describe('Stored Human Design charts from the old Sun frame are recomputed safel
 
   it('a legacy chart carrying the old Sun signature is recomputed', () => {
     const c = fresh();
-    const legacy = getGateFromLongitude(legacyLongitude(c.personalityDateTime));
+    const legacy = legacyGateFromLongitudeV2(legacyLongitude(c.personalityDateTime));
     const sunOk = c.personalityActivations.find(a => a.planet === 'Sun')!;
     // The old and new engines must disagree on this birth for the test to mean anything.
     expect(legacy.gate !== sunOk.gate || legacy.line !== sunOk.line).toBe(true);
@@ -281,5 +281,40 @@ describe('Stored Human Design charts from the old Sun frame are recomputed safel
     const outcome = recomputeLegacyHdChart(noZone);
     expect(outcome.action).toBe('kept');
     expect(outcome.reason).toBe('unknown-zone');
+  });
+});
+
+describe('Rave wheel anchors (Gate 41 begins at 2°00\' Aquarius)', () => {
+  const cases: Array<[number, number, number, string]> = [
+    [302.0, 41, 1, 'Gate 41 line 1 at 2°00\' Aquarius'],
+    [301.99, 60, 6, 'Gate 60 line 6 just before it'],
+    [358.25, 25, 1, 'Gate 25 line 1 at 28°15\' Pisces'],
+    [3.875, 17, 1, 'Gate 17 line 1 at 3°52\'30" Aries'],
+    [9.5, 21, 1, 'Gate 21 line 1 at 9°30\' Aries'],
+    [268.25, 10, 1, 'Gate 10 line 1 at 28°15\' Sagittarius'],
+    [122.0, 33, 1, 'Gate 33 line 1 at 2°00\' Leo'],
+  ];
+  for (const [lon, gate, line, label] of cases) {
+    it(label, () => {
+      expect(getGateFromLongitude(lon)).toEqual({ gate, line });
+    });
+  }
+
+  it('the Sun on 2011-05-20 01:06Z (about 28°50\' Taurus) is in Gate 8, not Gate 15', () => {
+    const c = calculateHumanDesignChart('Probe', '2011-05-19', '18:06', 'West Hills, CA', 'America/Los_Angeles', -7);
+    const sun = c.personalityActivations.find(a => a.planet === 'Sun')!;
+    expect(sun.longitude).toBeGreaterThan(58);
+    expect(sun.longitude).toBeLessThan(60);
+    expect(sun.gate).toBe(8);
+    // Earth is always the gate opposite the Sun on the wheel.
+    const earth = c.personalityActivations.find(a => a.planet === 'Earth')!;
+    expect(earth.gate).toBe(14);
+    // Design Sun 88° earlier lands near 1° Pisces: Gate 55.
+    const dsun = c.designActivations.find(a => a.planet === 'Sun')!;
+    expect(dsun.gate).toBe(55);
+  });
+
+  it('the old wheel would have put that same Sun in Gate 15', () => {
+    expect(legacyGateFromLongitudeV2(58.85).gate).toBe(15);
   });
 });
