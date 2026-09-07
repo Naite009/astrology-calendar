@@ -31,8 +31,11 @@ Updated: now
 - Ascendant/Placidus/Vertex formulas must never add a 180 degree adjustment, and Chiron/asteroids come from the JPL tables in `src/lib/ephemeris/`, never period extrapolation. Node = true node. See [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris).
 
 - Vedic: ayanamsa is selectable (Lahiri default) and never hardcoded in copy; yogas weighted by graha condition; transits filtered by Vedha + bindus; readings open with Lagna lord, Atmakaraka, Mahadasha lord. See [Vedic accuracy and depth standards](mem://technical/astrology/vedic-accuracy-and-depth-standards).
+- Human Design: Rave wheel starts at Gate 41 = 2°00' Aquarius (302°); Sun via GeoVector; stamp `calcVersion`, recompute only legacy engine charts, never imported ones. See [HD wheel and versioning](mem://technical/human-design/rave-wheel-and-engine-versioning).
+- Birth data: every calculator consumes the one normalized UTC `BirthMoment` (historical IANA zone, DST fold/gap surfaced); no fixed offsets or browser zone. Paste import records Mean vs True Node and warns on true Lilith (app computes mean).
 
 ## Memories
+- [HD wheel and versioning](mem://technical/human-design/rave-wheel-and-engine-versioning) — Gate 41 at 302°, published gate anchors, Sun frame rule, HD_CALC_VERSION history and legacy recompute rules
 - [Ascendant and slow-body ephemeris](mem://technical/astrology/ascendant-and-slow-body-ephemeris) — 180 degree ASC bug fix, JPL Horizons asteroid tables, true node
 - [Minimal entry auto-fill](mem://features/charts/minimal-entry-autofill) — derives South Node, Lilith, asteroids, Eris, Vertex, Part of Fortune, cusps from birth data
 - [Editorial Synthesis Standard](mem://style/editorial-synthesis-standard) — 3-layer pattern (human truth → astrology underneath → lived behavior) for MAJOR claims only; each section adds a new layer; per-surface scoping for ask-astrology, family-pair, family-system.
