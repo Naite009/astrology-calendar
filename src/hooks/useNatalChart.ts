@@ -91,7 +91,18 @@ export interface NatalChart {
   placeName?: string;
   /** How trustworthy the coordinates are; 'low' means region-level only. */
   placeConfidence?: 'high' | 'medium' | 'low';
-  placeSource?: 'stored' | 'geocoder' | 'offline-city' | 'offline-region' | 'manual';
+  placeSource?: 'stored' | 'geocoder' | 'offline-city' | 'offline-region' | 'manual' | 'source-coordinates' | 'confirmed';
+  /**
+   * Coordinates printed by the imported source (Astro.com "74w35, 41n07").
+   * When present they are the authoritative location for every calculation;
+   * the town name is never re-geocoded over them.
+   */
+  sourceLatitude?: number;
+  sourceLongitude?: number;
+  /** Exactly what the source printed, for the audit trail. */
+  sourceCoordinatesText?: string;
+  /** Universal time the source printed (HH:MM), used to cross-check the zone conversion. */
+  sourceUniversalTime?: string;
   /** Chosen reading for a birth time inside a fall-back overlap. */
   dstFold?: 'earlier' | 'later';
   /** House system the stored cusps follow (default Placidus). */

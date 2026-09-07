@@ -1,6 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
-import { resolveBirthMomentSync } from './birthDataNormalization';
+import { resolveBirthMomentSync, birthInputFromChart } from './birthDataNormalization';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -275,18 +275,7 @@ export interface SecondaryProgressions {
 // the moment cannot be established rather than treating the clock time as UTC.
 const parseBirthDate = (chart: NatalChart): Date | null => {
   try {
-    const moment = resolveBirthMomentSync({
-      birthDate: chart.birthDate,
-      birthTime: chart.birthTime,
-      birthLocation: chart.birthLocation,
-      timezoneId: chart.timezoneId,
-      latitude: chart.latitude,
-      longitude: chart.longitude,
-      placeName: chart.placeName,
-      placeConfidence: chart.placeConfidence,
-      dstFold: chart.dstFold,
-      timezoneOffset: chart.timezoneOffset,
-    });
+    const moment = resolveBirthMomentSync(birthInputFromChart(chart));
     return moment.status === 'ok' ? moment.utc : null;
   } catch {
     return null;

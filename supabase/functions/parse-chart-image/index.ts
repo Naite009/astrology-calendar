@@ -62,10 +62,10 @@ DEGREE / MINUTES - DO NOT SWAP:
 - If you are unsure, prefer returning null/omitting that cusp rather than guessing.
 
 RETROGRADE DETECTION - BE VERY CAREFUL:
-- DEFAULT: Set isRetrograde: false for ALL planets UNLESS you see an explicit retrograde marker.
-- Only set isRetrograde: true if you see one of these markers DIRECTLY NEXT TO the planet symbol or name: R, ℞, Rx, (R), or the word "retrograde".
-- If there is NO marker next to a planet, it is DIRECT (isRetrograde: false).
-- DO NOT GUESS. If unsure, set isRetrograde: false.
+- Set isRetrograde: true ONLY if you see one of these markers DIRECTLY NEXT TO the planet symbol or name: R, ℞, Rx, (R), or the word "retrograde".
+- If there is NO marker next to a planet, OMIT the isRetrograde field entirely (do not write false). Many printed tables leave the marker off, especially for the Nodes, so "no marker" means "not printed", not "direct". The app verifies motion against the ephemeris itself.
+- Set isRetrograde: false ONLY if the table explicitly prints a direct marker such as "D" or the word "direct".
+- DO NOT GUESS. If unsure, omit the field.
 
 ASCENDANT (AC) - VERY IMPORTANT:
 - The Ascendant is often labeled "AC", "Asc", or "ASC" in the table or on the chart.
@@ -105,8 +105,15 @@ Extract birth info if visible:
 - Name (usually at top)
 - Birth date (convert to YYYY-MM-DD format)
 - Birth time (convert to 24-hour HH:MM)
-- Birth location
+- Birth location: copy the COMPLETE place text EXACTLY as printed, including any county, state/province and country
+  qualifiers, e.g. "Franklin (Sussex County), NJ (US)" or "West Hills, CA (US)". Never shorten it to just the town name;
+  many towns share a name and the qualifiers are what tell them apart.
+- Printed coordinates, if any, copied EXACTLY as printed (Astro.com prints them like "74w35, 41n07" or "118w39, 34n12";
+  other sources print "41°07'N 74°35'W" or decimal degrees). Put them in "coordinates" as the raw string. Do not convert.
+- Universal time, if printed (Astro.com prints "Univ.Time 22:45" or "UT 22:45"). Put the HH:MM in "universalTime".
+- House system, if printed (Placidus, Whole Sign, Equal, Porphyry, Koch, ...). Put it in "houseSystem".
 - Progression/Transit date if shown (the "current" date the chart was calculated for)${isSolarReturn ? '\n- Solar Return date (the date of the Sun return)' : ''}
+Use null for any of these that are not printed. Do not invent coordinates or a universal time.
 
 Return this exact JSON structure (no markdown, no commentary):
 {
@@ -114,22 +121,25 @@ Return this exact JSON structure (no markdown, no commentary):
     "name": "Person's Name",
     "birthDate": "1990-01-15",
     "birthTime": "14:30",
-    "birthLocation": "New York, NY, USA",
+    "birthLocation": "Franklin (Sussex County), NJ (US)",
+    "coordinates": "74w35, 41n07",
+    "universalTime": "22:45",
+    "houseSystem": "Placidus",
     "progressionDate": "2025-02-06"${isSolarReturn ? ',\n    "solarReturnDate": "2025-01-15",\n    "solarReturnLocation": "Houston, TX, USA"' : ''}
   },
   "planets": {
-    "Sun": { "sign": "Aries", "degree": 15, "minutes": 23, "isRetrograde": false },
-    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12, "isRetrograde": false },
-    "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30, "isRetrograde": false },
-    "Chiron": { "sign": "Aries", "degree": 20, "minutes": 5, "isRetrograde": false },
-    "Ceres": { "sign": "Taurus", "degree": 12, "minutes": 30, "isRetrograde": false },
-    "Juno": { "sign": "Gemini", "degree": 8, "minutes": 15, "isRetrograde": false },
-    "Pallas": { "sign": "Virgo", "degree": 3, "minutes": 45, "isRetrograde": false },
-    "Vesta": { "sign": "Scorpio", "degree": 18, "minutes": 22, "isRetrograde": false },
-    "Lilith": { "sign": "Cancer", "degree": 15, "minutes": 10, "isRetrograde": false },
-    "PartOfFortune": { "sign": "Leo", "degree": 22, "minutes": 5, "isRetrograde": false },
-    "Psyche": { "sign": "Libra", "degree": 7, "minutes": 30, "isRetrograde": false },
-    "Eros": { "sign": "Pisces", "degree": 14, "minutes": 20, "isRetrograde": false }
+    "Sun": { "sign": "Aries", "degree": 15, "minutes": 23 },
+    "Moon": { "sign": "Cancer", "degree": 8, "minutes": 12 },
+    "Ascendant": { "sign": "Leo", "degree": 5, "minutes": 30 },
+    "Chiron": { "sign": "Aries", "degree": 20, "minutes": 5 },
+    "Ceres": { "sign": "Taurus", "degree": 12, "minutes": 30 },
+    "Juno": { "sign": "Gemini", "degree": 8, "minutes": 15 },
+    "Pallas": { "sign": "Virgo", "degree": 3, "minutes": 45 },
+    "Vesta": { "sign": "Scorpio", "degree": 18, "minutes": 22 },
+    "Lilith": { "sign": "Cancer", "degree": 15, "minutes": 10 },
+    "PartOfFortune": { "sign": "Leo", "degree": 22, "minutes": 5 },
+    "Psyche": { "sign": "Libra", "degree": 7, "minutes": 30 },
+    "Eros": { "sign": "Pisces", "degree": 14, "minutes": 20 }
   },
   "houseCusps": {
     "house1": { "sign": "Leo", "degree": 5, "minutes": 30 },
@@ -177,7 +187,7 @@ Return this exact JSON structure (no markdown, no commentary):
 Rules:
 - READ THE TABLE EXACTLY - do not approximate degrees.
 - Ascendant MUST be included in planets if visible anywhere on the chart.
-- RETROGRADE DEFAULT IS FALSE - only true with explicit marker (R, ℞, Rx, (R)).
+- RETROGRADE: true only with an explicit marker (R, ℞, Rx, (R)); omit the field when no marker is printed. Never write false just because a marker is missing.
 - NorthNode and SouthNode degrees must match the table exactly.
 - birthDate: YYYY-MM-DD format.
 - birthTime: 24-hour HH:MM format.

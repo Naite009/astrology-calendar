@@ -27,6 +27,12 @@ export interface VerifyPosition {
   degree: number;
   minutes?: number;
   seconds?: number;
+  /**
+   * Motion marker. `true` means the source or user explicitly marked the
+   * body retrograde. `false` usually just means "no marker was printed":
+   * imports and the form default to false, so it is NOT evidence of direct
+   * motion and is never treated as authoritative on its own.
+   */
   isRetrograde?: boolean;
 }
 
@@ -44,7 +50,15 @@ export interface BodyVerification {
   status: VerifyStatus;
   /** Definition, precision or availability note. */
   note?: string;
+  /**
+   * The entry is explicitly marked retrograde but the calculation says direct.
+   * Never set for the Nodes (their marker is printed inconsistently and the
+   * longitude comparison already covers them) and never set merely because a
+   * marker is absent.
+   */
   retrogradeMismatch?: boolean;
+  /** Informational: the calculation shows retrograde and the entry carries no marker. */
+  motionNote?: string;
   /** Angle-derived rows need a precise place; others only need the instant. */
   isAngle: boolean;
 }
@@ -53,6 +67,7 @@ export type VerificationReadiness =
   | 'ready'
   | 'needs-fold'
   | 'nonexistent-time'
+  | 'ambiguous-place'
   | 'no-place'
   | 'no-date'
   | 'invalid'
@@ -120,7 +135,7 @@ const TOLERANCES: Record<string, Tolerance> = {
   Vesta: { verified: 6, close: 30, note: 'JPL Horizons data, 1920-01-01 to 2059-12-27, interpolated between 10-day samples (within about 1 arc-minute).' },
   Eris: { verified: 6, close: 30, note: 'JPL Horizons data, 1920-01-01 to 2059-12-27, interpolated between 10-day samples (within about 1 arc-minute).' },
   Lilith: { verified: 5, close: 60, note: 'Mean Black Moon Lilith. Sources that print the true (osculating) apogee can differ by many degrees.' },
-  Ascendant: { verified: 10, close: 45, note: 'Moves about 1 degree every 4 minutes, so it depends on the exact minute and coordinates.' },
+  Ascendant: { verified: 10, close: 45, note: 'The fastest-moving point: its rate varies with the sign rising and the latitude (from well under one to several degrees per 4 minutes), so it depends on the exact minute and coordinates.' },
   Midheaven: { verified: 10, close: 45, note: 'Depends on the exact minute and longitude.' },
   Vertex: { verified: 10, close: 45, note: 'Depends on the exact minute and coordinates.' },
   PartOfFortune: { verified: 10, close: 45, note: 'Derived from Ascendant, Sun and Moon; day/night formula.' },
@@ -169,6 +184,7 @@ const readinessFor = (moment: BirthMoment): VerificationReadiness => {
       return moment.zone?.id === 'fixed-offset' ? 'legacy-offset' : 'ready';
     case 'needs-fold': return 'needs-fold';
     case 'nonexistent': return 'nonexistent-time';
+    case 'ambiguous-place': return 'ambiguous-place';
     case 'no-place': return 'no-place';
     case 'no-date': return 'no-date';
     default: return 'invalid';
@@ -184,6 +200,9 @@ const blockedReasonFor = (readiness: VerificationReadiness, moment: BirthMoment)
       return moment.warnings[0] || 'That clock time happened twice (clocks fell back). Choose which one applies before verifying.';
     case 'nonexistent-time':
       return moment.warnings[0] || 'That clock time did not exist (clocks sprang forward). Correct the birth time before verifying.';
+    case 'ambiguous-place':
+      return moment.warnings.find(w => /places are named/.test(w)) || moment.warnings[0]
+        || 'Several places share that name. Choose the right one (or add the state/county and country) before verifying.';
     case 'no-place':
       return moment.warnings[0] || 'Enter a recognizable birthplace (town and country) so the time zone can be determined.';
     case 'no-date':
@@ -192,6 +211,14 @@ const blockedReasonFor = (readiness: VerificationReadiness, moment: BirthMoment)
       return moment.warnings[0] || 'The birth data could not be interpreted.';
   }
 };
+
+/**
+ * Bodies whose printed motion marker is not compared at all. The lunar nodes
+ * are retrograde almost always (the true node turns direct only briefly), and
+ * chart services print or omit their "R" inconsistently, so the marker carries
+ * no information the longitude comparison does not already give.
+ */
+const MOTION_IGNORED = new Set(['Sun', 'Moon', 'NorthNode', 'SouthNode', 'Lilith']);
 
 const compareRow = (
   body: string,
@@ -225,15 +252,22 @@ const compareRow = (
       : deltaArcmin <= tol.close ? 'close'
         : 'mismatch';
 
-  const retrogradeMismatch =
-    !isAngle && body !== 'Sun' && body !== 'Moon' && body !== 'Lilith' &&
-    typeof entered.isRetrograde === 'boolean' &&
-    typeof computedPos.isRetrograde === 'boolean' &&
-    entered.isRetrograde !== computedPos.isRetrograde;
+  // Motion: only an explicit "retrograde" mark that the calculation contradicts
+  // is a mismatch. An absent mark (false/undefined) is not a claim of direct
+  // motion, so a computed retrograde there is only noted.
+  let retrogradeMismatch = false;
+  let motionNote: string | undefined;
+  if (!isAngle && !MOTION_IGNORED.has(body) && typeof computedPos.isRetrograde === 'boolean') {
+    if (entered.isRetrograde === true && computedPos.isRetrograde === false) {
+      retrogradeMismatch = true;
+    } else if (!entered.isRetrograde && computedPos.isRetrograde === true) {
+      motionNote = 'Calculated as retrograde; the entry carries no retrograde mark (sources often omit it).';
+    }
+  }
 
   return {
     body, label, entered, computed: computedPos, computedLongitude: computed.longitude,
-    deltaArcmin, status, note, retrogradeMismatch: retrogradeMismatch || undefined, isAngle,
+    deltaArcmin, status, note, retrogradeMismatch: retrogradeMismatch || undefined, motionNote, isAngle,
   };
 };
 

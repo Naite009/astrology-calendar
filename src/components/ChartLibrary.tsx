@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { NatalChart, NatalPlanetPosition, HouseCusp, ProgressedChart, TransitChart, ProgressedPosition, ProfilePronouns } from '@/hooks/useNatalChart';
 import { getPlanetSymbol } from '@/lib/astrology';
 import { calculateNatalFromInputAsync, toStoredPosition, toStoredCusp } from '@/lib/natalChartCalculation';
-import { storedMetadataFromPlace, type DstFold, type StoredPlaceMetadata } from '@/lib/birthDataNormalization';
+import { storedMetadataFromPlace, type BirthInput, type DstFold, type StoredPlaceMetadata } from '@/lib/birthDataNormalization';
+import { parseAstroComHeader, parseSourceCoordinates, stripCoordinateText, isRicherPlaceText, type AstroHeader } from '@/lib/geo/sourcePlace';
 import { circularSeparation, signPositionToLongitude } from '@/lib/ephemerisEngine';
 import { NatalChartNarrative } from './NatalChartNarrative';
 import { ChartVerificationPanel } from './ChartVerificationPanel';
@@ -204,8 +205,12 @@ const parseAstroComData = (text: string): Partial<Record<string, NatalPlanetPosi
       }
     }
     
-    // Check for retrograde
-    const isRetrograde = /\(r\)|℞|\br\b/i.test(line);
+    // Motion marker. Only an explicit "(R)", "℞", "Rx" or a standalone "R"
+    // token marks the body retrograde. When no marker is printed the field is
+    // left undefined: the source may simply not print motion for that body
+    // (Astro.com omits it on some node rows), so absence is not evidence of
+    // direct motion and the verifier never flags it.
+    const hasMarker = /\(r\)|℞|\brx\b|(?:^|[\s,;])r(?=$|[\s,;])/i.test(line);
     
     if (foundPlanet && foundSign && degree >= 0 && degree < 30) {
       results[foundPlanet] = {
@@ -213,7 +218,7 @@ const parseAstroComData = (text: string): Partial<Record<string, NatalPlanetPosi
         degree,
         minutes,
         seconds: 0,
-        isRetrograde,
+        ...(hasMarker ? { isRetrograde: true } : {}),
       };
     }
   }
@@ -278,6 +283,12 @@ interface ChartFormData {
   placeName?: string;
   placeConfidence?: NatalChart['placeConfidence'];
   placeSource?: NatalChart['placeSource'];
+  /** Coordinates printed by the imported source; authoritative when present. */
+  sourceLatitude?: number;
+  sourceLongitude?: number;
+  sourceCoordinatesText?: string;
+  /** Universal time printed by the source (HH:MM), for the zone cross-check. */
+  sourceUniversalTime?: string;
   /** Which reading applies when the birth time fell inside a fall-back overlap. */
   dstFold?: DstFold;
   houseSystem?: NatalChart['houseSystem'];
@@ -291,6 +302,75 @@ interface ChartFormData {
   transits?: TransitChart;
   progressionDate?: string;
 }
+
+/** The birth-related slice of the form, in the shape every calculator takes. */
+const birthInputFromForm = (f: ChartFormData): BirthInput => ({
+  birthDate: f.birthDate,
+  birthTime: f.birthTime || null,
+  birthLocation: f.birthLocation || null,
+  timezoneId: f.timezoneId,
+  latitude: f.latitude,
+  longitude: f.longitude,
+  placeName: f.placeName,
+  placeConfidence: f.placeConfidence,
+  placeSource: f.placeSource,
+  sourceLatitude: f.sourceLatitude,
+  sourceLongitude: f.sourceLongitude,
+  sourceCoordinatesText: f.sourceCoordinatesText,
+  sourceUniversalTime: f.sourceUniversalTime,
+  dstFold: f.dstFold,
+  timezoneOffset: f.timezoneOffset,
+  houseSystem: f.houseSystem,
+  nodeVariant: f.nodeVariant,
+});
+
+/**
+ * Merge what an imported header says about when/where into the form.
+ *
+ *   - Empty fields are filled.
+ *   - A birthplace with MORE qualifiers than the current text replaces it
+ *     ("Franklin (Sussex County), NJ (US)" over "Franklin"), and any stored
+ *     coordinates for the old text are dropped so they cannot win.
+ *   - Printed coordinates and universal time are always recorded; printed
+ *     coordinates are authoritative for every calculation.
+ */
+const applyImportedHeader = (prev: ChartFormData, header: AstroHeader): ChartFormData => {
+  const next: ChartFormData = { ...prev };
+  if (header.name && !prev.name) next.name = header.name;
+  if (header.birthDate && !prev.birthDate) next.birthDate = header.birthDate;
+  if (header.birthTime && !prev.birthTime) next.birthTime = header.birthTime;
+  // Only the systems the engine calculates; Koch/Regiomontanus/Campanus fall through as "not read".
+  if (header.houseSystem && !prev.houseSystem &&
+      (header.houseSystem === 'placidus' || header.houseSystem === 'whole-sign' || header.houseSystem === 'equal' || header.houseSystem === 'porphyry')) {
+    next.houseSystem = header.houseSystem;
+  }
+
+  if (header.placeText && (!prev.birthLocation || isRicherPlaceText(header.placeText, prev.birthLocation))) {
+    next.birthLocation = header.placeText;
+    next.timezoneId = undefined;
+    next.latitude = undefined;
+    next.longitude = undefined;
+    next.placeName = undefined;
+    next.placeConfidence = undefined;
+    next.placeSource = undefined;
+    next.dstFold = undefined;
+  }
+  if (header.coordinates) {
+    next.sourceLatitude = header.coordinates.latitude;
+    next.sourceLongitude = header.coordinates.longitude;
+    next.sourceCoordinatesText = header.coordinates.text;
+    // Stored lookup results for the town name must not compete with the
+    // source's own coordinates.
+    next.timezoneId = undefined;
+    next.latitude = undefined;
+    next.longitude = undefined;
+    next.placeName = undefined;
+    next.placeConfidence = undefined;
+    next.placeSource = undefined;
+  }
+  if (header.universalTime) next.sourceUniversalTime = header.universalTime;
+  return next;
+};
 
 /** A pending offer to replace values the user typed or imported with calculated ones. */
 interface ReplaceOffer {
@@ -321,6 +401,10 @@ const formFromChart = (chart: NatalChart): ChartFormData => ({
   placeName: chart.placeName,
   placeConfidence: chart.placeConfidence,
   placeSource: chart.placeSource,
+  sourceLatitude: chart.sourceLatitude,
+  sourceLongitude: chart.sourceLongitude,
+  sourceCoordinatesText: chart.sourceCoordinatesText,
+  sourceUniversalTime: chart.sourceUniversalTime,
   dstFold: chart.dstFold,
   houseSystem: chart.houseSystem,
   nodeVariant: chart.nodeVariant,
@@ -578,20 +662,7 @@ export const ChartLibrary = ({
     setCalculating(true);
     setReplaceOffer(null);
     try {
-      const calc = await calculateNatalFromInputAsync({
-        birthDate: formData.birthDate,
-        birthTime: formData.birthTime || null,
-        birthLocation: formData.birthLocation || null,
-        timezoneId: formData.timezoneId,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        placeName: formData.placeName,
-        placeConfidence: formData.placeConfidence,
-        dstFold: formData.dstFold,
-        timezoneOffset: formData.timezoneOffset,
-        houseSystem: formData.houseSystem,
-        nodeVariant: formData.nodeVariant,
-      });
+      const calc = await calculateNatalFromInputAsync(birthInputFromForm(formData));
       const moment = calc.moment;
 
       if (moment.status !== 'ok' || !moment.utc) {
@@ -731,19 +802,29 @@ export const ChartLibrary = ({
     const parsed = parseAstroComData(importText);
     const parsedCount = Object.keys(parsed).length;
     const variants = detectImportVariants(importText);
+    // The header line (name, date, time, full place, printed coordinates,
+    // universal time, house system) is as important as the planet rows.
+    const header = parseAstroComHeader(importText);
+    const headerHasData = !!(header.birthDate || header.birthTime || header.placeText || header.coordinates || header.universalTime || header.name);
     
-    if (parsedCount > 0) {
-      setFormData(prev => ({
-        ...prev,
-        planets: {
-          ...prev.planets,
-          ...parsed,
-        },
-        // Keep the source's node definition with the numbers so verification
-        // compares like with like.
-        nodeVariant: variants.node ?? prev.nodeVariant,
-      }));
+    if (parsedCount > 0 || headerHasData) {
+      setFormData(prev => {
+        const withHeader = applyImportedHeader(prev, header);
+        return {
+          ...withHeader,
+          planets: {
+            ...withHeader.planets,
+            ...parsed,
+          },
+          // Keep the source's node definition with the numbers so verification
+          // compares like with like.
+          nodeVariant: variants.node ?? withHeader.nodeVariant,
+        };
+      });
       setImportResult({ success: parsedCount, total: parsedCount });
+      if (header.coordinates) {
+        toast(`Using the coordinates printed in the source (${header.coordinates.text}) for the birthplace.`);
+      }
       if (variants.node === 'mean') {
         toast('This table lists the Mean Node. It was saved as mean node so the check compares the same definition.');
       }
@@ -810,7 +891,10 @@ export const ChartLibrary = ({
       let planetsImported = 0;
       let housesImported = 0;
 
-      // Extract birth info if available
+      // Extract birth info if available. Everything the source printed about
+      // the place is kept: the full qualified place text, printed coordinates
+      // and universal time. Coordinates in any of the text fields are lifted
+      // out so a "Franklin, NJ, 74w35 41n07" never becomes a name-only lookup.
       const birthInfo = parsedData.birthInfo;
       const birthInfoUpdates: Partial<ChartFormData> = {};
 
@@ -830,8 +914,30 @@ export const ChartLibrary = ({
             birthInfoUpdates.birthTime = birthInfo.birthTime;
           }
         }
-        if (birthInfo.birthLocation && typeof birthInfo.birthLocation === 'string') {
-          birthInfoUpdates.birthLocation = birthInfo.birthLocation;
+        const placeText = typeof birthInfo.birthLocation === 'string' ? birthInfo.birthLocation.trim() : '';
+        const coordText = typeof birthInfo.coordinates === 'string' ? birthInfo.coordinates : '';
+        const numericCoords =
+          typeof birthInfo.latitude === 'number' && typeof birthInfo.longitude === 'number' &&
+          Number.isFinite(birthInfo.latitude) && Number.isFinite(birthInfo.longitude) &&
+          Math.abs(birthInfo.latitude) <= 90 && Math.abs(birthInfo.longitude) <= 180
+            ? { latitude: birthInfo.latitude as number, longitude: birthInfo.longitude as number, text: `${birthInfo.latitude}, ${birthInfo.longitude}` }
+            : null;
+        const printed = parseSourceCoordinates(coordText) || parseSourceCoordinates(placeText) || numericCoords;
+        if (placeText) {
+          // Keep every qualifier the source printed; only lift coordinates out.
+          birthInfoUpdates.birthLocation = stripCoordinateText(placeText) || placeText;
+        }
+        if (printed) {
+          birthInfoUpdates.sourceLatitude = printed.latitude;
+          birthInfoUpdates.sourceLongitude = printed.longitude;
+          birthInfoUpdates.sourceCoordinatesText = printed.text;
+        }
+        if (typeof birthInfo.universalTime === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(birthInfo.universalTime.trim())) {
+          birthInfoUpdates.sourceUniversalTime = birthInfo.universalTime.trim();
+        }
+        if (typeof birthInfo.houseSystem === 'string') {
+          const hs = birthInfo.houseSystem.toLowerCase().replace(/\s+/g, '-');
+          if (hs === 'placidus' || hs === 'whole-sign' || hs === 'equal' || hs === 'porphyry') birthInfoUpdates.houseSystem = hs;
         }
       }
 
@@ -856,7 +962,9 @@ export const ChartLibrary = ({
                 degree: Math.min(29, Math.max(0, parseInt(pos.degree) || 0)),
                 minutes: Math.min(59, Math.max(0, parseInt(pos.minutes) || 0)),
                 seconds: 0,
-                isRetrograde: Boolean(pos.isRetrograde),
+                // Only an explicit marker read from the image counts; a missing
+                // marker is unknown motion, not direct motion.
+                ...(pos.isRetrograde === true ? { isRetrograde: true } : {}),
               };
               newPlanetsAdded++;
               planetsImported++;
@@ -1557,21 +1665,55 @@ export const ChartLibrary = ({
                   <input
                     type="text"
                     value={formData.birthLocation}
-                    // New text means a new place: drop stored coordinates so they are re-resolved.
-                    onChange={e => setFormData({
-                      ...formData,
-                      birthLocation: e.target.value,
-                      timezoneId: undefined,
-                      latitude: undefined,
-                      longitude: undefined,
-                      placeName: undefined,
-                      placeConfidence: undefined,
-                      placeSource: undefined,
-                      dstFold: undefined,
-                    })}
-                    placeholder="Town, State or Region, Country"
+                    // New text means a new place: drop stored lookup results so
+                    // they are re-resolved. Coordinates typed into the field
+                    // ("Franklin, NJ 41n07 74w35") become the authoritative
+                    // source coordinates; previously imported ones are kept and
+                    // shown below with a way to clear them.
+                    onChange={e => {
+                      const text = e.target.value;
+                      const typed = parseSourceCoordinates(text);
+                      setFormData({
+                        ...formData,
+                        birthLocation: text,
+                        timezoneId: undefined,
+                        latitude: undefined,
+                        longitude: undefined,
+                        placeName: undefined,
+                        placeConfidence: undefined,
+                        placeSource: undefined,
+                        dstFold: undefined,
+                        ...(typed ? { sourceLatitude: typed.latitude, sourceLongitude: typed.longitude, sourceCoordinatesText: typed.text } : {}),
+                      });
+                    }}
+                    placeholder="Town (County), State or Region, Country"
                     className="w-full border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   />
+                  {typeof formData.sourceLatitude === 'number' && typeof formData.sourceLongitude === 'number' && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Using the coordinates printed by the source
+                      {formData.sourceCoordinatesText ? <> (<span className="text-foreground">{formData.sourceCoordinatesText}</span>)</> : ''}
+                      {` = ${formData.sourceLatitude.toFixed(4)}, ${formData.sourceLongitude.toFixed(4)}`}. The town name is not looked up over them.{' '}
+                      <button
+                        type="button"
+                        className="underline hover:text-foreground"
+                        onClick={() => setFormData({
+                          ...formData,
+                          sourceLatitude: undefined,
+                          sourceLongitude: undefined,
+                          sourceCoordinatesText: undefined,
+                          timezoneId: undefined,
+                          latitude: undefined,
+                          longitude: undefined,
+                          placeName: undefined,
+                          placeConfidence: undefined,
+                          placeSource: undefined,
+                        })}
+                      >
+                        Clear and look up the town instead
+                      </button>
+                    </p>
+                  )}
                   {formData.placeName && (
                     <p className="text-[10px] text-muted-foreground">
                       Resolved as <span className="text-foreground">{formData.placeName}</span>
@@ -1579,6 +1721,12 @@ export const ChartLibrary = ({
                         ? ` (${formData.latitude.toFixed(4)}, ${formData.longitude.toFixed(4)})`
                         : ''}
                       {formData.placeConfidence && formData.placeConfidence !== 'high' ? `, ${formData.placeConfidence} confidence` : ''}
+                      {formData.placeSource === 'confirmed' ? ', confirmed by you' : ''}
+                    </p>
+                  )}
+                  {formData.sourceUniversalTime && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Source printed Univ.Time <span className="text-foreground">{formData.sourceUniversalTime}</span>; the verifier checks the zone conversion against it.
                     </p>
                   )}
                 </div>
@@ -1831,20 +1979,7 @@ export const ChartLibrary = ({
                 {formData.birthDate && (
                   <div className="mb-4">
                     <ChartVerificationPanel
-                      birth={{
-                        birthDate: formData.birthDate,
-                        birthTime: formData.birthTime || null,
-                        birthLocation: formData.birthLocation || null,
-                        timezoneId: formData.timezoneId,
-                        latitude: formData.latitude,
-                        longitude: formData.longitude,
-                        placeName: formData.placeName,
-                        placeConfidence: formData.placeConfidence,
-                        dstFold: formData.dstFold,
-                        timezoneOffset: formData.timezoneOffset,
-                        houseSystem: formData.houseSystem,
-                        nodeVariant: formData.nodeVariant,
-                      }}
+                      birth={birthInputFromForm(formData)}
                       planets={formData.planets}
                       houseCusps={formData.houseCusps}
                       onApplyValue={applyVerifiedValue}

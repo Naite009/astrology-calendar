@@ -16,7 +16,7 @@
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
-import { resolveBirthMomentSync, type BirthMoment } from './birthDataNormalization';
+import { resolveBirthMomentSync, birthInputFromChart, type BirthMoment } from './birthDataNormalization';
 import { calculateNatalFromMoment, toStoredPosition, type CuspKey } from './natalChartCalculation';
 import {
   circularSeparation,
@@ -36,20 +36,9 @@ const hasSign = (p?: NatalPlanetPosition | null): boolean => !!p?.sign && SIGNS.
 
 /** Normalized birth moment for a stored chart (stored metadata or offline city table). */
 export const birthMomentFor = (chart: NatalChart): BirthMoment =>
-  resolveBirthMomentSync({
-    birthDate: chart.birthDate,
-    birthTime: chart.birthTime,
-    birthLocation: chart.birthLocation,
-    timezoneId: chart.timezoneId,
-    latitude: chart.latitude,
-    longitude: chart.longitude,
-    placeName: chart.placeName,
-    placeConfidence: chart.placeConfidence,
-    dstFold: chart.dstFold,
-    timezoneOffset: chart.timezoneOffset,
-    houseSystem: chart.houseSystem,
-    nodeVariant: chart.nodeVariant,
-  });
+  // birthInputFromChart forwards every stored field, including any source
+  // coordinates the import printed, so they are never dropped on this path.
+  resolveBirthMomentSync(birthInputFromChart(chart));
 
 /** UTC birth instant, or null when the record cannot be normalized. Charts without a time use noon local. */
 export const birthMomentOf = (chart: NatalChart): Date | null => {

@@ -20,6 +20,7 @@ import {
   type StoredPlaceMetadata,
   storedMetadataFromPlace,
 } from '@/lib/birthDataNormalization';
+import { placeFromCandidate, type PlaceCandidate } from '@/lib/geo/birthPlace';
 
 interface ChartVerificationPanelProps {
   /** Birth date, time, place and any stored zone/coordinate metadata. */
@@ -69,8 +70,19 @@ const STATUS_STYLE: Record<string, { icon: React.ReactNode; text: string; row: s
 const birthKey = (b: BirthInput): string =>
   JSON.stringify([
     b.birthDate, b.birthTime, b.birthLocation, b.timezoneId, b.latitude, b.longitude,
-    b.placeName, b.placeConfidence, b.dstFold, b.timezoneOffset, b.houseSystem, b.nodeVariant,
+    b.placeName, b.placeConfidence, b.placeSource, b.dstFold, b.timezoneOffset, b.houseSystem, b.nodeVariant,
+    b.sourceLatitude, b.sourceLongitude, b.sourceUniversalTime,
   ]);
+
+const SOURCE_LABEL: Record<string, string> = {
+  'source-coordinates': 'coordinates printed by the source',
+  confirmed: 'confirmed by you',
+  stored: 'saved on the chart',
+  geocoder: 'place lookup',
+  'offline-city': 'built-in city table',
+  'offline-region': 'region only',
+  manual: 'entered by hand',
+};
 
 const AuditRow: React.FC<{ label: string; value: string; strong?: boolean }> = ({ label, value, strong }) => (
   <div className="flex gap-2 py-0.5">
@@ -138,12 +150,15 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
   }, [enteredKey]);
 
   // Persist resolved place metadata once per canonical place, so the record
-  // carries zone id + coordinates and every later calculation agrees.
+  // carries zone id + coordinates and every later calculation agrees. An
+  // ambiguous place is never persisted: it is a question, not an answer.
+  // When stored metadata was rejected as stale (wrong same-name town saved
+  // by an older resolver), the fresh place replaces it.
   const persistedPlaceRef = useRef<string>('');
   useEffect(() => {
     const place = report?.moment.place;
     if (!place || !onPlaceResolved) return;
-    if (place.source === 'stored') return;
+    if (place.source === 'stored' || place.ambiguous) return;
     const sig = `${place.canonicalName}|${place.latitude}|${place.longitude}|${place.timezone}`;
     if (persistedPlaceRef.current === sig) return;
     const alreadyStored =
@@ -153,6 +168,14 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
     persistedPlaceRef.current = sig;
     if (!alreadyStored) onPlaceResolved(storedMetadataFromPlace(place));
   }, [report, onPlaceResolved, birth.latitude, birth.longitude, birth.timezoneId]);
+
+  /** The user picked one of several same-name towns: persist it and recompute. */
+  const choosePlace = (candidate: PlaceCandidate) => {
+    if (!onPlaceResolved) return;
+    const place = placeFromCandidate(birth.birthLocation || candidate.label, candidate);
+    persistedPlaceRef.current = `${place.canonicalName}|${place.latitude}|${place.longitude}|${place.timezone}`;
+    onPlaceResolved(storedMetadataFromPlace(place));
+  };
 
   // Auto-fill: anything the scan never read gets the calculated value, but
   // only when the zone and instant are trustworthy (and, for angles, the
@@ -217,7 +240,7 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
           <div className="pl-6 pt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <span>
               {r.retrogradeMismatch && r.status !== 'mismatch'
-                ? 'The retrograde marker disagrees with the ephemeris.'
+                ? 'The entry is marked retrograde but the ephemeris has it direct at that moment.'
                 : r.status === 'missing'
                   ? (canApply ? 'The calculated value is available if you want it.' : 'Calculated for reference only; confirm the birthplace and time first.')
                   : `The ephemeris puts it at ${formatPosition(r.computed)}.`}
@@ -233,6 +256,9 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
               </Button>
             )}
           </div>
+        )}
+        {r.motionNote && (
+          <div className="pl-6 pt-0.5 text-[10px] text-muted-foreground">{r.motionNote}</div>
         )}
         {r.note && r.status !== 'verified' && (
           <div className="pl-6 pt-0.5 text-[10px] text-muted-foreground">{r.note}</div>
@@ -272,16 +298,34 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
           <div className="flex items-start gap-2">
             <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground" />
             <div className="flex-1">
-              {report.moment.place ? (
+              {report.moment.place && !report.moment.place.ambiguous ? (
                 <>
                   <span className="font-medium">{report.moment.place.canonicalName}</span>
-                  <span className="text-muted-foreground"> ({audit?.coordinates}); {report.moment.place.source.replace('-', ' ')}, {report.moment.place.confidence} confidence</span>
+                  <span className="text-muted-foreground">
+                    {' '}({audit?.coordinates ?? `${report.moment.place.latitude.toFixed(4)}, ${report.moment.place.longitude.toFixed(4)}`});{' '}
+                    {SOURCE_LABEL[report.moment.place.source] || report.moment.place.source.replace('-', ' ')}, {report.moment.place.confidence} confidence
+                  </span>
                 </>
+              ) : report.moment.place?.ambiguous ? (
+                <span className="text-destructive">Birthplace ambiguous: {report.moment.placeCandidates.length} places share this name</span>
               ) : (
                 <span className="text-destructive">Birthplace not resolved</span>
               )}
             </div>
           </div>
+          {report.moment.sourceUtcCheck && (
+            <div className="flex items-start gap-2">
+              <ShieldCheck className={`h-3.5 w-3.5 mt-0.5 ${report.moment.sourceUtcCheck.matches ? 'text-emerald-600' : 'text-destructive'}`} />
+              <div className="flex-1">
+                <span className="text-muted-foreground">Source printed Univ.Time {report.moment.sourceUtcCheck.printed}: </span>
+                <span className={report.moment.sourceUtcCheck.matches ? 'text-emerald-700 font-medium' : 'text-destructive font-medium'}>
+                  {report.moment.sourceUtcCheck.matches
+                    ? 'matches the zone conversion'
+                    : `differs from the computed ${report.moment.sourceUtcCheck.computed} UTC by ${report.moment.sourceUtcCheck.differenceMinutes} min`}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {report.warnings.length > 0 && (
@@ -306,6 +350,31 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
               <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => onSuggestTime?.(report.suggestedTime!)} disabled={!onSuggestTime}>
                 Use {report.suggestedTime}, the first clock time that existed
               </Button>
+            )}
+            {report.readiness === 'ambiguous-place' && report.moment.placeCandidates.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground">
+                  Which one is it? Nothing is calculated until you choose. Largest first; small towns are further down the list.
+                </p>
+                <div className="flex max-h-64 flex-col gap-1.5 overflow-y-auto pr-1">
+                  {report.moment.placeCandidates.map((c, i) => (
+                    <Button
+                      key={`${c.latitude},${c.longitude},${i}`}
+                      size="sm"
+                      variant="outline"
+                      className="h-auto min-h-7 justify-start px-2 py-1 text-left text-[11px] font-normal whitespace-normal"
+                      onClick={() => choosePlace(c)}
+                      disabled={!onPlaceResolved}
+                    >
+                      <span className="font-medium">{c.label}</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {c.latitude.toFixed(3)}, {c.longitude.toFixed(3)} · {c.timezone}
+                        {typeof c.population === 'number' && c.population > 0 ? ` · pop. ${c.population.toLocaleString()}` : ''}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -406,6 +475,7 @@ export const ChartVerificationPanel: React.FC<ChartVerificationPanelProps> = ({
                 <AuditRow label="Offset at birth" value={audit.offsetAtBirth} strong />
                 <AuditRow label="Zone source" value={audit.zoneSource} />
                 <AuditRow label="UTC instant" value={audit.utcDateTime} strong />
+                {audit.sourceUniversalTime && <AuditRow label="Source Univ.Time" value={audit.sourceUniversalTime} />}
                 <AuditRow label="Engine" value={audit.engine} />
                 <AuditRow label="Zodiac" value={audit.zodiac} />
                 <AuditRow label="House system" value={audit.houseSystem} />
