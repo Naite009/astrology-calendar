@@ -369,12 +369,23 @@ describe('stale stored place metadata', () => {
     if (m.place) expect(isInsideUsState(m.place.latitude, m.place.longitude, 'NJ')).toBe(true);
   });
 
-  it('source coordinates outrank stale stored metadata outright', () => {
+  it('source coordinates outrank stale stored metadata outright, and the stale record is reported', () => {
     const m = resolveBirthMomentSync(mikeInput(STALE_FRANKLIN_TN));
     expect(m.status).toBe('ok');
     expect(m.place?.source).toBe('source-coordinates');
     expect(m.zone?.id).toBe('America/New_York');
     expect(m.utc?.toISOString()).toBe('1964-08-29T22:45:00.000Z');
+    expect(m.storedPlaceConflict).toMatch(/km/);
+    expect(m.storedPlaceConflict).toMatch(/printed coordinates were used/i);
+  });
+
+  it('stored metadata that agrees with the printed coordinates is not reported', () => {
+    const m = resolveBirthMomentSync(mikeInput({
+      timezoneId: 'America/New_York', latitude: 41.122, longitude: -74.5804,
+      placeName: 'Franklin, Sussex County, New Jersey, United States', placeConfidence: 'high', placeSource: 'geocoder',
+    }));
+    expect(m.storedPlaceConflict).toBeNull();
+    expect(m.place?.source).toBe('source-coordinates');
   });
 
   it('birthInputFromChart forwards source coordinates and universal time', () => {
