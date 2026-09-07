@@ -333,13 +333,6 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
   return patterns;
 };
 
-// Helper: Get ordinal suffix
-const getOrdinalSuffix = (n: number): string => {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
-};
-
 // Helper: House-specific release guidance
 const getHouseReleaseGuidance = (house: number): string => {
   const guidance: Record<number, string> = {
@@ -476,7 +469,7 @@ const APEX_PLANET_MEANINGS: Record<string, { mission: string; integration: strin
   },
   Chiron: {
     mission: "Your wound becomes your medicine. You're learning to heal through your own pain.",
-    integration: "Don't hide your wounds—they're your credibility for helping others. The wounded healer path.",
+    integration: "Experience you have actually lived through tends to be what makes you useful to other people. It does not obligate you to become anyone's healer.",
     shadow: "Chronic pain (physical or emotional) that won't resolve until you embrace the healing journey."
   },
   NorthNode: {
@@ -667,6 +660,31 @@ const detectKites = (planets: Array<{ name: string; degree: number }>): ChartPat
   return patterns;
 };
 
+
+/**
+ * Applies the app-wide interpretation policy to every detected pattern:
+ *  - tiers it (major planets vs minor bodies vs automatic nodal axis),
+ *  - renames automatic nodal-axis geometry so it is never read as a plain T-Square,
+ *  - strips deterministic / accusatory / medical wording.
+ * The geometry itself is untouched.
+ */
+const decoratePatterns = (patterns: ChartPattern[]): ChartPattern[] => {
+  const decorated = patterns.map(p => {
+    const cls = classifyPatternBodies(p.planets);
+    const name = cls.tier === 'nodal-axis' && !/^Nodal-Axis/.test(p.name)
+      ? `Nodal-Axis ${p.name}`
+      : p.name;
+    return sanitizeInterpretiveDeep<ChartPattern>({
+      ...p,
+      name,
+      tier: cls.tier,
+      tierLabel: cls.tierLabel,
+      weightNote: cls.weightNote,
+    });
+  });
+  return rankPatterns(decorated);
+};
+
 /**
  * Detect all patterns in a natal chart
  */
@@ -685,12 +703,13 @@ export const detectChartPatterns = (chart: NatalChart): ChartPattern[] => {
   
   // Remove duplicates by pattern name + planets
   const seen = new Set<string>();
-  return patterns.filter(p => {
+  const unique = patterns.filter(p => {
     const key = `${p.name}-${p.planets.sort().join(',')}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  return decoratePatterns(unique);
 };
 
 /**
@@ -721,7 +740,7 @@ export const detectMinorBodyPatterns = (chart: NatalChart): ChartPattern[] => {
 
   // Only keep patterns that include at least one minor body
   // AND are NOT already in the core patterns (all-core-body patterns)
-  return deduped.filter(p => p.planets.some(name => !CORE_BODY_NAMES.has(name)));
+  return decoratePatterns(deduped.filter(p => p.planets.some(name => !CORE_BODY_NAMES.has(name))));
 };
 
 /**
