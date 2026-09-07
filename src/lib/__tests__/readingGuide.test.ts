@@ -98,8 +98,6 @@ describe('Reading Guide — Ava Kravitz', () => {
   });
 
   it('reads low Water as a processing pattern, never as missing emotion', () => {
-    // eslint-disable-next-line no-console
-    console.log('ELEMENTS', guide.elements.counts, guide.elements.low);
     expect(guide.elements.low).toContain('Water');
     const water = guide.elements.lowReadings.find((r) => r.element === 'Water')!;
     expect(water.lines.join(' ')).toMatch(/not be the first thing put into words/i);

@@ -380,9 +380,12 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     if (p.modality) modCounts[p.modality]++;
   }
   const elMax = Math.max(...Object.values(elCounts));
-  const elMin = Math.min(...Object.values(elCounts));
   const dominantElements = Object.keys(elCounts).filter((e) => elCounts[e] === elMax);
-  const lowElements = Object.keys(elCounts).filter((e) => elCounts[e] === elMin && elCounts[e] <= 1);
+  // Under-represented: two or fewer placements, and clearly behind the leading element.
+  const lowElements = Object.keys(elCounts)
+    .filter((e) => elCounts[e] <= 2 && elCounts[e] < elMax - 1)
+    .sort((a, b) => elCounts[a] - elCounts[b])
+    .slice(0, 3);
   const modMax = Math.max(...Object.values(modCounts));
   const modMin = Math.min(...Object.values(modCounts));
   const dominantModalities = Object.keys(modCounts).filter((m) => modCounts[m] === modMax);
