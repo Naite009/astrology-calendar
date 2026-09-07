@@ -17,7 +17,7 @@ const PLANET_DRIVE: Record<string, { verb: string; domain: string }> = {
   Uranus:    { verb: 'disrupts',     domain: 'freedom and innovation' },
   Neptune:   { verb: 'dissolves',    domain: 'imagination and transcendence' },
   Pluto:     { verb: 'transforms',   domain: 'power and rebirth' },
-  Chiron:    { verb: 'heals',        domain: 'your deepest wound' },
+  Chiron:    { verb: 'heals',        domain: 'an area of deep sensitivity for you' },
   NorthNode: { verb: 'pulls toward', domain: 'soul growth' },
 };
 

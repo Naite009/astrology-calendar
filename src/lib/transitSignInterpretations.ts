@@ -499,7 +499,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   
   'Chiron-Virgo': {
     whatItFeelsLike: "The collective wound is around service and perfectionism. 'Am I useful? Am I good enough?' The healing comes through imperfect service.",
-    howItManifests: "Perfectionism wounds surfacing, healing through service, wounded healers teaching. Also: health anxiety, work wounds, criticism sensitivity.",
+    howItManifests: "Sensitivity about getting things right may surface, often eased through practical service and sharing what you have learned. Also: health anxiety, work wounds, criticism sensitivity.",
     whatToDo: "Heal by serving anyway, imperfectly. Your perfectionism wounds become your gift for compassionate improvement. But don't help to feel worthy—you already are."
   },
   

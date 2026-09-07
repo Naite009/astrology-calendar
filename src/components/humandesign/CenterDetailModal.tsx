@@ -130,7 +130,7 @@ const CENTER_DATA: Record<string, {
     }
   },
   Spleen: {
-    function: "Intuition, survival instincts, immune system, time (now)",
+    function: "Intuition, survival instincts, energy and recovery rhythm, time (now)",
     themes: "Is this safe? Is this healthy for me? What do I instinctively know?",
     biologicalCorrelation: "Spleen, lymph system, T-cells",
     whenDefined: {

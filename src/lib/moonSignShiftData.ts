@@ -68,7 +68,7 @@ export const moonSignDeep: Record<string, { emotional: string; body: string; app
   },
   Pisces: {
     emotional: 'Your emotions have no walls. You feel everything — your own feelings, other people\'s feelings, the emotional temperature of a room, the collective mood of the world. This is both your gift and your greatest vulnerability.',
-    body: 'Emotions live in the feet, the lymphatic system, and the immune system. When overwhelmed, your body literally weakens — fatigue, brain fog, susceptibility to illness. Water soothes you at a cellular level.',
+    body: 'Emotions live in the feet, the lymphatic system, and the energy and recovery rhythm. When overwhelmed, your body literally weakens — fatigue, brain fog, susceptibility to illness. Water soothes you at a cellular level.',
     apply: 'Build daily boundaries — not emotional walls, but filters. Meditate. Spend time near water. Create art. When you cannot tell whose feelings you are carrying, write them down and ask "Is this mine?" If not, visualize handing it back.',
     looksLike: 'Crying during movies, news stories, or even commercials. Knowing someone is upset before they say a word. Needing 10+ hours of sleep during emotional periods. Using music, art, or spirituality as emotional medicine. Struggling to say no.',
   },
@@ -155,7 +155,7 @@ export const moonShiftNarrative: Record<string, Record<string, string>> = {
     Libra: 'Your natal Virgo Moon focuses on what is broken. This year, your SR Libra Moon focuses on what is beautiful. Relationships, art, and harmony become emotional priorities. The lesson: not everything needs improving — some things just need appreciating.',
     Scorpio: 'Your natal Virgo Moon stays on the surface of function and efficiency. This year, your SR Scorpio Moon pulls you into the psychological depths. You will confront motivations, power dynamics, and emotional truths that your practical nature usually avoids.',
     Sagittarius: 'Your natal Virgo Moon is detail-oriented and cautious. This year, your SR Sagittarius Moon demands big-picture thinking and bold leaps. You may feel reckless, but the growth comes from trusting the process without having every detail planned.',
-    Capricorn: 'Your natal Virgo Moon improves daily processes. This year, your SR Capricorn Moon elevates those improvements into long-term strategies. You move from "better habits" to "career legacy." The lesson: your attention to detail is a superpower when applied to ambition.',
+    Capricorn: 'Your natal Virgo Moon improves daily processes. This year, your SR Capricorn Moon elevates those improvements into long-term strategies. You move from "better habits" to "career legacy." The lesson: your attention to detail can be a real strength when applied to ambition.',
     Aquarius: 'Your natal Virgo Moon focuses on individual improvement. This year, your SR Aquarius Moon expands that focus to systems, communities, and collective well-being. You channel your analytical gifts toward bigger, more impersonal goals. The lesson: you can serve more people by thinking bigger.',
     Pisces: 'Your natal Virgo Moon is precise, practical, and boundaried. This year, your SR Pisces Moon dissolves those boundaries completely. Feelings become overwhelming, dreamlike, and hard to categorize. Your inner critic softens, but so does your sense of direction. The lesson: surrender the checklist and trust your intuition.',
     Virgo: '',

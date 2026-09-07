@@ -59,6 +59,8 @@ const BreakdownBar = ({ factor, value }: { factor: string; value: number }) => {
 
 const PlanetRow = ({ entry, report, showBreakdown }: { entry: UnifiedEntry; report: UnifiedReport; showBreakdown: boolean }) => {
   const [expanded, setExpanded] = useState(false);
+  const index = (entry as { dominanceIndex?: number }).dominanceIndex ?? entry.percentage ?? 0;
+
   const roles: string[] = [];
   if (report.captain === entry.planet) roles.push('captain');
   if (report.starPlayer === entry.planet) roles.push('starPlayer');
@@ -95,10 +97,16 @@ const PlanetRow = ({ entry, report, showBreakdown }: { entry: UnifiedEntry; repo
         <div className="flex-1" />
         
         {/* Score and bar */}
-        <span className="text-xs font-semibold text-foreground w-10 text-right">{entry.totalScore}</span>
-        <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden flex-shrink-0">
-          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${entry.percentage}%` }} />
+        <span className="text-xs font-semibold text-foreground w-10 text-right" title="Raw score">{entry.totalScore}</span>
+        <div
+          className="w-20 h-2 bg-secondary rounded-full overflow-hidden flex-shrink-0"
+          title={(entry as { indexLabel?: string }).indexLabel || `Dominance index: ${Math.round(index)} (relative to the top-ranked body, not a percentage of the chart)`}
+        >
+          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${index}%` }} />
         </div>
+        <span className="text-[9px] text-muted-foreground w-14 text-right hidden sm:inline">
+          idx {Math.round(index)}
+        </span>
         
         {showBreakdown && (
           <button onClick={() => setExpanded(!expanded)} className="text-muted-foreground hover:text-foreground">

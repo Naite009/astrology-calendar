@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Life Pattern Analysis Engine
  * 7 modules: Dominant Planet, Psychic Abilities, Children/Creativity,
@@ -168,7 +169,7 @@ export function calculateDominantPlanets(chart: NatalChart): DominantPlanetResul
     // Angular houses
     if (p.house === 1) addScore(p.name, 6, 'Placed in 1st house (identity)');
     else if (p.house === 10) addScore(p.name, 4, 'Placed in 10th house (public life)');
-    else if (p.house === 4 || p.house === 7) addScore(p.name, 3, `Placed in angular ${p.house}th house`);
+    else if (p.house === 4 || p.house === 7) addScore(p.name, 3, `Placed in angular ${ordinalNumber(p.house)} house`);
 
     // Count aspects to this planet
     let aspectCount = 0;
@@ -202,11 +203,11 @@ function getDominantPlanetMeaning(planet: string): string {
     Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought. You're the eternal student and teacher.",
     Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision you make.",
     Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts, even when they feel like too much for the room.",
-    Jupiter: "You're wired for expansion, meaning, and growth. Optimism carries you through what would break others. You're the one who sees the bigger picture when everyone else is stuck in the weeds.",
+    Jupiter: "You're wired for expansion, meaning, and growth. A sense of possibility often helps you keep going when a situation looks discouraging. You're the one who sees the bigger picture when everyone else is stuck in the weeds.",
     Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it. Your authority comes from lived experience, not inherited privilege.",
-    Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't. Your genius is in disruption, innovation, and the willingness to be different.",
-    Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are extraordinary — but you need to learn what's yours and what belongs to everyone else. Creativity and compassion are your channels.",
-    Pluto: "Transformation is your birthright. You don't do surface-level anything. Your power lies in regeneration — the ability to walk through destruction and emerge stronger, taking others with you."
+    Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't. One strength here can be innovation, fresh angles, and a willingness to be different.",
+    Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are notable — but you need to learn what's yours and what belongs to everyone else. Creativity and compassion are your channels.",
+    Pluto: "Transformation is a recurring theme in your chart. You often prefer depth to small talk. Your power lies in regeneration — the ability to walk through destruction and emerge stronger, taking others with you."
   };
   return meanings[planet] || '';
 }
@@ -234,12 +235,12 @@ export function analyzePsychicAbilities(chart: NatalChart): PsychicIndicatorResu
 
   // Neptune house placements
   if (neptune && [1,8,9,12].includes(neptune.house || 0)) {
-    indicators.push({ name: `Neptune in ${neptune.house}th house`, description: `Your Neptune sits in one of the most psychically sensitive houses. The ${neptune.house}th house amplifies your ability to perceive beyond the physical.`, modality: 'Clairvoyance' });
+    indicators.push({ name: `Neptune in ${ordinalNumber(neptune.house)} house`, description: `Your Neptune sits in one of the most psychically sensitive houses. The ${ordinalNumber(neptune.house)} house amplifies your ability to perceive beyond the physical.`, modality: 'Clairvoyance' });
   }
 
   // Moon in 8th or 12th
   if (moon && [8,12].includes(moon.house || 0)) {
-    indicators.push({ name: `Moon in ${moon.house}th house`, description: `Your emotional body is tuned to the invisible. You absorb information from environments, dreams, and the emotional states of others without trying.`, modality: 'Clairsentience' });
+    indicators.push({ name: `Moon in ${ordinalNumber(moon.house)} house`, description: `Your emotional body is tuned to the invisible. You absorb information from environments, dreams, and the emotional states of others without trying.`, modality: 'Clairsentience' });
   }
 
   // Moon in water signs
@@ -307,7 +308,7 @@ export function analyzePsychicAbilities(chart: NatalChart): PsychicIndicatorResu
   if (nn?.sign) {
     const nnHouse = getNatalPlanetHouse('NorthNode', chart);
     if (nnHouse && [8,12].includes(nnHouse)) {
-      indicators.push({ name: `North Node in ${nnHouse}th house`, description: `Your soul's growth direction points toward developing your psychic and intuitive gifts. This isn't optional — it's your evolutionary trajectory.` });
+      indicators.push({ name: `North Node in ${ordinalNumber(nnHouse)} house`, description: `Your soul's growth direction points toward developing your psychic and intuitive gifts. This isn't optional — it's your evolutionary trajectory.` });
     }
   }
 
@@ -513,12 +514,12 @@ export function analyzeCareer(chart: NatalChart): CareerResult {
     // Planet sign placements
     for (const p of planets) {
       if (config.planets.includes(p.name) && config.signs.includes(p.sign)) addCareer(field, 2, `${p.name} in ${p.sign}`);
-      if (config.houses.includes(p.house || 0) && config.planets.includes(p.name)) addCareer(field, 3, `${p.name} in ${p.house}th house`);
+      if (config.houses.includes(p.house || 0) && config.planets.includes(p.name)) addCareer(field, 3, `${p.name} in ${ordinalNumber(p.house)} house`);
     }
     // Strong houses
     for (const h of config.houses) {
       const count = countPlanetsInHouse(planets, h);
-      if (count >= 2) addCareer(field, count * 2, `${count} planets in ${h}th house`);
+      if (count >= 2) addCareer(field, count * 2, `${count} planets in ${ordinalNumber(h)} house`);
     }
   }
 
@@ -931,7 +932,7 @@ export function analyzeSelfSabotage(chart: NatalChart): SabotagePattern[] {
           ? 'Your core wound is about identity and self-worth. You may overcompensate by helping others while neglecting your own needs.'
           : chironHouse === 6
           ? 'Your wound shows up in daily routines, health, and service. You may sacrifice your body or wellbeing for others\' benefit.'
-          : 'Your deepest wound operates below conscious awareness. You may carry ancestral or collective pain without realizing it\'s not yours.',
+          : 'an area of deep sensitivity for you operates below conscious awareness. You may carry ancestral or collective pain without realizing it\'s not yours.',
         trigger: 'Self-sacrifice disguised as generosity',
         healingPath: 'The wound is the gift. Your pain has given you insight that others need — but only if you heal yourself first. You cannot pour from an empty cup.',
         severity: 'secondary'
@@ -965,7 +966,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
   // Jupiter house placements
   if (jupiter) {
     const jupHouseMeanings: Record<number, string> = {
-      1: 'Protected identity. You walk through life with an invisible shield — optimism and resilience are built into your personality. Things that would break others bounce off you.',
+      1: 'Protected identity. You walk through life with an invisible shield — optimism and resilience often come easily. Setbacks may bother you less than they bother other people.',
       2: 'Protected resources. Money and material needs have a way of working out. You may not always be wealthy, but you rarely go without.',
       4: 'Family protection. Your home life, even if complicated, carries a thread of safety. You have deep emotional security to draw from.',
       9: 'Protected during travel and expansion. The universe supports your growth, education, and philosophical exploration. Foreign places feel like home.',
@@ -974,7 +975,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       12: 'Hidden blessings and spiritual protection. When everything looks hopeless, something — or someone — appears to catch you. Your guardian energy works behind the scenes.'
     };
     if (jupiter.house && jupHouseMeanings[jupiter.house]) {
-      indicators.push({ name: `Jupiter in ${jupiter.house}th house`, description: jupHouseMeanings[jupiter.house], score: 10 });
+      indicators.push({ name: `Jupiter in ${ordinalNumber(jupiter.house)} house`, description: jupHouseMeanings[jupiter.house], score: 10 });
     }
   }
 
@@ -992,13 +993,13 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
   if (jupiter && moon) {
     const asp = calcAspect(jupiter.degree, moon.degree);
     if (asp && (asp.type === 'Trine' || asp.type === 'Sextile' || asp.type === 'Conjunction')) {
-      indicators.push({ name: `Jupiter ${asp.type.toLowerCase()} Moon`, description: 'Emotional safety net. Your needs have a way of being met — sometimes at the last minute, sometimes through unexpected generosity. Your emotional resilience is extraordinary.', score: 8 });
+      indicators.push({ name: `Jupiter ${asp.type.toLowerCase()} Moon`, description: 'Emotional safety net. Your needs have a way of being met — sometimes at the last minute, sometimes through unexpected generosity. Your emotional resilience is notable.', score: 8 });
     }
   }
 
   // Venus grace
   if (venus && [1, 7, 10].includes(venus.house || 0)) {
-    indicators.push({ name: `Venus in ${venus.house}th house`, description: 'Likability protects you. People want to help you, hire you, love you. Doors open through charm, grace, and genuine warmth — not manipulation.', score: 7 });
+    indicators.push({ name: `Venus in ${ordinalNumber(venus.house)} house`, description: 'Likability protects you. People want to help you, hire you, love you. Doors open through charm, grace, and genuine warmth — not manipulation.', score: 7 });
   }
 
   if (venus?.house === 12) {
@@ -1051,7 +1052,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       7: 'Partnerships', 8: 'Shared resources & transformation', 9: 'Travel & philosophy',
       10: 'Career & reputation', 11: 'Community & friendships', 12: 'Spiritual life & solitude'
     };
-    zones.push({ area: houseAreas[jupiter.house] || `${jupiter.house}th house matters`, description: `Jupiter blesses this area of your life with expansion, protection, and opportunity.` });
+    zones.push({ area: houseAreas[jupiter.house] || `${ordinalNumber(jupiter.house)} house matters`, description: `Jupiter blesses this area of your life with expansion, protection, and opportunity.` });
   }
   if (venus?.house) {
     const venusAreas: Record<number, string> = {
@@ -1060,7 +1061,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       7: 'Love & partnership', 8: 'Intimate connection', 9: 'Cultural appreciation',
       10: 'Public charm', 11: 'Social circles', 12: 'Hidden grace'
     };
-    zones.push({ area: venusAreas[venus.house] || `${venus.house}th house beauty`, description: 'Venus brings ease, pleasure, and natural attraction to this area.' });
+    zones.push({ area: venusAreas[venus.house] || `${ordinalNumber(venus.house)} house beauty`, description: 'Venus brings ease, pleasure, and natural attraction to this area.' });
   }
 
   return {

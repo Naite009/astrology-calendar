@@ -862,7 +862,7 @@ export const SATURN_IN_HOUSES_GREENE: Record<number, SaturnHouseGreene> = {
     prince: 'Hard-won self-authority and a presence that commands respect without demanding it. You become your own authority figure — someone whose identity was forged in fire and is therefore unshakeable. Leadership through earned wisdom, not inherited privilege.',
     greeneInsight: 'Saturn in the 1st house creates a personality built through effort rather than ease. The individual must construct their sense of self consciously, brick by brick, which ultimately produces a far more durable and honest identity than one that came without struggle.',
     coreWound: 'Feeling invisible, inadequate, or "not enough" — as if your very existence requires justification.',
-    goldPotential: 'A self-made identity of extraordinary integrity. You become the person others turn to for strength because yours was hard-won.',
+    goldPotential: 'A self-made identity of notable integrity. You become the person others turn to for strength because yours was hard-won.',
   },
   2: {
     house: 2,
@@ -883,7 +883,7 @@ export const SATURN_IN_HOUSES_GREENE: Record<number, SaturnHouseGreene> = {
   4: {
     house: 4,
     beast: 'A sense of being emotionally unsupported in childhood. The father may have been cold, absent, authoritarian, or simply unable to provide emotional warmth. This creates a deep mistrust of emotional intimacy and a craving for security that can never quite be satisfied through external means. Compulsive need to accumulate land or property.',
-    prince: 'The ability to become your own inner parent — to provide yourself the emotional foundation that was missing. Once the wound is understood, you develop extraordinary inner strength and the capacity to create genuine sanctuary for yourself and others.',
+    prince: 'The ability to become your own inner parent — to provide yourself the emotional foundation that was missing. Once the wound is understood, you develop notable inner strength and the capacity to create genuine sanctuary for yourself and others.',
     greeneInsight: 'Saturn in the 4th works as an unconscious factor from the plane of feelings. It can cripple emotional life for decades if not understood. The individual is never truly indifferent to family — something necessary for emotional development was missing, and the entire psyche develops lopsided to compensate.',
     coreWound: 'Feeling unloved, unwanted, or emotionally abandoned. A sense that home was never truly safe.',
     goldPotential: 'Becoming your own authority on emotional matters. Creating the family and home you never had — from the inside out.',
@@ -1020,8 +1020,8 @@ export const SATURN_ASPECTS_GREENE: Record<string, SaturnAspectGreene> = {
   'Saturn-Chiron': {
     planets: 'Saturn-Chiron',
     beast: 'The wound that becomes a wall. Your deepest pain solidifies into rigid structures — rules, defenses, and beliefs that protect you from ever being hurt again. But these same walls prevent healing, creating a cycle of chronic suffering that feels permanent and inescapable.',
-    prince: 'The wounded healer whose authority comes from having fully faced their own pain. You become someone who can guide others through their darkest passages because you have navigated your own. Your wound becomes your teaching credential.',
-    greeneInsight: 'Saturn-Chiron asks the individual to build something lasting from their deepest wound. The temptation is to wall off the pain, but the invitation is to make it the foundation of genuine wisdom and service to others.',
+    prince: 'The healing-through-understanding whose authority comes from having fully faced their own pain. You become someone who can guide others through their darkest passages because you have navigated your own. Your wound becomes your teaching credential.',
+    greeneInsight: 'Saturn-Chiron asks the individual to build something lasting from their area of deep sensitivity. The temptation is to wall off the pain, but the invitation is to make it the foundation of genuine wisdom and service to others.',
   },
 };
 
@@ -1079,7 +1079,7 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
     firstReturn: 'Major restructuring around family and emotional patterns. Time to create your own definition of home.',
     secondReturn: 'Wisdom about emotional bonds. Becoming the wise elder of your family.',
     beast: 'Deep mistrust of emotional intimacy alongside a desperate craving for it. Coldness that masks vulnerability. A childhood where emotional support was absent — the father may have been cold, absent, or a burden. You may be inordinately tied to family or completely cut off.',
-    prince: 'The ability to become your own inner parent. You develop extraordinary emotional strength precisely because nothing was given freely. You create genuine sanctuary — not from need, but from hard-won wisdom about what love truly requires.',
+    prince: 'The ability to become your own inner parent. You develop notable emotional strength precisely because nothing was given freely. You create genuine sanctuary — not from need, but from hard-won wisdom about what love truly requires.',
     greeneInsight: 'Saturn in Cancer works as an unconscious factor from the plane of feelings. Something necessary for emotional development was missing, and the entire psyche develops lopsided to compensate. The individual is never truly indifferent — the gold is learning to provide internally what was missing externally.',
   },
   Leo: {
@@ -1169,7 +1169,7 @@ export const SATURN_IN_SIGNS: Record<string, SaturnTeaching> = {
   Aquarius: {
     sign: 'Aquarius',
     soulPurpose: 'To bring your unconventional ideas into forms that actually help people. To stop choosing between fitting in and standing out.',
-    lifeLesson: 'You are learning that your "weird" is your superpower — but only when you channel it into something concrete. The lesson is turning brilliant ideas into real-world results, and letting people in close enough to collaborate.',
+    lifeLesson: 'You are learning that your "weird" can be a real strength — but only when you channel it into something concrete. The lesson is turning brilliant ideas into real-world results, and letting people in close enough to collaborate.',
     directive: 'Pick ONE idea you believe in and build it. Stop theorizing and start doing. Let people help you — their input won\'t dilute your vision, it\'ll ground it.',
     challenge: 'Feeling alienated. Rebellion for its own sake. Detachment from emotions. Fear of intimacy.',
     mastery: 'The ability to bring innovative ideas into practical form. Community leadership.',

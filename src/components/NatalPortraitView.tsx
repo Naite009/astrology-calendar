@@ -409,7 +409,11 @@ const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortr
             <div className="flex items-center gap-2 mb-1">
               <span>{p.symbol}</span>
               <span className="text-sm font-medium text-foreground">{p.name}</span>
+              {p.tierLabel && (
+                <span className="text-[9px] uppercase tracking-widest text-muted-foreground border border-border rounded-full px-1.5 py-0.5">{p.tierLabel}</span>
+              )}
             </div>
+            {p.weightNote && <p className="text-[10px] text-muted-foreground/80 italic mb-1">{p.weightNote}</p>}
             <p className="text-[11px] text-muted-foreground mb-2">{p.description}</p>
             <div className="flex flex-wrap gap-1.5">
               {p.planets.map((pl, j) => (
@@ -435,7 +439,7 @@ const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortr
     {minorBodyPatterns.length > 0 && (
       <div className="mt-6 pt-4 border-t border-border">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-3">
-          Extended Body Patterns <span className="normal-case tracking-normal font-normal ml-1">(asteroids, TNOs, centaurs)</span>
+          Secondary &amp; Extended Body Patterns <span className="normal-case tracking-normal font-normal ml-1">(asteroids, TNOs, centaurs, nodal axis — geometrically valid, ranked below major-planet patterns and read as supporting colour)</span>
         </p>
         <div className="space-y-2">
           {minorBodyPatterns.map((p, i) => (
@@ -443,6 +447,7 @@ const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortr
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs opacity-60">{p.symbol}</span>
                 <span className="text-xs font-medium text-muted-foreground italic">{p.name}</span>
+                {p.tierLabel && <span className="text-[8px] uppercase tracking-widest text-muted-foreground/70">{p.tierLabel}</span>}
               </div>
               <p className="text-[10px] text-muted-foreground/80 mb-1.5">{p.description}</p>
               <div className="flex flex-wrap gap-1">

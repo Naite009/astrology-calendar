@@ -174,7 +174,7 @@ export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; ess
   chiron: {
     symbol: '⚷',
     name: 'Chiron',
-    essence: "Your deepest wound and greatest healing gift. Where you teach others what hurt you most.",
+    essence: "an area of deep sensitivity for you and greatest healing gift. Where you teach others what hurt you most.",
     represents: "wound, healer, mentor, bridge, pain into wisdom, sacred wound"
   },
   vesta: {
@@ -228,7 +228,7 @@ export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; ess
   sedna: {
     symbol: '⯲',
     name: 'Sedna',
-    essence: "Your deepest wound around betrayal, abandonment, and victimization. Where you must reclaim sovereignty from the depths.",
+    essence: "an area of deep sensitivity for you around betrayal, abandonment, and victimization. Where you must reclaim sovereignty from the depths.",
     represents: "deep survival, betrayal transcendence, victim to sovereign, ocean depths of psyche, ancestral trauma, self-sufficiency"
   },
   makemake: {

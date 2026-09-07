@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useRef, useMemo } from 'react';
 import { X, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
@@ -900,7 +901,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               {/* Chiron */}
               {planets.chiron && (
                 <div className="bg-secondary p-4 rounded-sm">
-                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚷ Chiron — The Wounded Healer</div>
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚷ Chiron — The healing-through-understanding</div>
                   <div className="text-sm font-medium text-foreground mb-2">{planets.chiron.fullDegree}</div>
                   <div className="text-sm text-muted-foreground leading-relaxed">
                     {CHIRON_MEANINGS[planets.chiron.signName] || 'Healing journey through this sign\'s themes.'}
@@ -1713,7 +1714,7 @@ const SecondaryProgressionsSection = ({ date, natalChart }: { date: Date; natalC
               <span className="text-muted-foreground">Position: </span>
               <span className="font-medium text-foreground">
                 {moonInfo.degree}° {moonInfo.sign}
-                {moonInfo.house && ` (${moonInfo.house}th house)`}
+                {moonInfo.house && ` (${ordinalNumber(moonInfo.house)} house)`}
               </span>
             </div>
             

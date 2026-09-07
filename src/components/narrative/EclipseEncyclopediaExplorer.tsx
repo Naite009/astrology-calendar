@@ -406,7 +406,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         title: 'Authority & Legacy Review',
         description: 'A partial lunar eclipse in Capricorn — old authority structures, career patterns, and legacy frameworks come under review.',
         nodalTheme: 'South Node in Capricorn: The structures of achievement that have defined your public identity are being examined. What legacy do you actually want to leave?',
-        releasingThemes: ['Career paths chosen for status over meaning', 'Relationships with authority figures that keep you small'],
+        releasingThemes: ['Career paths chosen for status over meaning', 'Relationships with authority figures that is already well-practised'],
         buildingThemes: ['A redefinition of success that includes emotional richness', 'Legacy built from genuine contribution rather than image management'],
         reflectionQuestions: ['What would I be doing with my career if no one was watching?', 'What legacy am I actually building — and does it align with what matters most to me?'],
       },

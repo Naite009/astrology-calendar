@@ -65,7 +65,7 @@ const PLANET_ESSENCES: Record<string, { name: string; essence: string }> = {
   uranus: { name: 'Uranus', essence: 'Your uniqueness, rebellion, and where you break free from convention.' },
   neptune: { name: 'Neptune', essence: 'Your spirituality, imagination, and where you transcend or escape.' },
   pluto: { name: 'Pluto', essence: 'Your power, transformation, and where you experience death and rebirth.' },
-  chiron: { name: 'Chiron', essence: 'Your deepest wound and greatest healing gift.' },
+  chiron: { name: 'Chiron', essence: 'an area of deep sensitivity for you and greatest healing gift.' },
   northnode: { name: 'North Node', essence: 'Your soul growth direction and karmic destiny.' },
   southnode: { name: 'South Node', essence: 'Your long-standing patterns and comfort zone.' },
   ascendant: { name: 'Ascendant', essence: 'Your rising sign, outer personality, and how others see you.' },
@@ -85,7 +85,7 @@ const PLANET_PLAIN_NAMES: Record<string, string> = {
   venus: 'Venus (your love & values)', mars: 'Mars (your drive & action)',
   jupiter: 'Jupiter (growth & opportunity)', saturn: 'Saturn (structure & responsibility)',
   uranus: 'Uranus (change & awakening)', neptune: 'Neptune (intuition & spirituality)',
-  pluto: 'Pluto (deep transformation)', chiron: 'Chiron (your deepest wound)',
+  pluto: 'Pluto (deep transformation)', chiron: 'Chiron (an area of deep sensitivity for you)',
   northnode: 'North Node (your life direction)', ascendant: 'your Rising Sign (how others see you)',
   midheaven: 'your Midheaven (career & public life)',
 };
@@ -530,7 +530,7 @@ const TRANSIT_PLANET_FEELING: Record<string, { verb: string; somatic: string; ps
   uranus: { verb: 'disrupts', somatic: 'Electric, jittery energy. Heart palpitations or sudden anxiety. Feeling wired but not tired. Sleep disruptions. A physical sensation of restlessness — like your skin does not fit right.', psyche: 'You need freedom NOW. Anything that feels confining becomes unbearable. Sudden insights crack open old patterns. You may act impulsively or make unexpected changes.', esoteric: 'Uranus is the awakener — the lightning bolt that shatters what is outdated so something more honest can emerge. It liberates through shock.' },
   neptune: { verb: 'dissolves', somatic: 'Fatigue, brain fog, heightened sensitivity to substances and environments. Feeling spacey, dreamy, or overwhelmed by stimuli. Boundaries between self and others blur. You may feel more psychic or more confused — sometimes both.', psyche: 'Reality becomes less certain. You question what is real. Idealism rises — but so does the potential for deception (of self or others). Spiritual longing intensifies. Creative inspiration flows but practical focus suffers.', esoteric: 'Neptune dissolves the ego\'s boundaries so you can connect to something transcendent. The danger is losing yourself; the gift is finding the divine.' },
   pluto: { verb: 'transforms', somatic: 'Deep, visceral tension — gut, pelvis, base of spine. A sense of something being pulled from within you. Exhaustion from the intensity. Sleep may bring vivid, sometimes disturbing dreams. The body holds what the mind tries to avoid.', psyche: 'Power dynamics surface. You confront what you have been avoiding — shadow material, control issues, buried rage, grief, or desire. This is a death-and-rebirth process. Something in you must die so something more honest can live.', esoteric: 'Pluto is the lord of the underworld — it forces descent into your own depths. What you find there, if you face it honestly, becomes your greatest source of power.' },
-  chiron: { verb: 'reopens wounds', somatic: 'A dull ache in the body — often in an area connected to old injuries or chronic issues. Feeling physically vulnerable. The body remembers what the mind has forgotten.', psyche: 'Old wounds resurface — not to punish you, but because you are now ready to heal at a deeper level. Sensitivity increases. You may feel inadequate or broken, but this is the doorway to becoming a healer for others.', esoteric: 'Chiron is the wounded healer. It shows you that your deepest pain contains your greatest gift. The wound that never fully closes becomes the opening through which grace enters.' },
+  chiron: { verb: 'reopens wounds', somatic: 'A dull ache in the body — often in an area connected to old injuries or chronic issues. Feeling physically vulnerable. The body remembers what the mind has forgotten.', psyche: 'Old wounds resurface — not to punish you, but because you are now ready to heal at a deeper level. Sensitivity increases. You may feel inadequate or broken, but this is the doorway to becoming a healer for others.', esoteric: 'Chiron is the healing-through-understanding. It shows you that your deepest pain contains your greatest gift. The wound that never fully closes becomes the opening through which grace enters.' },
 };
 
 // What each NATAL planet/point represents when activated

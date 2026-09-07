@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 // Chart validation guardrails.
 // Detects bad/suspect house-cusp data BEFORE the portrait engine produces wrong text.
 //
@@ -59,7 +60,7 @@ export function validateChart(chart: NatalChart): ChartValidation {
         severity: "error",
         code: `MISSING_CUSP_${i}`,
         message: `House ${i} cusp is missing.`,
-        fix: `Add the ${i}th house cusp from the source chart.`,
+        fix: `Add the ${ordinalNumber(i)} house cusp from the source chart.`,
       });
       cuspAbs.push(null);
     } else {

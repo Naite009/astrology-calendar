@@ -209,7 +209,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     basicIdea: 'Your capacity for mastery, responsibility, and endurance. Where the Sun gives identity, Saturn demands you earn it. This is the midpoint of maturity, hard work, and lasting achievement.',
     personalLife: 'Your relationship with authority, discipline, and time. How you build structure in your life. Your ambition tempered by patience and realistic planning.',
     relationships: 'Loyalty, commitment, and the ability to show up consistently. Sometimes coldness or emotional reservation with partners.',
-    bodyMind: 'Bone density, teeth, joints, and skin. The aging process. How chronic stress manifests physically over time.',
+    bodyMind: 'Bone density, teeth, joints, and skin. The aging process. How a sense of ongoing pressure manifests physically over time.',
     shadow: 'Excessive self-criticism, depression, rigidity. Fear of failure preventing you from even trying. Workaholism as avoidance.',
   },
   'Sun/Uranus': {
@@ -227,7 +227,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     basicIdea: 'Your imagination, spiritual sensitivity, and creative vision. This midpoint dissolves the boundaries of ego — for better (compassion, art, transcendence) or worse (confusion, escapism, deception).',
     personalLife: 'Your connection to spirituality, dreams, and the unseen world. Your artistic and musical sensitivity. Your capacity for empathy and self-sacrifice.',
     relationships: 'Idealization of partners, romantic fantasies, and the challenge of seeing people clearly. Deep soul connections and codependency.',
-    bodyMind: 'Immune system, lymphatic flow, and sensitivity to medications or substances. Psychosomatic symptoms. The healing power of meditation.',
+    bodyMind: 'energy and recovery rhythm, lymphatic flow, and sensitivity to medications or substances. Psychosomatic symptoms. The healing power of meditation.',
     shadow: 'Self-deception, victim mentality, escapism through substances or fantasy. Losing yourself in others\' needs.',
   },
   'Sun/Pluto': {
@@ -237,7 +237,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     personalLife: 'Your relationship with power, control, and transformation. Life-changing events that reshape who you are. Your capacity for deep psychological insight.',
     relationships: 'Intense, all-or-nothing bonds. Power struggles and the dance between vulnerability and control. Transformative relationships.',
     bodyMind: 'Reproductive system, elimination, and cellular regeneration. The body\'s ability to heal from deep trauma. DNA and genetic expression.',
-    shadow: 'Obsession, manipulation, paranoia. Using power over others instead of empowerment. Refusing to let go of what needs to die.',
+    shadow: 'over-intensity, paranoia. Using power over others instead of empowerment. Refusing to let go of what needs to die.',
   },
   'Sun/NorthNode': {
     title: 'Identity & Destiny',
@@ -360,7 +360,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     title: 'Love & Transcendence',
     emoji: '♀♆',
     basicIdea: 'The most romantic midpoint — divine love, artistic vision, and the longing for a soulmate. Where beauty becomes spiritual and love becomes art.',
-    personalLife: 'Extraordinary artistic sensitivity and imagination. Attraction to music, film, photography, and anything that captures the ineffable. Spiritual devotion.',
+    personalLife: 'Notable artistic sensitivity and imagination. Attraction to music, film, photography, and anything that captures the ineffable. Spiritual devotion.',
     relationships: 'The soulmate fantasy — and sometimes the real thing. Idealized love that inspires but can also deceive. Unconditional love and its challenges.',
     bodyMind: 'Sensitivity to drugs and alcohol. Allergies, immune confusion. The healing power of music, water, and beauty.',
     shadow: 'Romantic delusion, loving someone\'s potential instead of their reality. Sacrificing yourself for an ideal that doesn\'t exist.',
@@ -396,7 +396,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     title: 'Power & Intensity',
     emoji: '♂♇',
     basicIdea: 'The most powerful action midpoint — raw, transformative force. Your capacity to move mountains, to survive impossible situations, and to regenerate after devastation.',
-    personalLife: 'Extraordinary willpower, physical stamina, and the drive to overcome any obstacle. Life-or-death intensity in everything you do.',
+    personalLife: 'Notable willpower, physical stamina, and the drive to overcome any obstacle. Life-or-death intensity in everything you do.',
     relationships: 'Power struggles, intense physical attraction, and the capacity for both destruction and renewal within partnerships.',
     bodyMind: 'Adrenal extremes, surgical recovery, physical regeneration. The body\'s fight-or-flight at maximum intensity.',
     shadow: 'Obsessive need to dominate. Using force instead of persuasion. Destructive rage. Violence as a response to feeling powerless.',
@@ -425,7 +425,7 @@ export const MIDPOINT_INTERPRETATIONS: Record<string, MidpointInterpretation> = 
     basicIdea: 'The meeting of the practical and the mystical. Your capacity to make dreams real — or to have reality dissolve your dreams. Spiritual discipline and creative mastery.',
     personalLife: 'How you bring spiritual or artistic vision into concrete form. Your relationship with disillusionment, loss, and finding meaning through suffering.',
     relationships: 'The challenge of maintaining ideals within the structure of real commitment. Sacrifice and duty in love.',
-    bodyMind: 'Immune system and chronic fatigue. The body\'s response to grief and spiritual crisis. Sensitivity to medications.',
+    bodyMind: 'energy and recovery rhythm and chronic fatigue. The body\'s response to grief and spiritual crisis. Sensitivity to medications.',
     shadow: 'Cynicism, depression, feeling like dreams are impossible. Sacrificing so much that you lose yourself.',
   },
   'Saturn/Pluto': {

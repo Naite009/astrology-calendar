@@ -90,7 +90,7 @@ export const FIXED_STARS: FixedStar[] = [
   { name: 'Alphecca',     j2000Lon:  12.30 + 210, theme: 'crown of value; honor, marriage, artistic recognition.' }, // 12°18' Sco
   { name: 'South Scale',  j2000Lon:  15.13 + 210, theme: 'unrewarded effort; injustice that must be metabolized.' }, // 15°08' Sco (Zubenelgenubi)
   { name: 'North Scale',  j2000Lon:  19.33 + 210, theme: 'good karma returning; honor through service.' }, // 19°20' Sco (Zubeneschamali)
-  { name: 'Unukalhai',    j2000Lon:  22.08 + 210, theme: 'serpent heart; chronic accidents, immune system; healing knowledge.' }, // 22°05' Sco
+  { name: 'Unukalhai',    j2000Lon:  22.08 + 210, theme: 'serpent heart; chronic accidents, energy and recovery rhythm; healing knowledge.' }, // 22°05' Sco
   { name: 'Agena',        j2000Lon:  23.82 + 210, theme: 'good health, high honors; moral position from a friend.' }, // 23°49' Sco
   { name: 'Bungula',      j2000Lon:  29.55 + 210, theme: 'Toliman; position of power and friendship, sometimes envied.' }, // 29°33' Sco
   // Sagittarius
@@ -99,7 +99,7 @@ export const FIXED_STARS: FixedStar[] = [
   { name: 'Sabik',        j2000Lon:  17.97 + 240, theme: 'wasted energy on lost causes; ethical struggles in love.' }, // 17°58' Sag
   { name: 'Ras Alhague',  j2000Lon:  22.50 + 240, theme: 'serpent bearer; healing, poison, addictive personalities and their cure.' }, // 22°30' Sag
   { name: 'Lesath',       j2000Lon:  24.07 + 240, theme: 'scorpion sting; danger of acid, surgery, transformation through crisis.' }, // 24°04' Sag
-  { name: 'Acumen',       j2000Lon:  28.18 + 240, theme: 'enduring attacks; immune system, eyesight; resilience under sustained pressure.' }, // 28°11' Sag
+  { name: 'Acumen',       j2000Lon:  28.18 + 240, theme: 'enduring attacks; energy and recovery rhythm, eyesight; resilience under sustained pressure.' }, // 28°11' Sag
   // Capricorn
   { name: 'Facies',       j2000Lon:   8.32 + 270, theme: 'piercing glance; ruthless focus, leadership in dangerous fields.' }, // 8°19' Cap
   { name: 'Vega',         j2000Lon:  15.32 + 270, theme: 'falling vulture; charisma, the arts, success that comes and goes.' }, // 15°19' Cap

@@ -1205,7 +1205,7 @@ export const chironSignCombinations: CombinationEntry[] = [
   {
     id: 'chiron-virgo',
     factors: ['Chiron', 'Virgo'],
-    title: 'The Wounded Healer',
+    title: 'The healing-through-understanding',
     summary: 'Chiron in Virgo carries a wound around health, perfectionism, or being useful. Heals by helping others with practical service.',
     energies: [
       { expression: 'Wound around health or the body', polarity: 'shadow' },
@@ -1663,7 +1663,7 @@ export const planetPlanetCombinations: CombinationEntry[] = [
     title: 'The Plutonic Warrior',
     summary: 'Mars conjunct Pluto represents immense power and drive connected to survival instinct. Tremendous willpower but also potential for destructive expression.',
     energies: [
-      { expression: 'Extraordinary willpower and determination', polarity: 'light' },
+      { expression: 'Notable willpower and determination', polarity: 'light' },
       { expression: 'Potential for violence or abuse if unconscious', polarity: 'shadow' },
       { expression: 'Transformative action that destroys and rebuilds', polarity: 'light' },
       { expression: 'Rage connected to survival/power themes', polarity: 'shadow' },
@@ -1684,7 +1684,7 @@ export const planetPlanetCombinations: CombinationEntry[] = [
     energies: [
       { expression: 'Internal tension between will and compulsion', polarity: 'neutral' },
       { expression: 'Power struggles in relationships', polarity: 'shadow' },
-      { expression: 'Extraordinary drive once obstacles are cleared', polarity: 'light' },
+      { expression: 'Notable drive once obstacles are cleared', polarity: 'light' },
       { expression: 'Rage or violence when feeling powerless', polarity: 'shadow' },
       { expression: 'Forces transformation through crisis', polarity: 'neutral' },
       { expression: 'Manipulation or controlling behavior', polarity: 'shadow' },
@@ -1850,7 +1850,7 @@ export const planetPlanetCombinations: CombinationEntry[] = [
     id: 'moon-neptune-conjunction',
     factors: ['Moon', 'Neptune', 'Conjunction'],
     title: 'The Psychic Channel',
-    summary: 'Moon conjunct Neptune creates extraordinary emotional and psychic sensitivity. One of the strongest indicators for mediumship, clairvoyance, and receiving intuitive information. Artistic, compassionate, but must guard against confusion.',
+    summary: 'Moon conjunct Neptune creates notable emotional and psychic sensitivity. One of the strongest indicators for mediumship, clairvoyance, and receiving intuitive information. Artistic, compassionate, but must guard against confusion.',
     energies: [
       { expression: 'Natural psychic and mediumistic abilities', polarity: 'light' },
       { expression: 'Deep emotional and intuitive sensitivity', polarity: 'light' },
@@ -2033,7 +2033,7 @@ export const multiFactorCombinations: CombinationEntry[] = [
     id: 'mars-pluto-8th-house',
     factors: ['Mars', 'Pluto', '8th House'],
     title: 'The Extreme Power Dynamic',
-    summary: 'Mars and Pluto both in the 8th House creates extraordinarily intense combination around power, sex, death, and shared resources.',
+    summary: 'Mars and Pluto both in the 8th House creates notable intense combination around power, sex, death, and shared resources.',
     energies: [
       { expression: 'Exceptional power and intensity in intimate bonds', polarity: 'neutral' },
       { expression: 'Potential for control dynamics or violence in relationships', polarity: 'shadow' },
@@ -2143,7 +2143,7 @@ export const psychicCombinations: CombinationEntry[] = [
     id: 'mercury-uranus-conjunction',
     factors: ['Mercury', 'Uranus', 'Conjunction'],
     title: 'The Brilliant Mind',
-    summary: 'Mercury conjunct Uranus produces an extraordinarily quick, original, and innovative mind. Often indicates genius-level intelligence, flashes of insight, and unconventional thinking patterns.',
+    summary: 'Mercury conjunct Uranus produces an notable quick, original, and innovative mind. Often indicates genius-level intelligence, flashes of insight, and unconventional thinking patterns.',
     energies: [
       { expression: 'Genius-level original thinking', polarity: 'light' },
       { expression: 'Flashes of brilliant insight', polarity: 'light' },

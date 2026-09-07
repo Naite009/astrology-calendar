@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
@@ -126,7 +127,7 @@ export function generatePDFYearAtAGlance(
   ctx.drawInfoBox(doc, margin, ctx.y, col3W, boxH,
     "THIS YEAR'S FOCUS",
     HOUSE_FOCUS[houseNum] || `House ${houseNum}`,
-    HOUSE_FELT[houseNum] || `${houseNum}th House Profection Year`,
+    HOUSE_FELT[houseNum] || `${ordinalNumber(houseNum)} House Profection Year`,
     SOFT_GOLD,
   );
 

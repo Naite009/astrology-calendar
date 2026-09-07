@@ -626,7 +626,7 @@ function generateAspectExpressions(
       lightExpressions: [
         `${personAName} illuminates ${personBName}'s life purpose and destiny path`,
         `${personBName} helps ${personAName} step into their honest self`,
-        'Feeling destined to meet',
+        'Feeling well placed to meet',
         'Mutual evolution through the connection'
       ],
       shadowExpressions: [
@@ -680,7 +680,7 @@ function generateAspectExpressions(
       lightExpressions: [
         `${personBName} is learning about emotional security through ${personAName}`,
         'The relationship nurtures soul growth',
-        'Emotional patterns are destined to evolve',
+        'Emotional patterns are well placed to evolve',
         'Home and belonging as growth themes'
       ],
       shadowExpressions: [

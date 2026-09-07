@@ -326,7 +326,7 @@ const PLANET_BODY_AREAS: Record<string, string[]> = {
   Jupiter: ['Liver', 'Hips', 'Weight', 'Pituitary'],
   Saturn: ['Bones', 'Teeth', 'Knees', 'Skin/joints'],
   Uranus: ['Nervous system', 'Ankles', 'Circulation', 'Spasms'],
-  Neptune: ['Immune system', 'Feet', 'Lymphatic', 'Allergies'],
+  Neptune: ['energy and recovery rhythm', 'Feet', 'Lymphatic', 'Allergies'],
   Pluto: ['Reproductive', 'Elimination', 'Cell regeneration']
 };
 
@@ -486,9 +486,9 @@ export function generatePreventionProtocol(
         { text: 'Gentle movement in nature', reason: 'Water energy stagnates without flow. Nature calms your Neptune sensitivity while movement keeps your Moon-ruled lymphatic system circulating.' }
       );
       avoid.push(
-        { text: 'Excess alcohol', reason: 'Neptune (your dominant planetary energy) already creates blurred boundaries. Alcohol amplifies this, weakening your immune system and making you absorb others\' energy.' },
+        { text: 'Excess alcohol', reason: 'Neptune (your dominant planetary energy) already creates blurred boundaries. Alcohol amplifies this, weakening your energy and recovery rhythm and making you absorb others\' energy.' },
         { text: 'Emotional eating triggers', reason: 'Your Moon-ruled digestive system responds directly to emotions. Eating to numb feelings creates a cycle where the body stores emotional weight as physical weight.' },
-        { text: 'Energy vampires', reason: 'Water signs are energetic sponges (Neptune/Moon). Spending time with draining people depletes your immune system and emotional reserves faster than any other element.' }
+        { text: 'Energy vampires', reason: 'Water signs are energetic sponges (Neptune/Moon). Spending time with draining people depletes your energy and recovery rhythm and emotional reserves faster than any other element.' }
       );
       break;
   }
@@ -522,7 +522,7 @@ export function generatePreventionProtocol(
   if (afflictedPlanets.some(a => a.planet === 'Neptune')) {
     weekly.push({
       text: 'Lymphatic support (dry brushing, movement)',
-      reason: 'Your Neptune is afflicted — Neptune rules the lymphatic and immune systems. Without active support, you\'re more prone to mysterious illnesses and immune weakness.'
+      reason: 'Neptune is under stress in your chart, which symbolically points to blurred boundaries and low reserves. Read it as a cue to protect rest, hydration, and downtime, not as a medical claim.'
     });
   }
 

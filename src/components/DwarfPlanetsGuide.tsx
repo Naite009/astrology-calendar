@@ -45,7 +45,7 @@ const DWARF_PLANETS: DwarfPlanetData[] = [
     inYourChart: 'Where you\'ve experienced deep betrayal, abandonment, or victimization. Where you must reclaim your power from the depths. Ancestral trauma that runs generations deep.',
     keywords: ['Deep survival', 'Betrayal transcendence', 'Ancestral trauma', 'Self-sufficiency', 'Ocean depths of psyche', 'Sovereign power'],
     shadow: 'Victim identity. Bitterness. Refusing help even when needed. Isolation as armor.',
-    integration: 'Transform your deepest wounds into sovereignty. You survived the unsurvivable.',
+    integration: 'Transform an area of deep sensitivity for you into sovereignty. You survived the unsurvivable.',
     currentSign: 'Gemini',
     currentSignNote: 'Sedna ingressed into Gemini in 2024 after 40+ years in Taurus, opening a new cycle of mental and communicative awakening around survival.',
   },

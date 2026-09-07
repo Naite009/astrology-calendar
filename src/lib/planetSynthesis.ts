@@ -14,7 +14,7 @@
 //
 // Rules enforced:
 //   - No em dashes
-//   - Banned canned phrases: "deepest wound", "greatest healing gift",
+//   - Banned canned phrases: "area of deep sensitivity", "greatest healing gift",
 //     "feeling the unseen", "dissolving edges", "the place you were hurt",
 //     "tell the truth in the room", "right on top of", "fused with",
 //     "this energy invites you to", "trust what cannot be proven"

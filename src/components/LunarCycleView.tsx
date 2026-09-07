@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useEffect, useMemo } from "react";
 import { parseLocalDate } from "@/lib/localDate";
 import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
@@ -627,7 +628,7 @@ Birth Location: ${activeChart.birthLocation || 'Unknown'}
 NATAL CHART POSITIONS:
 ${natalPositions}
 
-NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${newMoonHouse}th House` : 'Unknown'}
+NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${ordinalNumber(Number(newMoonHouse))} House` : 'Unknown'}
 
 ASPECTS TO NATAL CHART:
 ${aspectsText}
@@ -730,7 +731,7 @@ Keep the tone deep, insightful, and practically applicable.`
     Pluto: 'Your deepest power, shadow, and transformation — where you DIE and are REBORN.',
     NorthNode: 'Your soul\'s growth direction this lifetime — the unfamiliar territory you\'re meant to GROW into.',
     SouthNode: 'Your long-standing strengths and comfort zone, what comes naturally but can hold you BACK.',
-    Chiron: 'Your deepest wound that becomes your greatest healing gift — where you HURT and ultimately TEACH.',
+    Chiron: 'an area of deep sensitivity for you that becomes your greatest healing gift — where you HURT and ultimately TEACH.',
     Ascendant: 'Your rising sign — the lens through which you meet the world and others\' first impression of you.',
     Midheaven: 'Your public reputation and career direction — how the world SEES your purpose.',
     Ceres: 'The asteroid of nurturing — how you CARE for others and need to be cared for. Mothering style, food, and body comfort.',
@@ -983,7 +984,7 @@ Keep the tone deep, insightful, and practically applicable.`
       action: 'you\'ll wait for everyone to agree before you move. They won\'t. Make the call this week even if someone\'s disappointed.',
       release: 'you stay in things to keep the peace, long past when it\'s served you. Letting go IS fair to you — that counts.',
       values: 'you can see all sides, which dilutes your own. Write down what YOU want before you ask anyone else.',
-      connect: 'this is your superpower, but you smooth over the hard part. Name the actual disagreement out loud this cycle.',
+      connect: 'this can be a real strength, but you smooth over the hard part. Name the actual disagreement out loud this cycle.',
       feel: 'you mirror others\' moods. Take a day alone to figure out which feelings are actually yours.',
     },
     Scorpio: {
@@ -1873,7 +1874,7 @@ Keep the tone deep, insightful, and practically applicable.`
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {interpretation.stelliumFeltSense || `${interpretation.stelliumPlanets.length} planets concentrated in ${interpretation.stelliumSign} — this cycle carries extraordinary weight in these themes.`}
+                    {interpretation.stelliumFeltSense || `${interpretation.stelliumPlanets.length} planets concentrated in ${interpretation.stelliumSign} — this cycle carries notable weight in these themes.`}
                   </p>
                 </div>
               )}

@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Family System Synastry — group-level (not pair-level) deterministic analysis.
  *
@@ -1068,7 +1069,7 @@ export function computeElementalVoid(
       if (!pl) continue;
       const h = houseOfPlanet(m.chart, pl);
       if (h && VOID_ELEMENT_HOUSES[missing].includes(h)) {
-        surrogate = { name: m.chart.name, why: `${pname} in the ${h}th house carries the missing ${missing} function` };
+        surrogate = { name: m.chart.name, why: `${pname} in the ${ordinalNumber(h)} house carries the missing ${missing} function` };
         break;
       }
     }

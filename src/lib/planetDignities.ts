@@ -524,7 +524,7 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     retrogradeDuration: '~5 months',
     discovery: '1977',
     speedNote: 'Chiron\'s eccentric orbit means it races through Libra in ~2 years but crawls through Aries for ~8 years. The Chiron Return at 50 is a major healing crisis.',
-    summary: 'The "wounded healer." Chiron shows your deepest wound and your greatest gift for healing others through your own pain.'
+    summary: 'The "healing-through-understanding." Chiron shows an area of deep sensitivity for you and your greatest gift for healing others through your own pain.'
   },
   {
     name: 'Lilith (Mean)',

@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader, Mail } from "lucide-react";
 import { EmailReportModal } from "./EmailReportModal";
@@ -670,7 +671,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
               houseNumber: houseNum,
               sign: mercuryRxInfo.sign,
               degree: mercuryRxInfo.shadowDegree,
-              guidance: `Mercury retrograde at ${mercuryRxInfo.shadowDegree} falls in your ${houseNum}th house of ${houseThemes[houseNum] || 'various themes'}. During the pre-shadow, notice what topics arise around ${houseThemes[houseNum]}. During the retrograde, you'll revisit, review, and rethink matters of ${houseThemes[houseNum]}. At the Mercury-Sun conjunction (midpoint), a key insight about ${houseThemes[houseNum]} will crystallize. When Mercury stations direct, you'll have clarity about what needs to change in this area.`,
+              guidance: `Mercury retrograde at ${mercuryRxInfo.shadowDegree} falls in your ${ordinalNumber(houseNum)} house of ${houseThemes[houseNum] || 'various themes'}. During the pre-shadow, notice what topics arise around ${houseThemes[houseNum]}. During the retrograde, you'll revisit, review, and rethink matters of ${houseThemes[houseNum]}. At the Mercury-Sun conjunction (midpoint), a key insight about ${houseThemes[houseNum]} will crystallize. When Mercury stations direct, you'll have clarity about what needs to change in this area.`,
             };
           }
         }

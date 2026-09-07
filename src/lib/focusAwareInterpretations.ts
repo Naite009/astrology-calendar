@@ -204,7 +204,7 @@ const KARMIC_FOCUS_INTERPRETATIONS: Record<RelationshipFocus, Record<string, { r
   },
   friendship: {
     'NorthNode-Moon': { relevance: 'high', focusedInterpretation: 'Fated emotional connection. This friendship is meant to nurture your soul growth and emotional development.' },
-    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'Destined to appreciate each other. This friendship brings joy and helps you understand what you truly value.' },
+    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'well placed to appreciate each other. This friendship brings joy and helps you understand what you truly value.' },
     'Chiron-Moon': { relevance: 'high', focusedInterpretation: 'Healing old emotional wounds through friendship. They help you feel safe to be vulnerable.' },
     'Chiron-Sun': { relevance: 'high', focusedInterpretation: 'They see your wounds but also your potential. A healing friendship that helps you become more yourself.' }
   },

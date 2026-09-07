@@ -258,7 +258,7 @@ const calculatePlanetaryAspects = (year: number): ElectionalDay[] => {
         rating: 'YELLOW',
         reason: 'Mars square Chiron',
         avoid: ['Confrontations', 'Aggressive action', 'Triggering wounded people'],
-        why: 'Conflict planet Mars hits deepest wounds (Chiron). Very uncomfortable combo.',
+        why: 'Conflict planet Mars hits area of deep sensitivity (Chiron). Very uncomfortable combo.',
         workaround: 'Extra compassion needed. Tread lightly. People are sensitive.',
         category: 'mars-chiron'
       });

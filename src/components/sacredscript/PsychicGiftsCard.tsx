@@ -20,7 +20,7 @@ const CATEGORY_INFO: Record<string, { icon: string; label: string; color: string
   'eighth-house': { icon: '8H', label: '8th House Depth', color: 'from-rose-50 to-pink-50 dark:from-rose-950/40 dark:to-pink-950/40 border-rose-300 dark:border-rose-700' },
   water: { icon: '♋♏♓', label: 'Water Intuition', color: 'from-cyan-50 to-teal-50 dark:from-cyan-950/40 dark:to-teal-950/40 border-cyan-300 dark:border-cyan-700' },
   nodes: { icon: '☊', label: 'Karmic Sensitivity', color: 'from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 border-amber-300 dark:border-amber-700' },
-  chiron: { icon: '⚷', label: 'Wounded Healer', color: 'from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/40 border-emerald-300 dark:border-emerald-700' },
+  chiron: { icon: '⚷', label: 'healing-through-understanding', color: 'from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/40 border-emerald-300 dark:border-emerald-700' },
   angular: { icon: '☌', label: 'Angular Neptune', color: 'from-violet-50 to-purple-50 dark:from-violet-950/40 dark:to-purple-950/40 border-violet-300 dark:border-violet-700' },
   midpoint: { icon: '⊗', label: 'Psychic Midpoints', color: 'from-fuchsia-50 to-pink-50 dark:from-fuchsia-950/40 dark:to-pink-950/40 border-fuchsia-300 dark:border-fuchsia-700' },
   tno: { icon: '🜨', label: 'Trans-Neptunian', color: 'from-sky-50 to-blue-50 dark:from-sky-950/40 dark:to-blue-950/40 border-sky-300 dark:border-sky-700' },

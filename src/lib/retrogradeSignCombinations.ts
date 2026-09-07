@@ -164,7 +164,7 @@ export const RETROGRADE_PLANET_MODIFIERS: Record<string, {
     evolutionaryPurpose: "To reclaim power that was lost in past lives through deep internal alchemy.",
   },
   Chiron: {
-    internal: "The wounded healer turns healing inward first. Past wounds resurface for final integration. Teaching comes through embodied healing, not theoretical knowledge.",
+    internal: "The healing-through-understanding turns healing inward first. Past wounds resurface for final integration. Teaching comes through embodied healing, not theoretical knowledge.",
     coreGifts: [
       "Self-healing mastery",
       "Integration of old wounds",
@@ -176,7 +176,7 @@ export const RETROGRADE_PLANET_MODIFIERS: Record<string, {
       "May feel 'unhealable' temporarily",
       "Resistance to accepting help",
     ],
-    evolutionaryPurpose: "To complete the healing journey begun in past lives and become a wounded healer.",
+    evolutionaryPurpose: "To complete the healing journey begun in past lives and become a healing-through-understanding.",
   },
 };
 

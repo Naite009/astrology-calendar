@@ -1496,7 +1496,7 @@ const SECTIONS: Record<GuideSection, { title: string; content: React.ReactNode }
           Centaurs orbit between Jupiter and Neptune, bridging the personal and transpersonal:
         </p>
         <ul>
-          <li><strong>⚷ Chiron:</strong> The Wounded Healer — our deepest wound and healing gift</li>
+          <li><strong>⚷ Chiron:</strong> The healing-through-understanding — our area of deep sensitivity and healing gift</li>
           <li><strong>Pholus:</strong> Small cause, big effect — the butterfly effect in your life</li>
           <li><strong>Nessus:</strong> Toxic patterns and abuse cycles — what must end</li>
         </ul>
@@ -1717,7 +1717,7 @@ const DIVINE_FEM_ITEMS: Array<{
 }> = [
   { key: "NorthNode", glyph: "☊", name: "North Node", blurb: "Where you're headed in this lifetime. Growth, evolution, future direction. Feels uncomfortable but rewarding.", accent: "bg-green-50 dark:bg-green-900/30" },
   { key: "SouthNode", glyph: "☋", name: "South Node", blurb: "Past-life skills and comfort zone. What you've already mastered. Can become a crutch when overused.", accent: "bg-secondary" },
-  { key: "Chiron",    glyph: "⚷", name: "Chiron — The Wounded Healer", blurb: "Your deepest wound and your greatest healing gift. Where you were hurt is where you can quietly help others.", accent: "bg-secondary" },
+  { key: "Chiron",    glyph: "⚷", name: "Chiron — The healing-through-understanding", blurb: "an area of deep sensitivity for you and your greatest healing gift. Where you were hurt is where you can quietly help others.", accent: "bg-secondary" },
   { key: "Lilith",    glyph: "⚸", name: "Lilith — Dark Moon", blurb: "The wild, untamed feminine. Your primal instincts and what you refuse to be controlled about.", accent: "bg-secondary" },
   { key: "Ceres",     glyph: "⚳", name: "Ceres — The Great Mother", blurb: "Nurturing, sustenance, what you need to feel cared for. Mother-child dynamics, grief, and loss.", accent: "bg-secondary" },
   { key: "Pallas",    glyph: "⚴", name: "Pallas — The Warrior Strategist", blurb: "Intelligence, pattern recognition, creative wisdom. Political savvy and legal acumen.", accent: "bg-secondary" },

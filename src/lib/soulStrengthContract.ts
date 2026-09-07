@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Strength-Based Contract
  * ------------------------------------------------------------------
@@ -146,7 +147,7 @@ export function buildStrengthContract(
 
     if ([1, 4, 7, 10].includes(info.house)) {
       score += 2;
-      reasons.push(`it sits in your ${info.house}th house, one of the four most visible places in a chart`);
+      reasons.push(`it sits in your ${ordinalNumber(info.house)} house, one of the four most visible places in a chart`);
     }
 
     const support = signals.natalAspects.filter(
@@ -178,8 +179,8 @@ export function buildStrengthContract(
     const meta = PLANET_STRENGTH[planet];
     const arena = HOUSE_ARENA[house] ?? "the area of life this house covers";
     const reason = reasons.length
-      ? `${planet} in ${sign} in the ${house}th house: ${reasons.join(", and ")}.`
-      : `${planet} in ${sign} in the ${house}th house.`;
+      ? `${planet} in ${sign} in the ${ordinalNumber(house)} house: ${reasons.join(", and ")}.`
+      : `${planet} in ${sign} in the ${ordinalNumber(house)} house.`;
     return {
       title: meta.title,
       chartReason: reason,

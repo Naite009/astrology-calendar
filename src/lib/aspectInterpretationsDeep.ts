@@ -556,7 +556,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
       howItManifests: "Magnetic presence. Others feel your intensity. May have survived something that forged you. Control issues, power dynamics, and transformation are constant themes.",
       realLifeExamples: [
         "People sensing your presence before you speak",
-        "Surviving experiences that would break others",
+        "Moving through hard experiences and carrying real understanding out of them",
         "Power dynamics in every interaction",
         "Intensity that attracts and repels"
       ],
@@ -1395,7 +1395,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
     },
     opposition: {
       whatItFeelsLike: "Your understanding shows up through OTHERS. You project clarity or confusion onto people, then learn through dialogue. Misunderstandings in early life become teaching moments later.",
-      howItManifests: "Learning through relationship. Needing to talk things out. May attract confusing OR wise communicators. Develops extraordinary discernment through navigating projection.",
+      howItManifests: "Learning through relationship. Needing to talk things out. May attract confusing OR wise communicators. Develops notable discernment through navigating projection.",
       realLifeExamples: [
         "Being misunderstood, then becoming expert at understanding",
         "Needing a sounding board to think clearly",
@@ -2084,7 +2084,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
         "Power struggles as way of life",
         "Accomplishing through force of will"
       ],
-      growthPath: "Your gift is extraordinary willpower. Your growth is learning that power doesn't require domination. You can be strong WITHOUT controlling everything."
+      growthPath: "Your gift is notable willpower. Your growth is learning that power doesn't require domination. You can be strong WITHOUT controlling everything."
     },
     square: {
       whatItFeelsLike: "Friction between your drive and forces that feel life-or-death. Power struggles everywhere. Intensity that feels like survival.",

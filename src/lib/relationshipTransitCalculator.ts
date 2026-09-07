@@ -1471,7 +1471,7 @@ export class RelationshipTransitCalculator {
       }
       
       if (aspect.person1Planet === 'Chiron' || aspect.person2Planet === 'Chiron') {
-        indicators.push(`${aspect.person1Planet}-${aspect.person2Planet} ${aspect.aspectType}: Healing wound karma. You've come together to heal each other's deepest wounds.`);
+        indicators.push(`${aspect.person1Planet}-${aspect.person2Planet} ${aspect.aspectType}: Healing wound karma. You've come together to heal each other's area of deep sensitivity.`);
       }
     });
     

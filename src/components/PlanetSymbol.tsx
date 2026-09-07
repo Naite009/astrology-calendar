@@ -29,7 +29,7 @@ const PLANET_DATA: Record<string, { symbol: string; name: string; brief: string 
   southnode: { symbol: '☋', name: 'South Node', brief: 'Past life gifts, comfort zone, karma' },
   
   // Asteroids
-  chiron: { symbol: '⚷', name: 'Chiron', brief: 'Deepest wound, healing gift, mentor' },
+  chiron: { symbol: '⚷', name: 'Chiron', brief: 'area of deep sensitivity, healing gift, mentor' },
   lilith: { symbol: '⚸', name: 'Black Moon Lilith', brief: 'Wild feminine, rage, untamed power' },
   ceres: { symbol: '⚳', name: 'Ceres', brief: 'Nurturing, mothering, nourishment, cycles' },
   pallas: { symbol: '⚴', name: 'Pallas', brief: 'Wisdom, strategy, pattern recognition' },

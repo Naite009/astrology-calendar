@@ -372,7 +372,7 @@ Pluto sextile = 4 points (opportunity)
           whatWeLookedFor={[
             "Chiron (⚷) contacts to personal planets"
           ]}
-          astrologyBehindIt={`Chiron is the "wounded healer" - it represents our deepest wound AND our greatest healing gift. When someone's planet touches your Chiron, they either:
+          astrologyBehindIt={`Chiron is the "healing-through-understanding" - it represents our area of deep sensitivity AND our greatest healing gift. When someone's planet touches your Chiron, they either:
 
 1. Trigger the wound (can be retraumatizing if unconscious)
 2. Help you heal it (if both people are aware and compassionate)

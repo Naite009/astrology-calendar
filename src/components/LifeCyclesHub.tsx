@@ -399,7 +399,7 @@ function calculateOuterPlanetTransits(chart: NatalChart, currentDate: Date): Out
       isPast: estimatedDate < currentDate,
       isActive: Math.abs(50 - currentAge) < 2,
       daysUntil: estimatedDate > currentDate ? differenceInDays(estimatedDate, currentDate) : null,
-      description: `Chiron Return — The Wounded Healer (${chironSign} in House ${chironHouse || '?'})`,
+      description: `Chiron Return — The healing-through-understanding (${chironSign} in House ${chironHouse || '?'})`,
       lifeTheme: chironHouseWound 
         ? `YOUR WOUND MANIFESTS IN: ${chironHouseWound.lifeArea}`
         : (chironWound 
@@ -586,7 +586,7 @@ const PROG_MOON_JOURNEY: Record<string, { q1: string; q2: string; q3: string; q4
   Aries: { q1: "The spark ignites — restless, ready to move. New impulses arrive before you can name them.", q2: "The fire burns steady. You've found what you're fighting for.", q3: "Your courage has been tested. Others see your strength now.", q4: "The warrior prepares to rest. A quieter voice asks what to BUILD. Taurus beckons." },
   Taurus: { q1: "Everything slows down — and it's a relief. You crave comfort, stability, beauty.", q2: "You're settling in. Financial security matters. Patience comes naturally.", q3: "What you planted is growing. Sensual pleasure feeds your soul deeply.", q4: "The garden is full but curiosity stirs. Gemini energy approaches." },
   Gemini: { q1: "Your mind wakes up. You want to read everything, talk to everyone.", q2: "Connecting dots, building networks. Writing or teaching may call.", q3: "Information overload possible. Depth vs. breadth becomes the lesson.", q4: "The social butterfly looks homeward, craving something deeper. Cancer stirs." },
-  Cancer: { q1: "You turn inward. Home, family, roots become everything. Old memories surface.", q2: "You're nesting. Nurturing brings deep satisfaction.", q3: "Emotional depth is your superpower. You understand what 'home' really means.", q4: "The cocoon cracks. Something wants to SHINE. Leo approaches." },
+  Cancer: { q1: "You turn inward. Home, family, roots become everything. Old memories surface.", q2: "You're nesting. Nurturing brings deep satisfaction.", q3: "Emotional depth can be a real strength. You understand what 'home' really means.", q4: "The cocoon cracks. Something wants to SHINE. Leo approaches." },
   Leo: { q1: "You step into the light. Romance, creativity, play — your heart demands joy.", q2: "Full bloom. Creative projects flow. You're learning to receive applause.", q3: "Confidence is earned. You know what makes you unique.", q4: "The spotlight dims gently. A quieter voice asks: how can I be useful? Virgo calls." },
   Virgo: { q1: "Time to organize. Health routines and daily improvements call.", q2: "You've found your rhythm. Being of service brings satisfaction.", q3: "Perfectionism may peak. Be gentle. Your skills are honed.", q4: "You feel the pull toward partnership, balance. Libra approaches." },
   Libra: { q1: "Relationships become the mirror. Beauty, harmony, and fairness matter.", q2: "Learning the dance of compromise. Aesthetics nourish your soul.", q3: "Diplomatic skills peak. You've learned when to give and hold.", q4: "Surface harmony isn't enough. Something deeper calls. Scorpio's waters pull." },
@@ -1162,7 +1162,7 @@ const RETURN_FELT_SENSE: Record<string, Record<string, string>> = {
     Sagittarius: "Your Moon is in Sagittarius, so this reset feels like opening a window in a stuffy room. Fresh air, big ideas, a sudden urge to book a trip or learn something new. For a few hours, you feel optimistic and a little wild. Routine feels like a cage. You need meaning and adventure.",
     Capricorn: "Your Moon is in Capricorn, so this reset feels like putting on armor — but the comforting kind. You feel emotionally steady when you have a plan, a goal, or work to do. For a few hours, you become quietly determined. You might not cry even if you want to. Productivity IS your comfort.",
     Aquarius: "Your Moon is in Aquarius, so this reset feels like stepping outside the human drama and seeing the bigger picture. For a few hours, emotions feel more intellectual than soggy. You need space, independence, and something weird or interesting to think about. You might feel like the friendly alien you are.",
-    Pisces: "Your Moon is in Pisces, so this reset feels like dissolving into music, water, or dreams. Your boundaries get thin — you feel EVERYTHING around you. For a few hours, you're deeply compassionate, possibly tearful, and extraordinarily creative. You might need to be alone just to figure out which feelings are yours."
+    Pisces: "Your Moon is in Pisces, so this reset feels like dissolving into music, water, or dreams. Your boundaries get thin — you feel EVERYTHING around you. For a few hours, you're deeply compassionate, possibly tearful, and notable creative. You might need to be alone just to figure out which feelings are yours."
   },
   Mercury: {
     _default: "A Mercury return is like your brain getting a software update. The way you think, talk, and process information reboots back to YOUR natural style. Conversations feel clearer. Ideas click. It's a great day to say what you really mean, write something important, or make a decision that sounds like YOU.",

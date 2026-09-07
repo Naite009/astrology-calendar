@@ -13,6 +13,9 @@ import { detectChartPatterns, detectMinorBodyPatterns, ChartPattern } from './ch
 // ─── Types ──────────────────────────────────────────────────────────
 
 import { calculateNatalDominantPlanets, DominantPlanetsReport } from './dominantPlanetsEngine';
+import { ordinal, ordinalHouse } from '@/lib/interpretation/ordinals';
+import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
+import { describeBodyCount, isStellium, splitBodies, MAJOR_PLANETS as SHARED_MAJOR_PLANETS } from '@/lib/interpretation/bodyTaxonomy';
 
 export interface NatalPortrait {
   lifePurpose: LifePurposeSummary;
@@ -84,10 +87,19 @@ export interface DomainPlanet {
 export interface HouseEmphasis {
   house: number;
   theme: string;
+  /** Every body in the house (major planets + additional bodies/points). */
   planets: string[];
+  /** Major planets only — the count that drives stelliums and emphasis. */
+  majorPlanets?: string[];
+  /** Asteroids, nodes, Chiron, Lilith, derived points. */
+  additionalBodies?: string[];
+  isStellium?: boolean;
+  /** e.g. "4 major planets + Eris" */
+  countLabel?: string;
   intensity: 'High' | 'Medium' | 'Low' | 'Empty';
   description: string;
 }
+
 
 export interface NatalPowerPortrait {
   driveSource: string;
@@ -150,7 +162,7 @@ const HOUSE_THEMES: Record<number, string> = {
   12: 'Spirituality, Dreams & the Unconscious',
 };
 
-const MAJOR_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+const MAJOR_PLANETS: readonly string[] = SHARED_MAJOR_PLANETS;
 
 // ─── Sign+House-Aware Role Descriptions ─────────────────────────────
 // Every key player role must reference the planet's SIGN flavor and HOUSE life area.
@@ -192,8 +204,8 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   // Health domain
   if (domainHint === 'health') {
     if (planetName === 'Sun') return `Your vitality operates ${style}, and it primarily fuels ${area}`;
-    if (planetName === 'Mars') return `Your physical energy and immune response work ${style}, channeled through ${area}`;
-    if (planetName === 'Chiron') return `Your vulnerability point lives ${style} in ${area} — healing here transforms your whole body`;
+    if (planetName === 'Mars') return `Your energy style and pace work ${style}, channeled through ${area}`;
+    if (planetName === 'Chiron') return `A sensitive spot sits ${style} in ${area}; attention here often changes how you pace yourself (a symbolic read, not a medical one)`;
     if (planetName === 'Hygiea') return `Your health awareness pattern is ${style}, focused on ${area}`;
     if (planetName === 'Ceres') return `You nourish yourself ${style}, and your comfort needs center on ${area}`;
   }
@@ -222,7 +234,7 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
     if (planetName === 'Moon') return `Your emotional core processes ${style}, most tender around ${area}`;
     if (planetName === 'Neptune') return `Your spiritual sensitivity dissolves boundaries ${style} in ${area}`;
     if (planetName === 'Pluto') return `Your emotional intensity transforms ${style} through ${area}`;
-    if (planetName === 'Chiron') return `Your deepest wound lives ${style} in ${area} — and becomes your teaching`;
+    if (planetName === 'Chiron') return `A tender, sensitive area sits ${style} in ${area}, and it can become a source of real insight`;
     if (planetName === 'Ceres') return `Your nurturing instinct expresses ${style}, centered on ${area}`;
   }
 
@@ -414,8 +426,45 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
     houseActivations,
     strengths: generateDomainStrengths('relationship', keyPlanets),
     challenges: generateDomainChallenges('relationship', keyPlanets),
-    advice: `Focus on the house where Venus sits (House ${venus?.house || '?'}) — that's where love shows up most naturally in your life.`,
+    advice: buildRelationshipAdvice(chart, bodies),
   };
+}
+
+/**
+ * Relationship guidance synthesised from several factors (Venus, Mars, the 5th/7th
+ * houses and their rulers, Juno when present) rather than reduced to Venus's house.
+ */
+function buildRelationshipAdvice(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): string {
+  const venus = bodies.find(b => b.name === 'Venus');
+  const mars = bodies.find(b => b.name === 'Mars');
+  const juno = bodies.find(b => b.name === 'Juno');
+  const seventh = bodies.filter(b => b.house === 7 && MAJOR_PLANETS.includes(b.name));
+  const fifth = bodies.filter(b => b.house === 5 && MAJOR_PLANETS.includes(b.name));
+  const seventhRuler = getSeventhHouseRuler(chart);
+
+  const factors: string[] = [];
+  if (venus) factors.push(`Venus in ${venus.sign}${venus.house ? ` (${ordinalHouse(venus.house, 'house')})` : ''}`);
+  if (mars) factors.push(`Mars in ${mars.sign}${mars.house ? ` (${ordinalHouse(mars.house, 'house')})` : ''}`);
+  if (seventhRuler) factors.push(`${seventhRuler.ruler} as ruler of your 7th house${seventhRuler.house ? ` (sitting in your ${ordinalHouse(seventhRuler.house, 'house')})` : ''}`);
+  if (seventh.length) factors.push(`${seventh.map(b => b.name).join(' and ')} in the 7th`);
+  if (fifth.length) factors.push(`${fifth.map(b => b.name).join(' and ')} in the 5th`);
+  if (juno) factors.push(`Juno in ${juno.sign} (an optional, interpretive marker for commitment style)`);
+
+  const listed = factors.length ? factors.join(', ') : 'the relationship houses in your chart';
+  return `No single placement defines how you relate. Reading ${listed} together says more than any one of them alone: Venus describes what you value and enjoy, Mars how you pursue and assert, the 5th house how you play and flirt, and the 7th house with its ruler what you look for in a committed partner. Where these agree, the pattern is likely to be strong; where they pull in different directions, closeness may ask you to do two things at once, and that tension is normal rather than a flaw.`;
+}
+
+function getSeventhHouseRuler(chart: NatalChart): { ruler: string; house: number | null } | null {
+  const cusp = chart.houseCusps?.house7;
+  if (!cusp?.sign) return null;
+  const RULERS: Record<string, string> = {
+    Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon', Leo: 'Sun', Virgo: 'Mercury',
+    Libra: 'Venus', Scorpio: 'Pluto', Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+  };
+  const ruler = RULERS[cusp.sign];
+  if (!ruler) return null;
+  const house = getPlanetHouseFromChart(chart, ruler) || null;
+  return { ruler, house };
 }
 
 function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
@@ -493,7 +542,7 @@ function buildHealthDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
   return {
     title: 'Health & Vitality',
     emoji: '💪',
-    summary: `Mars in ${mars?.sign || 'unknown'} shapes your energy style — ${getMarsFlavor(mars?.sign || '')}. Your 6th house (daily routines) and 1st house (physical body) reveal your health blueprint.`,
+    summary: `Mars in ${mars?.sign || 'unknown'} shapes your energy style — ${getMarsFlavor(mars?.sign || '')}. Your 6th house (daily routines) and 1st house (how you show up physically) describe how you tend to organise routine, effort, and rest. This is a symbolic read of energy and habits, not medical information.`,
     keyPlanets,
     houseActivations,
     strengths: generateDomainStrengths('health', keyPlanets),
@@ -520,7 +569,7 @@ function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
   return {
     title: 'Shadow & Growth Edges',
     emoji: '🌑',
-    summary: `Pluto in ${pluto?.sign || 'unknown'} (House ${pluto?.house || '?'}) marks your deepest transformation zone — where you compulsively dig until you find truth. This is where your greatest power hides behind your greatest fear.`,
+    summary: `Pluto in ${pluto?.sign || 'unknown'} (House ${pluto?.house || '?'}) marks the area where you tend to keep digging until something makes real sense. One expression of this is depth and staying power; another, under strain, is holding on longer than is useful.`,
     keyPlanets,
     houseActivations,
     strengths: generateDomainStrengths('shadow', keyPlanets),
@@ -552,7 +601,7 @@ function buildSpiritualDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
     houseActivations,
     strengths: generateDomainStrengths('spiritual', keyPlanets),
     challenges: generateDomainChallenges('spiritual', keyPlanets),
-    advice: `The South Node shows what comes easily but keeps you small. The North Node shows what's scary but makes you grow. Lean toward the fear.`,
+    advice: `The South Node (${bodies.find(b => b.name === 'SouthNode')?.sign || 'unknown'}) describes skills and habits you already have well in hand. The North Node (${nn?.sign || 'unknown'}) describes qualities worth practising alongside them. Growth here usually means widening your range rather than dropping what already works. This karmic framing is interpretive, not a statement of fact about your destiny.`,
   };
 }
 
@@ -603,7 +652,7 @@ function generateDomainStrengths(domain: string, planets: DomainPlanet[]): strin
       if (p.name === 'Mars' && ['Aries', 'Scorpio', 'Capricorn'].includes(p.sign)) strengths.push(`Mars in ${p.sign} — powerful, focused desire nature`);
       if (p.name === 'Juno') strengths.push(`Juno in ${p.sign} — clear commitment style and partnership needs`);
     } else if (domain === 'career') {
-      if (p.name === 'Saturn' && ['Capricorn', 'Libra', 'Aquarius'].includes(p.sign)) strengths.push(`Saturn in ${p.sign} — natural authority and structural genius`);
+      if (p.name === 'Saturn' && ['Capricorn', 'Libra', 'Aquarius'].includes(p.sign)) strengths.push(`Saturn in ${p.sign} — natural authority and strong instinct for structure`);
       if (p.name === 'Jupiter' && ['Sagittarius', 'Pisces', 'Cancer'].includes(p.sign)) strengths.push(`Jupiter in ${p.sign} — abundant opportunity and expansion`);
     } else if (domain === 'emotional') {
       if (p.name === 'Moon' && ['Cancer', 'Taurus', 'Pisces'].includes(p.sign)) strengths.push(`Moon in ${p.sign} — emotionally fluent and nurturing`);
@@ -612,7 +661,7 @@ function generateDomainStrengths(domain: string, planets: DomainPlanet[]): strin
       if (p.name === 'Hygiea') strengths.push(`Hygiea present — natural health awareness`);
     } else if (domain === 'shadow') {
       if (p.name === 'Pluto') strengths.push(`Pluto in ${p.sign} — regenerative power, ability to transform completely`);
-      if (p.name === 'Chiron') strengths.push(`Chiron in ${p.sign} — wounded healer archetype, deep empathy for others' pain`);
+      if (p.name === 'Chiron') strengths.push(`Chiron in ${p.sign} — healing-through-understanding archetype, deep empathy for others' pain`);
     } else if (domain === 'spiritual') {
       if (p.name === 'Neptune') strengths.push(`Neptune in ${p.sign} — spiritual sensitivity and creative imagination`);
       if (p.name === 'NorthNode') strengths.push(`North Node in ${p.sign} — clear soul direction for growth`);
@@ -700,7 +749,7 @@ function rankTopThemes(chart: NatalChart, bodies: ReturnType<typeof getBodyData>
     themes.push({
       title: HOUSE_THEMES[h] || `House ${h}`,
       score,
-      description: `${planets.length} planet${planets.length > 1 ? 's' : ''} concentrated in your ${getOrdinal(h)} house — this area demands attention throughout your life.`,
+      description: `${describeBodyCount(planets)} in your ${ordinalHouse(h, 'house')} (${planets.join(', ')}) — a recurring area of focus. Counts here use major planets only; additional bodies and points are listed separately.`,
       drivers: planets.map(p => {
         const bd = bodies.find(b => b.name === p);
         return bd ? `${p} in ${bd.sign}` : p;
@@ -738,11 +787,7 @@ function rankTopThemes(chart: NatalChart, bodies: ReturnType<typeof getBodyData>
     .map((t, i) => ({ ...t, rank: i + 1, importance: t.score }));
 }
 
-function getOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
+const getOrdinal = (n: number): string => ordinal(n);
 
 // ─── House Emphasis ─────────────────────────────────────────────────
 
@@ -753,17 +798,25 @@ function buildHouseEmphasis(bodies: ReturnType<typeof getBodyData>): HouseEmphas
     const h = i + 1;
     const inHouse = majorBodies.filter(b => b.house === h);
     const allInHouse = bodies.filter(b => b.house === h);
-    const intensity: HouseEmphasis['intensity'] = inHouse.length >= 3 ? 'High' : inHouse.length >= 1 ? 'Medium' : allInHouse.length > 0 ? 'Low' : 'Empty';
-    
+    const names = allInHouse.map(b => b.name);
+    const { additional } = splitBodies(names);
+    const stellium = isStellium(names);
+    const intensity: HouseEmphasis['intensity'] = stellium ? 'High' : inHouse.length >= 1 ? 'Medium' : allInHouse.length > 0 ? 'Low' : 'Empty';
+    const countLine = describeBodyCount(names);
+
     return {
       house: h,
       theme: HOUSE_THEMES[h],
-      planets: allInHouse.map(b => b.name),
+      planets: names,
+      majorPlanets: inHouse.map(b => b.name),
+      additionalBodies: additional,
+      isStellium: stellium,
+      countLabel: countLine,
       intensity,
-      description: inHouse.length >= 3 ? `Stellium — major life focus on ${HOUSE_THEMES[h].toLowerCase()}`
-        : inHouse.length >= 1 ? `Active — ${inHouse.map(b => b.name).join(', ')} bringing energy here`
-        : allInHouse.length > 0 ? `Minor bodies present (${allInHouse.map(b => b.name).join(', ')})`
-        : 'No planets — energy flows here through the sign on the cusp',
+      description: stellium ? `Stellium (${countLine}) — a major life focus on ${HOUSE_THEMES[h].toLowerCase()}. A stellium in this app means three or more major planets in the same house.`
+        : inHouse.length >= 1 ? `Active — ${countLine} here (${names.join(', ')})`
+        : allInHouse.length > 0 ? `${countLine} — additional bodies only, so this reads as colour rather than a main focus`
+        : 'No planets — this area is read through the sign on the cusp',
     };
   });
 }
@@ -876,7 +929,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     modalityBreakdown: modalities,
   };
 
-  return {
+  return sanitizeInterpretiveDeep<NatalPortrait>({
     lifePurpose,
     topThemes: rankTopThemes(chart, bodies),
     relationshipBlueprint: buildRelationshipDomain(chart, bodies),
@@ -891,5 +944,5 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     patterns: detectChartPatterns(chart),
     minorBodyPatterns: detectMinorBodyPatterns(chart),
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
-  };
+  });
 }

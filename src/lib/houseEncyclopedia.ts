@@ -389,7 +389,7 @@ export const HOUSES_DATA: HouseData[] = [
     quadrant: 4, quadrantName: 'Social Achievement', quadrantMantra: 'I AM ACHIEVING',
     hemisphere: { vertical: 'Southern', horizontal: 'Eastern' },
     houseType: 'Consolidation', houseTypeDescription: 'Even-numbered — the final consolidation: dissolving ego into spirit.',
-    bodyPart: 'Feet, lymphatic system, immune system',
+    bodyPart: 'Feet, lymphatic system, energy and recovery rhythm',
     core: 'The 12th house is what lies BENEATH — the unconscious, dreams, spirituality, hidden enemies (including self-sabotage), isolation, and transcendence. Planets here operate invisibly, influencing you from behind the scenes. This is the house of everything you can\'t see but deeply feel.',
     emptyHouse: 'An empty 12th house means the unconscious realm is not a major source of visible struggle. Spiritual life and solitude function through the cusp sign. Hidden patterns still exist but are less intense.',
     rulerGuidance: 'The ruler of the 12th shows what pulls you toward solitude, spiritual practice, or unconscious patterns. Its house placement reveals where your hidden life plays out.',
