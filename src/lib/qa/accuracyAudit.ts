@@ -145,7 +145,13 @@ export function buildReferenceChartDetailed(person: ReferencePerson): ReferenceB
     birthTime: person.birthTime,
     birthLocation: person.birthLocation,
   });
-  const placeResolved = moment.status === 'ok' && !!moment.place && moment.place.confidence === 'high';
+  // A place counts as resolved when it is a real point (city table or source
+  // coordinates), not a state or country center. A name-only city-table hit
+  // is "medium" confidence by design (nothing in the text picked the state);
+  // the distance check in auditPersonMath grades whether it was the right one.
+  const placeResolved = moment.status === 'ok' && !!moment.place
+    && (moment.place.confidence === 'high' || moment.place.confidence === 'medium')
+    && !moment.place.ambiguous;
   if (!placeResolved) {
     moment = resolveBirthMomentSync({
       birthDate: person.birthDate,
