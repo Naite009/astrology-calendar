@@ -628,7 +628,7 @@ Birth Location: ${activeChart.birthLocation || 'Unknown'}
 NATAL CHART POSITIONS:
 ${natalPositions}
 
-NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${ordinalNumber(newMoonHouse)} House` : 'Unknown'}
+NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${ordinalNumber(Number(newMoonHouse))} House` : 'Unknown'}
 
 ASPECTS TO NATAL CHART:
 ${aspectsText}

@@ -615,7 +615,7 @@ export const getRetrogradeChartActivation = (
       if (!cusp) continue;
       if (signs.includes(cusp.sign)) {
         const houseNum = houseName.replace('house', '');
-        activations.push(`${planet} retrograde activates your ${ordinalNumber(houseNum)} house matters.`);
+        activations.push(`${planet} retrograde activates your ${ordinalNumber(Number(houseNum))} house matters.`);
       }
     }
   }

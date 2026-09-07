@@ -305,7 +305,7 @@ export function detectCyclePatterns(
     const [h, count] = houses[0];
     out.push({
       title: `House ${h} keeps getting the reset`,
-      text: `${count} of these ${summaries.length} New Moons land in your ${ordinalNumber(h)} house, which covers ${HOUSE_ARENA[Number(h)]}. When you look back, expect your fresh starts to cluster there rather than spread evenly.`,
+      text: `${count} of these ${summaries.length} New Moons land in your ${ordinalNumber(Number(h))} house, which covers ${HOUSE_ARENA[Number(h)]}. When you look back, expect your fresh starts to cluster there rather than spread evenly.`,
     });
   }
 
