@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import jsPDF from 'jspdf';
 import { PDFContext } from './pdfContext';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
@@ -6,7 +7,6 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { P, MOON_PHASE_EXPLANATIONS } from '@/components/SolarReturnPDFExport';
 import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
 import { computeOverlayData, drawMainArenaBanner } from '@/lib/pdfSections/yearPriorityPDF';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 type Color = [number, number, number];
 const INK:   Color = [58,  54,  50]; // Charcoal gray

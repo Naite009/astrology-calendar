@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 // Chart validation guardrails.
 // Detects bad/suspect house-cusp data BEFORE the portrait engine produces wrong text.
 //
@@ -6,7 +7,6 @@
 // narrative becomes wrong. These checks make those errors visible.
 
 import type { NatalChart, NatalPlanetPosition } from "@/hooks/useNatalChart";
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",

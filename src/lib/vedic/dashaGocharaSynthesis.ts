@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Dasha read together with gochara, which is how Jyotish actually judges timing.
  *
@@ -17,7 +18,6 @@ import { CurrentDasha, formatDashaRange } from './vimshottariDasha';
 import { GocharaReport, GocharaTransit } from './gochara';
 import { PlanetCondition } from './strength';
 import { housePlain } from './interpretations/plainMeaning';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export interface DashaTransitLine {
   label: string;

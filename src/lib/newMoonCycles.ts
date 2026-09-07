@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 // New Moon cycle engine: deterministic lunation data (astronomy-engine only),
 // sky contacts to the lunation degree, natal overlay (house + aspects), and
 // cross-cycle pattern detection for the Moon Cycle "Patterns" view.
@@ -6,7 +7,6 @@ import * as Astronomy from "astronomy-engine";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { houseForLongitude, toAbsoluteLongitude } from "@/lib/houseForLongitude";
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export const ZODIAC_SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",

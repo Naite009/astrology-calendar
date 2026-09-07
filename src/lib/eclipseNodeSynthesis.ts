@@ -1,10 +1,10 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 // Eclipse-to-Natal-Node cross-reference synthesis
 // Connects eclipse sign themes to the user's natal nodal axis
 
 import { SPILLER_NODE_DATA, SPILLER_HOUSE_OVERLAYS } from '@/lib/nodeSpillerData';
 import type { ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getSignInfo } from '@/lib/astrology/signTeacher';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export interface EclipseNodeSynthesis {
   nnSign: string;

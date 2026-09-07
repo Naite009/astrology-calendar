@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Sparkles, Moon, Sun, Clock, Loader2, RefreshCw, X, Download, Share2, ChevronRight, AlertTriangle, Calendar, ArrowLeft, User, Loader, Mail } from "lucide-react";
 import { EmailReportModal } from "./EmailReportModal";
@@ -29,7 +30,6 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
 
 import { ChartSelector } from "./ChartSelector";
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",

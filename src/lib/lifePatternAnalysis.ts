@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Life Pattern Analysis Engine
  * 7 modules: Dominant Planet, Psychic Abilities, Children/Creativity,
@@ -8,7 +9,6 @@ import { getNatalPlanetHouse, signDegreesToLongitude } from '@/lib/houseCalculat
 import { PLANET_DIGNITIES } from '@/lib/planetDignities';
 import { getPlanetaryPositions as getLuckyPositions, getMoonPhase as getLuckyMoonPhase } from '@/lib/astrology';
 import { isTimeVOC as isLuckyVOC } from '@/lib/voidOfCourseMoon';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // ──────────────────────────────────────────
 // Shared helpers

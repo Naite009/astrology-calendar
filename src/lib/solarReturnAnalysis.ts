@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { getEssentialDignity, dignityNote } from './essentialDignity';
@@ -12,7 +13,6 @@ import {
   type SRDominantPlanetsReport,
 } from './solarReturnT4Analysis';
 import {
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
   calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
   calculateMidpoints, calculatePrenatalEclipse, calculatePlanetarySpeeds, calculateHeliacalRising,

@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Family System Synastry — group-level (not pair-level) deterministic analysis.
  *
@@ -9,7 +10,6 @@ import { NatalChart, NatalPlanetPosition } from "@/hooks/useNatalChart";
 import { getEffectiveOrb } from "./aspectOrbs";
 import { FamilyRole } from "./parentChildSynastry";
 import {
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
   moonPhaseAtBirth,
   sectOfChart,
   rulershipChain,

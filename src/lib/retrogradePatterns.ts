@@ -1,6 +1,6 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import * as Astronomy from 'astronomy-engine';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [

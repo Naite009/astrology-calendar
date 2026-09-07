@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useRef, useMemo } from 'react';
 import { X, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { TransitListModal } from './TransitListModal';
@@ -43,7 +44,6 @@ import { calculateEclipses, calculateElectionalDays } from '@/lib/electionalCale
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TodayAtAGlance } from './dayDetail/TodayAtAGlance';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {

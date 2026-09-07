@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { useState, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles, Zap, Download } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
@@ -63,7 +64,6 @@ import { TimeLordsTab } from '@/components/solarReturn/tabs/TimeLordsTab';
 import { LifeAreasTab } from '@/components/solarReturn/tabs/LifeAreasTab';
 import { PlanetsHousesTab } from '@/components/solarReturn/tabs/PlanetsHousesTab';
 import { AspectsTimingTab } from '@/components/solarReturn/tabs/AspectsTimingTab';
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',

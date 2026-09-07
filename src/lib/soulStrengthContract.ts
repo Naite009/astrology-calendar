@@ -1,3 +1,4 @@
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 /**
  * Strength-Based Contract
  * ------------------------------------------------------------------
@@ -11,7 +12,6 @@
 
 import { NatalChart } from "@/hooks/useNatalChart";
 import { computeAllSignals, PlanetHouseInfo } from "@/lib/narrativeAnalysisEngine";
-import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export interface StrengthContract {
   headline: string;
