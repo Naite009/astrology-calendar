@@ -26,9 +26,17 @@ import {
 } from '@/data/incarnationCrosses';
 
 // I-Ching Wheel mapping: 64 gates distributed around the zodiac
-// Each gate occupies 5.625° (360° / 64 = 5.625°)
-// The wheel starts at 58°00' Capricorn (Gate 41)
-const ICHING_WHEEL_START = 268; // 268° = 28° Capricorn in absolute degrees
+// Each gate occupies 5.625° (360° / 64 = 5.625°).
+//
+// The Rave Mandala starts with Gate 41 at 02°00'00" Aquarius (302° absolute).
+// Anchors that follow from that and are widely published: Gate 25 runs
+// 28°15' Pisces to 3°52'30" Aries, Gate 17 starts at 3°52'30" Aries, Gate 10
+// starts at 28°15' Sagittarius (the winter solstice gate).
+//
+// History: before engine version 3 this constant was 268°58' (an invented
+// "58° Capricorn"), which rotated every activation by almost six gates.
+export const RAVE_WHEEL_START_DEG = 302;
+export const GATE_SPAN_DEG = 360 / 64; // 5.625
 
 // Gate order around the I-Ching mandala (starting from Gate 41)
 const GATE_ORDER: number[] = [
@@ -47,16 +55,11 @@ export function getGateFromLongitude(longitude: number): { gate: number; line: n
   // Normalize longitude to 0-360
   let normalizedLong = ((longitude % 360) + 360) % 360;
   
-  // Adjust for I-Ching wheel offset (starts at 28° Capricorn = 268° + 58/60)
-  // The wheel starts at Gate 41 at 58°00' Capricorn
-  const wheelStart = 268 + (58 / 60); // 268.9667°
-  
-  // Calculate position relative to wheel start
-  let relativePosition = normalizedLong - wheelStart;
+  // Position relative to the start of Gate 41 (2°00' Aquarius).
+  let relativePosition = normalizedLong - RAVE_WHEEL_START_DEG;
   if (relativePosition < 0) relativePosition += 360;
   
-  // Each gate spans 5.625°
-  const gateSpan = 360 / 64; // 5.625°
+  const gateSpan = GATE_SPAN_DEG;
   const gateIndex = Math.floor(relativePosition / gateSpan);
   
   // Get gate number from order
@@ -768,10 +771,9 @@ export function calculateVariables(
     const toneSpan = colorSpan / 6; // Each tone spans ~0.026°
     
     // Calculate position within gate (0 to 5.625°)
-    const wheelStart = 268 + (58 / 60);
-    let relativePosition = longitude - wheelStart;
+    let relativePosition = (((longitude - RAVE_WHEEL_START_DEG) % 360) + 360) % 360;
     if (relativePosition < 0) relativePosition += 360;
-    const positionInGate = relativePosition % 5.625;
+    const positionInGate = relativePosition % GATE_SPAN_DEG;
     
     // Calculate position within line
     const positionInLine = positionInGate % lineSpan;
@@ -964,14 +966,26 @@ export function calculateHumanDesignChart(
  *
  * 2: Sun/Earth were read through a double ecliptic rotation (up to 2.6 degrees
  *    off, wrong gate on ~28% of days, wrong line on most of the rest).
+ * 3: The wheel start was 268°58' instead of 302° (Gate 41 at 2° Aquarius),
+ *    which rotated every gate of every engine chart by about six gates.
  */
-export const HD_CALC_VERSION = 2;
+export const HD_CALC_VERSION = 3;
 
 /** The Sun longitude the pre-version-2 engine produced at an instant. */
 const legacySunLongitudeV1 = (date: Date): number => {
   const time = Astronomy.MakeTime(date);
   const lon = Astronomy.Ecliptic(Astronomy.SunPosition(time).vec).elon;
   return ((lon % 360) + 360) % 360;
+};
+
+/** The gate/line the pre-version-3 wheel (start 268°58') gave a longitude. */
+export const legacyGateFromLongitudeV2 = (longitude: number): { gate: number; line: number } => {
+  const start = 268 + 58 / 60;
+  let rel = (((longitude - start) % 360) + 360) % 360;
+  if (rel < 0) rel += 360;
+  const idx = Math.floor(rel / GATE_SPAN_DEG);
+  const line = Math.floor((rel % GATE_SPAN_DEG) / (GATE_SPAN_DEG / 6)) + 1;
+  return { gate: GATE_ORDER[idx % 64], line: Math.min(6, Math.max(1, line)) };
 };
 
 export type HdRecomputeOutcome =
@@ -1020,8 +1034,15 @@ export function recomputeLegacyHdChart(chart: HumanDesignChart): HdRecomputeOutc
   const freshSun = fresh.personalityActivations.find(a => a.planet === 'Sun');
   if (!storedSun || !freshSun) return { action: 'kept', reason: 'calc-failed', chart };
 
-  const legacy = getGateFromLongitude(legacySunLongitudeV1(fresh.personalityDateTime));
-  const storedMatchesLegacy = storedSun.gate === legacy.gate && storedSun.line === legacy.line;
+  // Signatures of every engine that ever produced stored charts:
+  //   v1: wrong Sun frame + wrong wheel start
+  //   v2: corrected Sun frame + wrong wheel start
+  // A stored Sun matching either one came from the engine and must be redone.
+  const instant = fresh.personalityDateTime;
+  const v1 = legacyGateFromLongitudeV2(legacySunLongitudeV1(instant));
+  const v2 = legacyGateFromLongitudeV2(freshSun.longitude);
+  const matches = (g: { gate: number; line: number }) => storedSun.gate === g.gate && storedSun.line === g.line;
+  const storedMatchesLegacy = matches(v1) || matches(v2);
 
   if (!storedMatchesLegacy) {
     // The stored Sun is not what the old engine would have produced, so this
@@ -1029,9 +1050,8 @@ export function recomputeLegacyHdChart(chart: HumanDesignChart): HdRecomputeOutc
     // Stamp it so it is not re-checked; never overwrite it.
     return { action: 'kept', reason: 'not-legacy-signature', chart: { ...chart, calcSource: 'imported' } };
   }
-  // The stored Sun carries the old engine's signature. Even when the corrected
-  // Sun lands on the same gate/line, the design date was derived from the old
-  // Sun and can be days off, so the whole chart is recomputed.
+  // The stored Sun carries an old engine's signature: recompute the whole
+  // chart (design date, all activations, type, profile, cross, channels).
 
   return {
     action: 'recomputed',
