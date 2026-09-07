@@ -414,7 +414,7 @@ const RightNowSection = ({
         <VisibleRender fallback={<Skeleton className="h-40 w-full rounded-lg mt-6" />}>
           <div className="mt-6">
             <DailySynthesisCard
-              birthDate={new Date(activeChart.birthDate)}
+              birthDate={parseLocalDate(activeChart.birthDate)}
               targetDate={currentTime}
               natalChart={activeChart}
             />

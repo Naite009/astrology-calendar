@@ -13,9 +13,9 @@
  *                           orbital plane, reduced to the ecliptic of date.
  *                           The mean node is available as an explicit variant.
  *   Chiron, Ceres, Pallas,
- *   Juno, Vesta, Eris       JPL Horizons samples (1920-2060), cubic interpolated.
- *                           Outside that window the body is reported as
- *                           unavailable; nothing is extrapolated.
+ *   Juno, Vesta, Eris       JPL Horizons samples (1920-01-01 to 2059-12-27),
+ *                           cubic interpolated. Outside that window the body is
+ *                           reported as unavailable; nothing is extrapolated.
  *   Black Moon Lilith       mean lunar apogee (ELP-2000 mean elements).
  *                           The osculating ("true") Lilith is not offered.
  *   Angles and houses       apparent sidereal time and true obliquity of date
@@ -41,7 +41,7 @@ export const ENGINE_INFO = {
   name: 'astronomy-engine',
   version: '2.1.19',
   planets: 'astronomy-engine 2.1.19: apparent geocentric longitude, true ecliptic and equinox of date',
-  slowBodies: 'JPL Horizons samples every 10 days, 1920-01-01 to 2060-01-01, Catmull-Rom interpolation',
+  slowBodies: 'JPL Horizons samples every 10 days, 1920-01-01 to 2059-12-27, Catmull-Rom interpolation (checked against live Horizons: within 0.6 arc-minute, stations included)',
   node: 'True (osculating) node from the Moon\'s orbital plane, ecliptic of date',
   lilith: 'Mean lunar apogee (ELP-2000 mean elements)',
   angles: 'Apparent sidereal time and true obliquity of date',

@@ -1,6 +1,7 @@
 /**
  * Geocentric apparent ecliptic longitudes for the slow bodies, sampled from
- * JPL Horizons every 10 days from 1920-01-01 to 2060-01-01 (UTC).
+ * JPL Horizons every 10 days from 1920-01-01 (UTC); 5114 samples, so the last
+ * sample is 2059-12-27 00:00 UTC.
  *
  * The app previously extrapolated these bodies from a handful of anchor dates
  * multiplied by an orbital period, which drifted by tens of degrees away from

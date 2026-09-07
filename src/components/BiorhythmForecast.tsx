@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { parseLocalDate } from '@/lib/localDate';
 import { TrendingUp, AlertTriangle, Sparkles, ChevronLeft, ChevronRight, Heart, User, Moon } from 'lucide-react';
 import { 
   getBiorhythmForecast, 
@@ -402,7 +403,9 @@ export const BiorhythmForecast = ({
   const [partnerChartId, setPartnerChartId] = useState<string>('');
   
   const partnerChart = savedCharts.find(c => c.id === partnerChartId);
-  const partnerBirthDate = partnerChart ? new Date(partnerChart.birthDate) : null;
+  // Calendar day, read locally: `new Date("YYYY-MM-DD")` is UTC midnight and
+  // lands on the previous day west of Greenwich, shifting every cycle by a day.
+  const partnerBirthDate = partnerChart?.birthDate ? parseLocalDate(partnerChart.birthDate) : null;
   
   const forecast = useMemo(() => {
     // Start 3 days before today for context

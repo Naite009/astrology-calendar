@@ -1,5 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { birthMomentOf } from './chartAutoFill';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -80,21 +81,22 @@ export interface SolarArcChart {
 }
 
 // Calculate Solar Arc for current age
-// Solar Arc = ~1° per year of life (actually based on Sun's progressed motion)
+// Solar Arc = the progressed Sun's distance from the natal Sun, day-for-a-year.
+// `birthDate` must be the true UTC birth instant (see parseBirthDate below).
 export const calculateSolarArc = (birthDate: Date, currentDate: Date): number => {
   const ageInDays = (currentDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24);
   const ageInYears = ageInDays / 365.25;
   
-  // Get Sun's motion: calculate the difference between Sun on progressed date and birth Sun
-  // Progressed date = birthDate + ageInYears days
-  const progressedDate = new Date(birthDate);
-  progressedDate.setDate(progressedDate.getDate() + Math.floor(ageInYears));
+  // Progressed date = birth instant + (age in years) days, kept fractional.
+  // Flooring to whole years threw away up to a full degree of arc, which
+  // misdated solar arc contacts by up to a year.
+  const progressedDate = new Date(birthDate.getTime() + ageInYears * 24 * 60 * 60 * 1000);
   
   try {
-    const birthSunVector = Astronomy.GeoVector(Astronomy.Body.Sun, birthDate, false);
+    const birthSunVector = Astronomy.GeoVector(Astronomy.Body.Sun, birthDate, true);
     const birthSunEcliptic = Astronomy.Ecliptic(birthSunVector);
     
-    const progressedSunVector = Astronomy.GeoVector(Astronomy.Body.Sun, progressedDate, false);
+    const progressedSunVector = Astronomy.GeoVector(Astronomy.Body.Sun, progressedDate, true);
     const progressedSunEcliptic = Astronomy.Ecliptic(progressedSunVector);
     
     let arc = progressedSunEcliptic.elon - birthSunEcliptic.elon;
@@ -108,17 +110,13 @@ export const calculateSolarArc = (birthDate: Date, currentDate: Date): number =>
   }
 };
 
-// Parse birth date from chart
+// The birth instant from the shared normalization pipeline: local clock time
+// at the birthplace under that date's historical zone rules. The previous
+// version built `new Date(year, month, day, hour, minute)`, which read the
+// birth clock time in whatever zone the browser happens to be in.
 const parseBirthDate = (chart: NatalChart): Date | null => {
   try {
-    // birthDate format: "YYYY-MM-DD"
-    const [year, month, day] = chart.birthDate.split('-').map(Number);
-    
-    // birthTime format: "HH:MM" or "HH:MM:SS"
-    const timeParts = chart.birthTime?.split(':').map(Number) || [12, 0];
-    const [hour, minute] = timeParts;
-    
-    return new Date(year, month - 1, day, hour, minute);
+    return birthMomentOf(chart);
   } catch {
     return null;
   }

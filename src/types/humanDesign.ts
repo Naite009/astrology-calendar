@@ -157,6 +157,15 @@ export interface HumanDesignChart {
   createdAt: string;
   updatedAt: string;
   chartImageBase64?: string; // For future image upload feature
+
+  /**
+   * Where the activations came from: computed by the app's engine, or read
+   * from an uploaded chart. Older records have neither and are treated as
+   * unknown until a recompute check decides.
+   */
+  calcSource?: 'engine' | 'imported';
+  /** Engine version that produced the activations (engine charts only). */
+  calcVersion?: number;
 }
 
 // Gate to Center mapping
