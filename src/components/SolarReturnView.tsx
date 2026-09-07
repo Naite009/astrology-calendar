@@ -63,6 +63,7 @@ import { TimeLordsTab } from '@/components/solarReturn/tabs/TimeLordsTab';
 import { LifeAreasTab } from '@/components/solarReturn/tabs/LifeAreasTab';
 import { PlanetsHousesTab } from '@/components/solarReturn/tabs/PlanetsHousesTab';
 import { AspectsTimingTab } from '@/components/solarReturn/tabs/AspectsTimingTab';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const ZODIAC_SIGNS = [
   'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
@@ -1213,7 +1214,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
               <p className="text-lg font-serif text-foreground">{analysis.yearlyTheme.ascendantSign} Rising</p>
               <p className="text-xs text-muted-foreground">
                 Ruled by {analysis.yearlyTheme.ascendantRuler} in {analysis.yearlyTheme.ascendantRulerSign}
-                {analysis.yearlyTheme.ascendantRulerHouse && ` (${analysis.yearlyTheme.ascendantRulerHouse}th house)`}
+                {analysis.yearlyTheme.ascendantRulerHouse && ` (${ordinalNumber(analysis.yearlyTheme.ascendantRulerHouse)} house)`}
               </p>
             </div>
           </div>
@@ -1279,7 +1280,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       {analysis.lordOfTheYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${analysis.lordOfTheYear.srHouse}th House` : '—'}
+            Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${ordinalNumber(analysis.lordOfTheYear.srHouse)} House` : '—'}
           </h3>
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             <span className="text-2xl">{PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || analysis.lordOfTheYear.planet}</span>

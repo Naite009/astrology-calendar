@@ -6,6 +6,7 @@ import * as Astronomy from "astronomy-engine";
 import type { NatalChart } from "@/hooks/useNatalChart";
 import { getPlanetaryPositions } from "@/lib/astrology";
 import { houseForLongitude, toAbsoluteLongitude } from "@/lib/houseForLongitude";
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export const ZODIAC_SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -304,7 +305,7 @@ export function detectCyclePatterns(
     const [h, count] = houses[0];
     out.push({
       title: `House ${h} keeps getting the reset`,
-      text: `${count} of these ${summaries.length} New Moons land in your ${h}th house, which covers ${HOUSE_ARENA[Number(h)]}. When you look back, expect your fresh starts to cluster there rather than spread evenly.`,
+      text: `${count} of these ${summaries.length} New Moons land in your ${ordinalNumber(h)} house, which covers ${HOUSE_ARENA[Number(h)]}. When you look back, expect your fresh starts to cluster there rather than spread evenly.`,
     });
   }
 

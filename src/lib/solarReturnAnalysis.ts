@@ -12,6 +12,7 @@ import {
   type SRDominantPlanetsReport,
 } from './solarReturnT4Analysis';
 import {
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
   calculateFixedStars, calculateArabicParts, calculateFirdaria,
   calculateAntiscia, calculateSolarArcs, calculateSynthesisSections,
   calculateMidpoints, calculatePrenatalEclipse, calculatePlanetarySpeeds, calculateHeliacalRising,
@@ -230,7 +231,7 @@ function buildProfectionSynthesis(
   if (timeLordSRHouse && timeLordSRSign) {
     const dignity = getDignity(timeLord, timeLordSRSign);
     const dignityNote = DIGNITY_FORCE_NOTE[dignity] || '';
-    const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${timeLordSRHouse}th house`;
+    const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${ordinalNumber(timeLordSRHouse)} house`;
     const retroClause = isRetrograde
       ? ' Retrograde, that path turns inward first — review and integration before outward action.'
       : '';
@@ -806,8 +807,8 @@ export const analyzeSolarReturn = (
     const rulerHouse = planetSRHouses[ruler] ?? null;
 
     const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
-    const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${rulerHouse}th house affairs` : '';
-    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${rulerHouse}th house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. You'll feel this as a persistent pull: decisions, moods, and reactions will keep filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
+    const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${ordinalNumber(rulerHouse)} house affairs` : '';
+    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. You'll feel this as a persistent pull: decisions, moods, and reactions will keep filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
@@ -849,7 +850,7 @@ export const analyzeSolarReturn = (
       };
 
       const interpretation = rulerNatalHouse
-        ? (srAscRulerNatalHouseInterps[rulerNatalHouse] || `${ruler} rules your SR Ascendant and falls in your natal ${rulerNatalHouse}th house — the year's themes play out through ${natalTheme.toLowerCase()}.`)
+        ? (srAscRulerNatalHouseInterps[rulerNatalHouse] || `${ruler} rules your SR Ascendant and falls in your natal ${ordinalNumber(rulerNatalHouse)} house — the year's themes play out through ${natalTheme.toLowerCase()}.`)
         : `${ruler} rules your SR Ascendant. Add house cusps to your natal chart to see which area of your life this year's energy flows into.`;
 
       srAscRulerInNatal = {

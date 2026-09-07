@@ -8,6 +8,7 @@ import { getNatalPlanetHouse, signDegreesToLongitude } from '@/lib/houseCalculat
 import { PLANET_DIGNITIES } from '@/lib/planetDignities';
 import { getPlanetaryPositions as getLuckyPositions, getMoonPhase as getLuckyMoonPhase } from '@/lib/astrology';
 import { isTimeVOC as isLuckyVOC } from '@/lib/voidOfCourseMoon';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // ──────────────────────────────────────────
 // Shared helpers
@@ -168,7 +169,7 @@ export function calculateDominantPlanets(chart: NatalChart): DominantPlanetResul
     // Angular houses
     if (p.house === 1) addScore(p.name, 6, 'Placed in 1st house (identity)');
     else if (p.house === 10) addScore(p.name, 4, 'Placed in 10th house (public life)');
-    else if (p.house === 4 || p.house === 7) addScore(p.name, 3, `Placed in angular ${p.house}th house`);
+    else if (p.house === 4 || p.house === 7) addScore(p.name, 3, `Placed in angular ${ordinalNumber(p.house)} house`);
 
     // Count aspects to this planet
     let aspectCount = 0;
@@ -234,12 +235,12 @@ export function analyzePsychicAbilities(chart: NatalChart): PsychicIndicatorResu
 
   // Neptune house placements
   if (neptune && [1,8,9,12].includes(neptune.house || 0)) {
-    indicators.push({ name: `Neptune in ${neptune.house}th house`, description: `Your Neptune sits in one of the most psychically sensitive houses. The ${neptune.house}th house amplifies your ability to perceive beyond the physical.`, modality: 'Clairvoyance' });
+    indicators.push({ name: `Neptune in ${ordinalNumber(neptune.house)} house`, description: `Your Neptune sits in one of the most psychically sensitive houses. The ${ordinalNumber(neptune.house)} house amplifies your ability to perceive beyond the physical.`, modality: 'Clairvoyance' });
   }
 
   // Moon in 8th or 12th
   if (moon && [8,12].includes(moon.house || 0)) {
-    indicators.push({ name: `Moon in ${moon.house}th house`, description: `Your emotional body is tuned to the invisible. You absorb information from environments, dreams, and the emotional states of others without trying.`, modality: 'Clairsentience' });
+    indicators.push({ name: `Moon in ${ordinalNumber(moon.house)} house`, description: `Your emotional body is tuned to the invisible. You absorb information from environments, dreams, and the emotional states of others without trying.`, modality: 'Clairsentience' });
   }
 
   // Moon in water signs
@@ -307,7 +308,7 @@ export function analyzePsychicAbilities(chart: NatalChart): PsychicIndicatorResu
   if (nn?.sign) {
     const nnHouse = getNatalPlanetHouse('NorthNode', chart);
     if (nnHouse && [8,12].includes(nnHouse)) {
-      indicators.push({ name: `North Node in ${nnHouse}th house`, description: `Your soul's growth direction points toward developing your psychic and intuitive gifts. This isn't optional — it's your evolutionary trajectory.` });
+      indicators.push({ name: `North Node in ${ordinalNumber(nnHouse)} house`, description: `Your soul's growth direction points toward developing your psychic and intuitive gifts. This isn't optional — it's your evolutionary trajectory.` });
     }
   }
 
@@ -513,12 +514,12 @@ export function analyzeCareer(chart: NatalChart): CareerResult {
     // Planet sign placements
     for (const p of planets) {
       if (config.planets.includes(p.name) && config.signs.includes(p.sign)) addCareer(field, 2, `${p.name} in ${p.sign}`);
-      if (config.houses.includes(p.house || 0) && config.planets.includes(p.name)) addCareer(field, 3, `${p.name} in ${p.house}th house`);
+      if (config.houses.includes(p.house || 0) && config.planets.includes(p.name)) addCareer(field, 3, `${p.name} in ${ordinalNumber(p.house)} house`);
     }
     // Strong houses
     for (const h of config.houses) {
       const count = countPlanetsInHouse(planets, h);
-      if (count >= 2) addCareer(field, count * 2, `${count} planets in ${h}th house`);
+      if (count >= 2) addCareer(field, count * 2, `${count} planets in ${ordinalNumber(h)} house`);
     }
   }
 
@@ -974,7 +975,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       12: 'Hidden blessings and spiritual protection. When everything looks hopeless, something — or someone — appears to catch you. Your guardian energy works behind the scenes.'
     };
     if (jupiter.house && jupHouseMeanings[jupiter.house]) {
-      indicators.push({ name: `Jupiter in ${jupiter.house}th house`, description: jupHouseMeanings[jupiter.house], score: 10 });
+      indicators.push({ name: `Jupiter in ${ordinalNumber(jupiter.house)} house`, description: jupHouseMeanings[jupiter.house], score: 10 });
     }
   }
 
@@ -998,7 +999,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
 
   // Venus grace
   if (venus && [1, 7, 10].includes(venus.house || 0)) {
-    indicators.push({ name: `Venus in ${venus.house}th house`, description: 'Likability protects you. People want to help you, hire you, love you. Doors open through charm, grace, and genuine warmth — not manipulation.', score: 7 });
+    indicators.push({ name: `Venus in ${ordinalNumber(venus.house)} house`, description: 'Likability protects you. People want to help you, hire you, love you. Doors open through charm, grace, and genuine warmth — not manipulation.', score: 7 });
   }
 
   if (venus?.house === 12) {
@@ -1051,7 +1052,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       7: 'Partnerships', 8: 'Shared resources & transformation', 9: 'Travel & philosophy',
       10: 'Career & reputation', 11: 'Community & friendships', 12: 'Spiritual life & solitude'
     };
-    zones.push({ area: houseAreas[jupiter.house] || `${jupiter.house}th house matters`, description: `Jupiter blesses this area of your life with expansion, protection, and opportunity.` });
+    zones.push({ area: houseAreas[jupiter.house] || `${ordinalNumber(jupiter.house)} house matters`, description: `Jupiter blesses this area of your life with expansion, protection, and opportunity.` });
   }
   if (venus?.house) {
     const venusAreas: Record<number, string> = {
@@ -1060,7 +1061,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
       7: 'Love & partnership', 8: 'Intimate connection', 9: 'Cultural appreciation',
       10: 'Public charm', 11: 'Social circles', 12: 'Hidden grace'
     };
-    zones.push({ area: venusAreas[venus.house] || `${venus.house}th house beauty`, description: 'Venus brings ease, pleasure, and natural attraction to this area.' });
+    zones.push({ area: venusAreas[venus.house] || `${ordinalNumber(venus.house)} house beauty`, description: 'Venus brings ease, pleasure, and natural attraction to this area.' });
   }
 
   return {

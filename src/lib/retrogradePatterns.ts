@@ -1,5 +1,6 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import * as Astronomy from 'astronomy-engine';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -614,7 +615,7 @@ export const getRetrogradeChartActivation = (
       if (!cusp) continue;
       if (signs.includes(cusp.sign)) {
         const houseNum = houseName.replace('house', '');
-        activations.push(`${planet} retrograde activates your ${houseNum}th house matters.`);
+        activations.push(`${planet} retrograde activates your ${ordinalNumber(houseNum)} house matters.`);
       }
     }
   }

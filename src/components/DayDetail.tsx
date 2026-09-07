@@ -43,6 +43,7 @@ import { calculateEclipses, calculateElectionalDays } from '@/lib/electionalCale
 import { findNextMoonSignChange } from '@/lib/voidOfCourseMoon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TodayAtAGlance } from './dayDetail/TodayAtAGlance';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 // Sign-specific energies for daily guidance
 const SIGN_ENERGIES: Record<string, { action: string; focus: string; avoid: string }> = {
@@ -1713,7 +1714,7 @@ const SecondaryProgressionsSection = ({ date, natalChart }: { date: Date; natalC
               <span className="text-muted-foreground">Position: </span>
               <span className="font-medium text-foreground">
                 {moonInfo.degree}° {moonInfo.sign}
-                {moonInfo.house && ` (${moonInfo.house}th house)`}
+                {moonInfo.house && ` (${ordinalNumber(moonInfo.house)} house)`}
               </span>
             </div>
             

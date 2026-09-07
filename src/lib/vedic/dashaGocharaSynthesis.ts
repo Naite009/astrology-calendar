@@ -17,6 +17,7 @@ import { CurrentDasha, formatDashaRange } from './vimshottariDasha';
 import { GocharaReport, GocharaTransit } from './gochara';
 import { PlanetCondition } from './strength';
 import { housePlain } from './interpretations/plainMeaning';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export interface DashaTransitLine {
   label: string;
@@ -96,7 +97,7 @@ export function buildDashaGocharaSynthesis(
       `These years are about ${AGENDA[mahaLord]}. ` +
       (mahaNatal ? `Natally ${mahaLord} sits in ${mahaNatal.sign}${mahaNatal.house ? `, in the area of ${housePlain(mahaNatal.house)}` : ''}${mahaCond ? `, in ${mahaCond.band} condition at ${mahaCond.index} out of 100` : ''}. ` : '') +
       `In the sky it is ${verdictWord(mahaTransit)}` +
-      (mahaTransit ? `, moving through ${mahaTransit.sign}${mahaTransit.house ? `, your ${mahaTransit.house}th house area` : ''}. ` : '. ') +
+      (mahaTransit ? `, moving through ${mahaTransit.sign}${mahaTransit.house ? `, your ${ordinalNumber(mahaTransit.house)} house area` : ''}. ` : '. ') +
       (mahaTransit
         ? mahaTransit.netVerdict === 'works'
           ? 'That is the useful combination: the period and the sky are asking for the same thing, so effort here compounds.'
@@ -170,7 +171,7 @@ export function buildDashaGocharaSynthesis(
   const strong = gochara.transits.filter(t => t.bindus.savBand === 'strong');
   if (strong.length) {
     worksNow.push(
-      `Work routed through ${strong.map(t => `${t.sign}${t.house ? ` (your ${t.house}th house)` : ''}`).join(' and ')}, which holds above-average Ashtakavarga support right now.`,
+      `Work routed through ${strong.map(t => `${t.sign}${t.house ? ` (your ${ordinalNumber(t.house)} house)` : ''}`).join(' and ')}, which holds above-average Ashtakavarga support right now.`,
     );
   }
 

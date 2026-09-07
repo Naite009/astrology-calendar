@@ -6,6 +6,7 @@
 // narrative becomes wrong. These checks make those errors visible.
 
 import type { NatalChart, NatalPlanetPosition } from "@/hooks/useNatalChart";
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -59,7 +60,7 @@ export function validateChart(chart: NatalChart): ChartValidation {
         severity: "error",
         code: `MISSING_CUSP_${i}`,
         message: `House ${i} cusp is missing.`,
-        fix: `Add the ${i}th house cusp from the source chart.`,
+        fix: `Add the ${ordinalNumber(i)} house cusp from the source chart.`,
       });
       cuspAbs.push(null);
     } else {

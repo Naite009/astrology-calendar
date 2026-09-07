@@ -29,6 +29,7 @@ import { useNatalChart, NatalChart } from "@/hooks/useNatalChart";
 import { PersonalizedTransitsPanel } from "./PersonalizedTransitsPanel";
 
 import { ChartSelector } from "./ChartSelector";
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -670,7 +671,7 @@ export const TodaysCosmicEnergy = ({ onClose, userNatalChart: propUserNatalChart
               houseNumber: houseNum,
               sign: mercuryRxInfo.sign,
               degree: mercuryRxInfo.shadowDegree,
-              guidance: `Mercury retrograde at ${mercuryRxInfo.shadowDegree} falls in your ${houseNum}th house of ${houseThemes[houseNum] || 'various themes'}. During the pre-shadow, notice what topics arise around ${houseThemes[houseNum]}. During the retrograde, you'll revisit, review, and rethink matters of ${houseThemes[houseNum]}. At the Mercury-Sun conjunction (midpoint), a key insight about ${houseThemes[houseNum]} will crystallize. When Mercury stations direct, you'll have clarity about what needs to change in this area.`,
+              guidance: `Mercury retrograde at ${mercuryRxInfo.shadowDegree} falls in your ${ordinalNumber(houseNum)} house of ${houseThemes[houseNum] || 'various themes'}. During the pre-shadow, notice what topics arise around ${houseThemes[houseNum]}. During the retrograde, you'll revisit, review, and rethink matters of ${houseThemes[houseNum]}. At the Mercury-Sun conjunction (midpoint), a key insight about ${houseThemes[houseNum]} will crystallize. When Mercury stations direct, you'll have clarity about what needs to change in this area.`,
             };
           }
         }

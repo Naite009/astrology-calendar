@@ -4,6 +4,7 @@
 import { SPILLER_NODE_DATA, SPILLER_HOUSE_OVERLAYS } from '@/lib/nodeSpillerData';
 import type { ZodiacSign } from '@/lib/astrology/signTeacher';
 import { getSignInfo } from '@/lib/astrology/signTeacher';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 export interface EclipseNodeSynthesis {
   nnSign: string;
@@ -115,7 +116,7 @@ export function synthesizeEclipseWithNodes(
     patternSentences.push(
       `The nodes are generational — millions of people share your ${nnSign}/${snSign} nodal axis. ` +
       `But the HOUSE they fall in makes them deeply personal to you` +
-      `${nnHouse ? `. Your North Node is in your ${nnHouse}th house, so this growth plays out in ${SPILLER_HOUSE_OVERLAYS[nnHouse]?.focus || 'that specific life area'}` : ''}. ` +
+      `${nnHouse ? `. Your North Node is in your ${ordinalNumber(nnHouse)} house, so this growth plays out in ${SPILLER_HOUSE_OVERLAYS[nnHouse]?.focus || 'that specific life area'}` : ''}. ` +
       `The sign tells you the HOW (${nnSign}-style); the house tells you the WHERE (which part of YOUR life).`
     );
   }
@@ -160,13 +161,13 @@ export function synthesizeEclipseWithNodes(
   // Journal prompts synthesizing all pieces
   const journalPrompts: string[] = [
     `Where in my life am I using ${eclipseSign} methods (${eclipseShadows.slice(0, 2).join(', ')}) to avoid ${nnSign} growth?`,
-    `What would my ${nnSign} North Node say about how I'm handling the area of life this eclipse is activating${eclipseHouse ? ` (my ${eclipseHouse}th house)` : ''}?`,
+    `What would my ${nnSign} North Node say about how I'm handling the area of life this eclipse is activating${eclipseHouse ? ` (my ${ordinalNumber(eclipseHouse)} house)` : ''}?`,
     `Am I running the \"${snTendencies[0] || snSign + ' default'}\" pattern right now? What's one concrete step toward ${nnSign} instead?`,
   ];
 
   if (eclipseHouse && nnHouse) {
     journalPrompts.push(
-      `How do my ${eclipseHouse}th house themes connect to my ${nnHouse}th house North Node destiny?`
+      `How do my ${ordinalNumber(eclipseHouse)} house themes connect to my ${ordinalNumber(nnHouse)} house North Node destiny?`
     );
   }
 

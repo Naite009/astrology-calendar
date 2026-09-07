@@ -20,6 +20,7 @@ import { LunarWorkbookSection } from "./LunarWorkbookSection";
 import { useSolarReturnChart } from "@/hooks/useSolarReturnChart";
 import { analyzeSolarReturn } from "@/lib/solarReturnAnalysis";
 import { calculateActivationWindows } from "@/lib/solarReturnActivationWindows";
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -627,7 +628,7 @@ Birth Location: ${activeChart.birthLocation || 'Unknown'}
 NATAL CHART POSITIONS:
 ${natalPositions}
 
-NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${newMoonHouse}th House` : 'Unknown'}
+NEW MOON HOUSE PLACEMENT: ${newMoonHouse !== 'unknown' ? `${ordinalNumber(newMoonHouse)} House` : 'Unknown'}
 
 ASPECTS TO NATAL CHART:
 ${aspectsText}

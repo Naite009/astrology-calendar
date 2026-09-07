@@ -6,6 +6,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { P, MOON_PHASE_EXPLANATIONS } from '@/components/SolarReturnPDFExport';
 import { getMoonPhaseBlending } from '@/lib/solarReturnMoonData';
 import { computeOverlayData, drawMainArenaBanner } from '@/lib/pdfSections/yearPriorityPDF';
+import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 
 type Color = [number, number, number];
 const INK:   Color = [58,  54,  50]; // Charcoal gray
@@ -126,7 +127,7 @@ export function generatePDFYearAtAGlance(
   ctx.drawInfoBox(doc, margin, ctx.y, col3W, boxH,
     "THIS YEAR'S FOCUS",
     HOUSE_FOCUS[houseNum] || `House ${houseNum}`,
-    HOUSE_FELT[houseNum] || `${houseNum}th House Profection Year`,
+    HOUSE_FELT[houseNum] || `${ordinalNumber(houseNum)} House Profection Year`,
     SOFT_GOLD,
   );
 
