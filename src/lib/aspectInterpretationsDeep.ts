@@ -556,7 +556,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
       howItManifests: "Magnetic presence. Others feel your intensity. May have survived something that forged you. Control issues, power dynamics, and transformation are constant themes.",
       realLifeExamples: [
         "People sensing your presence before you speak",
-        "Surviving experiences that would break others",
+        "Moving through hard experiences and carrying real understanding out of them",
         "Power dynamics in every interaction",
         "Intensity that attracts and repels"
       ],

@@ -205,7 +205,7 @@ function getDominantPlanetMeaning(planet: string): string {
     Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts, even when they feel like too much for the room.",
     Jupiter: "You're wired for expansion, meaning, and growth. A sense of possibility often helps you keep going when a situation looks discouraging. You're the one who sees the bigger picture when everyone else is stuck in the weeds.",
     Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it. Your authority comes from lived experience, not inherited privilege.",
-    Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't. Your genius is in disruption, innovation, and the willingness to be different.",
+    Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't. One strength here can be innovation, fresh angles, and a willingness to be different.",
     Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are notable — but you need to learn what's yours and what belongs to everyone else. Creativity and compassion are your channels.",
     Pluto: "Transformation is a recurring theme in your chart. You often prefer depth to small talk. Your power lies in regeneration — the ability to walk through destruction and emerge stronger, taking others with you."
   };
@@ -966,7 +966,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
   // Jupiter house placements
   if (jupiter) {
     const jupHouseMeanings: Record<number, string> = {
-      1: 'Protected identity. You walk through life with an invisible shield — optimism and resilience are built into your personality. Things that would break others bounce off you.',
+      1: 'Protected identity. You walk through life with an invisible shield — optimism and resilience often come easily. Setbacks may bother you less than they bother other people.',
       2: 'Protected resources. Money and material needs have a way of working out. You may not always be wealthy, but you rarely go without.',
       4: 'Family protection. Your home life, even if complicated, carries a thread of safety. You have deep emotional security to draw from.',
       9: 'Protected during travel and expansion. The universe supports your growth, education, and philosophical exploration. Foreign places feel like home.',

@@ -522,7 +522,7 @@ export function generatePreventionProtocol(
   if (afflictedPlanets.some(a => a.planet === 'Neptune')) {
     weekly.push({
       text: 'Lymphatic support (dry brushing, movement)',
-      reason: 'Your Neptune is afflicted — Neptune rules the lymphatic and immune systems. Without active support, you\'re more prone to mysterious illnesses and immune weakness.'
+      reason: 'Neptune is under stress in your chart, which symbolically points to blurred boundaries and low reserves. Read it as a cue to protect rest, hydration, and downtime, not as a medical claim.'
     });
   }
 
