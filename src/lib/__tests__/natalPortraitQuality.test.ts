@@ -189,7 +189,7 @@ describe("Ava Kravitz natal portrait regression", () => {
 
   it('labels dominance as a relative index, not a percentage of the chart', () => {
     const report = calculateNatalDominantPlanets(chart);
-    const top = report.rankings[0];
+    const top = report.entries[0];
     expect(top.dominanceIndex).toBeGreaterThan(0);
     expect(top.indexLabel?.toLowerCase()).toContain('index');
     expect(report.indexExplainer?.toLowerCase()).toContain('relative');
