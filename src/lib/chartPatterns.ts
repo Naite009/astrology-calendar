@@ -1,6 +1,9 @@
 // Chart Pattern Detection - Grand Cross, Grand Trine, T-Square, Yod, Mystic Rectangle, etc.
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { ordinalHouse } from '@/lib/interpretation/ordinals';
+import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
+import { classifyPatternBodies, rankPatterns, type PatternTier } from '@/lib/interpretation/patternClassification';
 
 export interface ChartPattern {
   name: string;
@@ -10,6 +13,10 @@ export interface ChartPattern {
   meaning: string;
   challenge: string;
   gift: string;
+  /** 'major' = all major planets. 'nodal-axis' = backbone is the automatic NN/SN opposition. 'secondary' = involves minor bodies/points. */
+  tier?: PatternTier;
+  tierLabel?: string;
+  weightNote?: string;
 }
 
 const ZODIAC_ORDER = [
@@ -155,19 +162,19 @@ const TSQUARE_APEX_MEANINGS: Record<string, { focus: string; overdrive: string; 
     release: "Ground the vision. Spirit needs a body. Dreams need action."
   },
   Pluto: {
-    focus: "Power and transformation are the pressure point. Intense drive to control, transform, or dominate.",
-    overdrive: "Power struggles, obsession, manipulation, or destroying what you love.",
-    release: "Surrender control. Trust the process. Some things must die for rebirth."
+    focus: "Power, depth, and change are the pressure point. There is usually real staying power here, plus a pull toward getting to the bottom of things rather than leaving them half-understood.",
+    overdrive: "Under strain, one expression is holding on too tightly, replaying a situation, or turning a disagreement into a contest of wills. Another is going quiet and withdrawing until the pressure passes.",
+    release: "Flexibility and openness tend to ease this: naming what you feel earlier, and letting some outcomes stay unresolved."
   },
   Chiron: {
-    focus: "Wounding and healing are the pressure point. Your pain is visible and drives you to help or hide.",
-    overdrive: "Victim identity, over-focusing on wounds, or compulsive healing of others.",
-    release: "Your wound is not your identity. Heal yourself first."
+    focus: "Sensitivity and understanding are the pressure point. This area can feel exposed, and it often becomes a place of unusual insight.",
+    overdrive: "Under strain, this can show up as over-identifying with what hurt, or as looking after everyone else first.",
+    release: "Sensitivity here is information, not identity. Care given to yourself first usually steadies the rest."
   },
   NorthNode: {
-    focus: "Your life direction is the pressure point. Immense karmic pressure to evolve.",
-    overdrive: "Anxiety about purpose, rushing growth, or paralysis about direction.",
-    release: "Trust the path. You don't have to figure it all out now."
+    focus: "Direction and development are the pressure point. This is a symbolic pointer toward qualities worth practising, not a fixed destiny.",
+    overdrive: "This can show up as pressure about purpose, or as hesitating because no direction feels certain enough.",
+    release: "Small, repeated steps count. Nothing here needs to be figured out all at once."
   }
 };
 
@@ -282,7 +289,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
               detailedDesc += `**🎯 THE RELEASE POINT (CRITICAL)**\n`;
               detailedDesc += `Location: ${releaseDegreeInSign.toFixed(0)}° ${releaseSign}`;
               if (releaseHouse) {
-                detailedDesc += ` (${releaseHouse}${getOrdinalSuffix(releaseHouse)} House)`;
+                detailedDesc += ` (${ordinalHouse(releaseHouse)})`;
               }
               detailedDesc += `\n\n`;
               
@@ -291,7 +298,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
               // House-specific release guidance
               if (releaseHouse) {
                 const houseGuidance = getHouseReleaseGuidance(releaseHouse);
-                detailedDesc += `**${releaseHouse}${getOrdinalSuffix(releaseHouse)} House Release:** ${houseGuidance}\n\n`;
+                detailedDesc += `**${ordinalHouse(releaseHouse)} Release:** ${houseGuidance}\n\n`;
               }
               
               // Sign-specific release guidance
@@ -302,7 +309,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 detailedDesc += `**⭐ PLANETS NEAR RELEASE POINT: ${planetsNearRelease.join(', ')}**\n`;
                 detailedDesc += `This is significant! You have planetary support at your release point. ${planetsNearRelease.join(' and ')} can help channel the T-Square tension constructively. These planets are your pressure valve—develop their qualities consciously.\n\n`;
               } else {
-                detailedDesc += `**No planets at the release point**—you must CONSCIOUSLY develop ${releaseSign}/${releaseHouse ? `${releaseHouse}th House` : ''} qualities. This is learned skill, not natural talent.\n\n`;
+                detailedDesc += `**No planets at the release point**—you must CONSCIOUSLY develop ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} qualities. This is learned skill, not natural talent.\n\n`;
               }
               
               detailedDesc += `**Integration Practice:** ${apexMeaning.release}`;
@@ -312,7 +319,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 symbol: '⊤',
                 planets: [oppPlanet1.name, oppPlanet2.name, apexPlanet.name],
                 description: detailedDesc,
-                meaning: `The ${oppPlanet1.name}-${oppPlanet2.name} opposition creates a fundamental life polarity. ${apexPlanet.name} at the apex receives ALL that tension and must DO something with it. This creates tremendous drive but also chronic stress. The release point in ${releaseSign}${releaseHouse ? ` (${releaseHouse}th House)` : ''} is where you learn to let go.`,
+                meaning: `The ${oppPlanet1.name}-${oppPlanet2.name} opposition creates a fundamental life polarity. ${apexPlanet.name} at the apex receives ALL that tension and must DO something with it. This can create real drive, and it may also feel like ongoing pressure. The release point in ${releaseSign}${releaseHouse ? ` (${ordinalHouse(releaseHouse)})` : ''} is where you learn to let go.`,
                 challenge: `${apexPlanet.name} is under constant pressure. You may overdo ${apexPlanet.name} activities, burn out in this area, or swing between the two opposition planets without resolution. The release point feels unfamiliar—that's exactly why you need to develop it.`,
                 gift: `Extraordinary ${apexPlanet.name} capability built through pressure. Once you learn to use the release point, this becomes a powerful engine for achievement. The tension never fully goes away—but it becomes fuel rather than drain.`,
               });
