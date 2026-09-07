@@ -3,7 +3,7 @@ import type { NatalChart } from '@/hooks/useNatalChart';
 import { calculateNatalFromInput, toStoredPosition } from '../natalChartCalculation';
 import { generateNatalPortrait } from '../natalPortraitEngine';
 import { detectChartPatterns, detectMinorBodyPatterns } from '../chartPatterns';
-import { calculateDominantPlanets } from '../dominantPlanetsEngine';
+import { calculateNatalDominantPlanets } from '../dominantPlanetsEngine';
 import { ordinal, ordinalHouse } from '@/lib/interpretation/ordinals';
 import { isStellium, splitBodies, describeBodyCount, MAJOR_PLANETS } from '@/lib/interpretation/bodyTaxonomy';
 import { findForbiddenPhrases, sanitizeInterpretiveText } from '@/lib/interpretation/languagePolicy';
@@ -157,7 +157,6 @@ describe("Ava Kravitz natal portrait regression", () => {
     const text = collectStrings(portrait).join('\n');
     const hits = findForbiddenPhrases(text);
     expect(hits).toEqual([]);
-    expect(text).not.toMatch(/\d+th House/i.replace('th', 'th')); // sanity: ordinals rendered via helper
     expect(text).not.toMatch(/2th|3th|1th|21th/);
     expect(text.toLowerCase()).not.toContain('immune');
     expect(text.toLowerCase()).not.toContain('deepest wound');
@@ -180,16 +179,16 @@ describe("Ava Kravitz natal portrait regression", () => {
 
   it('synthesises relationship guidance from more than Venus house', () => {
     const portrait = generateNatalPortrait(chart);
-    const rel = portrait.domains.find(d => d.title === 'Relationship Blueprint');
+    const rel = portrait.relationshipBlueprint;
     expect(rel).toBeTruthy();
-    const advice = rel!.advice || '';
+    const advice = rel.advice || '';
     expect(advice).toMatch(/Venus/);
     expect(advice).toMatch(/Mars|7th house/);
     expect(advice.toLowerCase()).not.toContain("that's where love shows up most naturally");
   });
 
   it('labels dominance as a relative index, not a percentage of the chart', () => {
-    const report = calculateDominantPlanets(chart);
+    const report = calculateNatalDominantPlanets(chart);
     const top = report.rankings[0];
     expect(top.dominanceIndex).toBeGreaterThan(0);
     expect(top.indexLabel?.toLowerCase()).toContain('index');

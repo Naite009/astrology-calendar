@@ -98,12 +98,12 @@ const PlanetRow = ({ entry, report, showBreakdown }: { entry: UnifiedEntry; repo
         <span className="text-xs font-semibold text-foreground w-10 text-right" title="Raw score">{entry.totalScore}</span>
         <div
           className="w-20 h-2 bg-secondary rounded-full overflow-hidden flex-shrink-0"
-          title={entry.indexLabel || `Dominance index: ${entry.dominanceIndex ?? entry.percentage} (relative, not a percentage of the chart)`}
+          title={(entry as { indexLabel?: string }).indexLabel || `Dominance index: ${Math.round(index)} (relative to the top-ranked body, not a percentage of the chart)`}
         >
-          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${entry.dominanceIndex ?? entry.percentage}%` }} />
+          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${index}%` }} />
         </div>
         <span className="text-[9px] text-muted-foreground w-14 text-right hidden sm:inline">
-          idx {entry.dominanceIndex ?? entry.percentage}
+          idx {Math.round(index)}
         </span>
         
         {showBreakdown && (
