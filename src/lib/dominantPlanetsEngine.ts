@@ -12,6 +12,7 @@
 
 import { NatalChart } from '@/hooks/useNatalChart';
 import { signDegreesToLongitude, getHouseForLongitude } from './houseCalculations';
+import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -27,6 +28,18 @@ export interface DominantPlanetEntry {
   planet: string;
   rank: number;
   totalScore: number;
+  /**
+   * Relative dominance index (0-100), scaled against the highest-scoring planet
+   * in THIS chart. 100 simply means "highest in this chart" — it is NOT a
+   * percentage of the chart, and the indices do not add up to 100.
+   */
+  dominanceIndex: number;
+  /** Ready-to-display label, e.g. "Dominance index: 100 (highest in this chart)". */
+  indexLabel: string;
+  /**
+   * @deprecated Misread as a share of the chart. Use `dominanceIndex` + `indexLabel`.
+   * Kept as an alias so existing surfaces keep rendering.
+   */
   percentage: number;
   breakdown: DominantPlanetBreakdown;
   dignity: string;
@@ -41,6 +54,8 @@ export interface DominantPlanetsReport {
   billboard: string;
   captainScore: number;
   interpretation: string;
+  /** One line explaining the index so no surface can imply literal percentages. */
+  indexExplainer: string;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -78,12 +93,12 @@ const PLANET_MEANINGS: Record<string, string> = {
   Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought.",
   Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision.",
   Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts.",
-  Jupiter: "You're wired for expansion, meaning, and growth. Optimism carries you through what would break others. You see the bigger picture when everyone else is stuck.",
+  Jupiter: "Growth, meaning, and perspective are recurring themes. A sense of possibility often helps you keep going when a situation looks discouraging, and you tend to notice the wider context.",
   Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it. Your authority comes from lived experience.",
-  Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems others don't. Your genius is in disruption and innovation.",
-  Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are extraordinary. Creativity and compassion are your channels.",
-  Pluto: "Transformation is your birthright. You don't do surface-level anything. Your power lies in regeneration — walking through destruction and emerging stronger.",
-  Chiron: "Your deepest wound becomes your greatest teaching. Where you've been hurt most is exactly where you heal others. The wounded healer archetype lives through you.",
+  Uranus: "Independence and originality run through the chart. One expression of this is questioning how things are usually done and trying a different route; another is needing room to do things your own way.",
+  Neptune: "Imagination and sensitivity are strongly marked. This can show up as creativity and compassion, and under strain as blurred boundaries or wishful reading of a situation.",
+  Pluto: "Depth and change are recurring themes. You may prefer getting to the bottom of something over leaving it half-understood, and you tend to recover and rebuild after difficult periods.",
+  Chiron: "This points to an area of real sensitivity, which often becomes a source of understanding over time. It may make you attentive to the same thing in other people, though it does not oblige you to take care of anyone.",
   NorthNode: "Your soul's growth direction shapes everything. The North Node isn't a planet but a compass — pulling you toward what you came here to learn and become.",
 };
 
@@ -278,16 +293,21 @@ export function calculateNatalDominantPlanets(chart: NatalChart): DominantPlanet
   scored.sort((a, b) => b.totalScore - a.totalScore);
 
   const maxScore = scored[0]?.totalScore || 1;
-  const entries: DominantPlanetEntry[] = scored.map((s, i) => ({
+  const entries: DominantPlanetEntry[] = scored.map((s, i) => {
+    const idx = Math.round((s.totalScore / maxScore) * 100);
+    return {
     planet: s.planet,
     rank: i + 1,
     totalScore: s.totalScore,
-    percentage: Math.round((s.totalScore / maxScore) * 100),
+    dominanceIndex: idx,
+    indexLabel: `Dominance index: ${idx} (${i === 0 ? 'highest in this chart' : `relative to ${scored[0]?.planet}`}) · raw score ${s.totalScore}`,
+    percentage: idx,
     breakdown: s.breakdown,
     dignity: s.dignity,
     tags: s.tags,
     meaning: PLANET_MEANINGS[s.planet] || '',
-  }));
+    };
+  });
 
   const captain = entries[0]?.planet || '';
   const starPlayer = [...entries].sort((a, b) => b.breakdown.sign - a.breakdown.sign)[0]?.planet || '';
@@ -309,17 +329,19 @@ export function calculateNatalDominantPlanets(chart: NatalChart): DominantPlanet
 
   const top3 = entries.slice(0, 3).map(e => e.planet);
   const captainTags = entries[0]?.tags.length ? entries[0].tags.join(', ').toLowerCase() : 'placement and aspects';
-  const interpretation = `${captain} is your most dominant planet with ${entries[0]?.totalScore} points — it has the most influence over your chart through a combination of ${captainTags}. ${
+  const indexExplainer = 'The dominance index is relative: the top planet is set to 100 and the others are scaled against it. It is not a percentage of your chart, and the numbers do not sum to 100. Raw scores are shown alongside.';
+  const interpretation = `${captain} is the highest-scoring planet in this chart with a raw score of ${entries[0]?.totalScore} — it has the most influence over your chart through a combination of ${captainTags}. ${
     starPlayer !== captain ? `${starPlayer} is your strongest planet by dignity — most comfortable in its sign. ` : ''
   }${billboard !== captain ? `${billboard} is your most elevated planet (closest to the Midheaven) — what the world sees first. ` : ''
   }Your top three: ${top3.join(', ')}.`;
 
-  return {
+  return sanitizeInterpretiveDeep<DominantPlanetsReport>({
     entries,
     captain,
     starPlayer,
     billboard,
     captainScore: entries[0]?.totalScore || 0,
     interpretation,
-  };
+    indexExplainer,
+  });
 }
