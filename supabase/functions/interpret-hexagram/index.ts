@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,7 +106,7 @@ Give a reading about what this hexagram says about their current chapter of life
       body: JSON.stringify({
         model: "google/gemini-3.7-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: false }) },
           { role: "user", content: userPrompt },
         ],
         stream: true,

@@ -7,6 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 interface CrossAspect {
   fromPlanet: string;
@@ -984,7 +985,7 @@ Write the reading. FIRST, produce the childMechanism object following the MECHAN
       body: JSON.stringify({
         model: "google/gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: true }) },
           { role: "user", content: userPrompt },
         ],
         response_format: { type: "json_object" },

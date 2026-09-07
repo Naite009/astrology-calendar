@@ -1,6 +1,6 @@
 # Accuracy suite
 
-Run: 2026-09-07T15:17:56.916Z
+Run: 2026-09-07T19:48:40.638Z
 People: 20 | Sky moment for readings: 2026-06-15
 
 ## Headline
@@ -9,7 +9,7 @@ People: 20 | Sky moment for readings: 2026-06-15
 | --- | --- | --- |
 | Chart math | 100.0% | 280/280 positions inside tolerance, 0 close, 0 off |
 | Structural invariants | 100.0% | 140/140 held |
-| Reading voice | 100.0% | 0 errors, 1 warnings across 260 blocks, 14 rules |
+| Reading voice | 100.0% | 0 errors, 1 warnings across 260 blocks, 20 rules |
 
 ## Per person
 

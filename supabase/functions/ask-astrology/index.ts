@@ -1,6 +1,7 @@
 // Using built-in Deno.serve (no external std import needed)
 // Redeploy marker: 2026-04-22 — ensure Replit gate block (line ~4669) is live
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateReading, listAllowedNatalAspects } from "./validateReading.ts";
 import { rewriteNatalAspectsDeterministically } from "./natalAspectRewriter.ts";
@@ -10998,7 +10999,7 @@ const requestMissingBullets = async (
   return patched;
 };
 
-const SYSTEM_PROMPT = `SECTION BODY LENGTH CAP — MANDATORY (NON-NEGOTIABLE, applies to EVERY reading type and EVERY narrative section):
+let SYSTEM_PROMPT = `SECTION BODY LENGTH CAP — MANDATORY (NON-NEGOTIABLE, applies to EVERY reading type and EVERY narrative section):
 Each narrative section "body" string in your JSON output MUST NOT exceed 2,000 characters. This cap is hard. It applies to "How This Person Loves", "Your Career Foundation", "Hidden Strengths", "The Growth Edge", "Solar Return Career Indicators", overlay sections, relationship architecture sections, and every other narrative body across every reading type. Before you finish writing a section body, count its characters. If it is approaching or over 2,000 characters, STOP and prioritize: (1) the single most important placement that anchors the section, (2) the one or two patterns that most directly answer the user's question, (3) one concrete behavioral takeaway. CUT the rest — secondary placements, supporting aspects, parallel restatements, and "additionally" / "furthermore" elaborations. Do NOT pad. Do NOT enumerate every aspect. Do NOT restate the same idea in three different ways. A 1,500-character body that names the 2 most decisive placements with clear behavioral language is ALWAYS better than a 4,000-character body that lists every relevant placement. The summary_box and short labeled fields (titles, subtitles, single-line callouts) are not subject to this cap, but every multi-sentence narrative body is.
 
 BANNED PHRASES — NEVER USE THESE UNDER ANY CIRCUMSTANCES: "blueprint", "DNA", "configuration", "this is the core of", "reinforces this", "the key placements suggest", "this configuration tells us", "your chart shows", "key indicators", "energetic signature", "cosmic", "the universe is", "tells a very specific story", "further emphasizes", "this is a direct contrast". If you catch yourself about to use any of these, stop and rewrite in plain human language instead.
@@ -12242,7 +12243,7 @@ Before finalizing output, verify ALL of the following. If ANY check fails, the r
 // at the Anthropic call site selects this prompt when isNarrativeQuestion
 // is true; the post-processing pipeline skips SR placement table injection
 // and deterministic modality/element injection for narrative readings.
-const NARRATIVE_SYSTEM_PROMPT = `You are a master astrologer writing a long-form NARRATIVE PORTRAIT of one person from their natal chart only. This is one continuous prose story across exactly five movements, not a section grid, not a year-ahead reading, not a relationship reading, not a Solar Return reading.
+let NARRATIVE_SYSTEM_PROMPT = `You are a master astrologer writing a long-form NARRATIVE PORTRAIT of one person from their natal chart only. This is one continuous prose story across exactly five movements, not a section grid, not a year-ahead reading, not a relationship reading, not a Solar Return reading.
 
 ═══════════════════════════════════════════════════════════════════════════
 BASE VOICE RULES — NON-NEGOTIABLE
@@ -12321,6 +12322,14 @@ ABSOLUTELY FORBIDDEN in narrative output:
 The "question_type" field in your JSON output MUST be exactly "narrative".
 
 This contract is enforced server-side: any extra section will be flagged; any missing required section will be flagged; any timing window will be stripped.`;
+
+// ── Shared interpretation standard ────────────────────────────────────────
+// Both prompts inherit the app-wide interpretation rules (chart grounding,
+// constructive-first phrasing, no pathology/determinism, synthesis over lists)
+// from supabase/functions/_shared/interpretationStandard.ts so this function
+// can never drift from the rest of the app.
+SYSTEM_PROMPT = withInterpretationStandard(SYSTEM_PROMPT, { fullChart: true });
+NARRATIVE_SYSTEM_PROMPT = withInterpretationStandard(NARRATIVE_SYSTEM_PROMPT, { fullChart: true });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {

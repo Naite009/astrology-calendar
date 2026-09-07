@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T15:17:56.916Z",
+  "generatedAt": "2026-09-07T19:48:40.638Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -5763,7 +5763,7 @@
     "lintErrors": 0,
     "lintWarnings": 1,
     "readingScore": 0.9998076923076923,
-    "rulesChecked": 14
+    "rulesChecked": 20
   },
   "ruleBreakdown": [
     {

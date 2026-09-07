@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1195,7 +1196,7 @@ CRITICAL INSTRUCTIONS:
       body: JSON.stringify({
         model: "google/gemini-3.7-flash",
         messages: [
-          { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
+          { role: "system", content: withInterpretationStandard(systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock, { fullChart: false }) },
           { role: "user", content: userPrompt },
         ],
       }),
@@ -1397,7 +1398,7 @@ CRITICAL INSTRUCTIONS:
           body: JSON.stringify({
             model: "google/gemini-3.7-flash",
             messages: [
-              { role: "system", content: systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock },
+              { role: "system", content: withInterpretationStandard(systemPrompt + personalizedSystemAddendum + personalContextAddendum + refBlock, { fullChart: false }) },
               { role: "user", content: userPrompt + correctionInstruction },
             ],
           }),

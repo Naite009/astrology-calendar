@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,7 +220,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: true }) },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.3,

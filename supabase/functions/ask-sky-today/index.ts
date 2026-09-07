@@ -7,6 +7,7 @@
 // cosmically that could explain the mood.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,7 +110,7 @@ Write the reading now using ONLY the sky data above.`;
       body: JSON.stringify({
         model: "google/gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: system },
+          { role: "system", content: withInterpretationStandard(system, { fullChart: false }) },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.3,

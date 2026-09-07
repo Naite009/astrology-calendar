@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,7 +81,7 @@ Synthesize these two cards into a unified message. Find the thread that connects
         body: JSON.stringify({
           model: "google/gemini-3.7-flash",
           messages: [
-            { role: "system", content: synthesisSystemPrompt },
+            { role: "system", content: withInterpretationStandard(synthesisSystemPrompt, { fullChart: false }) },
             { role: "user", content: synthesisUserPrompt }
           ],
         }),
@@ -193,7 +194,7 @@ Please provide a rich astrological interpretation of this card. Weave together:
       body: JSON.stringify({
         model: "google/gemini-3.7-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: false }) },
           { role: "user", content: userPrompt }
         ],
       }),
