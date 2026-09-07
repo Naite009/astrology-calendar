@@ -876,7 +876,12 @@ function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOv
 // MAIN REPORT GENERATOR
 // ============================================
 
-export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: NatalChart): AdvancedSynastryReport {
+export function generateAdvancedSynastryReport(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext
+): AdvancedSynastryReport {
+
   const relationshipTypes = calculateRelationshipTypes(chart1, chart2);
   const karmicIndicators = getKarmicIndicators(chart1, chart2);
   const attractionDynamics = getAttractionDynamics(chart1, chart2);
@@ -914,19 +919,16 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
     `${c.name}: ${c.triggerDescription.split('.')[0]}`
   );
   
-  // Determine soul contract theme
+  // Symbolic theme (clearly a lens, never a factual conclusion)
   const soulContractTheme = karmicIndicators.length > 0
-    ? `Your soul contract centers on ${karmicIndicators[0].lessonToLearn.toLowerCase()}. ${karmicIndicators[0].interpretation.split('.')[0]}.`
-    : topTypes[0].type === 'romantic'
-      ? 'You are here to explore deep romantic love and partnership.'
-      : topTypes[0].type === 'business'
-        ? 'Your connection is designed for building something tangible together.'
-        : 'Your souls have connected to support mutual growth and evolution.';
-  
-  const pastLifeConnection = karmicIndicators.find(k => k.pastLifeTheme)?.pastLifeTheme || 
-    'While specific long-standing indicators are subtle, the depth of your connection suggests you have met before in some capacity.';
-  
-  return {
+    ? `One symbolic reading of this pairing centres on ${karmicIndicators[0].lessonToLearn.toLowerCase()}. ${karmicIndicators[0].interpretation.split('.')[0]}.`
+    : 'There is no strong nodal or Chiron signature between these charts, so this symbolic layer has nothing distinctive to report.';
+
+  const pastLifeConnection = karmicIndicators.find(k => k.pastLifeTheme)?.pastLifeTheme ||
+    'No strong nodal or Chiron signature appears between these charts in this framework, so there is nothing to report in this symbolic layer.';
+
+  const report: AdvancedSynastryReport = {
+
     overallCompatibility,
     romanticScore,
     businessScore,
