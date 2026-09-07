@@ -268,13 +268,17 @@ const BODY_FRAME: Record<string, { name: (n: string) => string; say: (a: string)
 
 function subjectWords(stage: AgeStage) {
   return voiceFor(stage) === 'you'
-    ? { sub: 'you', Sub: 'You' }
-    : { sub: 'they', Sub: 'They' };
+    ? { sub: 'you', Sub: 'You', your: 'your', Your: 'Your' }
+    : { sub: 'they', Sub: 'They', your: 'their', Your: 'Their' };
 }
 
 function speak(template: string, stage: AgeStage): string {
-  const { sub, Sub } = subjectWords(stage);
-  let out = template.replace(/\{sub\}/g, sub).replace(/\{Sub\}/g, Sub);
+  const { sub, Sub, your, Your } = subjectWords(stage);
+  let out = template
+    .replace(/\{sub\}/g, sub)
+    .replace(/\{Sub\}/g, Sub)
+    .replace(/\{your\}/g, your)
+    .replace(/\{Your\}/g, Your);
   out = applyStageVocabulary(out, stage);
   if (!/[.!?]$/.test(out)) out += '.';
   return out.charAt(0).toUpperCase() + out.slice(1);
@@ -587,7 +591,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       ],
       why: `${labels.join(' and ')} share the ${ordinalHouse(house)}, so more than one basic function is aimed at ${houseArena(house, stage)}.`,
       whatToSay: speak(
-        `Quite a lot of ${'{sub}'}r attention may go to ${houseArena(house, stage)} — it shows up through ${labels.join(' and ')}`,
+        `Quite a lot of ${'{your}'} attention may go to ${houseArena(house, stage)} — it shows up through ${labels.join(' and ')}`,
         stage
       ),
       askThis: applyStageVocabulary(`Does that area take up more of your attention than people realise?`, stage),
@@ -647,9 +651,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       ],
       why: 'The nodes always sit opposite each other, so the opposition itself is geometry rather than evidence. What is readable is which signs and houses they fall in, and that reads as familiar skills on one side and a useful stretch on the other.',
       whatToSay: speak(
-        `${'{Sub}'} probably already ${'{sub}'}se ${SIGN_MEANINGS[sn.sign]} without thinking about it${sn.house ? `, especially around ${houseArena(sn.house, stage)}` : ''}, and there may be something useful in also practising ${SIGN_MEANINGS[nn.sign]}${nn.house ? ` in ${houseArena(nn.house, stage)}` : ''}`,
+        `${'{Sub}'} probably already lean${voiceFor(stage) === 'you' ? '' : 's'} on ${SIGN_MEANINGS[sn.sign]} without thinking about it${sn.house ? `, especially around ${houseArena(sn.house, stage)}` : ''}, and there may be something useful in also practising ${SIGN_MEANINGS[nn.sign]}${nn.house ? ` in ${houseArena(nn.house, stage)}` : ''}`,
         stage
-      ).replace(/\{sub\}se/g, 'use'),
+      ),
       askThis: applyStageVocabulary(
         `Which of those two feels like the easy one for you, and which one takes more effort?`,
         stage
@@ -786,7 +790,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   if (sun && moon && asc) {
     storyParts.push(
       speak(
-        `Reading this as a whole: ${'{sub}'} comes across as ${SIGN_MEANINGS[asc.sign].split(',')[0]}, ${'{sub}'}r sense of self runs on ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and what settles ${'{sub}'} is ${SIGN_MEANINGS[moon.sign].split(',')[0]}`,
+        `Reading this as a whole: ${'{sub}'} comes across as ${SIGN_MEANINGS[asc.sign].split(',')[0]}, ${'{your}'} sense of self runs on ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and what settles ${'{sub}'} is ${SIGN_MEANINGS[moon.sign].split(',')[0]}`,
         stage
       )
     );
