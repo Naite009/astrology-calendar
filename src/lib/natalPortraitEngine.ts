@@ -430,6 +430,43 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
   };
 }
 
+/**
+ * Relationship guidance synthesised from several factors (Venus, Mars, the 5th/7th
+ * houses and their rulers, Juno when present) rather than reduced to Venus's house.
+ */
+function buildRelationshipAdvice(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): string {
+  const venus = bodies.find(b => b.name === 'Venus');
+  const mars = bodies.find(b => b.name === 'Mars');
+  const juno = bodies.find(b => b.name === 'Juno');
+  const seventh = bodies.filter(b => b.house === 7 && MAJOR_PLANETS.includes(b.name));
+  const fifth = bodies.filter(b => b.house === 5 && MAJOR_PLANETS.includes(b.name));
+  const seventhRuler = getSeventhHouseRuler(chart);
+
+  const factors: string[] = [];
+  if (venus) factors.push(`Venus in ${venus.sign}${venus.house ? ` (${ordinalHouse(venus.house, 'house')})` : ''}`);
+  if (mars) factors.push(`Mars in ${mars.sign}${mars.house ? ` (${ordinalHouse(mars.house, 'house')})` : ''}`);
+  if (seventhRuler) factors.push(`${seventhRuler.ruler} as ruler of your 7th house${seventhRuler.house ? ` (sitting in your ${ordinalHouse(seventhRuler.house, 'house')})` : ''}`);
+  if (seventh.length) factors.push(`${seventh.map(b => b.name).join(' and ')} in the 7th`);
+  if (fifth.length) factors.push(`${fifth.map(b => b.name).join(' and ')} in the 5th`);
+  if (juno) factors.push(`Juno in ${juno.sign} (an optional, interpretive marker for commitment style)`);
+
+  const listed = factors.length ? factors.join(', ') : 'the relationship houses in your chart';
+  return `No single placement defines how you relate. Reading ${listed} together says more than any one of them alone: Venus describes what you value and enjoy, Mars how you pursue and assert, the 5th house how you play and flirt, and the 7th house with its ruler what you look for in a committed partner. Where these agree, the pattern is likely to be strong; where they pull in different directions, closeness may ask you to do two things at once, and that tension is normal rather than a flaw.`;
+}
+
+function getSeventhHouseRuler(chart: NatalChart): { ruler: string; house: number | null } | null {
+  const cusp = chart.houseCusps?.house7;
+  if (!cusp?.sign) return null;
+  const RULERS: Record<string, string> = {
+    Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon', Leo: 'Sun', Virgo: 'Mercury',
+    Libra: 'Venus', Scorpio: 'Pluto', Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+  };
+  const ruler = RULERS[cusp.sign];
+  if (!ruler) return null;
+  const house = getPlanetHouseFromChart(chart, ruler) || null;
+  return { ruler, house };
+}
+
 function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantHouses = [2, 6, 10];
   const relevantPlanets = ['Sun', 'Saturn', 'Jupiter', 'Mars', 'Pallas'];
@@ -892,7 +929,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     modalityBreakdown: modalities,
   };
 
-  return {
+  return sanitizeInterpretiveDeep<NatalPortrait>({
     lifePurpose,
     topThemes: rankTopThemes(chart, bodies),
     relationshipBlueprint: buildRelationshipDomain(chart, bodies),
@@ -907,5 +944,5 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     patterns: detectChartPatterns(chart),
     minorBodyPatterns: detectMinorBodyPatterns(chart),
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
-  };
+  });
 }
