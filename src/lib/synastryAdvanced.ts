@@ -1,15 +1,21 @@
 /**
- * Advanced Synastry Analysis Library
- * 
- * Professional-grade relationship analysis including:
- * - Karmic indicators (North/South Node, Chiron)
- * - House overlays
- * - Relationship type classification
- * - Anger/conflict triggers
- * - Energy dynamics
+ * Advanced Synastry Analysis Library (legacy technical tool)
+ *
+ * Kept for the collapsible advanced tools. The canonical aspect engine, house
+ * overlays, scoring, context and language policy now live in
+ * src/lib/relationship/*. House overlays here delegate to the cusp-accurate
+ * engine, and every string this module returns is run through the relationship
+ * language policy before it leaves `generateAdvancedSynastryReport`.
+ *
+ * Contents: nodal/Chiron contact copy, house overlays, relationship-type
+ * indicators, conflict triggers, energy dynamics.
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { calculateHouseOverlaysAccurate } from './relationship/houseOverlayEngine';
+import { sanitizeRelationshipDeep } from './relationship/relationshipLanguage';
+import type { RelationshipContext } from './relationship/relationshipContext';
+
 
 // ============================================
 // TYPES
@@ -484,9 +490,12 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
       const asp2 = hasAspect(chart2, karmic, chart1, personal);
       
       if (asp1) {
-        const nodeData = NODE_SYNASTRY[`${karmic}-${personal}`]?.[asp1.type] || 
-                         NODE_SYNASTRY[`NorthNode-${personal}`]?.[asp1.type];
+        // Interpretation data must belong to the body that was actually detected.
+        // (Previously a `NorthNode-${personal}` fallback let Saturn, Pluto and the
+        // South Node inherit North Node copy — that bug is removed.)
+        const nodeData = NODE_SYNASTRY[`${karmic}-${personal}`]?.[asp1.type];
         const chironData = CHIRON_SYNASTRY[`Chiron-${personal}`]?.[asp1.type];
+
         
         if (nodeData) {
           indicators.push({
