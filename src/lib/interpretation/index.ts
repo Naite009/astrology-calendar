@@ -54,3 +54,17 @@ export const INTERPRETATION_SECTION_ORDER = [
 ] as const;
 
 export type InterpretationSectionKey = (typeof INTERPRETATION_SECTION_ORDER)[number]['key'];
+
+// Structural helpers shared by every interpretation surface.
+export { ordinal, ordinalSuffix, ordinalHouse } from './ordinals';
+export {
+  MAJOR_PLANETS, CHART_ANGLES, DERIVED_POINTS, STELLIUM_MIN_MAJOR_PLANETS,
+  isMajorPlanet, classifyBody, isDerivedPoint, isNodalPoint,
+  containsAutomaticNodalOpposition, splitBodies, isStellium, describeBodyCount,
+} from './bodyTaxonomy';
+export { classifyPatternBodies, rankPatterns, isMajorPattern } from './patternClassification';
+export type { PatternTier } from './patternClassification';
+export {
+  FORBIDDEN_INTERPRETIVE_PHRASES, sanitizeInterpretiveText,
+  findForbiddenPhrases, sanitizeInterpretiveDeep,
+} from './languagePolicy';
