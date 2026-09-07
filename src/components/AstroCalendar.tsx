@@ -52,12 +52,13 @@ const TarotFunctionsView = lazy(() => import("./TarotFunctionsView").then(m => (
 const CosmicSoundsView = lazy(() => import("./CosmicSoundsView").then(m => ({ default: m.CosmicSoundsView })));
 const MoonCycleHub = lazy(() => import("./MoonCycleHub").then(m => ({ default: m.MoonCycleHub })));
 const NatalPortraitView = lazy(() => import("./NatalPortraitView").then(m => ({ default: m.NatalPortraitView })));
+const ReadingGuideView = lazy(() => import("./ReadingGuideView").then(m => ({ default: m.ReadingGuideView })));
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
 const VedicView = lazy(() => import("./vedic/VedicView").then(m => ({ default: m.VedicView })));
 const AspectsView = lazy(() => import("./AspectsView").then(m => ({ default: m.AspectsView })));
 
 
-type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "family" | "aspects" | "vedic";
+type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "reading-guide" | "family" | "aspects" | "vedic";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -234,6 +235,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "natal-portrait") {
       return "Natal Portrait";
+    }
+    if (viewMode === "reading-guide") {
+      return "Chart Walkthrough";
     }
     if (viewMode === "vedic") {
       return "Vedic Astrology";
@@ -706,6 +710,29 @@ export const AstroCalendar = () => {
                 👤 Natal Portrait
               </button>
               <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("reading-guide");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "reading-guide"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Chart Walkthrough — guided live reading"
+                    : "Add a chart to use the Chart Walkthrough"
+                }
+              >
+                🧭 Chart Walkthrough
+              </button>
+              <button
                 onClick={() => setViewMode("vedic")}
                 className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
                   viewMode === "vedic"
@@ -1115,6 +1142,15 @@ export const AstroCalendar = () => {
         {viewMode === "solar-return" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <SolarReturnView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "reading-guide" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <ReadingGuideView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
             />
