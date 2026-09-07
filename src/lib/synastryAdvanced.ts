@@ -70,7 +70,13 @@ export interface HouseOverlay {
   interpretation: string;
   lifeArea: string;
   impact: 'activating' | 'challenging' | 'nurturing' | 'transformative';
+  /** Direction-explicit sentence, e.g. "Ava's Moon falls in Max's 4th house". */
+  statement?: string;
+  /** How the house was resolved: real cusps, declared whole-sign, or fallback. */
+  method?: 'cusps' | 'whole-sign' | 'whole-sign-fallback';
+  approximationNote?: string;
 }
+
 
 export interface AdvancedSynastryReport {
   // Core scores
@@ -839,72 +845,32 @@ const PLANET_HOUSE_OVERLAYS: Record<string, Record<number, { interpretation: str
   }
 };
 
+/**
+ * House overlays now come from the canonical cusp-accurate engine.
+ * Whole-sign counting is only a labelled fallback, so a Placidus chart no longer
+ * has its partner's planets pushed into the wrong houses.
+ */
 function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOverlay[] {
-  const overlays: HouseOverlay[] = [];
-  
-  // We need house cusps to do proper overlays
-  // For now, we'll use whole sign houses based on Ascendant — prefer houseCusps.house1
-  const asc1 = chart1.houseCusps?.house1 || chart1.planets.Ascendant;
-  const asc2 = chart2.houseCusps?.house1 || chart2.planets.Ascendant;
-  if (!asc1 || !asc2) {
-    return overlays;
-  }
-  
-  const getHouseForPlanet = (planetPos: NatalPlanetPosition, ascSign: string): number => {
-    const planetSignIndex = ZODIAC_SIGNS.indexOf(planetPos.sign);
-    const ascSignIndex = ZODIAC_SIGNS.indexOf(ascSign);
-    if (planetSignIndex === -1 || ascSignIndex === -1) return 1;
-    
-    let house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
-    return house;
-  };
-  
   const planets = ['Sun', 'Moon', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-  
-  // Chart1's planets in Chart2's houses
-  for (const planet of planets) {
-    const planetPos = chart1.planets[planet as keyof typeof chart1.planets];
-    if (!planetPos) continue;
-    
-    const house = getHouseForPlanet(planetPos, asc2.sign);
-    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
-    
-    if (overlayData) {
-      overlays.push({
-        planet,
-        planetOwner: chart1.name,
-        house,
-        houseOwner: chart2.name,
-        interpretation: overlayData.interpretation,
-        lifeArea: HOUSE_LIFE_AREAS[house],
-        impact: overlayData.impact
-      });
-    }
-  }
-  
-  // Chart2's planets in Chart1's houses
-  for (const planet of planets) {
-    const planetPos = chart2.planets[planet as keyof typeof chart2.planets];
-    if (!planetPos) continue;
-    
-    const house = getHouseForPlanet(planetPos, asc1.sign);
-    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
-    
-    if (overlayData) {
-      overlays.push({
-        planet,
-        planetOwner: chart2.name,
-        house,
-        houseOwner: chart1.name,
-        interpretation: overlayData.interpretation,
-        lifeArea: HOUSE_LIFE_AREAS[house],
-        impact: overlayData.impact
-      });
-    }
-  }
-  
-  return overlays;
+  const contacts = calculateHouseOverlaysAccurate(chart1, chart2, { bodies: planets });
+
+  return contacts.map((c) => {
+    const overlayData = PLANET_HOUSE_OVERLAYS[c.body]?.[c.house];
+    return {
+      planet: c.body,
+      planetOwner: c.bodyOwner,
+      house: c.house,
+      houseOwner: c.houseOwner,
+      interpretation: overlayData?.interpretation ?? `${c.statement}, touching ${c.arena.toLowerCase()}.`,
+      lifeArea: HOUSE_LIFE_AREAS[c.house],
+      impact: overlayData?.impact ?? 'activating',
+      statement: c.statement,
+      method: c.method,
+      approximationNote: c.approximationNote,
+    };
+  });
 }
+
 
 // ============================================
 // MAIN REPORT GENERATOR
