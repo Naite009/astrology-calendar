@@ -160,7 +160,7 @@ describe("Ava Kravitz natal portrait regression", () => {
     const text = collectStrings(portrait).join('\n');
     const hits = findForbiddenPhrases(text);
     expect(hits).toEqual([]);
-    expect(text).not.toMatch(/2th|3th|1th|21th/);
+    expect(text).not.toMatch(/(?<![0-9])(1|2|3|21|22|23)th\b/);
     expect(text.toLowerCase()).not.toContain('immune');
     expect(text.toLowerCase()).not.toContain('deepest wound');
     expect(text.toLowerCase()).not.toContain('wounded healer');
