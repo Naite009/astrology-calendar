@@ -2,6 +2,7 @@
 // All deterministic data is computed on the client. AI writes only prose.
 
 import { sanitizeReadingPayload, validatePairShape } from "./sanitize.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1038,7 +1039,7 @@ If any answer is wrong, rewrite before returning.`;
       body: JSON.stringify({
         model: "google/gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: true }) },
           { role: "user", content: userPrompt },
         ],
         response_format: { type: "json_object" },
@@ -1191,7 +1192,7 @@ If any answer is wrong, rewrite before returning.`;
         body: JSON.stringify({
           model: "google/gemini-3.1-pro-preview",
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: true }) },
             {
               role: "user",
               content: `${userPrompt}\n\nREPAIR PASS REQUIRED. The previous JSON failed validation and MUST be regenerated before the user sees it. Do not return placeholders, null dynamics, or generic advice.\n\nVALIDATION FAILURES:\n${primaryFailures.map((e) => `- ${e}`).join("\n")}\n\nFAILED JSON TO REPAIR:\n${JSON.stringify(processed.payload)}\n\nReturn the FULL corrected JSON object only. Every parent-child pair and sibling pair needs a valid dynamic with the six required labels. Every child mechanism must explain WHY the behavior happens using internal timing conflict plus cause-to-effect language. whatEachChildNeedsFromYou must map directly from that mechanism. If the needs section failed, strengthen childMechanisms first, then generate the needs lines. If two pairs share structure, verbs, or stress sequence, rewrite them independently.`,

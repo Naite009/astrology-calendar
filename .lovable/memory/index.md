@@ -4,6 +4,7 @@ Updated: now
 # Project Memory
 
 ## Core
+- ALL interpretive text inherits `withInterpretationStandard` from `supabase/functions/_shared/interpretationStandard.ts` (chart grounding, constructive-first, tendency phrasing, no pathology/determinism, synthesis over lists). Never fork these rules per feature. See [Shared Interpretation Standard](mem://style/shared-interpretation-standard).
 - Date logic MUST use `formatLocalDateKey` & `parseLocalDate` to prevent timezone drift.
 - Use `astronomy-engine` for deterministic calculations. AI is forbidden from doing math.
 - Ascendant source of truth is always `houseCusps.house1`; overwrite unreliable data.

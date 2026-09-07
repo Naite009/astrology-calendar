@@ -4,6 +4,7 @@
 // "Natal Elemental & Modal Balance".
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -124,7 +125,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3.1-pro-preview",
           messages: [
-            { role: "system", content: SYSTEM },
+            { role: "system", content: withInterpretationStandard(SYSTEM, { fullChart: false }) },
             { role: "user", content: userPrompt + extraUser },
           ],
         }),

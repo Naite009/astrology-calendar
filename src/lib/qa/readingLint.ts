@@ -5,6 +5,8 @@
  * regression shows up as a numbered finding instead of a vibe.
  */
 
+import { lintInterpretiveText } from '@/lib/interpretation/interpretationGuard';
+
 export type LintSeverity = 'error' | 'warning';
 
 export interface LintFinding {
@@ -187,6 +189,18 @@ export function lintReading(text: string, source: string, ctx: LintContext = {})
     seen.set(key, 1);
   }
 
+  // 15. Shared interpretation standard: pathology, determinism, essentializing,
+  //     filler, flattening, unsupported claims. One source of truth, so a rule
+  //     added there shows up in every QA report automatically.
+  for (const g of lintInterpretiveText(text).findings) {
+    findings.push({
+      rule: `interpretation-standard:${g.category}`,
+      severity: g.severity,
+      message: g.message,
+      excerpt: g.excerpt,
+    });
+  }
+
   const errorCount = findings.filter((f) => f.severity === 'error').length;
   const warningCount = findings.length - errorCount;
   const score = Math.max(0, 1 - (errorCount * 0.2 + warningCount * 0.05));
@@ -200,4 +214,7 @@ export const LINT_RULES = [
   'no-name-spam', 'pronoun-accuracy', 'sign-is-not-house', 'aspect-notation',
   'translate-jargon', 'no-standalone-sign-label', 'no-fortune-telling',
   'readable-sentences', 'no-placeholder-leak', 'no-repeated-sentences',
+  'interpretation-standard:pathology', 'interpretation-standard:determinism',
+  'interpretation-standard:essentializing', 'interpretation-standard:filler',
+  'interpretation-standard:flattening', 'interpretation-standard:unsupported_claim',
 ] as const;
