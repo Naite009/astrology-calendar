@@ -263,7 +263,21 @@ export interface PlaceFromInputResult {
  */
 export const placeFromInput = (input: BirthInput): PlaceFromInputResult => {
   const fromSource = placeFromSourceOnInput(input);
-  if (fromSource) return { place: fromSource, storedConflict: null };
+  if (fromSource) {
+    // The printed coordinates win, but a stored place that sits somewhere
+    // else entirely is still reported so the record gets refreshed.
+    const stored = placeFromStored(input);
+    if (stored && distanceKm(stored.latitude, stored.longitude, fromSource.latitude, fromSource.longitude) > STALE_STORED_KM) {
+      const saved = input.placeName || `${stored.latitude.toFixed(4)}, ${stored.longitude.toFixed(4)}`;
+      return {
+        place: fromSource,
+        storedConflict:
+          `The saved location (${saved}, ${stored.timezone}) is ${Math.round(distanceKm(stored.latitude, stored.longitude, fromSource.latitude, fromSource.longitude))} km ` +
+          `from the coordinates printed by the source (${fromSource.latitude.toFixed(4)}, ${fromSource.longitude.toFixed(4)}). The printed coordinates were used.`,
+      };
+    }
+    return { place: fromSource, storedConflict: null };
+  }
 
   const stored = placeFromStored(input);
   if (!stored) return { place: null, storedConflict: null };
