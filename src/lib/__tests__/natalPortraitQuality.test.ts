@@ -209,3 +209,20 @@ describe('language policy sanitizer', () => {
     expect(findForbiddenPhrases(out)).toEqual([]);
   });
 });
+
+describe('repo-wide interpretive language guard', () => {
+  it('no interpretation source file ships forbidden pathology, medical, or deterministic phrasing', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { execSync } = await import('node:child_process');
+    const files = execSync(
+      "rg -l --glob '!**/__tests__/**' --glob '!src/lib/interpretation/**' --glob '!src/lib/qa/readingLint.ts' -e . src/lib src/components",
+      { encoding: 'utf8' },
+    ).trim().split('\n');
+    const offenders: string[] = [];
+    for (const f of files) {
+      const hits = [...new Set(findForbiddenPhrases(readFileSync(f, 'utf8')))];
+      if (hits.length) offenders.push(`${f}: ${hits.join(' | ')}`);
+    }
+    expect(offenders).toEqual([]);
+  });
+});
