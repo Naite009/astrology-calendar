@@ -948,6 +948,12 @@ export function generateAdvancedSynastryReport(
     growthOpportunities,
     watchOutFor
   };
+
+  // Every string leaving this legacy module passes through the relationship
+  // language policy, so advanced tools cannot leak destiny / safety / romantic
+  // wording into a family or neutral reading.
+  return sanitizeRelationshipDeep(report, ctx);
+
 }
 
 function generateAttractionNarrative(
