@@ -59,6 +59,8 @@ const BreakdownBar = ({ factor, value }: { factor: string; value: number }) => {
 
 const PlanetRow = ({ entry, report, showBreakdown }: { entry: UnifiedEntry; report: UnifiedReport; showBreakdown: boolean }) => {
   const [expanded, setExpanded] = useState(false);
+  const index = (entry as { dominanceIndex?: number }).dominanceIndex ?? entry.percentage ?? 0;
+
   const roles: string[] = [];
   if (report.captain === entry.planet) roles.push('captain');
   if (report.starPlayer === entry.planet) roles.push('starPlayer');
