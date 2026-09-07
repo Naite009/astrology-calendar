@@ -309,7 +309,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 detailedDesc += `**⭐ PLANETS NEAR RELEASE POINT: ${planetsNearRelease.join(', ')}**\n`;
                 detailedDesc += `This is significant! You have planetary support at your release point. ${planetsNearRelease.join(' and ')} can help channel the T-Square tension constructively. These planets are your pressure valve—develop their qualities consciously.\n\n`;
               } else {
-                detailedDesc += `**No planets at the release point**—you must CONSCIOUSLY develop ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} qualities. This is learned skill, not natural talent.\n\n`;
+                detailedDesc += `**No planets at the release point**—it helps to consciously develop ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} qualities. This is learned skill, not natural talent.\n\n`;
               }
               
               detailedDesc += `**Integration Practice:** ${apexMeaning.release}`;
@@ -321,7 +321,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 description: detailedDesc,
                 meaning: `The ${oppPlanet1.name}-${oppPlanet2.name} opposition creates a fundamental life polarity. ${apexPlanet.name} at the apex receives ALL that tension and must DO something with it. This can create real drive, and it may also feel like ongoing pressure. The release point in ${releaseSign}${releaseHouse ? ` (${ordinalHouse(releaseHouse)})` : ''} is where you learn to let go.`,
                 challenge: `${apexPlanet.name} is under constant pressure. You may overdo ${apexPlanet.name} activities, burn out in this area, or swing between the two opposition planets without resolution. The release point feels unfamiliar—that's exactly why you need to develop it.`,
-                gift: `Extraordinary ${apexPlanet.name} capability built through pressure. Once you learn to use the release point, this becomes a powerful engine for achievement. The tension never fully goes away—but it becomes fuel rather than drain.`,
+                gift: `Notable ${apexPlanet.name} capability built through pressure. Once you learn to use the release point, this becomes a powerful engine for achievement. The tension never fully goes away—but it becomes fuel rather than drain.`,
               });
             }
           }
@@ -403,8 +403,8 @@ const detectGrandCrosses = (planets: Array<{ name: string; degree: number }>): C
               planets: p.map(x => x.name),
               description: `${p[0].name}, ${p[1].name}, ${p[2].name}, and ${p[3].name} form a Grand Cross—maximum dynamic tension.`,
               meaning: 'A Grand Cross represents a lifetime of dealing with tension from four directions. It creates tremendous resilience and the ability to handle pressure others cannot.',
-              challenge: 'Feeling pulled in four directions at once. Chronic stress, difficulty finding rest. Life may feel like constant crisis.',
-              gift: 'Extraordinary strength, ability to handle complexity, resilience built through constant challenge. The ability to see all sides.',
+              challenge: 'Feeling pulled in four directions at once. a sense of ongoing pressure, difficulty finding rest. Life may feel like constant crisis.',
+              gift: 'Notable strength, ability to handle complexity, resilience built through constant challenge. The ability to see all sides.',
             });
           }
         }
@@ -424,7 +424,7 @@ const APEX_PLANET_MEANINGS: Record<string, { mission: string; integration: strin
   },
   Moon: {
     mission: "Emotional mastery and nurturing are your soul assignments. You're learning to feel deeply while not being ruled by emotions.",
-    integration: "Create safe spaces for yourself and others. Your sensitivity is a superpower once you stop fighting it.",
+    integration: "Create safe spaces for yourself and others. Your sensitivity can be a real strength once you stop fighting it.",
     shadow: "Emotional volatility, over-dependency on others, or cutting off from feelings entirely."
   },
   Mercury: {

@@ -323,7 +323,7 @@ const PLANET_PLAIN: Record<string, string> = {
   Saturn: 'where you work hardest and face tests', Uranus: 'where sudden changes happen',
   Neptune: 'your intuition, illusions, and confusion', Pluto: 'deep transformation and power shifts',
   NorthNode: 'your growth direction this lifetime', Juno: 'what you need in committed partnership',
-  Chiron: 'where your deepest wound becomes your greatest healing',
+  Chiron: 'where an area of deep sensitivity for you becomes your greatest healing',
   Ceres: 'nurturing and cycles of loss and return', Pallas: 'strategic intelligence',
   Vesta: 'sacred focus and devotion', MC: 'your career direction and public role',
 };

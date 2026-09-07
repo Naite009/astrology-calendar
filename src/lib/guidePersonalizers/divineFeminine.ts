@@ -146,7 +146,7 @@ const MEANINGS: Record<DivineFemBody, BodyMeaning> = {
   Chiron: {
     title: "Your Chiron",
     headline: (sign) =>
-      `Your deepest wound and your greatest healing gift shows up around ${SIGN_FLAVOR[sign]}. The place you were hurt is the place you can quietly help others.`,
+      `an area of deep sensitivity for you and your greatest healing gift shows up around ${SIGN_FLAVOR[sign]}. The place you were hurt is the place you can quietly help others.`,
     houseFrame: "The area of life where the wound keeps surfacing is",
     action: () =>
       "You don't have to fix this wound to be useful. Tell the truth about it in the room you're in. That's the healing.",

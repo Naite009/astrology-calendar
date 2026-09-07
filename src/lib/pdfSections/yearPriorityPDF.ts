@@ -373,7 +373,7 @@ const PLANET_FELT: Record<string, string> = {
   Pluto: 'deep transformation and power dynamics. Something hidden surfaces -- control patterns, buried emotions, or situations that force you to let go.',
   'N.Node': 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
   NorthNode: 'your soul\'s growth direction. Life events push you toward unfamiliar territory that feels uncomfortable but necessary.',
-  Chiron: 'your deepest wound and greatest healing gift. Old pain resurfaces -- not to retraumatize, but to show you how far you have come.',
+  Chiron: 'an area of deep sensitivity for you and greatest healing gift. Old pain resurfaces -- not to retraumatize, but to show you how far you have come.',
 };
 
 const ANGLE_ICON: Record<string, string> = {

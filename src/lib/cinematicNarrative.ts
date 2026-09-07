@@ -77,7 +77,7 @@ export const PLANET_ROLES: Record<string, CharacterRole> = {
     importance: 'background'
   },
   Chiron: {
-    role: 'The Wounded Healer',
+    role: 'The healing-through-understanding',
     archetype: 'The core wound that becomes wisdom—pain transformed into the ability to help others.',
     movieAnalogy: 'Like the backstory wound that drives the hero, the scar that becomes their greatest strength.',
     importance: 'special_guest'

@@ -1368,7 +1368,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
         name: 'Chiron in Pisces',
         symbol: '⚷♓',
         description: 'The wound is spiritual: feeling disconnected from Source, boundaries too porous, or gifts feeling like burdens. Healing through embracing psychic sensitivity.',
-        clientDescription: 'Your deepest wound relates to feeling too sensitive for this world, or cut off from the spiritual connection you crave. Healing comes through accepting your psychic sensitivity as a gift, not a curse. You may be a powerful healer for others with similar wounds.',
+        clientDescription: 'an area of deep sensitivity for you relates to feeling too sensitive for this world, or cut off from the spiritual connection you crave. Healing comes through accepting your psychic sensitivity as a gift, not a curse. You may be a powerful healer for others with similar wounds.',
         strength: 'strong',
         category: 'chiron'
       });
@@ -1404,7 +1404,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
         name: 'Neptune in 10th House',
         symbol: '♆ in 10H',
         description: 'Career and public role involve spirituality, intuition, or artistic/healing work. The mystic path IS the career path.',
-        clientDescription: 'You are meant to be publicly known for spiritual, intuitive, or artistic work. Your career path may involve healing, psychic work, art, music, or compassionate service. Don\'t try to fit into a "normal" career—your path is extraordinary.',
+        clientDescription: 'You are meant to be publicly known for spiritual, intuitive, or artistic work. Your career path may involve healing, psychic work, art, music, or compassionate service. Don\'t try to fit into a "normal" career—your path is notable.',
         strength: 'strong',
         category: 'angular'
       });

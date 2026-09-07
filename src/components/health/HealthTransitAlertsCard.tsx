@@ -85,9 +85,9 @@ const HEALTH_TRANSIT_MESSAGES: Record<string, Record<string, { guidance: string;
   },
   Neptune: {
     Sun: {
-      guidance: "Neptune transiting your Sun can lower vitality and increase sensitivity to substances. Immune system needs support.",
-      bodyArea: "Immune system, energy levels, sensitivities",
-      recommendation: "Avoid alcohol and drugs, boost immune system, get adequate rest, be cautious with medications and dosages."
+      guidance: "Neptune transiting your Sun can lower vitality and increase sensitivity to substances. energy and recovery rhythm needs support.",
+      bodyArea: "energy and recovery rhythm, energy levels, sensitivities",
+      recommendation: "Avoid alcohol and drugs, boost energy and recovery rhythm, get adequate rest, be cautious with medications and dosages."
     },
     Moon: {
       guidance: "Neptune transiting your Moon heightens emotional sensitivity and may affect fluid balance. Watch for escapism.",
@@ -96,7 +96,7 @@ const HEALTH_TRANSIT_MESSAGES: Record<string, Record<string, { guidance: string;
     },
     Ascendant: {
       guidance: "Neptune transiting your Ascendant dissolves physical boundaries. Heightened sensitivity to environment.",
-      bodyArea: "Feet, immune system, overall sensitivity",
+      bodyArea: "Feet, energy and recovery rhythm, overall sensitivity",
       recommendation: "Foot care becomes important, minimize toxic exposures, explore spiritual healing modalities, watch for misdiagnosis."
     },
     "6th House": {
@@ -188,7 +188,7 @@ const HEALTH_TRANSIT_MESSAGES: Record<string, Record<string, { guidance: string;
       recommendation: "Work with healers and therapists, address body image issues, embrace your unique physical expression."
     },
     "6th House": {
-      guidance: "Chiron transiting your 6th House activates healing potential in daily health practices. Wounded healer emerges.",
+      guidance: "Chiron transiting your 6th House activates healing potential in daily health practices. healing-through-understanding emerges.",
       bodyArea: "Chronic issues, healing practices",
       recommendation: "Your health challenges become teaching opportunities, explore healing modalities, help others while healing yourself."
     }

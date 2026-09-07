@@ -437,7 +437,7 @@ export const SPILLER_NODE_DATA: Record<string, SpillerNodeData> = {
       'Speaking from experience, not just information',
       'The courage to commit to a truth',
     ],
-    relationships: 'You tend to keep relationships light and communicative but avoid depth. You might have many surface connections but resist the vulnerability of one deep bond. The lesson: choose a partner who expands your world — who takes you on adventures, challenges your beliefs, and pushes you toward your own truth. Avoid partners who keep you small and local.',
+    relationships: 'You tend to keep relationships light and communicative but avoid depth. You might have many surface connections but resist the vulnerability of one deep bond. The lesson: choose a partner who expands your world — who takes you on adventures, challenges your beliefs, and pushes you toward your own truth. Avoid partners who is already well-practised and local.',
     healingAffirmations: [
       'I trust the journey even when I can\'t see the destination',
       'My direct experience is more valuable than any secondhand knowledge',

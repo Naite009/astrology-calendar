@@ -423,7 +423,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     essence: [
       'Pisces is the mutable water — the ocean that contains all rivers, the final sign that dissolves all boundaries. This is the mystic of the zodiac, the empath, the dreamer who lives between worlds. Where Aquarius thinks about humanity, Pisces FEELS it.',
       'Pisces people absorb their environment like sponges. They cry at commercials, sense tension in rooms they\'ve just entered, and dream in vivid, prophetic narratives. Their gift is compassion so vast it encompasses all living things. Their shadow is that compassion without boundaries becomes self-destruction.',
-      'The feet and lymphatic system belong to Pisces — the body\'s grounding point and its purification network. Foot problems, edema, and immune system issues signal a Pisces body that has absorbed too much of the world and needs to discharge. Walking barefoot on earth, Epsom salt baths, and swimming are literal medicine.',
+      'The feet and lymphatic system belong to Pisces — the body\'s grounding point and its purification network. Foot problems, edema, and energy and recovery rhythm issues signal a Pisces body that has absorbed too much of the world and needs to discharge. Walking barefoot on earth, Epsom salt baths, and swimming are literal medicine.',
     ],
     needs: ['Solitude', 'Creative/spiritual practice', 'Permission to feel deeply', 'Time near water', 'Boundaries (even though they resist them)'],
     creativeExpression: 'Pisces creates through channeling — music, film, poetry, healing arts. Their work arrives from somewhere beyond the rational mind and touches people in places words cannot reach.',

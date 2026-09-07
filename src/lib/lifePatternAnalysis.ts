@@ -203,11 +203,11 @@ function getDominantPlanetMeaning(planet: string): string {
     Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought. You're the eternal student and teacher.",
     Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision you make.",
     Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts, even when they feel like too much for the room.",
-    Jupiter: "You're wired for expansion, meaning, and growth. Optimism carries you through what would break others. You're the one who sees the bigger picture when everyone else is stuck in the weeds.",
+    Jupiter: "You're wired for expansion, meaning, and growth. A sense of possibility often helps you keep going when a situation looks discouraging. You're the one who sees the bigger picture when everyone else is stuck in the weeds.",
     Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it. Your authority comes from lived experience, not inherited privilege.",
     Uranus: "You're the pattern-breaker. Convention doesn't hold you because you see systems that others don't. Your genius is in disruption, innovation, and the willingness to be different.",
-    Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are extraordinary — but you need to learn what's yours and what belongs to everyone else. Creativity and compassion are your channels.",
-    Pluto: "Transformation is your birthright. You don't do surface-level anything. Your power lies in regeneration — the ability to walk through destruction and emerge stronger, taking others with you."
+    Neptune: "You live between worlds. Your sensitivity, imagination, and spiritual depth are notable — but you need to learn what's yours and what belongs to everyone else. Creativity and compassion are your channels.",
+    Pluto: "Transformation is a recurring theme in your chart. You often prefer depth to small talk. Your power lies in regeneration — the ability to walk through destruction and emerge stronger, taking others with you."
   };
   return meanings[planet] || '';
 }
@@ -932,7 +932,7 @@ export function analyzeSelfSabotage(chart: NatalChart): SabotagePattern[] {
           ? 'Your core wound is about identity and self-worth. You may overcompensate by helping others while neglecting your own needs.'
           : chironHouse === 6
           ? 'Your wound shows up in daily routines, health, and service. You may sacrifice your body or wellbeing for others\' benefit.'
-          : 'Your deepest wound operates below conscious awareness. You may carry ancestral or collective pain without realizing it\'s not yours.',
+          : 'an area of deep sensitivity for you operates below conscious awareness. You may carry ancestral or collective pain without realizing it\'s not yours.',
         trigger: 'Self-sacrifice disguised as generosity',
         healingPath: 'The wound is the gift. Your pain has given you insight that others need — but only if you heal yourself first. You cannot pour from an empty cup.',
         severity: 'secondary'
@@ -993,7 +993,7 @@ export function analyzeGuardianAngel(chart: NatalChart): GuardianAngelResult {
   if (jupiter && moon) {
     const asp = calcAspect(jupiter.degree, moon.degree);
     if (asp && (asp.type === 'Trine' || asp.type === 'Sextile' || asp.type === 'Conjunction')) {
-      indicators.push({ name: `Jupiter ${asp.type.toLowerCase()} Moon`, description: 'Emotional safety net. Your needs have a way of being met — sometimes at the last minute, sometimes through unexpected generosity. Your emotional resilience is extraordinary.', score: 8 });
+      indicators.push({ name: `Jupiter ${asp.type.toLowerCase()} Moon`, description: 'Emotional safety net. Your needs have a way of being met — sometimes at the last minute, sometimes through unexpected generosity. Your emotional resilience is notable.', score: 8 });
     }
   }
 

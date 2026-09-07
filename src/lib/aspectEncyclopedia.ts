@@ -125,7 +125,7 @@ export const PATTERNS_DATA: PatternData[] = [
     components: '1 opposition + 2 squares',
     meaning: 'The apex planet is the PRESSURE POINT — where all tension concentrates and where all action happens. The "empty leg" (the point opposite the apex) is the release valve — the area of life where relief can be found.',
     gift: 'Tremendous drive, achievement through tension, focused ambition',
-    challenge: 'Chronic stress at the apex, burnout, creating crises to relieve internal pressure',
+    challenge: 'a sense of ongoing pressure at the apex, burnout, creating crises to relieve internal pressure',
     teaching: 'The T-Square is the engine of achievement. Your greatest accomplishments come from your greatest tensions.',
   },
   {
@@ -133,8 +133,8 @@ export const PATTERNS_DATA: PatternData[] = [
     description: 'Four planets forming a square pattern: two oppositions crossing at 90°.',
     components: '2 oppositions + 4 squares',
     meaning: 'Four corners of the chart pulling in four directions simultaneously. This is the most high-pressure configuration — constant internal tension from all sides. Cardinal Grand Crosses drive action; Fixed ones create stubborn endurance; Mutable ones create mental overwhelm.',
-    gift: 'Extraordinary resilience, ability to handle pressure, dynamic energy that prevents stagnation',
-    challenge: 'Chronic stress, feeling pulled apart, tendency to create crisis, difficulty finding peace',
+    gift: 'Notable resilience, ability to handle pressure, dynamic energy that prevents stagnation',
+    challenge: 'a sense of ongoing pressure, feeling pulled apart, tendency to create crisis, difficulty finding peace',
     teaching: 'You are forged in fire. The Grand Cross doesn\'t resolve — it fuels. Learn to harness the engine, not fight it.',
   },
   {

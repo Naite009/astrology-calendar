@@ -901,7 +901,7 @@ export const DayDetail = ({ dayData, onClose, activeChart, userNatalChart, saved
               {/* Chiron */}
               {planets.chiron && (
                 <div className="bg-secondary p-4 rounded-sm">
-                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚷ Chiron — The Wounded Healer</div>
+                  <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-2">⚷ Chiron — The healing-through-understanding</div>
                   <div className="text-sm font-medium text-foreground mb-2">{planets.chiron.fullDegree}</div>
                   <div className="text-sm text-muted-foreground leading-relaxed">
                     {CHIRON_MEANINGS[planets.chiron.signName] || 'Healing journey through this sign\'s themes.'}

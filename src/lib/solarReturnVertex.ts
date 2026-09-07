@@ -235,7 +235,7 @@ export const vertexInHouse: Record<number, {
   },
   6: {
     title: 'Fated Work & Health Turning Points',
-    description: 'The Vertex in the 6th house brings fated events through daily work, health matters, or service encounters. A job opportunity, health crisis, or someone you serve may change your trajectory. The "ordinary" becomes the vehicle for the extraordinary.',
+    description: 'The Vertex in the 6th house brings fated events through daily work, health matters, or service encounters. A job opportunity, health crisis, or someone you serve may change your trajectory. The "ordinary" becomes the vehicle for the notable.',
     fatedArea: 'Work opportunities, health events, service encounters, daily routine changes',
   },
   7: {
@@ -264,6 +264,6 @@ export const vertexAspectMeanings: Record<string, string> = {
   Neptune: 'A fated spiritual, artistic, or compassionate encounter. Meeting a soulmate or spiritual teacher. The danger of idealization — is this destiny or delusion?',
   Pluto: 'The most transformative fated encounter possible. Meeting someone who permanently alters your psychological landscape. Power, death, rebirth, and irreversible change through another person.',
   NorthNode: 'A supremely fated encounter — the Vertex and North Node together indicate a person or event that is directly connected to your soul\'s evolutionary purpose this year.',
-  Chiron: 'A fated encounter with a wounded healer or a situation that triggers your deepest wound — but this time, for the purpose of healing rather than re-wounding.',
+  Chiron: 'A fated encounter with a healing-through-understanding or a situation that triggers an area of deep sensitivity for you — but this time, for the purpose of healing rather than re-wounding.',
   Ascendant: 'A fated encounter that changes how you see yourself and how others see you. Someone appears who mirrors your identity back to you in a new way.',
 };

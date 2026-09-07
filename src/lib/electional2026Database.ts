@@ -102,7 +102,7 @@ export const DATES_TO_AVOID_2026: ElectionalDayData[] = [
     warning: 'YELLOW',
     reason: 'Mars square Chiron',
     avoid: ['Confrontations', 'Aggressive action', 'Triggering wounded people'],
-    why: 'Conflict planet Mars hits deepest wounds (Chiron). Very uncomfortable combo.',
+    why: 'Conflict planet Mars hits area of deep sensitivity (Chiron). Very uncomfortable combo.',
     workaround: 'Extra compassion needed. Tread lightly. People are extra sensitive.'
   },
   {
@@ -306,7 +306,7 @@ export const BEST_DAYS_2026: ElectionalDayData[] = [
     rating: 'BLUE',
     reason: "Chiron Cazimi (26°38' Aries)",
     best_for: ['Healing work', 'Therapy launches', 'Vulnerability', 'Wound work'],
-    why: 'Wounded healer empowered by Sun. Turn wounds into gifts.',
+    why: 'healing-through-understanding empowered by Sun. Turn wounds into gifts.',
     power: 'Launch healing practices. Do deep work. Transform pain to purpose.'
   },
   {

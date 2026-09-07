@@ -89,7 +89,7 @@ const SHAPE_DATA: Record<ChartShapeType, ShapeInfo> = {
     personality: 'You are INTENSELY SPECIALIZED. Your entire being is focused on one area of life. You have laser focus, deep expertise, and powerful concentration—but a very narrow range of experience.',
     gift: 'Extreme specialization, mastery of a focused area, powerful concentration of energy',
     challenge: 'Lack of perspective, difficulty with areas outside your focus, potential for obsession, missing whole life areas',
-    teaching: 'The Bundle is the rarest and most intensely focused chart shape. Everything you are lives in one-third of the zodiac. This creates extraordinary specialization but also profound blind spots. You are a laser, not a floodlight. The teaching here is radical acceptance: you are not meant to do everything. You are meant to do one thing with terrifying depth.',
+    teaching: 'The Bundle is the rarest and most intensely focused chart shape. Everything you are lives in one-third of the zodiac. This creates notable specialization but also profound blind spots. You are a laser, not a floodlight. The teaching here is radical acceptance: you are not meant to do everything. You are meant to do one thing with terrifying depth.',
   },
   Locomotive: {
     description: 'Planets span about 240° (two-thirds of zodiac), leaving one-third empty.',
@@ -137,8 +137,8 @@ const SHAPE_DATA: Record<ChartShapeType, ShapeInfo> = {
     description: 'Four planets in a square pattern, forming two oppositions that cross each other at 90°.',
     personality: 'You are a CRUCIBLE OF TENSION. Four corners of your chart pull in different directions, creating constant internal pressure. You are forged by friction, shaped by conflict, and driven by the need to resolve irreconcilable tensions.',
     gift: 'Tremendous drive from inner tension, ability to handle pressure, dynamic energy that prevents stagnation',
-    challenge: 'Chronic stress, feeling pulled apart, tendency to create crisis, difficulty finding peace',
-    teaching: 'The Grand Cross is forged in fire. Four planets, four squares, two oppositions — constant internal tension that never fully resolves. You are the person who thrives under pressure because pressure is your natural state. This tension is not a problem to solve. It is a dynamo to harness. The four planets involved represent four competing drives that, when integrated, produce extraordinary power.',
+    challenge: 'a sense of ongoing pressure, feeling pulled apart, tendency to create crisis, difficulty finding peace',
+    teaching: 'The Grand Cross is forged in fire. Four planets, four squares, two oppositions — constant internal tension that never fully resolves. You are the person who thrives under pressure because pressure is your natural state. This tension is not a problem to solve. It is a dynamo to harness. The four planets involved represent four competing drives that, when integrated, produce notable power.',
   },
   Kite: {
     description: 'A Grand Trine with one planet opposing the apex, creating a kite-like shape with sextiles.',
@@ -156,10 +156,10 @@ const SHAPE_DATA: Record<ChartShapeType, ShapeInfo> = {
   },
   StarOfDavid: {
     description: 'Two interlocking Grand Trines forming a hexagonal pattern — six planets, each roughly 60° apart.',
-    personality: 'You carry one of the rarest configurations in astrology. Six planets in harmonious flow create a field of extraordinary natural talent. You have access to gifts others spend lifetimes developing. But this ease is your greatest danger — without friction, there is no growth.',
-    gift: 'Extraordinary natural harmony, multiple talents flowing simultaneously, a sense of being "blessed" or cosmically supported',
+    personality: 'You carry one of the rarest configurations in astrology. Six planets in harmonious flow create a field of notable natural talent. You have access to gifts others spend lifetimes developing. But this ease is your greatest danger — without friction, there is no growth.',
+    gift: 'Notable natural harmony, multiple talents flowing simultaneously, a sense of being "blessed" or cosmically supported',
     challenge: 'Complacency, lack of motivation to develop talents, taking gifts for granted, potential for spiritual laziness',
-    teaching: 'The Star of David (Grand Sextile / two interlocking Grand Trines) is one of the rarest and most powerful configurations in astrology. Six planets, each 60° apart, create a hexagonal pattern of perfect flow. This is extraordinary natural harmony — but also the danger of complacency. You have so much innate talent flowing so easily that you may never be pushed to develop it. The teaching: discipline is what turns this gift from latent potential into lived mastery.',
+    teaching: 'The Star of David (Grand Sextile / two interlocking Grand Trines) is one of the rarest and most powerful configurations in astrology. Six planets, each 60° apart, create a hexagonal pattern of perfect flow. This is notable natural harmony — but also the danger of complacency. You have so much innate talent flowing so easily that you may never be pushed to develop it. The teaching: discipline is what turns this gift from latent potential into lived mastery.',
   },
   Yod: {
     description: 'Two planets in sextile (60°), both forming quincunxes (150°) to a third planet — the "Finger of God."',

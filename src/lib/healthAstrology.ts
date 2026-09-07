@@ -49,7 +49,7 @@ export const PLANETARY_HEALTH_RULERS: Record<string, PlanetaryHealthInfo> = {
       Sagittarius: 'Optimistic health outlook, liver connection',
       Capricorn: 'Endurance focus, bones and skin need attention',
       Aquarius: 'Unconventional health approaches, circulation focus',
-      Pisces: 'Sensitive vitality, immune system connection'
+      Pisces: 'Sensitive vitality, energy and recovery rhythm connection'
     }
   },
   Moon: {
@@ -163,7 +163,7 @@ export const PLANETARY_HEALTH_RULERS: Record<string, PlanetaryHealthInfo> = {
       Sagittarius: 'Hip/thigh structure, philosophy of aging',
       Capricorn: 'Strong bones but needs calcium, knee care essential',
       Aquarius: 'Circulation structure, ankle vulnerability',
-      Pisces: 'Foot structure, immune system building'
+      Pisces: 'Foot structure, energy and recovery rhythm building'
     }
   },
   Uranus: {
@@ -187,7 +187,7 @@ export const PLANETARY_HEALTH_RULERS: Record<string, PlanetaryHealthInfo> = {
   },
   Neptune: {
     symbol: '♆',
-    bodyParts: ['Feet', 'Lymphatic system', 'Pineal gland', 'Immune system'],
+    bodyParts: ['Feet', 'Lymphatic system', 'Pineal gland', 'energy and recovery rhythm'],
     healthThemes: ['Sensitivities & allergies', 'Psychosomatic illness', 'Spiritual health', 'Addiction tendencies'],
     signEffects: {
       Aries: 'Confusion about energy levels, identity-health link',
@@ -349,7 +349,7 @@ export const SIGN_NUTRITION: Record<string, SignNutritionInfo> = {
     nutritionalNeeds: ['Iron', 'Phosphorus', 'Vitamin C', 'Iodine'],
     beneficialFoods: ['Ocean fish', 'Liver', 'Lean beef', 'Raisins', 'Lettuce', 'Walnuts', 'Spinach'],
     avoid: ['Alcohol', 'Drugs', 'Coffee', 'Oily foods', 'Processed foods'],
-    healthFocus: 'Feet, lymphatic system, immune system'
+    healthFocus: 'Feet, lymphatic system, energy and recovery rhythm'
   }
 };
 
@@ -422,8 +422,8 @@ export const HOUSE_HEALTH: Record<number, HouseHealthInfo> = {
     planetsPresent: 'Community wellness, future health vision, group healing'
   },
   12: {
-    healthSignificance: 'Feet, immune system, lymphatic system, hidden health issues, spiritual healing',
-    bodyParts: ['Feet', 'Immune system', 'Lymphatic system'],
+    healthSignificance: 'Feet, energy and recovery rhythm, lymphatic system, hidden health issues, spiritual healing',
+    bodyParts: ['Feet', 'energy and recovery rhythm', 'Lymphatic system'],
     rulerPlacement: 'Unconscious health patterns, hidden vulnerabilities',
     planetsPresent: 'Karmic health, service through healing, spiritual wellness practices'
   }
@@ -448,7 +448,7 @@ export const SUPPORTIVE_HEALTH_ASPECTS: Record<string, string> = {
   'Moon-Venus': 'Good digestion; pleasure in healthy foods; hormonal balance supported',
   'Mercury-Uranus': 'Innovative health approaches; resilient nervous system; quick mental recovery',
   'Venus-Neptune': 'Spiritual approach to healing; natural sensitivity to remedies; artistic healing',
-  'Mars-Jupiter': 'Good energy reserves; strong immune system; natural athletic ability',
+  'Mars-Jupiter': 'Good energy reserves; strong energy and recovery rhythm; natural athletic ability',
   'Sun-Moon': 'Harmony between vitality and emotional health; integrated wellness approach',
   'Venus-Saturn': 'Discipline in health habits; long-term beauty; structured self-care',
   'Mars-Pluto': 'Strong regenerative power; excellent healing capacity; transformative exercise'

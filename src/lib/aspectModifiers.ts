@@ -131,9 +131,9 @@ const MERCURY_NEPTUNE: PlanetPairAspects = {
       symbol: '☍',
       name: 'The Mirror',
       tone: '"I understand meaning through relationship."',
-      description: 'Meaning shows up through others. Projection in communication. Misunderstandings early in life. Strong storyteller, listener, counselor, interpreter of symbols. Often develops extraordinary discernment later because they have to.',
+      description: 'Meaning shows up through others. Projection in communication. Misunderstandings early in life. Strong storyteller, listener, counselor, interpreter of symbols. Often develops notable discernment later because they have to.',
       gifts: [
-        'Extraordinary discernment develops over time',
+        'Notable discernment develops over time',
         'Natural storyteller and counselor',
         'Interprets symbols through dialogue',
         'Sees others\' meaning clearly'
@@ -887,12 +887,12 @@ const MARS_PLUTO: PlanetPairAspects = {
       symbol: '☌',
       name: 'The Power Fusion',
       tone: '"I cannot be stopped."',
-      description: 'Action and power are fused. Extraordinary drive and determination. May have experienced violence or power struggles. Can accomplish the impossible. Must develop conscious relationship with aggression.',
+      description: 'Action and power are fused. Notable drive and determination. May have experienced violence or power struggles. Can accomplish the impossible. Must develop conscious relationship with aggression.',
       gifts: [
         'Unstoppable when focused',
         'Accomplishes the impossible',
         'Transforms through action',
-        'Extraordinary willpower'
+        'Notable willpower'
       ],
       challenges: [
         'Rage and destruction potential',
@@ -2288,7 +2288,7 @@ const SATURN_URANUS: PlanetPairAspects = {
       name: 'The Architect of Change',
       tone: '"I build the new within the old."',
       description: 'Structure and revolution are fused. Natural ability to innovate within systems. May feel torn between tradition and progress. Generational marker for systemic change.',
-      gifts: ['Builds lasting innovations', 'Bridges old and new', 'Practical revolutionary', 'Structural genius'],
+      gifts: ['Builds lasting innovations', 'Bridges old and new', 'Practical revolutionary', 'strong instinct for structure'],
       challenges: ['Internal tension between freedom and duty', 'May feel stuck between generations', 'Difficulty with pure tradition OR pure rebellion', 'Must integrate opposing forces']
     },
     {

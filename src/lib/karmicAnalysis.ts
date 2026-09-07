@@ -497,7 +497,7 @@ function getVertexInterpretation(planet: string, focus: RelationshipFocus): stri
     },
     Mercury: {
       romance: `Their mind arrived at a fated moment. Communication in this romance serves your destiny—listen carefully.`,
-      friendship: `Their thinking feels destined to intersect with yours. Conversations in this friendship have larger purpose.`,
+      friendship: `Their thinking feels well placed to intersect with yours. Conversations in this friendship have larger purpose.`,
       business: `Their ideas arrived at a pivotal moment. Business communication with them serves your professional destiny.`,
       family: `Their voice in your family feels fated. They bring messages that are part of your life's larger story.`,
       creative: `Their ideas arrived when your art needed exactly this perspective. Creative dialogue serves your destiny.`

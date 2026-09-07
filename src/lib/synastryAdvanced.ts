@@ -160,7 +160,7 @@ function hasAspect(chart1: NatalChart, planet1: string, chart2: NatalChart, plan
 
 const CHIRON_SYNASTRY: Record<string, Record<string, string>> = {
   'Chiron-Sun': {
-    conjunction: "The Chiron person sees into the Sun person's deepest wounds around identity and ego. This creates an intense healing dynamic where the Sun person may initially feel exposed but ultimately finds profound self-acceptance. The Chiron person acts as a 'wounded healer,' helping the Sun person integrate shadow aspects of their personality.",
+    conjunction: "The Chiron person sees into the Sun person's area of deep sensitivity around identity and ego. This creates an intense healing dynamic where the Sun person may initially feel exposed but ultimately finds profound self-acceptance. The Chiron person acts as a 'healing-through-understanding,' helping the Sun person integrate shadow aspects of their personality.",
     opposition: "There's a mirror effect—each person reflects the other's core wounds back. The Sun person may trigger the Chiron person's old pain, while Chiron challenges the Sun person's ego defenses. Growth comes through accepting vulnerability.",
     trine: "Natural healing flows between you. The Chiron person gently helps the Sun person heal identity wounds without triggering defensiveness. This is a supportive, nurturing connection.",
     square: "Healing comes through friction. The Chiron person may unintentionally poke the Sun person's sore spots, but this ultimately leads to growth if both are willing to do the work."
@@ -637,7 +637,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   }
   if (hasAspect(chart1, 'Chiron', chart2, 'Sun', ['conjunction'])) {
     scores['teacher-student'].points += 15;
-    scores['teacher-student'].indicators.push('Chiron-Sun: Wounded healer teaches through experience');
+    scores['teacher-student'].indicators.push('Chiron-Sun: healing-through-understanding teaches through experience');
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Saturn', ['conjunction'])) {
     scores['teacher-student'].points += 15;

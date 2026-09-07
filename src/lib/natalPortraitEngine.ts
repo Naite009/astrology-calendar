@@ -652,7 +652,7 @@ function generateDomainStrengths(domain: string, planets: DomainPlanet[]): strin
       if (p.name === 'Mars' && ['Aries', 'Scorpio', 'Capricorn'].includes(p.sign)) strengths.push(`Mars in ${p.sign} — powerful, focused desire nature`);
       if (p.name === 'Juno') strengths.push(`Juno in ${p.sign} — clear commitment style and partnership needs`);
     } else if (domain === 'career') {
-      if (p.name === 'Saturn' && ['Capricorn', 'Libra', 'Aquarius'].includes(p.sign)) strengths.push(`Saturn in ${p.sign} — natural authority and structural genius`);
+      if (p.name === 'Saturn' && ['Capricorn', 'Libra', 'Aquarius'].includes(p.sign)) strengths.push(`Saturn in ${p.sign} — natural authority and strong instinct for structure`);
       if (p.name === 'Jupiter' && ['Sagittarius', 'Pisces', 'Cancer'].includes(p.sign)) strengths.push(`Jupiter in ${p.sign} — abundant opportunity and expansion`);
     } else if (domain === 'emotional') {
       if (p.name === 'Moon' && ['Cancer', 'Taurus', 'Pisces'].includes(p.sign)) strengths.push(`Moon in ${p.sign} — emotionally fluent and nurturing`);
@@ -661,7 +661,7 @@ function generateDomainStrengths(domain: string, planets: DomainPlanet[]): strin
       if (p.name === 'Hygiea') strengths.push(`Hygiea present — natural health awareness`);
     } else if (domain === 'shadow') {
       if (p.name === 'Pluto') strengths.push(`Pluto in ${p.sign} — regenerative power, ability to transform completely`);
-      if (p.name === 'Chiron') strengths.push(`Chiron in ${p.sign} — wounded healer archetype, deep empathy for others' pain`);
+      if (p.name === 'Chiron') strengths.push(`Chiron in ${p.sign} — healing-through-understanding archetype, deep empathy for others' pain`);
     } else if (domain === 'spiritual') {
       if (p.name === 'Neptune') strengths.push(`Neptune in ${p.sign} — spiritual sensitivity and creative imagination`);
       if (p.name === 'NorthNode') strengths.push(`North Node in ${p.sign} — clear soul direction for growth`);

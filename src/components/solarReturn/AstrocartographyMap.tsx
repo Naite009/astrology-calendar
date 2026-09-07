@@ -597,7 +597,7 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
   Pluto: {
     ASC: { vibe: 'Deep personal transformation. Shed an identity. Power dynamics visible everywhere.', bestFor: ['Therapy', 'Power reclamation', 'Shadow work'], watchFor: ['Power struggles', 'Obsessive behavior', 'Control'], dayToDay: 'People love or fear you. Nothing surface-level. Deep truths confronted.' },
     MC: { vibe: 'Career undergoes radical transformation. Institutional power — gain it or be crushed.', bestFor: ['Career transformation', 'Power positions', 'Investigation'], watchFor: ['Power plays', 'Betrayal by authority'], dayToDay: 'Work feels like power game. Office politics intense. Rise or face rebirth.' },
-    DSC: { vibe: 'Relationships transformative, obsessive, intense. Power dynamics magnified.', bestFor: ['Couples therapy', 'Relationship shadows', 'Sexual healing'], watchFor: ['Obsession', 'Jealousy', 'Manipulation'], dayToDay: 'Partners trigger deepest wounds. Nothing casual. Love feels like life or death.' },
+    DSC: { vibe: 'Relationships transformative, obsessive, intense. Power dynamics magnified.', bestFor: ['Couples therapy', 'Relationship shadows', 'Sexual healing'], watchFor: ['Obsession', 'Jealousy', 'Manipulation'], dayToDay: 'Partners trigger area of deep sensitivity. Nothing casual. Love feels like life or death.' },
     IC: { vibe: 'Foundations excavated and rebuilt. Family secrets surface. Childhood demands change.', bestFor: ['Family therapy', 'Genealogy', 'Psychological work'], watchFor: ['Family crises', 'Home power struggles'], dayToDay: 'Emotional basement ripped open. Family dynamics shift dramatically.' },
   },
   Mercury: {

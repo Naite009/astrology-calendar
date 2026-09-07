@@ -126,7 +126,7 @@ const themeMeanings: Record<KarmicIndicator['theme'], string> = {
   soul_growth: 'These contacts indicate this person helps push you toward your soul\'s evolutionary purpose. They support your North Node direction and help you become who you\'re meant to be.',
   karmic_debt: 'These contacts suggest unfinished business or lessons from past lives. Saturn contacts often indicate where you must earn trust, prove maturity, or work through restrictions.',
   transformation: 'These contacts indicate deep, irreversible change. Pluto contacts transform you at the core—for better or worse—and often involve power dynamics that must be consciously navigated.',
-  healing: 'These contacts activate old wounds for potential healing. Chiron contacts bring the wounded healer dynamic—you may hurt each other or help each other heal, depending on consciousness.',
+  healing: 'These contacts activate old wounds for potential healing. Chiron contacts bring the healing-through-understanding dynamic—you may hurt each other or help each other heal, depending on consciousness.',
   fated: 'These contacts indicate destined meetings. Vertex contacts suggest this person was "meant" to appear in your life at this specific time for a specific purpose.'
 };
 

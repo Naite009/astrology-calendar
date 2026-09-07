@@ -62,7 +62,7 @@ const BODY_DESCRIPTIONS: Record<string, { name: string; symbol: string; meaning:
   Midheaven: { name: 'Midheaven', symbol: 'MC', meaning: 'Your public image, career, reputation, and life direction.' },
   NorthNode: { name: 'North Node', symbol: '☊', meaning: 'Your soul\'s growth direction and life purpose in this lifetime.' },
   SouthNode: { name: 'South Node', symbol: '☋', meaning: 'Past life gifts and patterns. Comfort zone to move beyond.' },
-  Chiron: { name: 'Chiron', symbol: '⚷', meaning: 'The Wounded Healer. Your deepest wound that becomes your gift to others.' },
+  Chiron: { name: 'Chiron', symbol: '⚷', meaning: 'The healing-through-understanding. an area of deep sensitivity for you that becomes your gift to others.' },
   Ceres: { name: 'Ceres', symbol: '⚳', meaning: 'Nurturing, food, mothering, loss/return cycles, and self-care.' },
   Pallas: { name: 'Pallas Athena', symbol: '⚴', meaning: 'Wisdom, strategy, pattern recognition, and creative intelligence.' },
   Juno: { name: 'Juno', symbol: '⚵', meaning: 'Partnership, marriage, commitment, and what you need in a mate.' },

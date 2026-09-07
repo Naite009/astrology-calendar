@@ -134,7 +134,7 @@ export const stelliumPlanetRoles: Record<string, string> = {
   Uranus: 'where you rebel, innovate, and break free',
   Neptune: 'where you dream, dissolve boundaries, and access intuition',
   Pluto: 'where deep transformation and power dynamics play out',
-  Chiron: 'your deepest wound and greatest healing gift',
+  Chiron: 'an area of deep sensitivity for you and greatest healing gift',
   NorthNode: 'your soul\'s growth direction this lifetime',
 };
 
@@ -574,8 +574,8 @@ const PLANETARY_HOUR_VIBES: Record<string, { feel: string; double: string }> = {
   Mercury: { feel: 'You\'ll feel mentally sharp and communicative — ideas flow easily and connections happen through conversation. This is a year of learning and expressing.', double: 'Double Mercury energy makes this a year dominated by communication, learning, and mental agility. Words carry extra weight.' },
   Venus:   { feel: 'You\'ll feel magnetic, warm, and drawn to beauty — this year opens with grace and ease. Love, pleasure, and creative inspiration feel close.', double: 'Double Venus energy makes this a year saturated with beauty, love, and sensory pleasure. Relationships and creativity flourish.' },
   Mars:    { feel: 'You\'ll feel fired up and ready to act — there\'s an urgency to get things moving. Channel this energy into bold projects rather than frustration.', double: 'Double Mars energy makes this a year of intense drive and physical vitality. You have the fuel to conquer, but watch for burnout and conflicts.' },
-  Jupiter: { feel: 'You\'ll feel expansive, optimistic, and lucky — opportunities seem to appear out of nowhere. This is a year where faith in the future pays off.', double: 'Double Jupiter energy makes this a year of extraordinary growth and abundance. Generosity flows both ways — give freely and receive fully.' },
-  Saturn:  { feel: 'You\'ll feel grounded, serious, and focused on what matters — there\'s a mature energy that asks you to do the real work. Discipline is your superpower this year.', double: 'Double Saturn energy makes this a year of serious commitment and structural change. What you build now is meant to last decades.' },
+  Jupiter: { feel: 'You\'ll feel expansive, optimistic, and lucky — opportunities seem to appear out of nowhere. This is a year where faith in the future pays off.', double: 'Double Jupiter energy makes this a year of notable growth and abundance. Generosity flows both ways — give freely and receive fully.' },
+  Saturn:  { feel: 'You\'ll feel grounded, serious, and focused on what matters — there\'s a mature energy that asks you to do the real work. Discipline can be a real strength this year.', double: 'Double Saturn energy makes this a year of serious commitment and structural change. What you build now is meant to last decades.' },
 };
 
 function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
