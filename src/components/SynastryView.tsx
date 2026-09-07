@@ -382,6 +382,9 @@ const RelationshipChartDisplay = ({
           <p className="text-xs text-muted-foreground mt-1">
             Davison calculates actual planetary positions for this date - different from Composite's midpoint method.
           </p>
+          {'momentNote' in chartData && typeof chartData.momentNote === 'string' && (
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">{chartData.momentNote}</p>
+          )}
         </div>
       )}
       

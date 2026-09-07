@@ -3,7 +3,7 @@
  *
  * Chiron, Ceres, Pallas, Juno, Vesta and Eris come from real JPL Horizons
  * samples (src/lib/ephemeris/asteroidLongitudes.ts, every 10 days from
- * 1920-01-01 to 2060-01-01) interpolated with a Catmull-Rom cubic. Outside
+ * 1920-01-01 to 2059-12-27, the last sample) interpolated with a Catmull-Rom cubic. Outside
  * that window there is NO fallback: the caller gets `available: false` (or an
  * exception from the strict helper). The earlier monthly tables plus
  * "orbital period" extrapolation were removed because they drifted by tens

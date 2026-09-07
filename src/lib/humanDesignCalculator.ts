@@ -71,37 +71,40 @@ export function getGateFromLongitude(longitude: number): { gate: number; line: n
   return { gate, line: Math.min(line, 6) };
 }
 
+// Apparent geocentric Sun in the true ecliptic of date.
+//
+// Do NOT write `Astronomy.Ecliptic(Astronomy.SunPosition(t).vec)`: SunPosition
+// already returns an ecliptic vector, and Ecliptic() expects an equatorial
+// J2000 vector, so that double rotation was putting the Sun up to 2.4 degrees
+// off (a whole Human Design line, sometimes a whole gate, on the Sun/Earth
+// gates that define Profile and Incarnation Cross).
+const apparentSunEcliptic = (time: Astronomy.AstroTime): Astronomy.EclipticCoordinates =>
+  Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Sun, time, true));
+
 // Calculate the Design date (88° before birth)
 export function calculateDesignDate(birthDate: Date): Date {
   // The Design calculation uses the Sun's position 88° before birth
   // We need to find when the Sun was at current_position - 88°
   
   const birthTime = Astronomy.MakeTime(birthDate);
-  const sunAtBirth = Astronomy.SunPosition(birthTime);
-  const birthEcliptic = Astronomy.Ecliptic(sunAtBirth.vec);
+  const birthEcliptic = apparentSunEcliptic(birthTime);
   
   // Target longitude is birth longitude - 88°
   let targetLongitude = birthEcliptic.elon - 88;
   if (targetLongitude < 0) targetLongitude += 360;
   
-  // The Sun moves approximately 1° per day, so 88° ≈ 88 days before
-  // Start searching from approximately 88 days before birth
-  let searchDate = new Date(birthDate);
-  searchDate.setDate(searchDate.getDate() - 88);
-  
-  // Binary search to find exact date when Sun was at target longitude
-  // The Sun moves about 0.9856° per day on average
-  let low = new Date(birthDate);
-  low.setDate(low.getDate() - 95); // Start a bit earlier
-  let high = new Date(birthDate);
-  high.setDate(high.getDate() - 80); // End a bit later
+  // The Sun moves about 0.9856° per day, so 88° is roughly 88 days before.
+  // Bracket 80 to 95 days back in plain milliseconds (no `setDate`, which
+  // would apply the browser's DST rules to a UTC instant).
+  const DAY_MS = 86_400_000;
+  let low = new Date(birthDate.getTime() - 95 * DAY_MS);
+  let high = new Date(birthDate.getTime() - 80 * DAY_MS);
   
   // Iterate to find the exact time
   for (let i = 0; i < 50; i++) {
     const mid = new Date((low.getTime() + high.getTime()) / 2);
     const midTime = Astronomy.MakeTime(mid);
-    const sunAtMid = Astronomy.SunPosition(midTime);
-    const midEcliptic = Astronomy.Ecliptic(sunAtMid.vec);
+    const midEcliptic = apparentSunEcliptic(midTime);
     
     // Handle wraparound at 0°/360°
     let diff = midEcliptic.elon - targetLongitude;
@@ -128,9 +131,8 @@ export function getPlanetaryPositions(date: Date): Map<string, number> {
   const time = Astronomy.MakeTime(date);
   const positions = new Map<string, number>();
   
-  // Sun
-  const sun = Astronomy.SunPosition(time);
-  const sunEcliptic = Astronomy.Ecliptic(sun.vec);
+  // Sun (apparent geocentric, ecliptic of date; same frame as the natal engine)
+  const sunEcliptic = apparentSunEcliptic(time);
   positions.set('Sun', sunEcliptic.elon);
   
   // Earth position is opposite to Sun
@@ -857,7 +859,12 @@ export function calculateHumanDesignChart(
     }
   }
   if (!utcDate) {
-    // Never `new Date(year, ...)`: that would read the parts in the browser's zone.
+    // Legacy path: no usable zone id. Only a real numeric offset may stand in;
+    // never guess a zone, and never `new Date(year, ...)`, which would read the
+    // parts in the browser's zone.
+    if (!Number.isFinite(timezoneOffset)) {
+      throw new Error(`Cannot place the birth moment: "${timezone}" is not a known time zone and no numeric offset was given.`);
+    }
     utcDate = new Date(Date.UTC(year, month - 1, day, hours || 0, (minutes || 0) - Math.round(timezoneOffset * 60), seconds || 0));
   }
   
@@ -946,5 +953,96 @@ export function calculateHumanDesignChart(
     variables,
     createdAt: now,
     updatedAt: now,
+    calcSource: 'engine',
+    calcVersion: HD_CALC_VERSION,
+  };
+}
+
+/**
+ * Engine version stamped on every computed chart. Bump when a correctness fix
+ * changes activations so stored charts can be recomputed on load.
+ *
+ * 2: Sun/Earth were read through a double ecliptic rotation (up to 2.6 degrees
+ *    off, wrong gate on ~28% of days, wrong line on most of the rest).
+ */
+export const HD_CALC_VERSION = 2;
+
+/** The Sun longitude the pre-version-2 engine produced at an instant. */
+const legacySunLongitudeV1 = (date: Date): number => {
+  const time = Astronomy.MakeTime(date);
+  const lon = Astronomy.Ecliptic(Astronomy.SunPosition(time).vec).elon;
+  return ((lon % 360) + 360) % 360;
+};
+
+export type HdRecomputeOutcome =
+  | { action: 'kept'; reason: 'current' | 'imported' | 'no-birth-data' | 'unknown-zone' | 'not-legacy-signature' | 'calc-failed'; chart: HumanDesignChart }
+  | { action: 'recomputed'; reason: 'legacy-sun-frame'; chart: HumanDesignChart };
+
+/**
+ * Bring a stored chart up to the current engine without touching charts the
+ * engine did not produce.
+ *
+ * Rules, in order:
+ *  - Already stamped with the current version, or marked as imported: keep.
+ *  - No usable birth date/time or zone: keep (nothing to recompute from).
+ *  - Unstamped (legacy) chart: recompute, then compare the stored conscious
+ *    Sun against the gate/line the OLD formula gives at the recomputed birth
+ *    instant. Only when the stored Sun matches the old formula's output is
+ *    the chart replaced. A stored Sun that already matches the corrected
+ *    value, or matches neither (a hand-entered or imported chart), is left
+ *    alone and stamped as imported so it is not re-checked.
+ */
+export function recomputeLegacyHdChart(chart: HumanDesignChart): HdRecomputeOutcome {
+  if (chart.calcSource === 'imported') return { action: 'kept', reason: 'imported', chart };
+  if (chart.calcSource === 'engine' && chart.calcVersion === HD_CALC_VERSION) {
+    return { action: 'kept', reason: 'current', chart };
+  }
+  if (!chart.birthDate || !chart.birthTime) return { action: 'kept', reason: 'no-birth-data', chart };
+
+  const zoneUsable = isValidTimeZone(chart.timezone) || Number.isFinite(chart.timezoneOffset);
+  if (!zoneUsable) return { action: 'kept', reason: 'unknown-zone', chart };
+
+  let fresh: HumanDesignChart;
+  try {
+    fresh = calculateHumanDesignChart(
+      chart.name,
+      chart.birthDate,
+      chart.birthTime,
+      chart.birthLocation || '',
+      chart.timezone,
+      chart.timezoneOffset,
+    );
+  } catch {
+    return { action: 'kept', reason: 'calc-failed', chart };
+  }
+
+  const storedSun = chart.personalityActivations?.find(a => a.planet === 'Sun');
+  const freshSun = fresh.personalityActivations.find(a => a.planet === 'Sun');
+  if (!storedSun || !freshSun) return { action: 'kept', reason: 'calc-failed', chart };
+
+  const legacy = getGateFromLongitude(legacySunLongitudeV1(fresh.personalityDateTime));
+  const storedMatchesLegacy = storedSun.gate === legacy.gate && storedSun.line === legacy.line;
+
+  if (!storedMatchesLegacy) {
+    // The stored Sun is not what the old engine would have produced, so this
+    // chart did not come from the old engine (hand-entered or uploaded).
+    // Stamp it so it is not re-checked; never overwrite it.
+    return { action: 'kept', reason: 'not-legacy-signature', chart: { ...chart, calcSource: 'imported' } };
+  }
+  // The stored Sun carries the old engine's signature. Even when the corrected
+  // Sun lands on the same gate/line, the design date was derived from the old
+  // Sun and can be days off, so the whole chart is recomputed.
+
+  return {
+    action: 'recomputed',
+    reason: 'legacy-sun-frame',
+    chart: {
+      ...fresh,
+      id: chart.id,
+      name: chart.name,
+      createdAt: chart.createdAt || fresh.createdAt,
+      updatedAt: new Date().toISOString(),
+      chartImageBase64: chart.chartImageBase64,
+    },
   };
 }

@@ -909,7 +909,7 @@ export function computeProgressedLunationTimeline(
   }
 
   // Build output phases
-  const currentAge = (currentDate.getTime() - new Date(natalChart.birthDate).getTime()) / (365.25 * msPerDay);
+  const currentAge = (currentDate.getTime() - birthDate.getTime()) / (365.25 * msPerDay);
   const result: ProgressedLunationPhase[] = [];
   let cycleNumber = 1;
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { parseLocalDate } from "@/lib/localDate";
 import { Moon, Sparkles, Calendar, Target, Eye, Heart, Briefcase, Zap, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -471,7 +472,8 @@ export const LunarCycleView = ({
         const ascIdx = SIGNS.indexOf(analysis.yearlyTheme.ascendantSign);
         if (ascIdx >= 0) srPlanetPositions['SR Ascendant'] = ascIdx * 30;
       }
-      const birthDate = new Date(activeChart.birthDate || '');
+      // Birthday month/day as a calendar day, not UTC midnight read in local time.
+      const birthDate = parseLocalDate(activeChart.birthDate || '');
       return calculateActivationWindows(srPlanetPositions, latestSR.solarReturnYear, birthDate.getMonth(), birthDate.getDate());
     } catch (e) {
       console.error('[LunarCycle] SR activation calc error:', e);

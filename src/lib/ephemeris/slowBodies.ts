@@ -75,12 +75,17 @@ export const slowBodyLongitude = (body: SlowBody, date: Date): number | null => 
   const x = (date.getTime() - ASTEROID_TABLE_START_MS) / STEP_MS;
   if (!isFinite(x) || x < 0 || x > ASTEROID_TABLE_SAMPLES - 1) return null;
 
-  const i = Math.min(Math.floor(x), ASTEROID_TABLE_SAMPLES - 2);
+  const last = ASTEROID_TABLE_SAMPLES - 1;
+  const i = Math.min(Math.floor(x), last - 1);
   const t = x - i;
-  const p0 = values[Math.max(i - 1, 0)];
   const p1 = values[i];
   const p2 = values[i + 1];
-  const p3 = values[Math.min(i + 2, ASTEROID_TABLE_SAMPLES - 1)];
+  // In the first and last 10-day segment there is no neighbour on one side.
+  // Clamping to the end sample bent the curve badly there (Vesta was 22' off
+  // on 1920-01-04 against JPL); a quadratic phantom point keeps the local
+  // curvature and holds the edges to the same half arc-minute as the rest.
+  const p0 = i >= 1 ? values[i - 1] : 3 * p1 - 3 * p2 + values[i + 2];
+  const p3 = i + 2 <= last ? values[i + 2] : 3 * p2 - 3 * p1 + values[i - 1];
   const lon = catmullRom(p0, p1, p2, p3, t);
   return ((lon % 360) + 360) % 360;
 };

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { parseLocalDate } from '@/lib/localDate';
 import { Activity, AlertTriangle, TrendingUp, TrendingDown, Minus, Heart, Users, Layers, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
 import { getBiorhythmForecast } from '@/lib/biorhythms';
 import { 
@@ -566,7 +567,7 @@ export const BiorhythmCard = ({
   
   const compatibility = useMemo(() => {
     if (!compareChart || !birthDate) return null;
-    return getCompatibility(birthDate, new Date(compareChart.birthDate), targetDate);
+    return getCompatibility(birthDate, parseLocalDate(compareChart.birthDate), targetDate);
   }, [birthDate, compareChart, targetDate]);
   
   const hasCritical = biorhythms.some(b => b.state === 'critical');

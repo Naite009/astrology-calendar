@@ -6,6 +6,7 @@
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { birthMomentOf } from './chartAutoFill';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -296,6 +297,15 @@ export interface DavisonChart {
   planets: Record<string, CompositePosition>;
   interpretation: CompositeInterpretation;
   method: 'davison';
+  /**
+   * 'exact' when both birth instants came from the shared normalization
+   * pipeline (local clock time at the birthplace, historical zone rules).
+   * 'date-only' when at least one chart could not be normalized and local
+   * noon was used instead; the Davison Moon can then be off by several degrees.
+   */
+  momentQuality: 'exact' | 'date-only';
+  /** Plain-language note when the moment is not exact. */
+  momentNote?: string;
 }
 
 /**
@@ -306,6 +316,20 @@ function calculateAveragedDate(date1: Date, date2: Date): Date {
   const time2 = date2.getTime();
   const avgTime = (time1 + time2) / 2;
   return new Date(avgTime);
+}
+
+/**
+ * The birth instant for one chart: the normalized UTC moment when the record
+ * can be resolved, otherwise noon UTC on the birth date with `exact: false`.
+ * Never `new Date("YYYY-MM-DD")`, which is midnight UTC and throws away the
+ * birth time entirely (up to 13 degrees of Davison Moon).
+ */
+function davisonBirthInstant(chart: NatalChart): { date: Date; exact: boolean } {
+  const exact = birthMomentOf(chart);
+  if (exact) return { date: exact, exact: true };
+  const [y, m, d] = String(chart.birthDate || '').split('-').map(Number);
+  const fallback = y && m && d ? new Date(Date.UTC(y, m - 1, d, 12, 0, 0)) : new Date(NaN);
+  return { date: fallback, exact: false };
 }
 
 /**
@@ -363,10 +387,17 @@ function getPlanetLongitudeAtDate(planetName: string, date: Date): number | null
  * Uses astronomy-engine for precise planetary positions at the averaged date
  */
 export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): DavisonChart {
-  // Calculate averaged birth date
-  const date1 = new Date(chart1.birthDate);
-  const date2 = new Date(chart2.birthDate);
+  // Midpoint in time between the two normalized birth instants.
+  const instant1 = davisonBirthInstant(chart1);
+  const instant2 = davisonBirthInstant(chart2);
+  const date1 = instant1.date;
+  const date2 = instant2.date;
   const averagedDate = calculateAveragedDate(date1, date2);
+  const momentQuality: DavisonChart['momentQuality'] = instant1.exact && instant2.exact ? 'exact' : 'date-only';
+  const inexactNames = [!instant1.exact && chart1.name, !instant2.exact && chart2.name].filter(Boolean) as string[];
+  const momentNote = momentQuality === 'exact'
+    ? undefined
+    : `Birth time and place could not be resolved for ${inexactNames.join(' and ')}, so noon was used. The Davison Moon and fast planets are approximate until that chart has a verified time zone.`;
   
   // For location, we note both locations (true Davison would need geocoding)
   const averagedLocation = `Between ${chart1.birthLocation} and ${chart2.birthLocation}`;
@@ -448,7 +479,9 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
     averagedLocation,
     planets: davisonPlanets,
     interpretation,
-    method: 'davison'
+    method: 'davison',
+    momentQuality,
+    momentNote,
   };
 }
 

@@ -132,12 +132,25 @@ const SIGN_ALIASES: Record<string, string> = {
   'pis': 'Pisces', 'pisces': 'Pisces', 'pi': 'Pisces',
 };
 
+/**
+ * Which definitions a pasted table declares for the bodies that have more
+ * than one. Astro.com prints "True Node" or "Mean Node" and "Lilith" (mean)
+ * or "osc. Lilith"; comparing a mean node against the app's true node without
+ * recording that is a 1.75 degree error that looks like a bad import.
+ */
+const detectImportVariants = (text: string): { node?: 'true' | 'mean'; lilith?: 'mean' | 'true' } => {
+  const t = text.toLowerCase();
+  const out: { node?: 'true' | 'mean'; lilith?: 'mean' | 'true' } = {};
+  if (/\bmean\s+node\b/.test(t)) out.node = 'mean';
+  else if (/\btrue\s+node\b/.test(t)) out.node = 'true';
+  if (/\b(osc\.?|osculating|true)\s+(black\s+moon\s+)?lilith\b/.test(t)) out.lilith = 'true';
+  else if (/\blilith\b/.test(t)) out.lilith = 'mean';
+  return out;
+};
+
 // Parse astro.com text format
 const parseAstroComData = (text: string): Partial<Record<string, NatalPlanetPosition>> => {
   const results: Partial<Record<string, NatalPlanetPosition>> = {};
-  
-  // Normalize text
-  const normalized = text.toLowerCase().replace(/\s+/g, ' ');
   
   // Common patterns:
   // "Sun 15°23' Aries" or "Sun 15 23 Aries" or "Sun in Aries 15°23'"
@@ -717,6 +730,7 @@ export const ChartLibrary = ({
     
     const parsed = parseAstroComData(importText);
     const parsedCount = Object.keys(parsed).length;
+    const variants = detectImportVariants(importText);
     
     if (parsedCount > 0) {
       setFormData(prev => ({
@@ -725,8 +739,17 @@ export const ChartLibrary = ({
           ...prev.planets,
           ...parsed,
         },
+        // Keep the source's node definition with the numbers so verification
+        // compares like with like.
+        nodeVariant: variants.node ?? prev.nodeVariant,
       }));
       setImportResult({ success: parsedCount, total: parsedCount });
+      if (variants.node === 'mean') {
+        toast('This table lists the Mean Node. It was saved as mean node so the check compares the same definition.');
+      }
+      if (variants.lilith === 'true' && parsed.Lilith) {
+        toast.warning('This table lists the true (osculating) Lilith. The app calculates mean Lilith, so the verification row for Lilith can differ by several degrees; that is a definition difference, not an error.');
+      }
     } else {
       setImportResult({ success: 0, total: 0 });
     }

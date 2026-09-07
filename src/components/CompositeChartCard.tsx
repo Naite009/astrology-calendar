@@ -130,11 +130,16 @@ export const CompositeChartCard = ({ chart1, chart2 }: CompositeChartCardProps) 
       
       {/* Davison Date Info */}
       {method === 'davison' && davison && (
-        <div className="mb-4 p-2 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-100 dark:border-violet-900/30 flex items-center gap-2">
-          <Calendar size={14} className="text-violet-500" />
-          <p className="text-xs text-muted-foreground">
-            Relationship "birth": <span className="font-medium text-foreground">{format(davison.averagedDate, 'MMMM d, yyyy')}</span>
-          </p>
+        <div className="mb-4 p-2 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-100 dark:border-violet-900/30 flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <Calendar size={14} className="text-violet-500" />
+            <p className="text-xs text-muted-foreground">
+              Relationship "birth": <span className="font-medium text-foreground">{format(davison.averagedDate, 'MMMM d, yyyy')}</span>
+            </p>
+          </div>
+          {davison.momentNote && (
+            <p className="text-xs text-amber-700 dark:text-amber-400">{davison.momentNote}</p>
+          )}
         </div>
       )}
       

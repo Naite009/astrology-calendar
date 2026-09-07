@@ -4,6 +4,7 @@
 
 import { NatalChart } from "@/hooks/useNatalChart";
 import * as Astronomy from 'astronomy-engine';
+import { parseLocalDate } from './localDate';
 import { 
   SATURN_IN_SIGN, 
   SATURN_IN_HOUSE, 
@@ -1058,7 +1059,8 @@ export interface LifeStageCycle {
 export function getLifeStageCycles(chart: NatalChart): LifeStageCycle[] {
   if (!chart.birthDate) return [];
 
-  const birthDate = new Date(chart.birthDate);
+  // Calendar day for age arithmetic; UTC-midnight parsing lands a day early west of Greenwich.
+  const birthDate = parseLocalDate(chart.birthDate);
   const today = new Date();
   const birthMonth = birthDate.getMonth();
   const birthDay = birthDate.getDate();

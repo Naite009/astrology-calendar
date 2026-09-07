@@ -163,16 +163,22 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
     setIsCalculating(true);
 
     try {
+      if (!formData.timezone) {
+        // Never default to a zone: a wrong zone shifts every gate.
+        setError('Choose the birth time zone before calculating.');
+        setIsCalculating(false);
+        return;
+      }
       // Offset at the actual local birth moment (kept for display/legacy fields;
       // the calculator converts with the zone id itself).
-      const offset = getTimezoneInfoForDate(formData.timezone || 'America/New_York', formData.birthDate, formData.birthTime).offset;
+      const offset = getTimezoneInfoForDate(formData.timezone, formData.birthDate, formData.birthTime).offset;
 
       const chart = calculateHumanDesignChart(
         formData.name,
         formData.birthDate,
         formData.birthTime,
         formData.birthLocation,
-        formData.timezone || 'America/New_York',
+        formData.timezone,
         offset
       );
 
@@ -317,7 +323,9 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         birthDate: formData.birthDate || '',
         birthTime: formData.birthTime || '',
         birthLocation: formData.birthLocation || '',
-        timezone: formData.timezone || 'America/New_York',
+        // Metadata only on this path (gates come from the uploaded chart), so an
+        // unknown zone is stored as unknown rather than as New York.
+        timezone: formData.timezone || '',
         timezoneOffset: 0,
         personalityDateTime: new Date(),
         designDateTime: new Date(),
@@ -340,6 +348,8 @@ export const HDChartInputForm = ({ onSave, onClose, initialData, mainUserData }:
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // Gates came from the uploaded chart, not the engine; never recompute.
+        calcSource: 'imported',
       };
 
       console.log('[HD] Final chart to save:', chart);

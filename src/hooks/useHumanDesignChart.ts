@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { HumanDesignChart } from '@/types/humanDesign';
 import { supabase } from '@/integrations/supabase/client';
+import { recomputeLegacyHdChart } from '@/lib/humanDesignCalculator';
 
 const STORAGE_KEY = 'humanDesignCharts';
 const BACKUP_VERSIONS = ['__backup_v1', '__backup_v2', '__backup_v3'];
@@ -82,9 +83,34 @@ const saveWithRollingBackups = (key: string, data: unknown): void => {
   }
 };
 
+/**
+ * Run every stored chart through the engine-version check. Charts produced by
+ * the old engine are recomputed; imported or already-current charts pass
+ * through unchanged. Returns the list plus whether anything changed.
+ */
+const upgradeStoredCharts = (list: HumanDesignChart[]): { charts: HumanDesignChart[]; changed: boolean; recomputed: string[] } => {
+  let changed = false;
+  const recomputed: string[] = [];
+  const out = list.map(c => {
+    const outcome = recomputeLegacyHdChart(c);
+    if (outcome.chart !== c) changed = true;
+    if (outcome.action === 'recomputed') recomputed.push(c.name);
+    return outcome.chart;
+  });
+  return { charts: out, changed, recomputed };
+};
+
 export const useHumanDesignChart = () => {
   const [charts, setCharts] = useState<HumanDesignChart[]>(() => {
-    return readWithRollingBackups<HumanDesignChart[]>(STORAGE_KEY, [], isValidChartArray);
+    const stored = readWithRollingBackups<HumanDesignChart[]>(STORAGE_KEY, [], isValidChartArray);
+    const upgraded = upgradeStoredCharts(stored);
+    if (upgraded.changed) {
+      if (upgraded.recomputed.length) {
+        console.info('[HDChart] Recomputed charts from the old Sun frame:', upgraded.recomputed.join(', '));
+      }
+      saveWithRollingBackups(STORAGE_KEY, upgraded.charts);
+    }
+    return upgraded.charts;
   });
 
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
@@ -188,9 +214,12 @@ export const useHumanDesignChart = () => {
         }
       }
 
-      const restored = Array.from(byId.values()).filter(isValidChart);
-      console.log('[HDChart] Restored', restored.length, 'HD charts from cloud');
-      return restored;
+      const restored = upgradeStoredCharts(Array.from(byId.values()).filter(isValidChart));
+      if (restored.recomputed.length) {
+        console.info('[HDChart] Recomputed cloud charts from the old Sun frame:', restored.recomputed.join(', '));
+      }
+      console.log('[HDChart] Restored', restored.charts.length, 'HD charts from cloud');
+      return restored.charts;
     } catch (err) {
       console.error('[HDChart] Cloud restore exception:', err);
       return [];
