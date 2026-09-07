@@ -31,3 +31,8 @@
 ## Ready (interpretation quality)
 - Deterministic copy banks in src/lib (aspect/house/planet libraries, Solar Return, synastry, family, HD) still carry hand-written phrasing; they inherit the QA lint but not the prompt rules. Sweep them through softenClaim/lintInterpretiveText bank by bank.
 - Run lintInterpretiveText on AI output at request time (currently QA-suite only) once error budgets are agreed per surface.
+
+## Chart Walkthrough tab (done)
+- Reading Guide engine at src/lib/readingGuide/* (age context, factor meanings, engine) + ReadingGuideView tab.
+- Regression suite: src/lib/__tests__/readingGuide.test.ts (Ava 2011-05-19, teen framing, low Water, Earth/6th blend, reasoning chain).
+- Future option: advanced toggle for asteroids/extra points (deliberately excluded from the core flow).
