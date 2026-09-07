@@ -292,7 +292,7 @@ describe('Rave wheel anchors (Gate 41 begins at 2°00\' Aquarius)', () => {
     [3.875, 17, 1, 'Gate 17 line 1 at 3°52\'30" Aries'],
     [9.5, 21, 1, 'Gate 21 line 1 at 9°30\' Aries'],
     [268.25, 10, 1, 'Gate 10 line 1 at 28°15\' Sagittarius'],
-    [122.0, 33, 1, 'Gate 33 line 1 at 2°00\' Leo'],
+    [122.0, 31, 1, 'Gate 31 line 1 at 2°00\' Leo (opposite Gate 41)'],
   ];
   for (const [lon, gate, line, label] of cases) {
     it(label, () => {
