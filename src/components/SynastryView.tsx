@@ -878,6 +878,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           houseOverlays={focusedHouseOverlays}
                           karmicIndicators={focusedKarmicIndicators}
                           focus={relationshipFocus}
+                          pairReading={pairReading ?? undefined}
                         />
                       </div>
                       
@@ -888,7 +889,8 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         report={report}
                         karmicAnalysis={karmicAnalysis}
                         compositeInterpretation={compositeInterpretation}
-                        focus={relationshipFocus === 'romantic' ? 'romance' : relationshipFocus === 'all' ? 'romance' : relationshipFocus}
+                        focus={legacyKarmicFocus(relContext?.kind ?? 'neutral')}
+                        context={relContext ?? undefined}
                       />
                       
                       {/* Additional Technical Views - Expandable */}
@@ -986,7 +988,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                       )}
                       
                       {/* Attraction Dynamics - only for romantic/all focus */}
-                      {(relationshipFocus === 'all' || relationshipFocus === 'romantic') && report.attractionDynamics.length > 0 && (
+                      {relContext?.allowRomantic && report.attractionDynamics.length > 0 && (
                         <section>
                           <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
                             <Flame className="text-red-500" size={20} />
