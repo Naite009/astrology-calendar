@@ -1,9 +1,9 @@
 /**
  * Relationship Focus Analysis
- * Professional-grade synastry scoring aligned with astrological research
+ * Synastry scoring using this app’s own interpretive rubric (weights are listed in this file and are not research findings)
  * 
  * Scoring Philosophy:
- * - Base score of 25% (any partnership has baseline potential)
+ * - Rubric starts each dimension at a neutral midpoint; this is an app convention, not a measured baseline
  * - Standard indicators contribute weighted percentage (normalized ~120 pts max)
  * - Major karmic indicators add FLAT bonuses (capped at 22 for all focus types)
  * - House overlays contribute directly when relevant
@@ -115,7 +115,7 @@ export interface FocusAnalysis {
 
 /**
  * Calculate aspect ratio from found aspects
- * Professional astrologers use 2:1 (harmonious:tense) as a benchmark
+ * This app’s rubric weights contacts by orb, bodies and relevance rather than counting harmonious vs tense aspects
  */
 function calculateAspectRatio(indicators: FocusIndicator[]): AspectRatioData {
   let harmonious = 0;
@@ -159,7 +159,7 @@ function getAspectRatioModifier(ratio: number): number {
 
 // ============================================
 // BUSINESS PARTNERSHIP ANALYSIS
-// Professional-grade scoring based on astrological research
+// Scoring per this app’s interpretive rubric (see file header)
 // Target: ~120 max standard points
 // ============================================
 function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
@@ -230,11 +230,11 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   });
   if (mercuryMercury) standardPoints += mercuryMercury.quality === 'harmonious' ? 10 : 5;
 
-  // Mars-Jupiter: "The Millionaire Combination" - drive meets expansion
+  // Mars–Jupiter: drive meets optimism - drive meets expansion
   const marsJupiter = checkAspect(chart1, 'Mars', chart2, 'Jupiter') || checkAspect(chart2, 'Mars', chart1, 'Jupiter');
   maxStandardPoints += 10;
   indicators.push({
-    name: '★ Mars-Jupiter: The Millionaire Combination',
+    name: '★ Mars–Jupiter: drive meets optimism',
     found: !!marsJupiter,
     aspect: marsJupiter,
     planet1: 'Mars',
@@ -631,7 +631,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       planet2: 'Sun',
       tier: 0,
       points: 6,
-      interpretation: `${pofSun.type} (${pofSun.orb}° orb): **PROSPERITY TOGETHER.** The Part of Fortune indicates material success. This partnership has strong potential for financial gain.`,
+      interpretation: `${pofSun.type} (${pofSun.orb}° orb): **Shared sense of what is worth doing.** The Part of Fortune is an advanced point: read it as a flavour, never as a prediction about money.`,
       strength: 'strong'
     });
   }
@@ -815,7 +815,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     recommendations: [
       ...(karmicIndicators.length > 0 ? [`★ ${karmicIndicators.length} karmic/fated indicator(s) suggest this partnership has deeper professional purpose.`] : []),
       ...(saturnNorthNode ? ['★★ Your Saturn-North Node connection is a MAJOR indicator of fated professional relationship - this is rare and significant.'] : []),
-      ...(marsJupiter ? ['★ Your Mars-Jupiter "millionaire combination" favors ambitious ventures.'] : []),
+      ...(marsJupiter ? ['★ Your Mars–Jupiter contact puts real energy behind ambitious plans.'] : []),
       ...(nodeJupiter ? ['★ Your Node-Jupiter brings growth and luck to shared ventures.'] : []),
       ...(saturnSun ? ['Leverage your Saturn-Sun dynamic for clear authority structures.'] : ['Establish explicit decision-making agreements.']),
       ...(mercuryMercury ? ['Use your Mercury connection for regular strategy sessions.'] : ['Schedule regular check-ins to bridge communication styles.']),

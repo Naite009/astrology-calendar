@@ -210,7 +210,7 @@ const CHIRON_SYNASTRY: Record<string, Record<string, string>> = {
 const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pastLife: string; lesson: string }>> = {
   'NorthNode-Sun': {
     conjunction: {
-      interpretation: "The Sun person embodies exactly what the Node person needs to become. This is a fated connection where the Sun person acts as a beacon for the Node person's evolution. The Node person is deeply drawn to the Sun person's core identity.",
+      interpretation: "The Sun person embodies exactly what the Node person needs to become. Traditionally this is read as a growth-oriented contact, with the Sun person modelling something the Node person is developing. The Node person is deeply drawn to the Sun person's core identity.",
       pastLife: "The Sun person may have been a leader, authority figure, or role model the Node person admired from a long-standing pattern between you.",
       lesson: "The Node person is learning to embody the Sun person's confidence and self-expression."
     },
@@ -239,7 +239,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
   },
   'NorthNode-Venus': {
     conjunction: {
-      interpretation: "FATED LOVE. The Venus person embodies the love the Node person is meant to experience. This is one of the strongest indicators of a destined romantic connection. Venus shows the Node person a new way to love.",
+      interpretation: "A close North Node–Venus contact. Traditionally read as a warm, significant meeting; treat it as a symbolic emphasis rather than a verdict about the relationship. Venus shows the Node person a new way to love.",
       pastLife: "A love connection that was interrupted or incomplete in long-standing patterns, now returning for fulfillment.",
       lesson: "Learning to receive and give love in alignment with soul growth."
     },
@@ -267,7 +267,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
     conjunction: {
       interpretation: "The Chiron person's wounds are connected to the Node person's destiny. Healing Chiron's pain is somehow linked to the Node person's life purpose. A profound healing-destiny connection.",
       pastLife: "Wounds from long-standing patterns that need healing as part of this lifetime's growth.",
-      lesson: "Integrating wound healing into life purpose. The healing IS the path."
+      lesson: "Growing understanding of a sensitive area can become part of what this person cares about."
     }
   }
 };
@@ -513,7 +513,7 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
             interpretation: nodeData.interpretation,
             pastLifeTheme: nodeData.pastLife,
             lessonToLearn: nodeData.lesson,
-            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through destiny alignment'
+            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through stretching into less familiar ground'
           });
         } else if (chironData && karmic === 'Chiron') {
           indicators.push({
@@ -543,7 +543,7 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
             interpretation: nodeData.interpretation,
             pastLifeTheme: nodeData.pastLife,
             lessonToLearn: nodeData.lesson,
-            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through destiny alignment'
+            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through stretching into less familiar ground'
           });
         }
       }
@@ -590,7 +590,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Venus', ['conjunction'])) {
     scores.romantic.points += 20;
-    scores.romantic.indicators.push('North Node-Venus: Fated love connection');
+    scores.romantic.indicators.push('North Node–Venus: close nodal contact to Venus');
   }
   
   // BUSINESS INDICATORS
@@ -662,7 +662,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   // KARMIC INDICATORS
   if (hasAspect(chart1, 'NorthNode', chart2, 'Sun', ['conjunction'])) {
     scores.karmic.points += 25;
-    scores.karmic.indicators.push('North Node-Sun: Fated destiny connection');
+    scores.karmic.indicators.push('North Node–Sun: close nodal contact to the Sun');
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Moon', ['conjunction'])) {
     scores.karmic.points += 20;
@@ -973,7 +973,7 @@ function generateAttractionNarrative(
   }
   
   if (karmic.find(k => k.planet1 === 'NorthNode' && k.aspectType === 'conjunction')) {
-    parts.push(`This is a fated connection. ${chart1.name} and ${chart2.name} are drawn together by destiny, not just preference.`);
+    parts.push(`${chart1.name} and ${chart2.name} have several close contacts here, which tends to make the connection feel significant early on.`);
   }
   
   if (dynamics.find(d => d.chemistry === 'comfort')) {
@@ -985,7 +985,7 @@ function generateAttractionNarrative(
   }
   
   if (karmic.find(k => k.planet1 === 'Chiron')) {
-    parts.push(`There is a healing purpose to this connection. Old wounds surface not to harm, but to finally heal.`);
+    parts.push(`There is a tender area in this connection where each may understand the other unusually well.`);
   }
   
   return parts.length > 0 
