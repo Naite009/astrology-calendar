@@ -63,6 +63,11 @@ export type RelationshipSectionKey =
   // context-gated extras
   | 'romanticAttraction'
   | 'longTermPartnership'
+  | 'trustAndSupport'
+  | 'sharedInterests'
+  | 'conflictAndRecovery'
+  | 'boundariesAndPacing'
+  | 'confidenceAndGrowth'
   | 'businessCollaboration'
   | 'symbolicNodes';
 
@@ -78,6 +83,8 @@ export interface RelationshipContext {
   stage: AgeStage;
   /** Romantic framing permitted at all? */
   allowRomantic: boolean;
+  /** Romantic context where at least one person is a teen: age-appropriate romance. */
+  isTeenRomance: boolean;
   /** Sexual / erotic / intimacy framing permitted? Never for family or minors. */
   allowSexual: boolean;
   /** Marriage / long-term-couple framing permitted? */
@@ -153,8 +160,11 @@ export function buildRelationshipContext(opts: BuildContextOptions): Relationshi
   const isFamily = kind === 'family';
   // Family and business are never romantic. Neutral is neutral: it does NOT
   // fall back to romantic interpretation.
-  const allowRomantic =
-    kind === 'romantic' && (!involvesMinor || opts.teenRomanceExplicitlySelected === true);
+  // Romance is a valid, selectable context for teens. It is read in
+  // age-appropriate, non-sexualised language rather than being switched off, and
+  // it is never re-labelled as family: nothing about age or names implies siblings.
+  const allowRomantic = kind === 'romantic' && (!involvesMinor || stage === 'teen');
+  const isTeenRomance = allowRomantic && involvesMinor;
   const allowSexual = allowRomantic && !involvesMinor;
   const allowMarriage = allowRomantic && !involvesMinor;
   const allowBusiness = kind === 'business' || (kind === 'creative' && !involvesMinor);
@@ -162,12 +172,19 @@ export function buildRelationshipContext(opts: BuildContextOptions): Relationshi
   const sections: RelationshipSectionKey[] = [...BASE_SECTIONS];
   if (allowRomantic) {
     sections.splice(sections.indexOf('emotionalFit') + 1, 0, 'romanticAttraction');
+    if (isTeenRomance) {
+      // Developmentally appropriate priorities replace adult-partnership material.
+      sections.splice(sections.indexOf('romanticAttraction') + 1, 0, 'trustAndSupport');
+      sections.push('sharedInterests', 'conflictAndRecovery', 'boundariesAndPacing', 'confidenceAndGrowth');
+    }
     if (allowMarriage) sections.push('longTermPartnership');
   }
   if (allowBusiness) sections.push('businessCollaboration');
   sections.push('advanced', 'bottomLine');
 
-  const label = isFamily
+  const label = isTeenRomance
+    ? 'Dating — teen (age-appropriate)'
+    : isFamily
     ? `Family — ${familyRelation ? FAMILY_RELATION_LABELS[familyRelation] : 'relation not selected'}`
     : kind === 'neutral'
       ? 'All types (neutral)'
@@ -175,7 +192,9 @@ export function buildRelationshipContext(opts: BuildContextOptions): Relationshi
 
   const stageWord = stage === 'child' ? 'child-appropriate' : stage === 'teen' ? 'teen-appropriate' : 'adult';
 
-  const contextNote = isFamily
+  const contextNote = isTeenRomance
+    ? 'Read as a teen dating relationship, in teen-appropriate language. The chart maths is identical to an adult reading; only the wording and priorities change. Sexual, marriage, cohabitation, family-building and financial-partnership material is switched off.'
+    : isFamily
     ? `Read as a family relationship${familyRelation === 'siblings' ? ' between siblings' : ''}, in ${stageWord} language. Romantic, sexual, marriage and business-partnership material is switched off for this context.`
     : kind === 'neutral'
       ? 'Read neutrally. Each dimension is shown on its own; nothing is interpreted as romance by default.'
@@ -189,6 +208,7 @@ export function buildRelationshipContext(opts: BuildContextOptions): Relationshi
     involvesMinor,
     stage,
     allowRomantic,
+    isTeenRomance,
     allowSexual,
     allowMarriage,
     allowBusiness,

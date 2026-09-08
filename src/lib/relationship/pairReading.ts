@@ -20,6 +20,7 @@ import {
   calculateCrossAspects,
   coreAspects,
   involves,
+  involvesBoth,
   rankTopContacts,
   describeAspect,
   isAutomaticNodalMirror,
@@ -311,6 +312,11 @@ const SECTION_TITLES: Partial<Record<RelationshipSectionKey, string>> = {
   houseOverlays: 'House overlays — where each lands in the other\u2019s life',
   strongestAspects: 'Strongest contacts, with degrees',
   romanticAttraction: 'Warmth and attraction',
+  trustAndSupport: 'Trust and support',
+  sharedInterests: 'Shared interests and everyday fun',
+  conflictAndRecovery: 'Disagreements and making up',
+  boundariesAndPacing: 'Pacing and boundaries',
+  confidenceAndGrowth: 'Effect on confidence and growth',
   longTermPartnership: 'Long-term partnership',
   businessCollaboration: 'Working together',
   bottomLine: 'Bottom line',
@@ -376,7 +382,50 @@ export function buildPairReading(
   add('strongestAspects', aspectItems(topContacts), 'Same numbers as everywhere else on this page and in the export.');
 
   if (ctx.allowRomantic) {
-    add('romanticAttraction', groupedItems(core.filter((a) => involves(a, 'Venus', 'Mars')), ctx, 3));
+    add(
+      'romanticAttraction',
+      groupedItems(core.filter((a) => involves(a, 'Venus', 'Mars')), ctx, 3),
+      ctx.isTeenRomance
+        ? 'What the liking between them is built on: warmth, shared taste and how each shows they care.'
+        : undefined,
+      'No close Venus or Mars contacts, so the attraction here is built more on shared time and interests than on an instant pull.'
+    );
+  }
+  if (ctx.isTeenRomance) {
+    add(
+      'trustAndSupport',
+      groupedItems(core.filter((a) => involvesBoth(a, ['Moon', 'Saturn', 'Jupiter'], ['Sun', 'Moon', 'Venus', 'Saturn', 'Jupiter', 'Ascendant'])), ctx, 3),
+      'Whether each one feels safe being honest, and how they back each other up.',
+      'No close trust-and-reliability contacts, so trust here is built by what they actually do for each other over time.'
+    );
+    add(
+      'sharedInterests',
+      groupedItems(core.filter((a) => involves(a, 'Mercury', 'Venus', 'Jupiter', 'Uranus')), ctx, 3),
+      'Where their tastes, humour and everyday interests overlap.',
+      'No close contacts in this area, so shared interests are something they build rather than something they arrive with.'
+    );
+    add(
+      'conflictAndRecovery',
+      groupedItems(frictional.length ? frictional : energy, ctx, 3).map((i) => ({
+        ...i,
+        statement: i.growthEdge ?? i.statement,
+        growthEdge: undefined,
+      })),
+      'How arguments are likely to start, and what helps them come back together afterwards.',
+      'No close hard contacts, so disagreements are more likely to be about circumstances than about a clash of styles.'
+    );
+    add(
+      'boundariesAndPacing',
+      groupedItems(core.filter((a) => involves(a, 'Saturn', 'Mars', 'Pluto') || involvesBoth(a, ['Moon'], ['Saturn', 'Mars'])), ctx, 3),
+      'How fast this connection tends to move, and where it helps to slow down, keep other friendships, and say what is and is not okay.',
+      'Nothing in the charts pushes this pair to rush, which makes it easier to let things move at a comfortable pace.'
+    );
+    add(
+      'confidenceAndGrowth',
+      groupedItems(core.filter((a) => involvesBoth(a, ['Sun', 'Jupiter', 'Venus'], ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Ascendant'])), ctx, 3),
+      'How being together may affect how each one feels about themselves, their school life, and their other friendships.',
+      'No strong confidence-related contacts, so the effect on each person\u2019s confidence will come from how they treat each other day to day.'
+    );
   }
   if (ctx.allowBusiness) {
     add('businessCollaboration', groupedItems(core.filter((a) => involves(a, 'Saturn', 'Mercury', 'Jupiter', 'Midheaven')), ctx, 3));

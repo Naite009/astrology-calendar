@@ -86,16 +86,31 @@ const AVA: Fixture = {
   place: 'West Hills, California, United States',
 };
 
-// Max — Ava's (younger) sibling.
+// Max — Ava's boyfriend. Also a minor: this pair is the TEEN ROMANTIC reference
+// case. They are NOT siblings, and nothing about their ages or shared surname-like
+// fixture ids may cause the app to read them as family.
 const MAX: Fixture = {
   id: 'max',
-  name: 'Max Kravitz',
+  name: 'Max Delgado',
   date: '2014-02-08',
   time: '09:20',
   latitude: 34.2011,
   longitude: -118.6317,
   timezoneId: 'America/Los_Angeles',
   place: 'West Hills, California, United States',
+};
+
+// Jamie — an unrelated minor, used for the FAMILY/sibling context checks so that
+// family behaviour is never tested through the Ava + Max dating pair.
+const JAMIE: Fixture = {
+  id: 'jamie',
+  name: 'Jamie Ruiz',
+  date: '2013-03-04',
+  time: '14:35',
+  latitude: 34.0522,
+  longitude: -118.2437,
+  timezoneId: 'America/Los_Angeles',
+  place: 'Los Angeles, California, United States',
 };
 
 // An unrelated adult pair, for adult-context checks.
@@ -123,20 +138,27 @@ const SAM: Fixture = {
 
 const ava = buildChart(AVA);
 const max = buildChart(MAX);
+const jamie = buildChart(JAMIE);
 const dana = buildChart(DANA);
 const sam = buildChart(SAM);
 
-// Fixed "now": Ava 15 (teen), Max 12 (child).
+// Fixed "now": Ava 15, Max 12, Jamie 13 — all minors.
 const NOW = new Date('2026-09-07T00:00:00Z');
 
+/** Family/sibling checks use an unrelated minor pair, never Ava + Max. */
 function siblingContext() {
   return buildRelationshipContext({
     kind: 'family',
     familyRelation: 'siblings',
     chart1: ava,
-    chart2: max,
+    chart2: jamie,
     now: NOW,
   });
+}
+
+/** Ava + Max: teen dating. Romance stays on; adult framing stays off. */
+function teenRomanticContext() {
+  return buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
 }
 
 describe('Relationship context — kind, family exactness, age gates', () => {
@@ -151,7 +173,7 @@ describe('Relationship context — kind, family exactness, age gates', () => {
   });
 
   it('requires an exact family relation before family analysis is meaningful', () => {
-    const unresolved = buildRelationshipContext({ kind: 'family', chart1: ava, chart2: max, now: NOW });
+    const unresolved = buildRelationshipContext({ kind: 'family', chart1: ava, chart2: jamie, now: NOW });
     expect(unresolved.familyRelation).toBeNull();
     expect(needsFamilyRelation(unresolved)).toBe(true);
 
@@ -173,7 +195,7 @@ describe('Relationship context — kind, family exactness, age gates', () => {
         kind: 'family',
         familyRelation: 'siblings',
         chart1: ava,
-        chart2: max,
+        chart2: jamie,
         ageOverrides: [15, 9],
         now: NOW,
       }).stage
@@ -186,21 +208,41 @@ describe('Relationship context — kind, family exactness, age gates', () => {
     expect(ctx.sections).not.toContain('businessCollaboration');
   });
 
-  it('never allows romantic framing for a minor unless explicitly selected', () => {
-    const teenPair = buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
-    expect(teenPair.allowRomantic).toBe(false);
+  it('reads a teen romantic pair as teen dating, never as family, and never sexualised', () => {
+    const ctx = teenRomanticContext();
+    expect(ctx.kind).toBe('romantic');
+    expect(ctx.familyRelation).toBeNull();
+    expect(ctx.label).not.toMatch(/family|sibling/i);
+    expect(ctx.label).toMatch(/teen/i);
+    expect(ctx.stage).toBe('teen');
+    expect(ctx.involvesMinor).toBe(true);
+    expect(ctx.isTeenRomance).toBe(true);
+    // Romance is kept, because it is the relationship they actually have.
+    expect(ctx.allowRomantic).toBe(true);
+    expect(ctx.sections).toContain('romanticAttraction');
+    // Adult framing is off.
+    expect(ctx.allowSexual).toBe(false);
+    expect(ctx.allowMarriage).toBe(false);
+    expect(ctx.allowBusiness).toBe(false);
+    expect(ctx.sections).not.toContain('longTermPartnership');
+    expect(ctx.sections).not.toContain('businessCollaboration');
+    // Developmentally appropriate priorities are added.
+    for (const key of ['trustAndSupport', 'sharedInterests', 'conflictAndRecovery', 'boundariesAndPacing', 'confidenceAndGrowth']) {
+      expect(ctx.sections).toContain(key as any);
+    }
+  });
 
-    const explicit = buildRelationshipContext({
+  it('still refuses romantic framing when a child (pre-teen) is involved', () => {
+    const ctx = buildRelationshipContext({
       kind: 'romantic',
       chart1: ava,
       chart2: max,
-      teenRomanceExplicitlySelected: true,
+      ageOverrides: [15, 9],
       now: NOW,
     });
-    expect(explicit.allowRomantic).toBe(true);
-    // Even then, sexual and marriage content stays off for minors.
-    expect(explicit.allowSexual).toBe(false);
-    expect(explicit.allowMarriage).toBe(false);
+    expect(ctx.stage).toBe('child');
+    expect(ctx.allowRomantic).toBe(false);
+    expect(ctx.isTeenRomance).toBe(false);
   });
 
   it('uses adult context and sections for two adults', () => {
@@ -281,7 +323,7 @@ describe('Synastry engine — one aspect/orb/body implementation', () => {
     expect(isAutomaticNodalMirror(mirror)).toBe(true);
     expect(isAutomaticNodalMirror({ fromBody: 'Sun', toBody: 'Moon', aspect: 'opposition' } as any)).toBe(false);
 
-    const reading = buildPairReading(ava, max, siblingContext());
+    const reading = buildPairReading(ava, jamie, siblingContext());
     const evidence = reading.sections.flatMap((s) => s.items.flatMap((i) => i.evidence));
     // No reading item may cite a node-to-node contact: it is geometry both charts
     // produce automatically, not evidence about the pair.
@@ -346,7 +388,7 @@ describe('Context scoring — no averaging of unrelated categories', () => {
 
   it('uses context-appropriate dimensions and backs each with evidence', () => {
     const sibling = siblingContext();
-    const siblingScore = scoreRelationship(calculateCrossAspects(ava, max), sibling);
+    const siblingScore = scoreRelationship(calculateCrossAspects(ava, jamie), sibling);
     const keys = siblingScore.dimensions.map((d) => d.key);
     expect(keys).not.toContain('warmthAndAttraction');
     expect(keys).not.toContain('commitmentAndStability');
@@ -362,8 +404,8 @@ describe('Context scoring — no averaging of unrelated categories', () => {
   });
 });
 
-describe('Pair reading — Ava + Max sibling regression', () => {
-  const reading = buildPairReading(ava, max, siblingContext());
+describe('Pair reading — minor sibling regression (Ava + Jamie)', () => {
+  const reading = buildPairReading(ava, jamie, siblingContext());
   const text = collectStrings(reading).join('\n');
 
   it('reads as a sibling relationship in age-appropriate language', () => {
@@ -413,6 +455,63 @@ describe('Pair reading — Ava + Max sibling regression', () => {
   });
 });
 
+describe('Pair reading — Ava + Max TEEN ROMANTIC regression', () => {
+  const ctx = teenRomanticContext();
+  const reading = buildPairReading(ava, max, ctx);
+  const text = collectStrings(reading).join('\n');
+
+  it('renders as teen dating, not family or siblings', () => {
+    expect(reading.context.kind).toBe('romantic');
+    expect(reading.context.isTeenRomance).toBe(true);
+    expect(reading.context.familyRelation).toBeNull();
+    // House arenas legitimately mention "siblings"/"family" as life areas; what must
+    // never appear is the pair being FRAMED as siblings or family.
+    expect(text).not.toMatch(/read as a family|family relationship between|as siblings\b|your (?:brother|sister)\b|sibling (?:bond|dynamic|relationship)/i);
+    expect(reading.context.label).toMatch(/dating/i);
+    expect(reading.score.label).toMatch(/teen dating/i);
+  });
+
+  it('keeps age-appropriate romantic sections and drops adult-partnership ones', () => {
+    const keys = reading.sections.map((s) => s.key);
+    expect(keys).toContain('romanticAttraction');
+    expect(keys).toContain('trustAndSupport');
+    expect(keys).toContain('conflictAndRecovery');
+    expect(keys).toContain('boundariesAndPacing');
+    expect(keys).toContain('confidenceAndGrowth');
+    expect(keys).not.toContain('longTermPartnership');
+    expect(keys).not.toContain('businessCollaboration');
+  });
+
+  it('scores teen dating on age-appropriate dimensions only', () => {
+    const keys = reading.score.dimensions.map((d) => d.key);
+    expect(keys).toContain('warmthAndAttraction');
+    expect(keys).toContain('emotionalFit');
+    expect(keys).not.toContain('commitmentAndStability');
+    expect(reading.score.disclaimer).toBeTruthy();
+  });
+
+  it('uses no sexualised or adult-relationship language', () => {
+    expect(text).not.toMatch(
+      /\b(sexual|sexually|sexual chemistry|erotic|eros|lust|seduc\w*|bedroom|physical intimacy|marriage|married|marry|spouse|husband|wife|wedding|cohabit\w*|living together|moving in together|dominance and surrender|family[- ]building|financial partnership|joint finances|soulmate)\b/i
+    );
+    expect(text).not.toMatch(/keep (?:their|your) hands off/i);
+    expect(findForbiddenRelationshipPhrases(text, ctx)).toEqual([]);
+  });
+
+  it('makes no fate, safety, clinical or outcome promises', () => {
+    expect(text).not.toMatch(/\b(past[- ]life|karmic debt|soul contract|destined|fated|meant to be)\b/i);
+    expect(text).not.toMatch(/\b(abusive|toxic|gaslight\w*|manipulative|dangerous|high[- ]risk|trauma|therapy|hotline)\b/i);
+    expect(text).not.toMatch(/\b(guaranteed|will definitely|will last|financial success|wealth)\b/i);
+  });
+
+  it('grounds every teen-dating item in real chart evidence', () => {
+    for (const item of reading.sections.flatMap((s) => s.items)) {
+      expect(item.evidence.length).toBeGreaterThan(0);
+      expect(item.evidence.join(' ')).toMatch(/Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Ascendant|MC|Node|Chiron|house/i);
+    }
+  });
+});
+
 describe('Pair reading — second pair (adults, non-family) stays clean too', () => {
   it('keeps neutral mode neutral and evidence-backed', () => {
     const ctx = buildRelationshipContext({ kind: 'neutral', chart1: dana, chart2: sam, now: NOW });
@@ -441,6 +540,16 @@ describe('Relationship language sanitizer', () => {
   it('removes safety, clinical and trauma claims', () => {
     const out = sanitizeRelationshipText('This is a high-risk, toxic bond; he will gaslight you, so contact the hotline.');
     expect(out).not.toMatch(/high-risk|toxic|gaslight|hotline/i);
+  });
+
+  it('keeps teen romance readable while removing adult and sexual framing', () => {
+    const ctx = teenRomanticContext();
+    const out = sanitizeRelationshipText(
+      'Their sexual chemistry is intense, marriage is likely, and they will end up living together with joint finances.',
+      ctx
+    );
+    expect(out).not.toMatch(/sexual|marriage|living together|joint finances/i);
+    expect(out).toMatch(/liking|attraction|spark|together/i);
   });
 
   it('strips romantic and sexual wording in a minor family context', () => {
