@@ -262,6 +262,8 @@ export const FORBIDDEN_RELATIONSHIP_PHRASES: RegExp[] = [
   /soul growth focus/i,
   /\bobsessive/i,
   /\bobsessed\b/i,
+  /dominance and surrender/i,
+  /keep (?:their |your )?hands off/i,
 ];
 
 /** Additionally forbidden when the context is not romantic (family, friendship, business, neutral). */
@@ -305,7 +307,7 @@ export const FORBIDDEN_MINOR_PHRASES: RegExp[] = [
   /joint finances/i,
   /shared finances/i,
   /\bsoulmate\b/i,
-  /keep (?:their|your) hands off/i,
+  /keep (?:their |your )?hands off/i,
   /\bobsess/i,
 ];
 
