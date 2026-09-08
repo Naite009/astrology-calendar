@@ -11,6 +11,16 @@ import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
 import calculateKarmicAnalysis from '@/lib/karmicAnalysis';
 import { calculateRelationshipPotential, calculatePurposeAlignment } from '@/lib/relationshipPotentialCalculator';
 import { FamilyRelationshipContext } from '@/lib/familyRelationshipTypes';
+import {
+  buildRelationshipContext,
+  buildPairReading,
+  needsFamilyRelation,
+  kindFromFocus,
+  familyRelationFrom,
+  legacyKarmicFocus,
+} from '@/lib/relationship';
+import { PairReadingView } from './relationship/PairReadingView';
+import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -117,7 +127,7 @@ const FocusAwareHouseOverlayCard = ({
     <div className={`p-3 rounded-lg border border-border bg-card ${relevanceColors[overlay.focusRelevance || 'medium']}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="font-medium text-sm">
-          {overlay.planetOwner}'s {overlay.planet} → {overlay.houseOwner}'s {overlay.house}th House
+          {overlay.statement ?? `${overlay.planetOwner}'s ${overlay.planet} → ${overlay.houseOwner}'s ${ordinalHouse(overlay.house)}`}
         </span>
         <div className="flex items-center gap-2">
           {overlay.focusRelevance === 'high' && (
@@ -520,10 +530,41 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   // Is this a group analysis (3+ people)?
   const isGroupAnalysis = selectedCharts.length >= 3;
   
-  const report = useMemo(() => {
+  // Family relationship context state (declared before the analyses that use it)
+  const [familyContext, setFamilyContext] = useState<FamilyRelationshipContext | null>(null);
+
+  const handleFamilyContextChange = useCallback((context: FamilyRelationshipContext | null) => {
+    setFamilyContext(context);
+  }, []);
+
+  /**
+   * Canonical relationship context. Single source of truth for kind, exact family
+   * relation, ages/stage and which content is allowed. Everything below reads
+   * from this instead of re-deriving intent from the focus string.
+   */
+  const relContext = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    return generateAdvancedSynastryReport(chart1, chart2);
-  }, [chart1, chart2]);
+    return buildRelationshipContext({
+      kind: kindFromFocus(relationshipFocus),
+      familyRelation: familyRelationFrom(familyContext),
+      chart1,
+      chart2,
+    });
+  }, [chart1, chart2, relationshipFocus, familyContext]);
+
+  // Family readings require the exact relation before anything is interpreted.
+  const awaitingFamilyRelation = !!relContext && needsFamilyRelation(relContext);
+
+  /** The canonical reading: one aspect engine, one overlay engine, one score set. */
+  const pairReading = useMemo(() => {
+    if (!chart1 || !chart2 || !relContext || awaitingFamilyRelation) return null;
+    return buildPairReading(chart1, chart2, relContext);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation]);
+
+  const report = useMemo(() => {
+    if (!chart1 || !chart2 || awaitingFamilyRelation) return null;
+    return generateAdvancedSynastryReport(chart1, chart2, relContext ?? undefined);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation]);
 
   // Group dynamics report
   const groupReport = useMemo(() => {
@@ -570,23 +611,15 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   
   // Get detailed focus analysis
   const focusAnalysis = useMemo(() => {
-    if (!chart1 || !chart2 || relationshipFocus === 'all') return null;
-    return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
-  }, [chart1, chart2, relationshipFocus]);
+    if (!chart1 || !chart2 || relationshipFocus === 'all' || awaitingFamilyRelation) return null;
+    return analyzeRelationshipFocus(chart1, chart2, relationshipFocus, relContext ?? undefined);
+  }, [chart1, chart2, relationshipFocus, relContext, awaitingFamilyRelation]);
 
   // Get shadow dynamics analysis - pass chart names for personalized output
   const shadowAnalysis = useMemo(() => {
     if (!chart1 || !chart2) return null;
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
   }, [chart1, chart2]);
-
-  // Family relationship context state
-  const [familyContext, setFamilyContext] = useState<FamilyRelationshipContext | null>(null);
-  
-  // Handler for family context changes
-  const handleFamilyContextChange = useCallback((context: FamilyRelationshipContext | null) => {
-    setFamilyContext(context);
-  }, []);
 
   // Get karmic analysis using the new professional system - NOW FOCUS-AWARE + FAMILY-AWARE
   const karmicAnalysis = useMemo(() => {
