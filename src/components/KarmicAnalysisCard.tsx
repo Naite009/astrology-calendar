@@ -253,6 +253,7 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
             <p className="text-sm text-muted-foreground">
               {config.description}
             </p>
+            <p className="text-[11px] text-muted-foreground mt-2">{SYMBOLIC_LENS_NOTE}</p>
           </div>
         </div>
         
