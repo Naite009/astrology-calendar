@@ -65,7 +65,7 @@ export type { PairReading, PairSection, ReadingItem, SymbolicLayer, PairReadingO
 // Legacy-vocabulary bridge (focus strings, FamilyRelationshipContext).
 export { kindFromFocus, familyRelationFrom, legacyKarmicFocus } from './legacyBridge';
 
-export { describeDirectionalContact, directionalEvidenceLines } from './directionalRoles';
+export { describeDirectionalContact, describeDirectionalFromParts, directionalEvidenceLines } from './directionalRoles';
 export type { DirectionalContact, DirectionalRole } from './directionalRoles';
 
 export {

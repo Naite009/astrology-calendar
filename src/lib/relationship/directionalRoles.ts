@@ -218,3 +218,61 @@ export function directionalEvidenceLines(d: DirectionalContact): string[] {
     `In one line: ${d.summary}`,
   ];
 }
+
+/** Aspect angles used when building a directional description from loose parts. */
+const ASPECT_ANGLE: Record<string, number> = {
+  conjunction: 0,
+  conjunct: 0,
+  sextile: 60,
+  square: 90,
+  trine: 120,
+  opposition: 180,
+  quincunx: 150,
+  semisextile: 30,
+};
+
+/**
+ * Same directional output, for legacy surfaces that only hold loose parts
+ * (planet names + orb) rather than a full CrossAspect.
+ */
+export function describeDirectionalFromParts(
+  parts: {
+    fromOwner: string;
+    fromBody: string;
+    toOwner: string;
+    toBody: string;
+    aspect: string;
+    orb?: number;
+    maxOrb?: number;
+  },
+  ctx: RelationshipContext
+): DirectionalContact {
+  const aspect = parts.aspect === 'conjunct' ? 'conjunction' : parts.aspect;
+  const angle = ASPECT_ANGLE[aspect] ?? 0;
+  const tone =
+    aspect === 'square' || aspect === 'opposition'
+      ? 'tense'
+      : aspect === 'conjunction'
+        ? 'fusion'
+        : aspect === 'quincunx' || aspect === 'semisextile'
+          ? 'adjusting'
+          : 'flowing';
+  const pseudo = {
+    fromOwner: parts.fromOwner,
+    fromBody: parts.fromBody,
+    toOwner: parts.toOwner,
+    toBody: parts.toBody,
+    aspect,
+    symbol: '',
+    aspectAngle: angle,
+    separation: angle,
+    orb: parts.orb ?? 0,
+    maxOrb: parts.maxOrb ?? 6,
+    closeness: 1,
+    tone,
+    weight: 0.5,
+    isCoreContact: true,
+    label: '',
+  } as CrossAspect;
+  return describeDirectionalContact(pseudo, ctx);
+}
