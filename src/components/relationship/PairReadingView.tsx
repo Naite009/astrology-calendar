@@ -143,7 +143,11 @@ export const PairReadingView = ({ reading }: { reading: PairReading }) => {
                 {c.bodyOwner}&rsquo;s planets in {c.houseOwner}&rsquo;s {ordinal(c.house)} house
               </p>
               <p className="text-xs text-muted-foreground">{c.arena}</p>
-              <p className="text-sm mt-1">{c.statement}</p>
+              <p className="text-sm mt-1">
+                {c.bodies.join(', ')} land here, which puts repeated emphasis on this area of life
+                {c.method !== 'cusps' ? ' (houses approximated by whole sign — no stored cusps)' : ''}.
+              </p>
+
             </div>
           ))}
         </div>
