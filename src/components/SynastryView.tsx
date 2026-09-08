@@ -623,121 +623,27 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
 
   // Get karmic analysis using the new professional system - NOW FOCUS-AWARE + FAMILY-AWARE
   const karmicAnalysis = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    // Map the relationshipFocus to karmic analysis focus type
-    const focusMap: Record<string, 'romance' | 'friendship' | 'business' | 'family' | 'creative'> = {
-      'all': 'romance',
-      'romantic': 'romance',
-      'friends': 'friendship',
-      'friendship': 'friendship',
-      'business': 'business',
-      'family': 'family',
-      'creative': 'creative'
-    };
-    const karmicFocus = focusMap[relationshipFocus] || 'romance';
-    // Pass family context when focus is family
+    if (!chart1 || !chart2 || !relContext || awaitingFamilyRelation) return null;
+    // Neutral ('All types') maps to the least presumptuous legacy option, never
+    // to romance. Mapping lives in one shared place (legacyBridge).
+    const karmicFocus = legacyKarmicFocus(relContext.kind);
     return calculateKarmicAnalysis(
-      chart1, 
-      chart2, 
-      karmicFocus, 
+      chart1,
+      chart2,
+      karmicFocus,
       karmicFocus === 'family' ? familyContext || undefined : undefined
     );
-  }, [chart1, chart2, relationshipFocus, familyContext]);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation, familyContext]);
 
-  // Calculate TRUE overall score as weighted average of all 5 focus types
-  // MUST be before safetyAssessment since it depends on this
-  const trueOverallScore = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    
-    const focusTypes: Array<'romantic' | 'friendship' | 'business' | 'creative' | 'family'> = 
-      ['romantic', 'friendship', 'business', 'creative', 'family'];
-    
-    const scores = focusTypes.map(focus => {
-      const analysis = analyzeRelationshipFocus(chart1, chart2, focus);
-      return analysis.overallStrength;
-    });
-    
-    // Calculate weighted average (all equal weight)
-    const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-    
-    return {
-      overall: average,
-      breakdown: focusTypes.map((focus, i) => ({ focus, score: scores[i] }))
-    };
-  }, [chart1, chart2]);
-
-  // Compute safety assessment from karmic analysis
-  // Factor in compatibility - high compatibility connections need higher threshold for professional support warning
-  const safetyAssessment = useMemo((): SafetyAssessment | null => {
-    if (!karmicAnalysis) return null;
-    
-    let riskScore = 0;
-    const dangerIndicators: SafetyAssessment['dangerIndicators'] = [];
-    
-    karmicAnalysis.dangerFlags.forEach(flag => {
-      let severity: 'critical' | 'high' | 'moderate' | 'low' = 'moderate';
-      if (flag.includes('Pluto') && (flag.includes('Venus') || flag.includes('Moon'))) {
-        severity = 'critical';
-        riskScore += 25;
-      } else if (flag.includes('Saturn') && flag.includes('Moon')) {
-        severity = 'high';
-        riskScore += 20;
-      } else if (flag.includes('8th house')) {
-        severity = 'high';
-        riskScore += 15;
-      } else {
-        riskScore += 10;
-      }
-      dangerIndicators.push({
-        type: flag.includes('Pluto') ? 'Power Dynamics' : flag.includes('Saturn') ? 'Restriction' : 'Intensity',
-        severity,
-        description: flag,
-        mitigation: 'Maintain strong boundaries and self-awareness.'
-      });
-    });
-
-    // Get compatibility score if available
-    const compatScore = trueOverallScore?.overall || 0;
-    
-    // Adjust thresholds based on compatibility
-    // High compatibility (60%+) means strong positive indicators exist alongside challenges
-    // This is common in intense, transformative relationships - not inherently dangerous
-    const adjustedRiskThreshold = compatScore >= 60 ? 75 : compatScore >= 45 ? 60 : 50;
-    
-    const safetyLevel: SafetyAssessment['safetyLevel'] = 
-      riskScore >= 60 ? 'high_risk' : 
-      riskScore >= 40 ? 'moderate_risk' : 
-      riskScore >= 20 ? 'low_risk' : 'safe';
-
-    const greenFlags: string[] = [];
-    if (karmicAnalysis.karmicType === 'soul_family' || karmicAnalysis.karmicType === 'new_contract') {
-      greenFlags.push('Healthy soul connection without heavy karmic baggage');
-    }
-    if (karmicAnalysis.healingOpportunities.length >= 3) {
-      greenFlags.push('Strong healing potential in this connection');
-    }
-    const northNodeCount = karmicAnalysis.indicators.filter(i => i.theme === 'soul_growth').length;
-    if (northNodeCount >= 2) {
-      greenFlags.push('Multiple North Node contacts - supports mutual evolution');
-    }
-    // Add green flag for high compatibility with intensity
-    if (compatScore >= 60 && riskScore >= 30) {
-      greenFlags.push('High compatibility suggests transformative potential, not just challenge');
-    }
-
-    // Only recommend professional support for genuinely concerning patterns
-    // Not just "intense" connections with high compatibility
-    const professionalSupportRecommended = riskScore >= adjustedRiskThreshold;
-
-    return {
-      safetyLevel,
-      riskScore: Math.min(100, riskScore),
-      dangerIndicators,
-      greenFlags,
-      proceedWithCaution: riskScore >= 30 && !professionalSupportRecommended,
-      professionalSupportRecommended
-    };
-  }, [karmicAnalysis, trueOverallScore]);
+  /**
+   * Headline numbers come only from the canonical context-specific index.
+   * The old "true overall score" averaged five unrelated categories (romance +
+   * business + family ...) into one percentage, which was meaningless; and the
+   * safety/risk model inferred danger and "professional support recommended"
+   * from Pluto/Saturn contacts, which astrology cannot support. Both are gone.
+   * High-intensity contacts now surface as communication dynamics inside the
+   * canonical reading instead.
+   */
 
   // Get composite interpretation for 5 Essential Questions
   const compositeInterpretation = useMemo(() => {
