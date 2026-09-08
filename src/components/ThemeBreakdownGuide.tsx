@@ -252,6 +252,8 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
         </p>
       </div>
 
+      <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">{SYMBOLIC_LENS_NOTE}</p>
+
       {/* Summary Banner */}
       <div className="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
