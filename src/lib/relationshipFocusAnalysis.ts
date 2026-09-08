@@ -2672,21 +2672,29 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
 export function analyzeRelationshipFocus(
   chart1: NatalChart,
   chart2: NatalChart,
-  focus: RelationshipFocus
+  focus: RelationshipFocus,
+  ctx?: RelationshipContext
 ): FocusAnalysis | null {
-  switch (focus) {
-    case 'business':
-      return analyzeBusinessPartnership(chart1, chart2);
-    case 'friendship':
-      return analyzeFriendship(chart1, chart2);
-    case 'romantic':
-      return analyzeRomantic(chart1, chart2);
-    case 'creative':
-      return analyzeCreative(chart1, chart2);
-    case 'family':
-      return analyzeFamily(chart1, chart2);
-    case 'all':
-    default:
-      return null;
-  }
+  const raw = ((): FocusAnalysis | null => {
+    switch (focus) {
+      case 'business':
+        return analyzeBusinessPartnership(chart1, chart2);
+      case 'friendship':
+        return analyzeFriendship(chart1, chart2);
+      case 'romantic':
+        return analyzeRomantic(chart1, chart2);
+      case 'creative':
+        return analyzeCreative(chart1, chart2);
+      case 'family':
+        return analyzeFamily(chart1, chart2);
+      case 'all':
+      default:
+        // 'all' is genuinely neutral: it does NOT fall back to a romantic analysis.
+        return null;
+    }
+  })();
+  // Legacy copy in this file is sanitized on the way out so no advanced tool can
+  // leak destiny / safety / romantic wording into a family or neutral reading.
+  return raw ? sanitizeRelationshipDeep(raw, ctx) : null;
 }
+
