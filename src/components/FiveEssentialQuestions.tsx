@@ -27,6 +27,7 @@ import {
   type RelationshipContext,
   SYMBOLIC_LENS_NOTE,
   symbolicEmphasisLine,
+  describeDirectionalFromParts,
 } from '@/lib/relationship';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
@@ -878,7 +879,8 @@ const AspectCard = ({
   personAName, 
   personBName,
   orb,
-  focus = 'romance'
+  focus = 'romance',
+  context
 }: { 
   planet1: string; 
   planet2: string; 
@@ -887,14 +889,26 @@ const AspectCard = ({
   personBName: string;
   orb?: number;
   focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
+  context?: RelationshipContext;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
-  
-  // Get directional interpretation if available
+
+  // Canonical "who feels what" breakdown. Always available, every aspect.
+  const directional = useMemo(() => {
+    if (!context) return null;
+    return describeDirectionalFromParts(
+      { fromOwner: personAName, fromBody: planet1, toOwner: personBName, toBody: planet2, aspect, orb },
+      context
+    );
+  }, [context, personAName, planet1, personBName, planet2, aspect, orb]);
+
+  // Curated long-form directional interpretation, when one exists for this pair.
+  // Suppressed for minors: the curated copy is written for adult relationships.
   const directionalInterp = useMemo(() => {
+    if (context?.involvesMinor) return null;
     return getDirectionalInterpretation(planet1, aspect, planet2, focus);
-  }, [planet1, aspect, planet2, focus]);
+  }, [planet1, aspect, planet2, focus, context?.involvesMinor]);
   
   const p1Symbol = PLANET_SYMBOLS[planet1] || planet1;
   const p2Symbol = PLANET_SYMBOLS[planet2] || planet2;
@@ -916,9 +930,9 @@ const AspectCard = ({
                   {orb !== undefined && (
                     <Badge variant="outline" className="text-xs">{orb.toFixed(1)}° orb</Badge>
                   )}
-                  {directionalInterp && (
+                  {(directional || directionalInterp) && (
                     <Badge variant="secondary" className="text-xs">
-                      ↔️ Who feels what
+                      Who feels what
                     </Badge>
                   )}
                 </div>
@@ -930,7 +944,38 @@ const AspectCard = ({
         
         <CollapsibleContent>
           <div className="p-4 space-y-4">
-            {/* Directional Aspect Analysis - Who Feels What */}
+            {/* Canonical directional breakdown: exact aspect, both roles, both sides */}
+            {directional && (
+              <div className="p-3 rounded-lg border bg-secondary/20 space-y-2">
+                <p className="text-sm font-medium">
+                  {directional.aspectLine} · {directional.orbLine}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-medium">{directional.a.roleLine}</p>
+                    <p className="text-xs text-muted-foreground">{directional.a.feels}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium">{directional.b.roleLine}</p>
+                    <p className="text-xs text-muted-foreground">{directional.b.feels}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground/80">How it can work well: </span>
+                  {directional.worksWell}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground/80">Possible friction / growth edge: </span>
+                  {directional.growthEdge}
+                </p>
+                <p className="text-xs">
+                  <span className="font-medium">In one line: </span>
+                  {directional.summary}
+                </p>
+              </div>
+            )}
+
+            {/* Curated long-form directional analysis (adults only) */}
             {directionalInterp && (
               <DirectionalAspectCard
                 interpretation={directionalInterp}
