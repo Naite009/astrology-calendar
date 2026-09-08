@@ -19,6 +19,18 @@ interface Rule {
 
 /** Applied to every relationship string, in every context. */
 const UNIVERSAL_RULES: Rule[] = [
+  // ── clinical / safety / danger claims (a chart cannot assess any of these) ──
+  { id: 'high-risk', pattern: /\bhigh[- ]risk\b/gi, replace: 'high-intensity' },
+  { id: 'risk-level', pattern: /\brisk (?:level|score|factor)s?\b/gi, replace: 'intensity level' },
+  { id: 'gaslight', pattern: /\bgas ?light(?:ing|s|ed)?\b/gi, replace: 'talk past each other' },
+  { id: 'hotline', pattern: /\b(?:national domestic violence )?hotline\b(?:\s*\(?1-800-799-7233\)?)?/gi, replace: 'support you trust' },
+  { id: 'hotline-number', pattern: /1-800-799-7233/g, replace: '' },
+  { id: 'domestic-violence', pattern: /\bdomestic (?:violence|abuse)\b/gi, replace: 'serious relationship difficulty' },
+  { id: 'toxic', pattern: /\btoxic\b/gi, replace: 'strained' },
+  { id: 'exit-plan', pattern: /\bexit plan\b/gi, replace: 'clear agreements' },
+  { id: 'couples-therapy', pattern: /\bcouples (?:therapy|counsel(?:l)?ing)\b/gi, replace: 'open conversation' },
+  { id: 'therapy', pattern: /\b(?:individual )?therap(?:y|ist)\b/gi, replace: 'reflection' },
+  { id: 'shadow-work', pattern: /\bshadow work\b/gi, replace: 'self-awareness' },
   // ── destiny / past-life certainty ─────────────────────────────────
   { id: 'fated-love', pattern: /\bFATED LOVE\b/g, replace: 'A STRONG NODAL CONTACT' },
   { id: 'fated-connection', pattern: /\b(?:a |this )?fated (?:love )?connection\b/gi, replace: 'a strongly emphasised connection' },

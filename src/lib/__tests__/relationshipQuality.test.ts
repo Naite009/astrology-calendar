@@ -165,7 +165,19 @@ describe('Relationship context — kind, family exactness, age gates', () => {
     const ctx = siblingContext();
     expect(ctx.kind).toBe('family');
     expect(ctx.involvesMinor).toBe(true);
-    expect(ctx.stage).toBe('child'); // youngest stage wins (Max is 12)
+    // Youngest stage wins: Max is 12 at the fixed "now", so the whole reading is
+    // written at the younger person's stage, never the older one's.
+    expect(ctx.stage).toBe('teen');
+    expect(
+      buildRelationshipContext({
+        kind: 'family',
+        familyRelation: 'siblings',
+        chart1: ava,
+        chart2: max,
+        ageOverrides: [15, 9],
+        now: NOW,
+      }).stage
+    ).toBe('child');
     expect(ctx.allowRomantic).toBe(false);
     expect(ctx.allowSexual).toBe(false);
     expect(ctx.allowMarriage).toBe(false);
@@ -203,7 +215,7 @@ describe('Relationship context — kind, family exactness, age gates', () => {
     expect(kindFromFocus('romantic')).toBe('romantic');
     expect(kindFromFocus('family')).toBe('family');
     expect(familyRelationFrom(null)).toBeNull();
-    expect(familyRelationFrom({ relationshipType: 'siblings' } as any)).toBe('siblings');
+    expect(familyRelationFrom({ relationType: 'siblings' } as any)).toBe('siblings');
     // A legacy API that cannot express "neutral" gets the least presumptuous option.
     expect(legacyKarmicFocus('neutral')).toBe('friendship');
     expect(legacyKarmicFocus('romantic')).toBe('romance');
@@ -271,7 +283,11 @@ describe('Synastry engine — one aspect/orb/body implementation', () => {
 
     const reading = buildPairReading(ava, max, siblingContext());
     const evidence = reading.sections.flatMap((s) => s.items.flatMap((i) => i.evidence));
-    expect(evidence.some((e) => /North Node.*South Node|SouthNode/i.test(e))).toBe(false);
+    // No reading item may cite a node-to-node contact: it is geometry both charts
+    // produce automatically, not evidence about the pair.
+    expect(
+      evidence.some((e) => /(north ?node)[^\n]{0,40}(south ?node)/i.test(e) || /(south ?node)[^\n]{0,40}(north ?node)/i.test(e))
+    ).toBe(false);
   });
 
   it('ranks the most useful contacts first and keeps the list short', () => {
@@ -297,7 +313,9 @@ describe('House overlays — real cusps, labelled fallback', () => {
 
   it('labels the whole-sign approximation when cusps are unavailable', () => {
     const noCusps = { ...max, houseCusps: undefined } as unknown as NatalChart;
-    const overlays = calculateHouseOverlaysAccurate(ava, noCusps, { stage: 'child' });
+    const overlays = calculateHouseOverlaysAccurate(ava, noCusps, { stage: 'child' }).filter(
+      (o) => o.houseOwner === noCusps.name
+    );
     expect(overlays.length).toBeGreaterThan(0);
     for (const o of overlays) {
       expect(o.method).toContain('whole-sign');
