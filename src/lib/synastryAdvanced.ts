@@ -1,15 +1,21 @@
 /**
- * Advanced Synastry Analysis Library
- * 
- * Professional-grade relationship analysis including:
- * - Karmic indicators (North/South Node, Chiron)
- * - House overlays
- * - Relationship type classification
- * - Anger/conflict triggers
- * - Energy dynamics
+ * Advanced Synastry Analysis Library (legacy technical tool)
+ *
+ * Kept for the collapsible advanced tools. The canonical aspect engine, house
+ * overlays, scoring, context and language policy now live in
+ * src/lib/relationship/*. House overlays here delegate to the cusp-accurate
+ * engine, and every string this module returns is run through the relationship
+ * language policy before it leaves `generateAdvancedSynastryReport`.
+ *
+ * Contents: nodal/Chiron contact copy, house overlays, relationship-type
+ * indicators, conflict triggers, energy dynamics.
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { calculateHouseOverlaysAccurate } from './relationship/houseOverlayEngine';
+import { sanitizeRelationshipDeep } from './relationship/relationshipLanguage';
+import type { RelationshipContext } from './relationship/relationshipContext';
+
 
 // ============================================
 // TYPES
@@ -64,7 +70,13 @@ export interface HouseOverlay {
   interpretation: string;
   lifeArea: string;
   impact: 'activating' | 'challenging' | 'nurturing' | 'transformative';
+  /** Direction-explicit sentence, e.g. "Ava's Moon falls in Max's 4th house". */
+  statement?: string;
+  /** How the house was resolved: real cusps, declared whole-sign, or fallback. */
+  method?: 'cusps' | 'whole-sign' | 'whole-sign-fallback';
+  approximationNote?: string;
 }
+
 
 export interface AdvancedSynastryReport {
   // Core scores
@@ -198,7 +210,7 @@ const CHIRON_SYNASTRY: Record<string, Record<string, string>> = {
 const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pastLife: string; lesson: string }>> = {
   'NorthNode-Sun': {
     conjunction: {
-      interpretation: "The Sun person embodies exactly what the Node person needs to become. This is a fated connection where the Sun person acts as a beacon for the Node person's evolution. The Node person is deeply drawn to the Sun person's core identity.",
+      interpretation: "The Sun person embodies exactly what the Node person needs to become. Traditionally this is read as a growth-oriented contact, with the Sun person modelling something the Node person is developing. The Node person is deeply drawn to the Sun person's core identity.",
       pastLife: "The Sun person may have been a leader, authority figure, or role model the Node person admired from a long-standing pattern between you.",
       lesson: "The Node person is learning to embody the Sun person's confidence and self-expression."
     },
@@ -227,7 +239,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
   },
   'NorthNode-Venus': {
     conjunction: {
-      interpretation: "FATED LOVE. The Venus person embodies the love the Node person is meant to experience. This is one of the strongest indicators of a destined romantic connection. Venus shows the Node person a new way to love.",
+      interpretation: "A close North Node–Venus contact. Traditionally read as a warm, significant meeting; treat it as a symbolic emphasis rather than a verdict about the relationship. Venus shows the Node person a new way to love.",
       pastLife: "A love connection that was interrupted or incomplete in long-standing patterns, now returning for fulfillment.",
       lesson: "Learning to receive and give love in alignment with soul growth."
     },
@@ -255,7 +267,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
     conjunction: {
       interpretation: "The Chiron person's wounds are connected to the Node person's destiny. Healing Chiron's pain is somehow linked to the Node person's life purpose. A profound healing-destiny connection.",
       pastLife: "Wounds from long-standing patterns that need healing as part of this lifetime's growth.",
-      lesson: "Integrating wound healing into life purpose. The healing IS the path."
+      lesson: "Growing understanding of a sensitive area can become part of what this person cares about."
     }
   }
 };
@@ -484,9 +496,12 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
       const asp2 = hasAspect(chart2, karmic, chart1, personal);
       
       if (asp1) {
-        const nodeData = NODE_SYNASTRY[`${karmic}-${personal}`]?.[asp1.type] || 
-                         NODE_SYNASTRY[`NorthNode-${personal}`]?.[asp1.type];
+        // Interpretation data must belong to the body that was actually detected.
+        // (Previously a `NorthNode-${personal}` fallback let Saturn, Pluto and the
+        // South Node inherit North Node copy — that bug is removed.)
+        const nodeData = NODE_SYNASTRY[`${karmic}-${personal}`]?.[asp1.type];
         const chironData = CHIRON_SYNASTRY[`Chiron-${personal}`]?.[asp1.type];
+
         
         if (nodeData) {
           indicators.push({
@@ -498,7 +513,7 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
             interpretation: nodeData.interpretation,
             pastLifeTheme: nodeData.pastLife,
             lessonToLearn: nodeData.lesson,
-            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through destiny alignment'
+            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through stretching into less familiar ground'
           });
         } else if (chironData && karmic === 'Chiron') {
           indicators.push({
@@ -528,7 +543,7 @@ function getKarmicIndicators(chart1: NatalChart, chart2: NatalChart): KarmicIndi
             interpretation: nodeData.interpretation,
             pastLifeTheme: nodeData.pastLife,
             lessonToLearn: nodeData.lesson,
-            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through destiny alignment'
+            healingPotential: karmic === 'Chiron' ? chironData || '' : 'Growth through stretching into less familiar ground'
           });
         }
       }
@@ -575,7 +590,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Venus', ['conjunction'])) {
     scores.romantic.points += 20;
-    scores.romantic.indicators.push('North Node-Venus: Fated love connection');
+    scores.romantic.indicators.push('North Node–Venus: close nodal contact to Venus');
   }
   
   // BUSINESS INDICATORS
@@ -647,7 +662,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   // KARMIC INDICATORS
   if (hasAspect(chart1, 'NorthNode', chart2, 'Sun', ['conjunction'])) {
     scores.karmic.points += 25;
-    scores.karmic.indicators.push('North Node-Sun: Fated destiny connection');
+    scores.karmic.indicators.push('North Node–Sun: close nodal contact to the Sun');
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Moon', ['conjunction'])) {
     scores.karmic.points += 20;
@@ -830,78 +845,43 @@ const PLANET_HOUSE_OVERLAYS: Record<string, Record<number, { interpretation: str
   }
 };
 
+/**
+ * House overlays now come from the canonical cusp-accurate engine.
+ * Whole-sign counting is only a labelled fallback, so a Placidus chart no longer
+ * has its partner's planets pushed into the wrong houses.
+ */
 function calculateHouseOverlays(chart1: NatalChart, chart2: NatalChart): HouseOverlay[] {
-  const overlays: HouseOverlay[] = [];
-  
-  // We need house cusps to do proper overlays
-  // For now, we'll use whole sign houses based on Ascendant — prefer houseCusps.house1
-  const asc1 = chart1.houseCusps?.house1 || chart1.planets.Ascendant;
-  const asc2 = chart2.houseCusps?.house1 || chart2.planets.Ascendant;
-  if (!asc1 || !asc2) {
-    return overlays;
-  }
-  
-  const getHouseForPlanet = (planetPos: NatalPlanetPosition, ascSign: string): number => {
-    const planetSignIndex = ZODIAC_SIGNS.indexOf(planetPos.sign);
-    const ascSignIndex = ZODIAC_SIGNS.indexOf(ascSign);
-    if (planetSignIndex === -1 || ascSignIndex === -1) return 1;
-    
-    let house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
-    return house;
-  };
-  
   const planets = ['Sun', 'Moon', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-  
-  // Chart1's planets in Chart2's houses
-  for (const planet of planets) {
-    const planetPos = chart1.planets[planet as keyof typeof chart1.planets];
-    if (!planetPos) continue;
-    
-    const house = getHouseForPlanet(planetPos, asc2.sign);
-    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
-    
-    if (overlayData) {
-      overlays.push({
-        planet,
-        planetOwner: chart1.name,
-        house,
-        houseOwner: chart2.name,
-        interpretation: overlayData.interpretation,
-        lifeArea: HOUSE_LIFE_AREAS[house],
-        impact: overlayData.impact
-      });
-    }
-  }
-  
-  // Chart2's planets in Chart1's houses
-  for (const planet of planets) {
-    const planetPos = chart2.planets[planet as keyof typeof chart2.planets];
-    if (!planetPos) continue;
-    
-    const house = getHouseForPlanet(planetPos, asc1.sign);
-    const overlayData = PLANET_HOUSE_OVERLAYS[planet]?.[house];
-    
-    if (overlayData) {
-      overlays.push({
-        planet,
-        planetOwner: chart2.name,
-        house,
-        houseOwner: chart1.name,
-        interpretation: overlayData.interpretation,
-        lifeArea: HOUSE_LIFE_AREAS[house],
-        impact: overlayData.impact
-      });
-    }
-  }
-  
-  return overlays;
+  const contacts = calculateHouseOverlaysAccurate(chart1, chart2, { bodies: planets });
+
+  return contacts.map((c) => {
+    const overlayData = PLANET_HOUSE_OVERLAYS[c.body]?.[c.house];
+    return {
+      planet: c.body,
+      planetOwner: c.bodyOwner,
+      house: c.house,
+      houseOwner: c.houseOwner,
+      interpretation: overlayData?.interpretation ?? `${c.statement}, touching ${c.arena.toLowerCase()}.`,
+      lifeArea: HOUSE_LIFE_AREAS[c.house],
+      impact: overlayData?.impact ?? 'activating',
+      statement: c.statement,
+      method: c.method,
+      approximationNote: c.approximationNote,
+    };
+  });
 }
+
 
 // ============================================
 // MAIN REPORT GENERATOR
 // ============================================
 
-export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: NatalChart): AdvancedSynastryReport {
+export function generateAdvancedSynastryReport(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext
+): AdvancedSynastryReport {
+
   const relationshipTypes = calculateRelationshipTypes(chart1, chart2);
   const karmicIndicators = getKarmicIndicators(chart1, chart2);
   const attractionDynamics = getAttractionDynamics(chart1, chart2);
@@ -939,19 +919,16 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
     `${c.name}: ${c.triggerDescription.split('.')[0]}`
   );
   
-  // Determine soul contract theme
+  // Symbolic theme (clearly a lens, never a factual conclusion)
   const soulContractTheme = karmicIndicators.length > 0
-    ? `Your soul contract centers on ${karmicIndicators[0].lessonToLearn.toLowerCase()}. ${karmicIndicators[0].interpretation.split('.')[0]}.`
-    : topTypes[0].type === 'romantic'
-      ? 'You are here to explore deep romantic love and partnership.'
-      : topTypes[0].type === 'business'
-        ? 'Your connection is designed for building something tangible together.'
-        : 'Your souls have connected to support mutual growth and evolution.';
-  
-  const pastLifeConnection = karmicIndicators.find(k => k.pastLifeTheme)?.pastLifeTheme || 
-    'While specific long-standing indicators are subtle, the depth of your connection suggests you have met before in some capacity.';
-  
-  return {
+    ? `One symbolic reading of this pairing centres on ${karmicIndicators[0].lessonToLearn.toLowerCase()}. ${karmicIndicators[0].interpretation.split('.')[0]}.`
+    : 'There is no strong nodal or Chiron signature between these charts, so this symbolic layer has nothing distinctive to report.';
+
+  const pastLifeConnection = karmicIndicators.find(k => k.pastLifeTheme)?.pastLifeTheme ||
+    'No strong nodal or Chiron signature appears between these charts in this framework, so there is nothing to report in this symbolic layer.';
+
+  const report: AdvancedSynastryReport = {
+
     overallCompatibility,
     romanticScore,
     businessScore,
@@ -971,6 +948,12 @@ export function generateAdvancedSynastryReport(chart1: NatalChart, chart2: Natal
     growthOpportunities,
     watchOutFor
   };
+
+  // Every string leaving this legacy module passes through the relationship
+  // language policy, so advanced tools cannot leak destiny / safety / romantic
+  // wording into a family or neutral reading.
+  return sanitizeRelationshipDeep(report, ctx);
+
 }
 
 function generateAttractionNarrative(
@@ -990,7 +973,7 @@ function generateAttractionNarrative(
   }
   
   if (karmic.find(k => k.planet1 === 'NorthNode' && k.aspectType === 'conjunction')) {
-    parts.push(`This is a fated connection. ${chart1.name} and ${chart2.name} are drawn together by destiny, not just preference.`);
+    parts.push(`${chart1.name} and ${chart2.name} have several close contacts here, which tends to make the connection feel significant early on.`);
   }
   
   if (dynamics.find(d => d.chemistry === 'comfort')) {
@@ -1002,7 +985,7 @@ function generateAttractionNarrative(
   }
   
   if (karmic.find(k => k.planet1 === 'Chiron')) {
-    parts.push(`There is a healing purpose to this connection. Old wounds surface not to harm, but to finally heal.`);
+    parts.push(`There is a tender area in this connection where each may understand the other unusually well.`);
   }
   
   return parts.length > 0 

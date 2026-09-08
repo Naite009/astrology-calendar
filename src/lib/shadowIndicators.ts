@@ -2,17 +2,18 @@
  * Shadow & Risk Factor Analysis for Synastry
  * 
  * This module analyzes potentially challenging dynamics that require awareness:
- * - Domestic abuse risk factors (power/control patterns)
- * - Manipulation/Gaslighting indicators
- * - Codependency patterns
- * - Boundary issues
- * - Addiction enabling dynamics
+ * - Power-balance patterns (described as dynamics to stay aware of, never as
+ *   predictions about behaviour, danger or either person's character)
+ * - Patterns where influence can run one way more than the other
+ * - Patterns where closeness can crowd out independence
+ * - Boundary and pacing patterns
  * 
  * IMPORTANT DISCLAIMER: These are energetic patterns, not predictions.
  * Awareness + consciousness can transform any pattern.
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { sanitizeRelationshipDeep } from '@/lib/relationship';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -129,7 +130,7 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
         `${plutoSunOwnership.planet1Owner} uses emotional intensity to "win" arguments`,
         `${plutoSunOwnership.planet2Owner} feels smaller or less confident over time`
       ],
-      healingPath: `${plutoSunOwnership.planet2Owner} must maintain strong boundaries around identity. ${plutoSunOwnership.planet1Owner} must examine their need for control through individual therapy.`,
+      healingPath: `It helps if ${plutoSunOwnership.planet2Owner} keeps a clear sense of their own direction, and if ${plutoSunOwnership.planet1Owner} notices when intensity is doing the talking. Naming the pattern early usually keeps it workable.`,
       planets: ['Pluto', 'Sun'],
       aspect: plutoSun,
       planetOwnership: plutoSunOwnership
@@ -150,12 +151,12 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
       category: 'manipulation',
       riskLevel: plutoMoon.type === 'square' ? 'significant' : 'caution',
       description: `${plutoMoon.type} (${plutoMoon.orb}° orb): ${plutoMoonOwnership.planet1Owner}'s Pluto ♇ aspects ${plutoMoonOwnership.planet2Owner}'s Moon ☽`,
-      dynamicExplanation: `${plutoMoonOwnership.planet1Owner} (Pluto) can easily access ${plutoMoonOwnership.planet2Owner}'s (Moon) deepest emotional vulnerabilities. This creates profound intimacy but also danger—${plutoMoonOwnership.planet1Owner} may use emotional knowledge to control or gaslight ${plutoMoonOwnership.planet2Owner}.`,
+      dynamicExplanation: `${plutoMoonOwnership.planet1Owner} (Pluto) can easily access ${plutoMoonOwnership.planet2Owner}'s (Moon) deepest emotional vulnerabilities. That can make for unusual closeness. It can also mean disagreements land harder than either person intends, so what is said in a charged moment is worth revisiting once things settle.`,
       healthyExpression: `Deep emotional transformation and healing. ${plutoMoonOwnership.planet1Owner} helps ${plutoMoonOwnership.planet2Owner} access buried feelings safely. ${plutoMoonOwnership.planet2Owner} teaches ${plutoMoonOwnership.planet1Owner} emotional vulnerability without loss of power.`,
       warningBehaviors: [
         `${plutoMoonOwnership.planet1Owner} uses "I know you better than you know yourself" to override ${plutoMoonOwnership.planet2Owner}'s feelings`,
         `${plutoMoonOwnership.planet2Owner} feels crazy, confused, or doubts their own emotional reality`,
-        `${plutoMoonOwnership.planet1Owner} creates dramatic emotional scenes to regain control`,
+        `emotional conversations escalate faster than either person expected`,
         `${plutoMoonOwnership.planet2Owner} walks on eggshells to avoid ${plutoMoonOwnership.planet1Owner}'s reactions`
       ],
       healingPath: `Both can practice naming emotions clearly and checking in with outside perspectives. ${plutoMoonOwnership.planet2Owner} benefits from maintaining trusted friendships; ${plutoMoonOwnership.planet1Owner} benefits from self-reflection on emotional patterns.`,
@@ -393,19 +394,19 @@ export function analyzeShadowDynamics(chart1: NatalChart, chart2: NatalChart, ch
   // Generate summary
   let summary: string;
   if (overallRiskLevel === 'significant') {
-    summary = `This synastry shows ${indicators.length} shadow indicators including ${significantCount} significant pattern(s). These are energetic tendencies—not predictions—that benefit from self-awareness and individual support. If any patterns feel concerning, prioritize your safety and well-being above all else.`;
+    summary = `These charts show ${indicators.length} high-intensity pattern(s), ${significantCount} of them prominent. These describe where friction is most likely to concentrate — they are not predictions, and they say nothing about either person's character.`;
   } else if (overallRiskLevel === 'caution') {
-    summary = `This synastry shows ${indicators.length} shadow pattern(s) that warrant awareness. With consciousness and communication, these can be navigated successfully. Pay attention to the warning behaviors listed and address patterns early.`;
+    summary = `These charts show ${indicators.length} pattern(s) worth being aware of. They are the kind of thing that tends to smooth out when both people can name it, rather than problems in themselves.`;
   } else if (overallRiskLevel === 'watch') {
     summary = `Minor shadow patterns present. All relationships have growth edges—these are yours. Awareness is the first step toward healthy expression.`;
   } else {
-    summary = `No significant shadow patterns detected in the primary aspects analyzed. This doesn't mean the relationship is without challenges, but the classic high-risk dynamics are not prominently featured.`;
+    summary = `The aspects analysed here do not concentrate much intensity in one place. Every relationship still has friction; it simply is not clustered in the patterns this section looks at.`;
   }
 
-  return {
+  return sanitizeRelationshipDeep({
     indicators,
     overallRiskLevel,
     summary,
-    disclaimer: `IMPORTANT: Astrological patterns indicate energetic tendencies, not guaranteed outcomes. These indicators promote awareness, not labels. If you are experiencing abuse or feel unsafe, couples therapy is NOT recommended—please prioritize your safety and contact the National Domestic Violence Hotline (1-800-799-7233) or seek individual professional support.`
-  };
+    disclaimer: `These are symbolic patterns, not outcomes, diagnoses or judgements about anyone. A chart cannot assess how a relationship actually is, so nothing here should be read as a verdict about either person or as a reason to stay in or leave anything. Real decisions belong to the people involved, informed by what is actually happening between them.`
+  });
 }

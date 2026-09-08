@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
+import type { PairReading } from '@/lib/relationship';
 import { AdvancedSynastryReport, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { FocusAnalysis } from '@/lib/relationshipFocusAnalysis';
 import { RelationshipFocus } from '@/lib/focusAwareInterpretations';
@@ -20,6 +21,12 @@ interface SynastryPDFExportProps {
   houseOverlays: HouseOverlay[];
   karmicIndicators: KarmicIndicator[];
   focus: RelationshipFocus;
+  /**
+   * Canonical context-aware reading. When present the export renders the same
+   * sections, numbers and wording as the screen, so the PDF can no longer show
+   * a different (or romance-flavoured) version of a family or neutral reading.
+   */
+  pairReading?: PairReading;
 }
 
 const PLANET_SYMBOLS: Record<string, string> = {
@@ -35,7 +42,8 @@ export const SynastryPDFExport = ({
   focusAnalysis,
   houseOverlays,
   karmicIndicators,
-  focus
+  focus,
+  pairReading
 }: SynastryPDFExportProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   
@@ -44,7 +52,7 @@ export const SynastryPDFExport = ({
     
     // Create printable content
     const printContent = generatePrintableHTML(
-      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus
+      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus, pairReading
     );
     
     // Open print window
@@ -83,7 +91,9 @@ function generatePrintableHTML(
   focusAnalysis: FocusAnalysis | null,
   houseOverlays: HouseOverlay[],
   karmicIndicators: KarmicIndicator[],
-  focus: RelationshipFocus
+  focus: RelationshipFocus,
+  pairReading?: PairReading
+
 ): string {
   const focusTitle = focus === 'all' ? 'Comprehensive' : focus.charAt(0).toUpperCase() + focus.slice(1);
   const today = format(new Date(), 'MMMM d, yyyy');
@@ -344,13 +354,47 @@ function generatePrintableHTML(
     <div class="date">Generated on ${today}</div>
   </div>
   
+  ${pairReading ? `
   <div class="section">
+    <p style="font-size: 13px; color: #4b5563;"><strong>${pairReading.context.label}</strong> &middot; ${pairReading.context.people.map(p => p.name + (p.age !== null ? ' (' + p.age + ')' : '')).join(' &middot; ')}</p>
+    <p style="font-size: 12px; color: #6b7280;">${pairReading.context.contextNote}</p>
     <div class="score-box">
-      <div class="score">${report.overallCompatibility}%</div>
-      <div class="label">Overall Compatibility</div>
+      ${pairReading.score.overall !== null ? `<div class="score">${pairReading.score.overall}</div>` : ''}
+      <div class="label">${pairReading.score.label}</div>
     </div>
+    <p style="font-size: 12px; color: #6b7280;">${pairReading.score.overall === null
+      ? 'No single headline number is shown in neutral mode: unrelated categories are never averaged together.'
+      : pairReading.score.weightingNote}</p>
+    <p style="font-size: 12px; color: #6b7280;">${pairReading.score.disclaimer}</p>
+  </div>
+
+  ${pairReading.sections.filter(sec => sec.key !== 'bottomLine').map(sec => `
+  <div class="section">
+    <h2>${sec.title}</h2>
+    ${sec.items.length === 0 ? `<p style="font-size: 13px; color: #6b7280;">${sec.emptyNote ?? ''}</p>` : ''}
+    <ul class="indicator-list">
+      ${sec.items.map(item => `
+        <li>
+          <span class="name">${item.title}</span>
+          <span class="badge">${item.strength}</span>
+          <div class="interpretation">${item.statement}${item.growthEdge ? ' ' + item.growthEdge : ''}</div>
+          <div class="interpretation" style="color:#6b7280;">Evidence: ${item.evidence.join('; ')}</div>
+        </li>
+      `).join('')}
+    </ul>
+  </div>
+  `).join('')}
+
+  <div class="section">
+    <h2>Bottom line</h2>
+    <p style="font-size: 14px;">${pairReading.bottomLine}</p>
+    <p style="font-size: 11px; color: #6b7280;">${pairReading.methodNote}</p>
+  </div>
+  ` : `
+  <div class="section">
     <p style="text-align: center; color: #4b5563; font-size: 14px;">${report.whyDrawnTogether}</p>
   </div>
+  `}
   
   ${focusAnalysis ? `
   <div class="section">

@@ -11,6 +11,16 @@ import { analyzeShadowDynamics } from '@/lib/shadowIndicators';
 import calculateKarmicAnalysis from '@/lib/karmicAnalysis';
 import { calculateRelationshipPotential, calculatePurposeAlignment } from '@/lib/relationshipPotentialCalculator';
 import { FamilyRelationshipContext } from '@/lib/familyRelationshipTypes';
+import {
+  buildRelationshipContext,
+  buildPairReading,
+  needsFamilyRelation,
+  kindFromFocus,
+  familyRelationFrom,
+  legacyKarmicFocus,
+} from '@/lib/relationship';
+import { PairReadingView } from './relationship/PairReadingView';
+import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -27,7 +37,6 @@ import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
 import { CompatibilityRadarChart } from './CompatibilityRadarChart';
 import { ScoringBreakdownView } from './ScoringBreakdownView';
 import { ShadowIndicatorsCard } from './ShadowIndicatorsCard';
-import { SafetyAssessmentCard, SafetyAssessment } from './SafetyAssessmentCard';
 import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
@@ -117,7 +126,7 @@ const FocusAwareHouseOverlayCard = ({
     <div className={`p-3 rounded-lg border border-border bg-card ${relevanceColors[overlay.focusRelevance || 'medium']}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="font-medium text-sm">
-          {overlay.planetOwner}'s {overlay.planet} → {overlay.houseOwner}'s {overlay.house}th House
+          {overlay.statement ?? `${overlay.planetOwner}'s ${overlay.planet} → ${overlay.houseOwner}'s ${ordinalHouse(overlay.house)}`}
         </span>
         <div className="flex items-center gap-2">
           {overlay.focusRelevance === 'high' && (
@@ -520,10 +529,41 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   // Is this a group analysis (3+ people)?
   const isGroupAnalysis = selectedCharts.length >= 3;
   
-  const report = useMemo(() => {
+  // Family relationship context state (declared before the analyses that use it)
+  const [familyContext, setFamilyContext] = useState<FamilyRelationshipContext | null>(null);
+
+  const handleFamilyContextChange = useCallback((context: FamilyRelationshipContext | null) => {
+    setFamilyContext(context);
+  }, []);
+
+  /**
+   * Canonical relationship context. Single source of truth for kind, exact family
+   * relation, ages/stage and which content is allowed. Everything below reads
+   * from this instead of re-deriving intent from the focus string.
+   */
+  const relContext = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    return generateAdvancedSynastryReport(chart1, chart2);
-  }, [chart1, chart2]);
+    return buildRelationshipContext({
+      kind: kindFromFocus(relationshipFocus),
+      familyRelation: familyRelationFrom(familyContext),
+      chart1,
+      chart2,
+    });
+  }, [chart1, chart2, relationshipFocus, familyContext]);
+
+  // Family readings require the exact relation before anything is interpreted.
+  const awaitingFamilyRelation = !!relContext && needsFamilyRelation(relContext);
+
+  /** The canonical reading: one aspect engine, one overlay engine, one score set. */
+  const pairReading = useMemo(() => {
+    if (!chart1 || !chart2 || !relContext || awaitingFamilyRelation) return null;
+    return buildPairReading(chart1, chart2, relContext);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation]);
+
+  const report = useMemo(() => {
+    if (!chart1 || !chart2 || awaitingFamilyRelation) return null;
+    return generateAdvancedSynastryReport(chart1, chart2, relContext ?? undefined);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation]);
 
   // Group dynamics report
   const groupReport = useMemo(() => {
@@ -570,141 +610,42 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   
   // Get detailed focus analysis
   const focusAnalysis = useMemo(() => {
-    if (!chart1 || !chart2 || relationshipFocus === 'all') return null;
-    return analyzeRelationshipFocus(chart1, chart2, relationshipFocus);
-  }, [chart1, chart2, relationshipFocus]);
+    if (!chart1 || !chart2 || relationshipFocus === 'all' || awaitingFamilyRelation) return null;
+    return analyzeRelationshipFocus(chart1, chart2, relationshipFocus, relContext ?? undefined);
+  }, [chart1, chart2, relationshipFocus, relContext, awaitingFamilyRelation]);
 
   // Get shadow dynamics analysis - pass chart names for personalized output
   const shadowAnalysis = useMemo(() => {
-    if (!chart1 || !chart2) return null;
+    if (!chart1 || !chart2 || !relContext) return null;
+    // Intensity/shadow patterns are never shown for minors or for family pairs:
+    // the vocabulary is adult-relationship vocabulary and does not translate.
+    if (relContext.involvesMinor || relContext.kind === 'family') return null;
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
-  }, [chart1, chart2]);
-
-  // Family relationship context state
-  const [familyContext, setFamilyContext] = useState<FamilyRelationshipContext | null>(null);
-  
-  // Handler for family context changes
-  const handleFamilyContextChange = useCallback((context: FamilyRelationshipContext | null) => {
-    setFamilyContext(context);
-  }, []);
+  }, [chart1, chart2, relContext]);
 
   // Get karmic analysis using the new professional system - NOW FOCUS-AWARE + FAMILY-AWARE
   const karmicAnalysis = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    // Map the relationshipFocus to karmic analysis focus type
-    const focusMap: Record<string, 'romance' | 'friendship' | 'business' | 'family' | 'creative'> = {
-      'all': 'romance',
-      'romantic': 'romance',
-      'friends': 'friendship',
-      'friendship': 'friendship',
-      'business': 'business',
-      'family': 'family',
-      'creative': 'creative'
-    };
-    const karmicFocus = focusMap[relationshipFocus] || 'romance';
-    // Pass family context when focus is family
+    if (!chart1 || !chart2 || !relContext || awaitingFamilyRelation) return null;
+    // Neutral ('All types') maps to the least presumptuous legacy option, never
+    // to romance. Mapping lives in one shared place (legacyBridge).
+    const karmicFocus = legacyKarmicFocus(relContext.kind);
     return calculateKarmicAnalysis(
-      chart1, 
-      chart2, 
-      karmicFocus, 
+      chart1,
+      chart2,
+      karmicFocus,
       karmicFocus === 'family' ? familyContext || undefined : undefined
     );
-  }, [chart1, chart2, relationshipFocus, familyContext]);
+  }, [chart1, chart2, relContext, awaitingFamilyRelation, familyContext]);
 
-  // Calculate TRUE overall score as weighted average of all 5 focus types
-  // MUST be before safetyAssessment since it depends on this
-  const trueOverallScore = useMemo(() => {
-    if (!chart1 || !chart2) return null;
-    
-    const focusTypes: Array<'romantic' | 'friendship' | 'business' | 'creative' | 'family'> = 
-      ['romantic', 'friendship', 'business', 'creative', 'family'];
-    
-    const scores = focusTypes.map(focus => {
-      const analysis = analyzeRelationshipFocus(chart1, chart2, focus);
-      return analysis.overallStrength;
-    });
-    
-    // Calculate weighted average (all equal weight)
-    const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-    
-    return {
-      overall: average,
-      breakdown: focusTypes.map((focus, i) => ({ focus, score: scores[i] }))
-    };
-  }, [chart1, chart2]);
-
-  // Compute safety assessment from karmic analysis
-  // Factor in compatibility - high compatibility connections need higher threshold for professional support warning
-  const safetyAssessment = useMemo((): SafetyAssessment | null => {
-    if (!karmicAnalysis) return null;
-    
-    let riskScore = 0;
-    const dangerIndicators: SafetyAssessment['dangerIndicators'] = [];
-    
-    karmicAnalysis.dangerFlags.forEach(flag => {
-      let severity: 'critical' | 'high' | 'moderate' | 'low' = 'moderate';
-      if (flag.includes('Pluto') && (flag.includes('Venus') || flag.includes('Moon'))) {
-        severity = 'critical';
-        riskScore += 25;
-      } else if (flag.includes('Saturn') && flag.includes('Moon')) {
-        severity = 'high';
-        riskScore += 20;
-      } else if (flag.includes('8th house')) {
-        severity = 'high';
-        riskScore += 15;
-      } else {
-        riskScore += 10;
-      }
-      dangerIndicators.push({
-        type: flag.includes('Pluto') ? 'Power Dynamics' : flag.includes('Saturn') ? 'Restriction' : 'Intensity',
-        severity,
-        description: flag,
-        mitigation: 'Maintain strong boundaries and self-awareness.'
-      });
-    });
-
-    // Get compatibility score if available
-    const compatScore = trueOverallScore?.overall || 0;
-    
-    // Adjust thresholds based on compatibility
-    // High compatibility (60%+) means strong positive indicators exist alongside challenges
-    // This is common in intense, transformative relationships - not inherently dangerous
-    const adjustedRiskThreshold = compatScore >= 60 ? 75 : compatScore >= 45 ? 60 : 50;
-    
-    const safetyLevel: SafetyAssessment['safetyLevel'] = 
-      riskScore >= 60 ? 'high_risk' : 
-      riskScore >= 40 ? 'moderate_risk' : 
-      riskScore >= 20 ? 'low_risk' : 'safe';
-
-    const greenFlags: string[] = [];
-    if (karmicAnalysis.karmicType === 'soul_family' || karmicAnalysis.karmicType === 'new_contract') {
-      greenFlags.push('Healthy soul connection without heavy karmic baggage');
-    }
-    if (karmicAnalysis.healingOpportunities.length >= 3) {
-      greenFlags.push('Strong healing potential in this connection');
-    }
-    const northNodeCount = karmicAnalysis.indicators.filter(i => i.theme === 'soul_growth').length;
-    if (northNodeCount >= 2) {
-      greenFlags.push('Multiple North Node contacts - supports mutual evolution');
-    }
-    // Add green flag for high compatibility with intensity
-    if (compatScore >= 60 && riskScore >= 30) {
-      greenFlags.push('High compatibility suggests transformative potential, not just challenge');
-    }
-
-    // Only recommend professional support for genuinely concerning patterns
-    // Not just "intense" connections with high compatibility
-    const professionalSupportRecommended = riskScore >= adjustedRiskThreshold;
-
-    return {
-      safetyLevel,
-      riskScore: Math.min(100, riskScore),
-      dangerIndicators,
-      greenFlags,
-      proceedWithCaution: riskScore >= 30 && !professionalSupportRecommended,
-      professionalSupportRecommended
-    };
-  }, [karmicAnalysis, trueOverallScore]);
+  /**
+   * Headline numbers come only from the canonical context-specific index.
+   * The old "true overall score" averaged five unrelated categories (romance +
+   * business + family ...) into one percentage, which was meaningless; and the
+   * safety/risk model inferred danger and "professional support recommended"
+   * from Pluto/Saturn contacts, which astrology cannot support. Both are gone.
+   * High-intensity contacts now surface as communication dynamics inside the
+   * canonical reading instead.
+   */
 
   // Get composite interpretation for 5 Essential Questions
   const compositeInterpretation = useMemo(() => {
@@ -869,27 +810,20 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
             )}
           </div>
 
-          {/* OVERALL SCORE BANNER - Shows first for all pair analyzes */}
-          {!isGroupAnalysis && trueOverallScore && chart1 && chart2 && (
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/30 border">
-              <div className="text-5xl font-bold text-primary mb-2">
-                {trueOverallScore.overall}%
-              </div>
-              <p className="text-lg font-medium">Overall Compatibility</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                {chart1.name} & {chart2.name}
-              </p>
-              <div className="flex flex-wrap justify-center gap-3 mt-4">
-                {trueOverallScore.breakdown.map(({ focus, score }) => (
-                  <div key={focus} className="text-center">
-                    <div className="text-sm font-semibold text-primary">{score}%</div>
-                    <div className="text-xs text-muted-foreground capitalize">{focus}</div>
-                  </div>
-                ))}
-              </div>
+          {/* Family readings must know the exact relation before interpreting anything */}
+          {!isGroupAnalysis && awaitingFamilyRelation && (
+            <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 text-sm">
+              Choose the exact family relation above (siblings, parent &amp; child, and so on) before the
+              reading is generated. A family chart comparison reads very differently depending on the
+              relation, so nothing is interpreted until it is set.
             </div>
           )}
-          
+
+          {/* CANONICAL CONTEXT-AWARE READING */}
+          {!isGroupAnalysis && pairReading && (
+            <PairReadingView reading={pairReading} />
+          )}
+
           {/* GROUP ANALYSIS VIEW */}
           {isGroupAnalysis && groupReport && (
             <GroupDynamicsDisplay report={groupReport} focus={relationshipFocus} />
@@ -947,6 +881,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           houseOverlays={focusedHouseOverlays}
                           karmicIndicators={focusedKarmicIndicators}
                           focus={relationshipFocus}
+                          pairReading={pairReading ?? undefined}
                         />
                       </div>
                       
@@ -957,7 +892,8 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         report={report}
                         karmicAnalysis={karmicAnalysis}
                         compositeInterpretation={compositeInterpretation}
-                        focus={relationshipFocus === 'romantic' ? 'romance' : relationshipFocus === 'all' ? 'romance' : relationshipFocus}
+                        focus={legacyKarmicFocus(relContext?.kind ?? 'neutral')}
+                        context={relContext ?? undefined}
                       />
                       
                       {/* Additional Technical Views - Expandable */}
@@ -970,15 +906,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           <ChevronDown size={18} />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-4 space-y-8">
-                          {/* Safety Assessment */}
-                          {safetyAssessment && (
-                            <SafetyAssessmentCard 
-                              assessment={safetyAssessment} 
-                              chart1Name={chart1.name} 
-                              chart2Name={chart2.name} 
-                            />
-                          )}
-                          
                           {/* Karmic Analysis Card */}
                           {karmicAnalysis && (
                             <KarmicAnalysisCard 
@@ -1005,41 +932,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                       {relationshipFocus === 'all' && (
                         <section>
                           <CompatibilityRadarChart chart1={chart1} chart2={chart2} />
-                        </section>
-                      )}
-                      
-                      {/* Relationship Types - use balanced scores from trueOverallScore */}
-                      {relationshipFocus === 'all' && trueOverallScore && (
-                        <section>
-                          <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
-                            <Sparkles className="text-primary" size={20} />
-                            Connection Types Overview
-                          </h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            {trueOverallScore.breakdown.map(({ focus, score }) => {
-                              const focusConfig = {
-                                romantic: { label: 'Romantic Partnership', icon: '💕', description: 'Intimate, romantic, and potentially long-term love connection' },
-                                friendship: { label: 'Friendship', icon: '🤝', description: 'Platonic connection, companionship, mutual enjoyment' },
-                                business: { label: 'Business Partnership', icon: '💼', description: 'Professional collaboration, shared ventures, career synergy' },
-                                creative: { label: 'Creative Partnership', icon: '🎨', description: 'Artistic collaboration, inspiration, imaginative projects' },
-                                family: { label: 'Family Bond', icon: '🏠', description: 'Family dynamics, nurturing connections, domestic harmony' }
-                              };
-                              const config = focusConfig[focus as keyof typeof focusConfig];
-                              return (
-                                <RelationshipTypeCard 
-                                  key={focus} 
-                                  type={{
-                                    type: focus as any,
-                                    score,
-                                    label: config.label,
-                                    description: config.description,
-                                    icon: config.icon,
-                                    indicators: []
-                                  }} 
-                                />
-                              );
-                            })}
-                          </div>
                         </section>
                       )}
                       
@@ -1099,7 +991,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                       )}
                       
                       {/* Attraction Dynamics - only for romantic/all focus */}
-                      {(relationshipFocus === 'all' || relationshipFocus === 'romantic') && report.attractionDynamics.length > 0 && (
+                      {relContext?.allowRomantic && report.attractionDynamics.length > 0 && (
                         <section>
                           <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
                             <Flame className="text-red-500" size={20} />
