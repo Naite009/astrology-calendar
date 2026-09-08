@@ -616,9 +616,12 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
 
   // Get shadow dynamics analysis - pass chart names for personalized output
   const shadowAnalysis = useMemo(() => {
-    if (!chart1 || !chart2) return null;
+    if (!chart1 || !chart2 || !relContext) return null;
+    // Intensity/shadow patterns are never shown for minors or for family pairs:
+    // the vocabulary is adult-relationship vocabulary and does not translate.
+    if (relContext.involvesMinor || relContext.kind === 'family') return null;
     return analyzeShadowDynamics(chart1, chart2, chart1.name, chart2.name);
-  }, [chart1, chart2]);
+  }, [chart1, chart2, relContext]);
 
   // Get karmic analysis using the new professional system - NOW FOCUS-AWARE + FAMILY-AWARE
   const karmicAnalysis = useMemo(() => {
