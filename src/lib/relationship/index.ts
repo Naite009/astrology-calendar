@@ -61,3 +61,6 @@ export {
 
 export { buildPairReading } from './pairReading';
 export type { PairReading, PairSection, ReadingItem, SymbolicLayer, PairReadingOptions } from './pairReading';
+
+// Legacy-vocabulary bridge (focus strings, FamilyRelationshipContext).
+export { kindFromFocus, familyRelationFrom, legacyKarmicFocus } from './legacyBridge';
