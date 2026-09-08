@@ -307,6 +307,7 @@ export function findForbiddenRelationshipPhrases(
   if (!text) return [];
   const patterns = [...FORBIDDEN_RELATIONSHIP_PHRASES];
   if (ctx && !ctx.allowRomantic) patterns.push(...FORBIDDEN_NON_ROMANTIC_PHRASES);
+  if (ctx?.involvesMinor) patterns.push(...FORBIDDEN_MINOR_PHRASES);
   const hits: string[] = [];
   for (const re of patterns) {
     const m = text.match(re);
