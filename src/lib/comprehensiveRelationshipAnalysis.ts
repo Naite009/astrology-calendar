@@ -36,7 +36,7 @@ export interface ComprehensiveRelationshipAnalysis {
 
   // Integrated Insights
   overallCompatibility: CompatibilityReport;
-  safetyAssessment: SafetyAssessment;
+  intensityAssessment: IntensityAssessment;
   purposeAlignment: PurposeAlignment;
   recommendations: string[];
   
@@ -60,18 +60,30 @@ export interface CompatibilityReport {
   topChallenges: string[];
 }
 
-export interface SafetyAssessment {
-  safetyLevel: 'high_risk' | 'moderate_risk' | 'low_risk' | 'safe';
-  riskScore: number; // 0-100, higher = more risk
-  dangerIndicators: {
+/**
+ * Communication-dynamics model.
+ *
+ * This replaces the old "safety assessment". A chart cannot indicate danger,
+ * abuse or clinical risk, and it must never recommend or discourage professional
+ * help. What close Pluto/Saturn/Mars contacts genuinely describe is *intensity*:
+ * conversations that escalate quickly and need deliberate handling. That is what
+ * this model reports, with no risk score and no verdicts about either person.
+ */
+export interface IntensityAssessment {
+  /** How charged the strongest contacts are — a description, not a warning. */
+  intensityLevel: 'high' | 'moderate' | 'low';
+  /** 0-100 index of contact intensity. Not a risk or danger score. */
+  intensityIndex: number;
+  highIntensityDynamics: {
     type: string;
-    severity: 'critical' | 'high' | 'moderate' | 'low';
+    prominence: 'high' | 'moderate' | 'low';
     description: string;
-    mitigation: string;
+    /** Practical communication suggestion. Never clinical advice. */
+    workingWithIt: string;
   }[];
-  greenFlags: string[];
-  proceedWithCaution: boolean;
-  professionalSupportRecommended: boolean;
+  supportiveFactors: string[];
+  /** True when the pair is likely to benefit from explicit ground rules. */
+  benefitsFromExplicitAgreements: boolean;
 }
 
 export interface PurposeAlignment {
@@ -160,7 +172,7 @@ export function analyzeRelationship(
   }
   
   // 5. Assess safety
-  const safetyAssessment = assessSafety(karmicAnalysis, synastryAnalysis);
+  const intensityAssessment = assessIntensity(karmicAnalysis, synastryAnalysis);
   
   // 6. Calculate overall compatibility
   const overallCompatibility = calculateOverallCompatibility(
@@ -182,14 +194,14 @@ export function analyzeRelationship(
     overallCompatibility,
     karmicAnalysis,
     compositeAnalysis,
-    safetyAssessment,
+    intensityAssessment,
     focus
   );
   
   // 9. Generate integrated recommendations
   const recommendations = generateRecommendations(
     karmicAnalysis,
-    safetyAssessment,
+    intensityAssessment,
     purposeAlignment,
     focus,
     relationshipPotential
@@ -198,7 +210,7 @@ export function analyzeRelationship(
   // 10. Compile critical warnings and growth opportunities
   const criticalWarnings = compileCriticalWarnings(
     karmicAnalysis,
-    safetyAssessment
+    intensityAssessment
   );
   
   const growthOpportunities = compileGrowthOpportunities(
@@ -221,7 +233,7 @@ export function analyzeRelationship(
     compositeAnalysis,
     davisonAnalysis,
     overallCompatibility,
-    safetyAssessment,
+    intensityAssessment,
     purposeAlignment,
     relationshipPotential,
     recommendations,
@@ -231,79 +243,66 @@ export function analyzeRelationship(
 }
 
 /**
- * Safety Assessment Logic
+ * Communication-intensity logic (formerly "safety").
  */
-function assessSafety(karmic: KarmicAnalysis, synastry: any): SafetyAssessment {
-  const dangerIndicators: SafetyAssessment['dangerIndicators'] = [];
-  let riskScore = 0;
+function assessIntensity(karmic: KarmicAnalysis, synastry: any): IntensityAssessment {
+  const highIntensityDynamics: IntensityAssessment['highIntensityDynamics'] = [];
+  let intensityIndex = 0;
 
-  // Check karmic danger flags
   karmic.dangerFlags.forEach(flag => {
-    let severity: 'critical' | 'high' | 'moderate' | 'low' = 'moderate';
-    
+    let prominence: 'high' | 'moderate' | 'low' = 'moderate';
     if (flag.includes('Pluto') && (flag.includes('Venus') || flag.includes('Moon'))) {
-      severity = 'critical';
-      riskScore += 30;
+      prominence = 'high';
+      intensityIndex += 30;
     } else if (flag.includes('Saturn') && flag.includes('Moon')) {
-      severity = 'high';
-      riskScore += 25;
+      prominence = 'high';
+      intensityIndex += 25;
     } else if (flag.includes('8th house') && flag.includes('Multiple')) {
-      severity = 'high';
-      riskScore += 20;
+      prominence = 'moderate';
+      intensityIndex += 20;
     } else {
-      riskScore += 15;
+      intensityIndex += 15;
     }
 
-    dangerIndicators.push({
+    highIntensityDynamics.push({
       type: extractIndicatorType(flag),
-      severity,
+      prominence,
       description: flag,
-      mitigation: getMitigation(flag)
+      workingWithIt: getWorkingWithIt(flag)
     });
   });
 
-  // Check for double whammy danger patterns
-  // (You'd integrate your existing synastry conflict detection here)
-
-  // Determine safety level
-  let safetyLevel: SafetyAssessment['safetyLevel'];
-  if (riskScore >= 60) safetyLevel = 'high_risk';
-  else if (riskScore >= 40) safetyLevel = 'moderate_risk';
-  else if (riskScore >= 20) safetyLevel = 'low_risk';
-  else safetyLevel = 'safe';
-
-  // Identify green flags
-  const greenFlags = identifyGreenFlags(karmic, synastry);
+  const intensityLevel: IntensityAssessment['intensityLevel'] =
+    intensityIndex >= 50 ? 'high' : intensityIndex >= 25 ? 'moderate' : 'low';
 
   return {
-    safetyLevel,
-    riskScore,
-    dangerIndicators,
-    greenFlags,
-    proceedWithCaution: riskScore >= 30,
-    professionalSupportRecommended: riskScore >= 50
+    intensityLevel,
+    intensityIndex: Math.min(100, intensityIndex),
+    highIntensityDynamics,
+    supportiveFactors: identifyGreenFlags(karmic, synastry),
+    benefitsFromExplicitAgreements: intensityIndex >= 30
   };
 }
 
 function extractIndicatorType(flag: string): string {
   if (flag.includes('Pluto')) return 'Power Dynamics';
-  if (flag.includes('Saturn')) return 'Restriction/Control';
-  if (flag.includes('8th house')) return 'Intensity/Enmeshment';
-  if (flag.includes('Mars')) return 'Aggression/Conflict';
-  return 'Challenging Pattern';
+  if (flag.includes('Saturn')) return 'Caution and commitment';
+  if (flag.includes('8th house')) return 'Depth and closeness';
+  if (flag.includes('Mars')) return 'Directness and friction';
+  return 'High-intensity pattern';
 }
 
-function getMitigation(flag: string): string {
+function getWorkingWithIt(flag: string): string {
   if (flag.includes('Pluto')) {
-    return 'Both partners need active therapy/shadow work. Establish clear boundaries. Monitor for manipulation/control tactics. Exit plan if abuse emerges.';
+    return 'Conversations here can go deep fast. It helps to agree in advance how to pause a heavy talk and come back to it, and to keep other friendships and interests going alongside the relationship.';
   }
   if (flag.includes('Saturn')) {
-    return 'Work on self-validation independent of partner approval. Set boundaries around criticism. Therapy for emotional safety.';
+    return 'Feedback can land heavier than it is meant to. Saying what is meant plainly, and checking how it was heard, does most of the work.';
   }
   if (flag.includes('8th house')) {
-    return 'Maintain separate identities and friendships. Regular check-ins about boundaries. Watch for isolation from support systems.';
+    return 'Closeness comes easily here, so deliberately keeping separate routines and outside friendships keeps it comfortable.';
   }
-  return 'Stay conscious, seek professional support, maintain boundaries.';
+  return 'Naming the pattern out loud when it shows up is usually enough to keep it workable.';
 }
 
 function identifyGreenFlags(karmic: KarmicAnalysis, synastry: any): string[] {
@@ -410,7 +409,7 @@ function assessRelationshipPotential(
   compatibility: CompatibilityReport,
   karmic: KarmicAnalysis,
   composite: CompositeAnalysis,
-  safety: SafetyAssessment,
+  safety: IntensityAssessment,
   focus: RelationshipFocus
 ): RelationshipPotential {
   
@@ -454,14 +453,14 @@ function calculateShortTermPotential(compatibility: CompatibilityReport, karmic:
 function calculateLongTermPotential(
   composite: CompositeAnalysis,
   karmic: KarmicAnalysis,
-  safety: SafetyAssessment
+  safety: IntensityAssessment
 ): number {
   let score = 50;
   
-  // Safety is critical for long-term
-  if (safety.safetyLevel === 'high_risk') score -= 40;
-  else if (safety.safetyLevel === 'moderate_risk') score -= 20;
-  else if (safety.safetyLevel === 'safe') score += 20;
+  // High-intensity contacts ask more of the pair; they are not a danger signal.
+  if (safety.intensityLevel === 'high') score -= 15;
+  else if (safety.intensityLevel === 'moderate') score -= 5;
+  else score += 10;
   
   // Karmic type matters
   if (karmic.karmicType === 'soul_family' || karmic.karmicType === 'new_contract') score += 30;
@@ -489,12 +488,12 @@ function getLongTermDescription(score: number, karmic: KarmicAnalysis): string {
 function getMarriageConsiderations(
   composite: CompositeAnalysis,
   karmic: KarmicAnalysis,
-  safety: SafetyAssessment
+  safety: IntensityAssessment
 ): string[] {
   const considerations: string[] = [];
   
-  if (safety.riskScore >= 40) {
-    considerations.push('⚠️ CRITICAL: Address safety concerns before considering marriage');
+  if (safety.benefitsFromExplicitAgreements) {
+    considerations.push('Several contacts here are high-intensity, so it is worth agreeing explicitly how you both handle disagreement, money and time apart.');
   }
   
   considerations.push(composite.relationshipPurpose);
@@ -521,18 +520,19 @@ function getBusinessConsiderations(composite: CompositeAnalysis): string[] {
  */
 function generateRecommendations(
   karmic: KarmicAnalysis,
-  safety: SafetyAssessment,
+  safety: IntensityAssessment,
   purpose: PurposeAlignment,
   focus: RelationshipFocus,
   potential: RelationshipPotential
 ): string[] {
   const recommendations: string[] = [];
 
-  // Safety first
-  if (safety.safetyLevel === 'high_risk') {
-    recommendations.push('🚨 PRIORITY: This relationship shows multiple danger indicators. Strongly recommend professional support (therapist) before proceeding. Exit plan essential.');
-  } else if (safety.safetyLevel === 'moderate_risk') {
-    recommendations.push('⚠️ Proceed with awareness: Some challenging dynamics present. Regular check-ins, clear boundaries, and possibly couples counseling recommended.');
+  // Intensity, described rather than diagnosed. A chart cannot assess safety or
+  // recommend clinical support, so it does neither.
+  if (safety.intensityLevel === 'high') {
+    recommendations.push('Several contacts between these charts are high-intensity, which tends to mean strong reactions in both directions. Agreeing how to pause and resume difficult conversations matters more here than in a low-key pairing.');
+  } else if (safety.intensityLevel === 'moderate') {
+    recommendations.push('There are a few charged contacts here. Regular, low-stakes check-ins usually keep them from building up.');
   }
 
   // Karmic guidance
@@ -572,16 +572,15 @@ function getFocusSpecificRecommendations(
   return recommendations;
 }
 
-function compileCriticalWarnings(karmic: KarmicAnalysis, safety: SafetyAssessment): string[] {
+function compileCriticalWarnings(karmic: KarmicAnalysis, safety: IntensityAssessment): string[] {
   const warnings: string[] = [];
   
-  // Add critical danger indicators
-  safety.dangerIndicators
-    .filter(d => d.severity === 'critical')
-    .forEach(d => warnings.push(`🚨 ${d.description}`));
-  
-  // Add karmic danger flags
-  karmic.dangerFlags.forEach(flag => warnings.push(`⚠️ ${flag}`));
+  // Things worth naming out loud — patterns to watch, not warnings about people.
+  safety.highIntensityDynamics
+    .filter(d => d.prominence === 'high')
+    .forEach(d => warnings.push(`${d.description} ${d.workingWithIt}`));
+
+  karmic.dangerFlags.forEach(flag => warnings.push(flag));
   
   return warnings;
 }
