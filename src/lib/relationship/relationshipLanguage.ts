@@ -259,6 +259,9 @@ export const FORBIDDEN_RELATIONSHIP_PHRASES: RegExp[] = [
   /millionaire combination/i,
   /professional[- ]grade/i,
   /guaranteed financial success/i,
+  /soul growth focus/i,
+  /\bobsessive/i,
+  /\bobsessed\b/i,
 ];
 
 /** Additionally forbidden when the context is not romantic (family, friendship, business, neutral). */
@@ -303,6 +306,7 @@ export const FORBIDDEN_MINOR_PHRASES: RegExp[] = [
   /shared finances/i,
   /\bsoulmate\b/i,
   /keep (?:their|your) hands off/i,
+  /\bobsess/i,
 ];
 
 export function findForbiddenRelationshipPhrases(
