@@ -20,6 +20,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeBreakdownGuide } from '@/components/ThemeBreakdownGuide';
 import { DirectionalAspectCard } from '@/components/synastry/DirectionalAspectCard';
 import { getDirectionalInterpretation } from '@/data/directionalAspectData';
+import {
+  calculateCrossAspects,
+  sanitizeRelationshipText,
+  type CrossAspect,
+  type RelationshipContext,
+} from '@/lib/relationship';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
   Clock, GraduationCap, BookOpen, Lightbulb, AlertTriangle, 
@@ -33,6 +39,8 @@ interface FiveEssentialQuestionsProps {
   karmicAnalysis: KarmicAnalysis | null;
   compositeInterpretation: CompositeInterpretation | null;
   focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
+  /** Canonical relationship context; drives vocabulary and which questions apply. */
+  context?: RelationshipContext;
 }
 
 // Planet symbols for display
@@ -1006,8 +1014,23 @@ export const FiveEssentialQuestions = ({
   report,
   karmicAnalysis,
   compositeInterpretation,
-  focus = 'romance'
+  focus = 'friendship',
+  context
 }: FiveEssentialQuestionsProps) => {
+  /** Canonical cross-aspects: the single source of truth for aspect type and orb. */
+  const canonicalAspects = useMemo(
+    () => calculateCrossAspects(chart1, chart2),
+    [chart1, chart2]
+  );
+
+  /** Find the real contact between two bodies instead of assuming a conjunction. */
+  const findCanonical = (a: string, b: string): CrossAspect | undefined =>
+    canonicalAspects.find(
+      (asp) =>
+        (asp.fromBody === a && asp.toBody === b) || (asp.fromBody === b && asp.toBody === a)
+    );
+
+  const say = (text: string) => sanitizeRelationshipText(text, context);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     allAspects: false,
     calculations: false,
@@ -1062,21 +1085,26 @@ export const FiveEssentialQuestions = ({
       });
     }
 
-    // Add attraction dynamics
+    // Add attraction dynamics. The aspect type and orb come from the canonical
+    // engine — previously every one of these was displayed as a conjunction even
+    // when the real contact was a trine, square or opposition.
     report.attractionDynamics.forEach(dyn => {
       if (dyn.planets.length >= 2) {
+        const real = findCanonical(dyn.planets[0], dyn.planets[1]);
+        if (!real) return; // never display a contact the maths does not support
         aspects.push({
-          planet1: dyn.planets[0],
-          planet2: dyn.planets[1],
-          aspect: 'conjunction',
-          owner1: chart1.name,
-          owner2: chart2.name
+          planet1: real.fromBody,
+          planet2: real.toBody,
+          aspect: real.aspect,
+          orb: real.orb,
+          owner1: real.fromOwner,
+          owner2: real.toOwner
         });
       }
     });
 
     return aspects.slice(0, 8); // Limit to top 8 aspects
-  }, [report, karmicAnalysis, chart1.name, chart2.name]);
+  }, [report, karmicAnalysis, chart1.name, chart2.name, canonicalAspects]);
 
   // Generate lessons
   const lessons = useMemo(() => 
@@ -1286,7 +1314,7 @@ export const FiveEssentialQuestions = ({
       <section className="space-y-4">
         <SectionHeader 
           number={4} 
-          title="How Long Will This Last?" 
+          title="What Sustains This Connection?" 
           icon={<Infinity className="text-green-500" size={24} />}
         />
         
@@ -1294,12 +1322,15 @@ export const FiveEssentialQuestions = ({
           <div className="flex items-center gap-3 mb-4">
             <Clock className="text-green-600 dark:text-green-400" size={24} />
             <div>
-              <h3 className="text-xl font-serif">{karmicTypeBase.label} Timeline</h3>
-              <p className="text-sm text-green-700 dark:text-green-400">{karmicTypeBase.duration}</p>
+              <h3 className="text-xl font-serif">{say(karmicTypeBase.label)}: what tends to sustain it</h3>
+              <p className="text-sm text-green-700 dark:text-green-400">
+                A chart cannot predict how long a relationship lasts. What follows is what tends to keep
+                this kind of connection working, and what tends to strain it.
+              </p>
             </div>
           </div>
           
-          <p className="text-sm mb-4">{karmicTypeBase.description}</p>
+          <p className="text-sm mb-4">{say(karmicTypeBase.description)}</p>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-3 rounded-lg bg-white/50 dark:bg-black/20">
