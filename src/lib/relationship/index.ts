@@ -67,3 +67,15 @@ export { kindFromFocus, familyRelationFrom, legacyKarmicFocus } from './legacyBr
 
 export { describeDirectionalContact, directionalEvidenceLines } from './directionalRoles';
 export type { DirectionalContact, DirectionalRole } from './directionalRoles';
+
+export {
+  SYMBOLIC_LENS_HEADING,
+  SYMBOLIC_LENS_NOTE,
+  SYMBOLIC_THEMES,
+  FORBIDDEN_SYMBOLIC_PHRASES,
+  symbolicTheme,
+  symbolicEmphasisLabel,
+  symbolicEmphasisLine,
+  symbolicShareLine,
+} from './symbolicFraming';
+export type { SymbolicTheme, SymbolicThemeKey } from './symbolicFraming';

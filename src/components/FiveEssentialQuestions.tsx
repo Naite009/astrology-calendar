@@ -25,6 +25,8 @@ import {
   sanitizeRelationshipText,
   type CrossAspect,
   type RelationshipContext,
+  SYMBOLIC_LENS_NOTE,
+  symbolicEmphasisLine,
 } from '@/lib/relationship';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
