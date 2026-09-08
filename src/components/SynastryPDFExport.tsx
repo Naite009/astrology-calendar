@@ -91,7 +91,9 @@ function generatePrintableHTML(
   focusAnalysis: FocusAnalysis | null,
   houseOverlays: HouseOverlay[],
   karmicIndicators: KarmicIndicator[],
-  focus: RelationshipFocus
+  focus: RelationshipFocus,
+  pairReading?: PairReading
+
 ): string {
   const focusTitle = focus === 'all' ? 'Comprehensive' : focus.charAt(0).toUpperCase() + focus.slice(1);
   const today = format(new Date(), 'MMMM d, yyyy');
