@@ -20,6 +20,7 @@ import {
   calculateCrossAspects,
   coreAspects,
   involves,
+  involvesBoth,
   rankTopContacts,
   describeAspect,
   isAutomaticNodalMirror,
