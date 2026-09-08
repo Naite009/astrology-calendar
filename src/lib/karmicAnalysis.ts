@@ -760,7 +760,7 @@ function determineKarmicType(indicators: KarmicIndicator[], totalScore: number):
 function getSoulPurpose(karmicType: KarmicAnalysis['karmicType'], focus: RelationshipFocus): string {
   const purposes: Record<KarmicAnalysis['karmicType'], Record<RelationshipFocus, string>> = {
     twin_flame: {
-      romance: 'Mirror relationship for radical romantic self-awareness and love transformation.',
+      romance: 'Symbolically, this reads as a mirror-and-intensity theme in the relationship: each may recognise something of themselves in the other, and the connection tends not to feel casual. Interpretive imagery, not a verdict about either person.',
       friendship: 'Mirror friendship for profound self-discovery through deep platonic connection.',
       business: 'Mirror partnership for radical professional transformation and honest work expression.',
       family: 'Mirror family bond for ancestral healing and identity transformation.',

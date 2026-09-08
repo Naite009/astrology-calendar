@@ -19,6 +19,14 @@ import {
   familyRelationFrom,
   legacyKarmicFocus,
   ADVANCED_SYNASTRY_BODIES,
+  describeDirectionalContact,
+  describeDirectionalFromParts,
+  SYMBOLIC_LENS_HEADING,
+  SYMBOLIC_LENS_NOTE,
+  symbolicEmphasisLabel,
+  symbolicEmphasisLine,
+  symbolicShareLine,
+  symbolicTheme,
 } from '@/lib/relationship';
 
 interface Fixture {
@@ -91,7 +99,7 @@ const AVA: Fixture = {
 // fixture ids may cause the app to read them as family.
 const MAX: Fixture = {
   id: 'max',
-  name: 'Max Delgado',
+  name: 'Max Levin',
   date: '2014-02-08',
   time: '09:20',
   latitude: 34.2011,
@@ -556,5 +564,152 @@ describe('Relationship language sanitizer', () => {
     const ctx = siblingContext();
     const out = sanitizeRelationshipText('There is strong sexual chemistry and marriage potential here.', ctx);
     expect(out).not.toMatch(/sexual|marriage/i);
+  });
+});
+
+
+describe('Directional synastry — who feels what', () => {
+  const ctx = teenRomanticContext();
+
+  it('describes Ava Venus trine Max Pluto from both sides, in teen-appropriate words', () => {
+    const d = describeDirectionalFromParts(
+      {
+        fromOwner: 'Ava Kravitz',
+        fromBody: 'Venus',
+        toOwner: 'Max Levin',
+        toBody: 'Pluto',
+        aspect: 'trine',
+        orb: 1.2,
+      },
+      ctx
+    );
+    expect(d.aspectLine).toBe("Ava Kravitz's Venus trine Max Levin's Pluto");
+    expect(d.orbLine).toMatch(/orb 1\.2°/);
+    // Roles are named, and they are not the same role.
+    expect(d.a.roleLine).toMatch(/Ava Kravitz is the Venus person/);
+    expect(d.b.roleLine).toMatch(/Max Levin is the Pluto person/);
+    // Venus side: drawn / valued / affected in attraction and relating.
+    expect(d.a.feels).toMatch(/drawn|valued/i);
+    // Pluto side: focused / invested / fascinated — never "obsessed".
+    expect(d.b.feels).toMatch(/focused|invested|fascinated/i);
+    // Possibility, not certainty.
+    expect(d.a.feels).toMatch(/\bmay\b/);
+    expect(d.b.feels).toMatch(/\bmay\b/);
+    // Both work-well and growth-edge lines exist, plus a one-line summary.
+    expect(d.worksWell.length).toBeGreaterThan(20);
+    expect(d.growthEdge.length).toBeGreaterThan(20);
+    expect(d.summary).toMatch(/Ava Kravitz.*Max Levin/);
+    const all = [d.a.feels, d.b.feels, d.worksWell, d.growthEdge, d.summary].join(' ');
+    expect(all).not.toMatch(/obsess|erotic|sexual|dominance and surrender|hands off/i);
+    expect(findForbiddenRelationshipPhrases(all, ctx)).toEqual([]);
+  });
+
+  it('does not treat the two roles as interchangeable', () => {
+    const forward = describeDirectionalFromParts(
+      { fromOwner: 'Ava', fromBody: 'Venus', toOwner: 'Max', toBody: 'Pluto', aspect: 'trine', orb: 1.2 },
+      ctx
+    );
+    const reverse = describeDirectionalFromParts(
+      { fromOwner: 'Max', fromBody: 'Pluto', toOwner: 'Ava', toBody: 'Venus', aspect: 'trine', orb: 1.2 },
+      ctx
+    );
+    expect(forward.a.feels).not.toBe(reverse.a.feels);
+  });
+
+  it('attaches a full directional breakdown to every ranked contact card', () => {
+    const reading = buildPairReading(ava, max, ctx);
+    const strongest = reading.sections.find((s) => s.key === 'strongestAspects');
+    expect(strongest && strongest.items.length).toBeTruthy();
+    for (const item of strongest!.items) {
+      const d = item.directional;
+      expect(d).toBeTruthy();
+      expect(d!.aspectLine).toMatch(/'s .+ (conjunction|trine|sextile|square|opposition)/);
+      expect(d!.orbLine).toMatch(/orb \d/);
+      expect(d!.a.roleLine).toContain('is the');
+      expect(d!.b.roleLine).toContain('is the');
+      expect(d!.worksWell).toBeTruthy();
+      expect(d!.growthEdge).toBeTruthy();
+      expect(d!.summary).toBeTruthy();
+    }
+  });
+
+  it('uses core directional roles for teens without adult framing', () => {
+    const reading = buildPairReading(ava, max, ctx);
+    const text = collectStrings(reading).join('\n');
+    expect(text).not.toMatch(/obsess|erotic|\bsexual\b|dominance and surrender|hands off|marriage/i);
+    for (const body of ['Venus', 'Mars', 'Pluto']) {
+      // if the pair has such a contact, it is always described from both sides
+      const items = reading.sections
+        .flatMap((s) => s.items)
+        .filter((i) => i.directional && (i.directional.a.body === body || i.directional.b.body === body));
+      for (const i of items) {
+        expect(i.directional!.a.feels).toMatch(/\bmay\b/);
+        expect(i.directional!.b.feels).toMatch(/\bmay\b/);
+      }
+    }
+  });
+});
+
+describe('Symbolic / spiritual layer framing', () => {
+  const ctx = teenRomanticContext();
+
+  it('never presents the internal weighting as a probability', () => {
+    const line = symbolicEmphasisLine(33, ["Ava's Venus trine Max's Pluto (1.2° orb)"]);
+    expect(line).not.toMatch(/probability: ?\d/i);
+    expect(line).toMatch(/not a probability/i);
+    expect(line).toMatch(/symbolic emphasis/i);
+    expect(line).toMatch(/Venus trine/);
+    expect(symbolicEmphasisLabel(33)).toBe('moderate symbolic emphasis');
+    expect(symbolicShareLine('Growth-direction contacts', 67)).toMatch(/internal share/i);
+  });
+
+  it('replaces opaque pseudo-diagnostic labels with plain symbolic themes plus chart basis', () => {
+    const theme = symbolicTheme('twin_flame');
+    expect(theme.label).not.toMatch(/twin flame/i);
+    expect(theme.label).toMatch(/symbolic|mirror/i);
+    expect(theme.chartBasis).toMatch(/Pluto|Node|Sun\/Moon/);
+    expect(theme.description).toMatch(/symbolic/i);
+    for (const key of ['twin_flame', 'completion', 'catalyst', 'soul_family', 'karmic_lesson', 'new_contract'] as const) {
+      const t = symbolicTheme(key);
+      expect(t.label).not.toMatch(/twin flame|karmic debt|soul contract/i);
+      expect(t.chartBasis.length).toBeGreaterThan(20);
+    }
+  });
+
+  it('labels the spiritual lens as optional and interpretive', () => {
+    expect(SYMBOLIC_LENS_HEADING).toMatch(/symbolic/i);
+    expect(SYMBOLIC_LENS_HEADING).toMatch(/optional/i);
+    expect(SYMBOLIC_LENS_NOTE).toMatch(/interpretive/i);
+    expect(SYMBOLIC_LENS_NOTE).toMatch(/not a measurement/i);
+  });
+
+  it('sanitises the old pseudo-diagnostic strings anywhere they appear', () => {
+    const raw =
+      'Twin Flame Connection. Past Life Probability: 33% • Soul Growth Focus: 67%. Mirror relationship for radical romantic self-awareness. He is obsessed and they FATED LOVE, meant to be, dominance and surrender.';
+    const clean = sanitizeRelationshipText(raw, ctx);
+    expect(clean).not.toMatch(/twin flame/i);
+    expect(clean).not.toMatch(/past[- ]life probability/i);
+    expect(clean).not.toMatch(/soul growth focus/i);
+    expect(clean).not.toMatch(/fated love/i);
+    expect(clean).not.toMatch(/meant to be/i);
+    expect(clean).not.toMatch(/obsess/i);
+    expect(clean).not.toMatch(/dominance and surrender/i);
+    expect(findForbiddenRelationshipPhrases(clean, ctx)).toEqual([]);
+  });
+
+  it('forbids the pseudo-diagnostic phrases for teen romantic output', () => {
+    const bad = [
+      'Twin Flame',
+      'Past Life Probability: 40%',
+      'FATED LOVE',
+      'destined romantic meeting',
+      'meant to be',
+      'obsessive attachment',
+      "can't keep hands off each other",
+      'dominance and surrender',
+    ];
+    for (const phrase of bad) {
+      expect(findForbiddenRelationshipPhrases(phrase, ctx).length).toBeGreaterThan(0);
+    }
   });
 });

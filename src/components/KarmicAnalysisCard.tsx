@@ -51,46 +51,46 @@ const karmicTypeConfig: Record<KarmicType, {
   description: string;
 }> = {
   twin_flame: {
-    label: 'Twin Flame',
+    label: 'Mirror and intensity theme (symbolic)',
     icon: <Flame size={20} />,
     color: 'text-purple-600 dark:text-purple-400',
     bgGradient: 'from-purple-500/20 to-pink-500/20',
-    description: 'Mirror souls designed for radical transformation and awakening'
+    description: 'Symbolic reading: each may recognise something of themselves in the other, and the connection tends not to feel casual. From close Pluto and Sun/Moon contacts, usually with a nodal contact.'
   },
   completion: {
-    label: 'Karmic Completion',
+    label: 'Unfinished-business theme (symbolic)',
     icon: <Target size={20} />,
     color: 'text-indigo-600 dark:text-indigo-400',
     bgGradient: 'from-indigo-500/20 to-blue-500/20',
-    description: 'Past life patterns seeking resolution and release'
+    description: 'Symbolic reading: patterns that feel already in progress, which either person can choose differently. From South Node and Saturn contacts.'
   },
   catalyst: {
-    label: 'Catalyst Connection',
+    label: 'Catalyst theme (symbolic)',
     icon: <Zap size={20} />,
     color: 'text-amber-600 dark:text-amber-400',
     bgGradient: 'from-amber-500/20 to-orange-500/20',
-    description: 'Intense transformation through temporary but powerful connection'
+    description: 'Symbolic reading: a connection that speeds things up and shifts perspective. Says nothing about how long it lasts. From Uranus and Pluto contacts to personal planets.'
   },
   soul_family: {
-    label: 'Soul Family',
+    label: 'Ease and support theme (symbolic)',
     icon: <Users size={20} />,
     color: 'text-green-600 dark:text-green-400',
     bgGradient: 'from-green-500/20 to-emerald-500/20',
-    description: 'Supportive souls traveling together across lifetimes'
+    description: 'Symbolic reading: a comfortable, supportive pairing. Ease still has to be maintained by how both behave. From flowing contacts between personal planets.'
   },
   karmic_lesson: {
-    label: 'Karmic Lesson',
+    label: 'Learning and maturity theme (symbolic)',
     icon: <Compass size={20} />,
     color: 'text-blue-600 dark:text-blue-400',
     bgGradient: 'from-blue-500/20 to-cyan-500/20',
-    description: 'Specific soul lessons meant to be mastered through this connection'
+    description: 'Symbolic reading: a pairing where each may develop patience, skill or perspective over time. From Saturn contacts to personal planets.'
   },
   new_contract: {
-    label: 'New Soul Contract',
+    label: 'Fresh-start theme (symbolic)',
     icon: <Star size={20} />,
     color: 'text-cyan-600 dark:text-cyan-400',
     bgGradient: 'from-cyan-500/20 to-teal-500/20',
-    description: 'Fresh soul agreement without heavy karmic baggage'
+    description: 'Symbolic reading: something built from scratch rather than repeated. Assigned when node, Saturn and Pluto contacts are sparse or wide.'
   }
 };
 
@@ -113,21 +113,21 @@ const themeColors: Record<KarmicIndicator['theme'], string> = {
 };
 
 const themeLabels: Record<KarmicIndicator['theme'], string> = {
-  past_life: 'Past Life',
-  soul_growth: 'Soul Growth',
-  karmic_debt: 'Karmic Debt',
-  transformation: 'Transformation',
-  healing: 'Healing',
-  fated: 'Fated'
+  past_life: 'Familiarity (symbolic)',
+  soul_growth: 'Growth direction (symbolic)',
+  karmic_debt: 'Responsibility and maturity (symbolic)',
+  transformation: 'Depth and intensity (symbolic)',
+  healing: 'Sensitivity and care (symbolic)',
+  fated: 'Timing (symbolic)'
 };
 
 const themeMeanings: Record<KarmicIndicator['theme'], string> = {
-  past_life: 'These contacts suggest you\'ve known each other in previous incarnations. The familiarity, instant recognition, or comfort/discomfort you feel is rooted in shared soul history.',
+  past_life: 'These contacts are traditionally read as familiarity: the connection may feel known quickly. That is symbolic imagery, not evidence of any shared history.',
   soul_growth: 'These contacts indicate this person helps push you toward your soul\'s evolutionary purpose. They support your North Node direction and help you become who you\'re meant to be.',
-  karmic_debt: 'These contacts suggest unfinished business or lessons from past lives. Saturn contacts often indicate where you must earn trust, prove maturity, or work through restrictions.',
-  transformation: 'These contacts indicate deep, irreversible change. Pluto contacts transform you at the core—for better or worse—and often involve power dynamics that must be consciously navigated.',
-  healing: 'These contacts activate old wounds for potential healing. Chiron contacts bring the healing-through-understanding dynamic—you may hurt each other or help each other heal, depending on consciousness.',
-  fated: 'These contacts indicate destined meetings. Vertex contacts suggest this person was "meant" to appear in your life at this specific time for a specific purpose.'
+  karmic_debt: 'Saturn contacts are read as the area where trust, patience and follow-through may be built over time. Nothing here implies a debt owed by either person.',
+  transformation: 'Pluto contacts are read as depth and intensity: this part of the connection may not stay light. At its best it brings real investment; under strain the stakes can feel higher than the situation warrants.',
+  healing: 'Chiron contacts point to a tender area where each may understand the other unusually well, and where kindness lands more than advice. No claim is made about anyone\'s history.',
+  fated: 'These contacts are traditionally read as notable timing. Treat that as symbolic imagery: nothing in a chart shows that a meeting was destined.'
 };
 
 // Explain what each indicator type means in plain English
@@ -244,29 +244,30 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
           <div className="flex-1">
             <div className="flex items-center flex-wrap gap-2 mb-2">
               <h3 className={`text-xl font-semibold ${config.color}`}>
-                {config.label} Connection
+                {config.label}
               </h3>
-              <Badge variant="secondary" className="font-mono">
-                {analysis.pastLifeProbability}% Past Life Probability
+              <Badge variant="secondary">
+                {symbolicEmphasisLabel(analysis.pastLifeProbability)}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               {config.description}
             </p>
+            <p className="text-[11px] text-muted-foreground mt-2">{SYMBOLIC_LENS_NOTE}</p>
           </div>
         </div>
         
         {/* Karmic Score */}
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-background/60 border">
-            <div className="text-xs text-muted-foreground mb-1">Karmic Intensity</div>
+            <div className="text-xs text-muted-foreground mb-1">Symbolic marker weight (internal score)</div>
             <div className="flex items-center gap-2">
               <Progress value={Math.min(100, analysis.totalKarmicScore)} className="flex-1 h-2" />
               <span className="font-mono text-sm">{analysis.totalKarmicScore}</span>
             </div>
           </div>
           <div className="p-3 rounded-lg bg-background/60 border">
-            <div className="text-xs text-muted-foreground mb-1">Connection Depth</div>
+            <div className="text-xs text-muted-foreground mb-1">Symbolic emphasis (interpretive, not a probability)</div>
             <div className="flex items-center gap-2">
               <Progress value={analysis.pastLifeProbability} className="flex-1 h-2" />
               <span className="font-mono text-sm">{analysis.pastLifeProbability}%</span>
@@ -379,7 +380,7 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
               <div className="p-3 rounded-lg bg-muted/30 border">
                 <div className="text-xs text-muted-foreground mb-2">
                   <HelpCircle size={12} className="inline mr-1" />
-                  <span className="font-medium text-foreground">Past Life Probability Formula:</span>
+                  <span className="font-medium text-foreground">Symbolic emphasis formula (internal weighting, not a probability):</span>
                 </div>
                 <div className="font-mono text-sm flex items-center gap-2 flex-wrap">
                   <span>({pastLifePoints} past life pts</span>
@@ -391,10 +392,7 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
                   <span className="font-bold text-primary">{analysis.pastLifeProbability}%</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  80 points is the baseline for "certain" past life connection. 
-                  {analysis.pastLifeProbability < 30 && ' Your low score suggests a newer soul connection.'}
-                  {analysis.pastLifeProbability >= 30 && analysis.pastLifeProbability < 60 && ' Your moderate score suggests some past life familiarity.'}
-                  {analysis.pastLifeProbability >= 60 && ' Your high score strongly suggests past life history together.'}
+                  80 points is simply where this app caps the scale. The result is {symbolicEmphasisLabel(analysis.pastLifeProbability)} on the symbolic markers listed above: how many of them appear between these two charts and how close they are. It is not a probability, a measurement, or evidence about anyone's history.
                 </p>
               </div>
             </div>
@@ -413,7 +411,7 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
                 <div className="font-medium mb-2">Your Indicator Counts:</div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                   <div>Past Life: <span className="font-mono">{themeCounts.past_life}</span></div>
-                  <div>Soul Growth: <span className="font-mono">{themeCounts.soul_growth}</span></div>
+                  <div>Growth direction: <span className="font-mono">{themeCounts.soul_growth}</span></div>
                   <div>Transformation: <span className="font-mono">{themeCounts.transformation}</span></div>
                   <div>Healing: <span className="font-mono">{themeCounts.healing}</span></div>
                   <div>Fated: <span className="font-mono">{themeCounts.fated}</span></div>

@@ -18,6 +18,8 @@ import {
   kindFromFocus,
   familyRelationFrom,
   legacyKarmicFocus,
+  SYMBOLIC_LENS_HEADING,
+  SYMBOLIC_LENS_NOTE,
 } from '@/lib/relationship';
 import { PairReadingView } from './relationship/PairReadingView';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
@@ -906,7 +908,13 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           <ChevronDown size={18} />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-4 space-y-8">
-                          {/* Karmic Analysis Card */}
+                          {/* Optional symbolic lens, clearly labelled */}
+                          {karmicAnalysis && (
+                            <div className="space-y-2">
+                              <h3 className="text-lg font-serif">{SYMBOLIC_LENS_HEADING}</h3>
+                              <p className="text-xs text-muted-foreground">{SYMBOLIC_LENS_NOTE}</p>
+                            </div>
+                          )}
                           {karmicAnalysis && (
                             <KarmicAnalysisCard 
                               analysis={karmicAnalysis} 
@@ -965,8 +973,9 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                         <section>
                           <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
                             <Moon className="text-purple-500" size={20} />
-                            {relationshipFocus !== 'all' ? `${relationshipFocus.charAt(0).toUpperCase() + relationshipFocus.slice(1)}-Relevant ` : ''}Soul Connections
+                            {relationshipFocus !== 'all' ? `${relationshipFocus.charAt(0).toUpperCase() + relationshipFocus.slice(1)}-Relevant ` : ''}{SYMBOLIC_LENS_HEADING}
                           </h3>
+                          <p className="text-xs text-muted-foreground mb-3">{SYMBOLIC_LENS_NOTE}</p>
                           <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 mb-4">
                             <p className="text-sm">{focusedSoulContract}</p>
                             {report.pastLifeConnection && (

@@ -25,6 +25,9 @@ import {
   sanitizeRelationshipText,
   type CrossAspect,
   type RelationshipContext,
+  SYMBOLIC_LENS_NOTE,
+  symbolicEmphasisLine,
+  describeDirectionalFromParts,
 } from '@/lib/relationship';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
@@ -57,34 +60,34 @@ const ASPECT_SYMBOLS: Record<string, string> = {
 // Karmic type base info (descriptions only - indicators are generated dynamically)
 const KARMIC_TYPE_BASE: Record<string, { label: string; duration: string; description: string }> = {
   soul_family: {
-    label: 'Soul Family Connection',
-    duration: 'Potentially Lifetime',
-    description: 'Soul Family connections are supportive relationships without a specific karmic "completion" point. They grow and evolve naturally based on mutual choice, not karmic obligation.'
+    label: 'Ease and support theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as a comfortable, supportive pairing where being around each other takes little effort. Ease still has to be maintained by how both behave.'
   },
   twin_flame: {
-    label: 'Twin Flame Connection',
-    duration: 'Cyclical - May reunite multiple times',
-    description: 'Twin Flame connections are intensely transformative. They often involve periods of separation and reunion as both souls integrate lessons.'
+    label: 'Mirror and intensity theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as a mirror: each may see something of themselves in the other, and the connection tends not to feel casual. Produced by close Pluto and Sun/Moon contacts, usually with a nodal contact. Interpretive imagery, not a category either person belongs to.'
   },
   catalyst: {
-    label: 'Catalyst Connection',
-    duration: 'Usually Short to Medium Term',
-    description: 'Catalyst connections arrive to shake things up and accelerate growth. They are intense but typically not meant to last forever.'
+    label: 'Catalyst theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as a connection that speeds things up and shifts how each person sees things. Produced by close Uranus and Pluto contacts to personal planets.'
   },
   completion: {
-    label: 'Karmic Completion',
-    duration: 'Until karma is resolved',
-    description: 'Completion karma means unfinished business from past lives. This relationship is here to resolve old patterns and debts.'
+    label: 'Unfinished-business theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as picking up something that already feels in progress. In practice it often shows up as familiar patterns both keep choosing, which either can change. Produced mainly by South Node and Saturn contacts.'
   },
   new_contract: {
-    label: 'New Soul Contract',
-    duration: 'Variable - Based on soul agreement',
-    description: 'A New Contract means you\'re creating something fresh together, not repeating old patterns. This is forward-focused soul work.'
+    label: 'Fresh-start theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as something built from scratch rather than repeated. Assigned when node, Saturn and Pluto contacts between the charts are sparse or wide.'
   },
   karmic_lesson: {
-    label: 'Karmic Lesson Connection',
-    duration: '1-5 years typically',
-    description: 'This connection is teaching you specific karmic lessons. Once integrated, the relationship may naturally transform or complete.'
+    label: 'Learning and maturity theme (symbolic)',
+    duration: 'Chart symbolism says nothing about how long a relationship lasts',
+    description: 'Symbolically this reads as a pairing where each may develop patience, skill or perspective over time. Produced mainly by Saturn contacts to personal planets. Growth language, not a debt to be paid.'
   }
 };
 
@@ -876,7 +879,8 @@ const AspectCard = ({
   personAName, 
   personBName,
   orb,
-  focus = 'romance'
+  focus = 'romance',
+  context
 }: { 
   planet1: string; 
   planet2: string; 
@@ -885,14 +889,26 @@ const AspectCard = ({
   personBName: string;
   orb?: number;
   focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
+  context?: RelationshipContext;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
-  
-  // Get directional interpretation if available
+
+  // Canonical "who feels what" breakdown. Always available, every aspect.
+  const directional = useMemo(() => {
+    if (!context) return null;
+    return describeDirectionalFromParts(
+      { fromOwner: personAName, fromBody: planet1, toOwner: personBName, toBody: planet2, aspect, orb },
+      context
+    );
+  }, [context, personAName, planet1, personBName, planet2, aspect, orb]);
+
+  // Curated long-form directional interpretation, when one exists for this pair.
+  // Suppressed for minors: the curated copy is written for adult relationships.
   const directionalInterp = useMemo(() => {
+    if (context?.involvesMinor) return null;
     return getDirectionalInterpretation(planet1, aspect, planet2, focus);
-  }, [planet1, aspect, planet2, focus]);
+  }, [planet1, aspect, planet2, focus, context?.involvesMinor]);
   
   const p1Symbol = PLANET_SYMBOLS[planet1] || planet1;
   const p2Symbol = PLANET_SYMBOLS[planet2] || planet2;
@@ -914,9 +930,9 @@ const AspectCard = ({
                   {orb !== undefined && (
                     <Badge variant="outline" className="text-xs">{orb.toFixed(1)}° orb</Badge>
                   )}
-                  {directionalInterp && (
+                  {(directional || directionalInterp) && (
                     <Badge variant="secondary" className="text-xs">
-                      ↔️ Who feels what
+                      Who feels what
                     </Badge>
                   )}
                 </div>
@@ -928,7 +944,38 @@ const AspectCard = ({
         
         <CollapsibleContent>
           <div className="p-4 space-y-4">
-            {/* Directional Aspect Analysis - Who Feels What */}
+            {/* Canonical directional breakdown: exact aspect, both roles, both sides */}
+            {directional && (
+              <div className="p-3 rounded-lg border bg-secondary/20 space-y-2">
+                <p className="text-sm font-medium">
+                  {directional.aspectLine} · {directional.orbLine}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-medium">{directional.a.roleLine}</p>
+                    <p className="text-xs text-muted-foreground">{directional.a.feels}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium">{directional.b.roleLine}</p>
+                    <p className="text-xs text-muted-foreground">{directional.b.feels}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground/80">How it can work well: </span>
+                  {directional.worksWell}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground/80">Possible friction / growth edge: </span>
+                  {directional.growthEdge}
+                </p>
+                <p className="text-xs">
+                  <span className="font-medium">In one line: </span>
+                  {directional.summary}
+                </p>
+              </div>
+            )}
+
+            {/* Curated long-form directional analysis (adults only) */}
             {directionalInterp && (
               <DirectionalAspectCard
                 interpretation={directionalInterp}
@@ -1163,6 +1210,7 @@ export const FiveEssentialQuestions = ({
                 personBName={asp.owner2}
                 orb={asp.orb}
                 focus={focus}
+                context={context}
               />
             ))
           ) : (
@@ -1189,9 +1237,14 @@ export const FiveEssentialQuestions = ({
                 <div>
                   <h3 className="text-xl font-serif">{karmicTypeBase.label}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Past Life Probability: {karmicAnalysis.pastLifeProbability}% • 
-                    Soul Growth Focus: {100 - karmicAnalysis.pastLifeProbability}%
+                    {symbolicEmphasisLine(
+                      karmicAnalysis.pastLifeProbability,
+                      karmicAnalysis.indicators.slice(0, 3).map(
+                        (ind) => `${ind.planet1} ${ind.aspect} ${ind.planet2}`
+                      )
+                    )}
                   </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{SYMBOLIC_LENS_NOTE}</p>
                 </div>
               </div>
               
@@ -1230,7 +1283,7 @@ export const FiveEssentialQuestions = ({
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {karmicAnalysis.indicators.filter(i => i.theme === 'soul_growth').length}
                 </div>
-                <div className="text-xs text-muted-foreground">Soul Growth</div>
+                <div className="text-xs text-muted-foreground">Growth-flavoured contacts</div>
               </div>
               <div className="p-3 rounded-lg bg-card border text-center">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">

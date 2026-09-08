@@ -35,6 +35,7 @@ import { ContextScore, scoreRelationship } from './contextScoring';
 import { RelationshipContext, RelationshipSectionKey } from './relationshipContext';
 import { sanitizeRelationshipDeep } from './relationshipLanguage';
 import { AgeStage } from '@/lib/readingGuide/ageContext';
+import { describeDirectionalContact, directionalEvidenceLines, type DirectionalContact } from './directionalRoles';
 
 export interface ReadingItem {
   title: string;
@@ -47,6 +48,8 @@ export interface ReadingItem {
   /** Exact chart evidence. */
   evidence: string[];
   strength: 'strong' | 'moderate' | 'single-contact';
+  /** Explicit "who feels what" breakdown for the contact behind this item. */
+  directional?: DirectionalContact;
 }
 
 export interface PairSection {
@@ -247,8 +250,9 @@ function groupedItems(aspects: CrossAspect[], ctx: RelationshipContext, limit: n
       statement: copy.constructive,
       growthEdge: copy.growthEdge,
       say: copy.say,
-      evidence: list.slice(0, 4).map(describeAspect),
+      evidence: [...list.slice(0, 4).map(describeAspect), ...directionalEvidenceLines(describeDirectionalContact(lead, ctx))],
       strength: strengthOf(list),
+      directional: describeDirectionalContact(lead, ctx),
     });
     if (items.length >= limit) break;
   }
@@ -291,15 +295,20 @@ function overlayItems(
   return items;
 }
 
-function aspectItems(top: CrossAspect[]): ReadingItem[] {
-  return top.map((a) => ({
+function aspectItems(top: CrossAspect[], ctx: RelationshipContext): ReadingItem[] {
+  return top.map((a) => {
+    const d = describeDirectionalContact(a, ctx);
+    return {
     title: describeAspect(a),
-    statement: `Separation ${a.separation.toFixed(2)}°, exact aspect angle ${a.aspectAngle}°, orb ${a.orb.toFixed(1)}° within the ${a.maxOrb}° allowance for these bodies.`,
+    statement: `Separation ${a.separation.toFixed(2)}°, exact aspect angle ${a.aspectAngle}°, orb ${a.orb.toFixed(1)}° within the ${a.maxOrb}° allowance for these bodies. ${d.summary}`,
+    directional: d,
     evidence: [
       `Direction: ${a.fromOwner}'s ${a.fromBody} → ${a.toOwner}'s ${a.toBody} (the reverse contact, if present, is listed separately).`,
+      ...directionalEvidenceLines(d),
     ],
-    strength: a.weight >= 0.5 ? 'strong' : a.weight >= 0.3 ? 'moderate' : 'single-contact',
-  }));
+    strength: (a.weight >= 0.5 ? 'strong' : a.weight >= 0.3 ? 'moderate' : 'single-contact') as ReadingItem['strength'],
+    };
+  });
 }
 
 const SECTION_TITLES: Partial<Record<RelationshipSectionKey, string>> = {
@@ -379,7 +388,7 @@ export function buildPairReading(
     'No close Mars, Saturn or outer-planet contacts, so flare-ups are likely to be short and situational.'
   );
   add('houseOverlays', overlayItems(overlays, clusters, ctx), 'Each line states the direction explicitly: whose planet lands in whose house.');
-  add('strongestAspects', aspectItems(topContacts), 'Same numbers as everywhere else on this page and in the export.');
+  add('strongestAspects', aspectItems(topContacts, ctx), 'Same numbers as everywhere else on this page and in the export.');
 
   if (ctx.allowRomantic) {
     add(

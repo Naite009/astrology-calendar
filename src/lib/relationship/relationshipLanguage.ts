@@ -43,6 +43,11 @@ const UNIVERSAL_RULES: Rule[] = [
   { id: 'worked-together-before', pattern: /\byou (?:have )?worked together before\b/gi, replace: 'you may fall into working roles quickly' },
   { id: 'past-life-friend', pattern: /\bpast[- ]life (?:friend|lover|partner|bond|connection|tie|karma)\b/gi, replace: 'symbolic nodal theme' },
   { id: 'past-life-probability', pattern: /past[- ]life probability:?\s*\d+\s*%/gi, replace: 'symbolic nodal emphasis (not a probability)' },
+  { id: 'past-life-probability-bare', pattern: /\bpast[- ]life probability\b/gi, replace: 'symbolic emphasis (not a probability)' },
+  { id: 'soul-growth-focus-pct', pattern: /\bsoul growth focus:?\s*\d+\s*%/gi, replace: 'share of this app\u2019s symbolic weighting (not a probability)' },
+  { id: 'soul-growth-focus', pattern: /\bsoul growth focus\b/gi, replace: 'growth-direction emphasis (symbolic)' },
+  { id: 'twin-flame-connection', pattern: /\btwin flame connection\b/gi, replace: 'mirror-and-intensity theme (a symbolic label)' },
+  { id: 'obsessed', pattern: /\bobsessed\b/gi, replace: 'very focused' },
   { id: 'past-life-generic', pattern: /\bpast[- ]life\b/gi, replace: 'symbolic (traditional) ' },
   { id: 'twin-flame', pattern: /\btwin flames?\b/gi, replace: 'intensely mirrored contact (a symbolic label)' },
   { id: 'karmic-debt', pattern: /\bkarmic debts?\b/gi, replace: 'a recurring theme' },
@@ -254,6 +259,11 @@ export const FORBIDDEN_RELATIONSHIP_PHRASES: RegExp[] = [
   /millionaire combination/i,
   /professional[- ]grade/i,
   /guaranteed financial success/i,
+  /soul growth focus/i,
+  /\bobsessive/i,
+  /\bobsessed\b/i,
+  /dominance and surrender/i,
+  /keep (?:their |your )?hands off/i,
 ];
 
 /** Additionally forbidden when the context is not romantic (family, friendship, business, neutral). */
@@ -297,7 +307,8 @@ export const FORBIDDEN_MINOR_PHRASES: RegExp[] = [
   /joint finances/i,
   /shared finances/i,
   /\bsoulmate\b/i,
-  /keep (?:their|your) hands off/i,
+  /keep (?:their |your )?hands off/i,
+  /\bobsess/i,
 ];
 
 export function findForbiddenRelationshipPhrases(
