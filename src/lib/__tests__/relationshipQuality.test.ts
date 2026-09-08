@@ -289,7 +289,7 @@ describe('House overlays — real cusps, labelled fallback', () => {
     expect(overlays.length).toBeGreaterThan(0);
     for (const o of overlays) {
       expect(o.method).toBe('cusps');
-      expect(o.isApproximate).toBe(false);
+      expect(o.approximationNote).toBeUndefined();
       expect(o.house).toBeGreaterThanOrEqual(1);
       expect(o.house).toBeLessThanOrEqual(12);
     }
@@ -300,8 +300,8 @@ describe('House overlays — real cusps, labelled fallback', () => {
     const overlays = calculateHouseOverlaysAccurate(ava, noCusps, { stage: 'child' });
     expect(overlays.length).toBeGreaterThan(0);
     for (const o of overlays) {
-      expect(o.isApproximate).toBe(true);
       expect(o.method).toContain('whole-sign');
+      expect(o.approximationNote).toBeTruthy();
     }
   });
 
@@ -373,7 +373,7 @@ describe('Pair reading — Ava + Max sibling regression', () => {
   });
 
   it('passes the shared forbidden-phrase scan', () => {
-    expect(findForbiddenRelationshipPhrases(reading, reading.context)).toEqual([]);
+    expect(findForbiddenRelationshipPhrases(collectStrings(reading).join('\n'), reading.context)).toEqual([]);
   });
 
   it('grounds every reading item in named chart evidence', () => {
@@ -400,7 +400,7 @@ describe('Pair reading — second pair (adults, non-family) stays clean too', ()
     const ctx = buildRelationshipContext({ kind: 'neutral', chart1: dana, chart2: sam, now: NOW });
     const reading = buildPairReading(dana, sam, ctx);
     expect(reading.score.overall).toBeNull();
-    expect(findForbiddenRelationshipPhrases(reading, ctx)).toEqual([]);
+    expect(findForbiddenRelationshipPhrases(collectStrings(reading).join('\n'), ctx)).toEqual([]);
     const text = collectStrings(reading).join('\n');
     expect(text).not.toMatch(/\b(romantic chemistry|sexual|marriage)\b/i);
   });
@@ -409,7 +409,7 @@ describe('Pair reading — second pair (adults, non-family) stays clean too', ()
     const ctx = buildRelationshipContext({ kind: 'romantic', chart1: dana, chart2: sam, now: NOW });
     const reading = buildPairReading(dana, sam, ctx);
     expect(reading.sections.map((s) => s.key)).toContain('romanticAttraction');
-    expect(findForbiddenRelationshipPhrases(reading, ctx)).toEqual([]);
+    expect(findForbiddenRelationshipPhrases(collectStrings(reading).join('\n'), ctx)).toEqual([]);
   });
 });
 
