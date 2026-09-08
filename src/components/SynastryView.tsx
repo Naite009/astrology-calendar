@@ -37,7 +37,6 @@ import { RelationshipTimingCalculator } from './RelationshipTimingCalculator';
 import { CompatibilityRadarChart } from './CompatibilityRadarChart';
 import { ScoringBreakdownView } from './ScoringBreakdownView';
 import { ShadowIndicatorsCard } from './ShadowIndicatorsCard';
-import { SafetyAssessmentCard, SafetyAssessment } from './SafetyAssessmentCard';
 import { KarmicAnalysisCard } from './KarmicAnalysisCard';
 import { RelationshipPotentialCard } from './RelationshipPotentialCard';
 import { PurposeAlignmentCard } from './PurposeAlignmentCard';
@@ -808,27 +807,20 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
             )}
           </div>
 
-          {/* OVERALL SCORE BANNER - Shows first for all pair analyzes */}
-          {!isGroupAnalysis && trueOverallScore && chart1 && chart2 && (
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/30 border">
-              <div className="text-5xl font-bold text-primary mb-2">
-                {trueOverallScore.overall}%
-              </div>
-              <p className="text-lg font-medium">Overall Compatibility</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                {chart1.name} & {chart2.name}
-              </p>
-              <div className="flex flex-wrap justify-center gap-3 mt-4">
-                {trueOverallScore.breakdown.map(({ focus, score }) => (
-                  <div key={focus} className="text-center">
-                    <div className="text-sm font-semibold text-primary">{score}%</div>
-                    <div className="text-xs text-muted-foreground capitalize">{focus}</div>
-                  </div>
-                ))}
-              </div>
+          {/* Family readings must know the exact relation before interpreting anything */}
+          {!isGroupAnalysis && awaitingFamilyRelation && (
+            <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 text-sm">
+              Choose the exact family relation above (siblings, parent &amp; child, and so on) before the
+              reading is generated. A family chart comparison reads very differently depending on the
+              relation, so nothing is interpreted until it is set.
             </div>
           )}
-          
+
+          {/* CANONICAL CONTEXT-AWARE READING */}
+          {!isGroupAnalysis && pairReading && (
+            <PairReadingView reading={pairReading} />
+          )}
+
           {/* GROUP ANALYSIS VIEW */}
           {isGroupAnalysis && groupReport && (
             <GroupDynamicsDisplay report={groupReport} focus={relationshipFocus} />
@@ -909,15 +901,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           <ChevronDown size={18} />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-4 space-y-8">
-                          {/* Safety Assessment */}
-                          {safetyAssessment && (
-                            <SafetyAssessmentCard 
-                              assessment={safetyAssessment} 
-                              chart1Name={chart1.name} 
-                              chart2Name={chart2.name} 
-                            />
-                          )}
-                          
                           {/* Karmic Analysis Card */}
                           {karmicAnalysis && (
                             <KarmicAnalysisCard 
@@ -944,41 +927,6 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                       {relationshipFocus === 'all' && (
                         <section>
                           <CompatibilityRadarChart chart1={chart1} chart2={chart2} />
-                        </section>
-                      )}
-                      
-                      {/* Relationship Types - use balanced scores from trueOverallScore */}
-                      {relationshipFocus === 'all' && trueOverallScore && (
-                        <section>
-                          <h3 className="text-xl font-serif mb-4 flex items-center gap-2">
-                            <Sparkles className="text-primary" size={20} />
-                            Connection Types Overview
-                          </h3>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            {trueOverallScore.breakdown.map(({ focus, score }) => {
-                              const focusConfig = {
-                                romantic: { label: 'Romantic Partnership', icon: '💕', description: 'Intimate, romantic, and potentially long-term love connection' },
-                                friendship: { label: 'Friendship', icon: '🤝', description: 'Platonic connection, companionship, mutual enjoyment' },
-                                business: { label: 'Business Partnership', icon: '💼', description: 'Professional collaboration, shared ventures, career synergy' },
-                                creative: { label: 'Creative Partnership', icon: '🎨', description: 'Artistic collaboration, inspiration, imaginative projects' },
-                                family: { label: 'Family Bond', icon: '🏠', description: 'Family dynamics, nurturing connections, domestic harmony' }
-                              };
-                              const config = focusConfig[focus as keyof typeof focusConfig];
-                              return (
-                                <RelationshipTypeCard 
-                                  key={focus} 
-                                  type={{
-                                    type: focus as any,
-                                    score,
-                                    label: config.label,
-                                    description: config.description,
-                                    icon: config.icon,
-                                    indicators: []
-                                  }} 
-                                />
-                              );
-                            })}
-                          </div>
                         </section>
                       )}
                       
