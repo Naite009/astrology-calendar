@@ -34,6 +34,35 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
       {item.growthEdge && (
         <p className="text-sm text-muted-foreground mt-1">{item.growthEdge}</p>
       )}
+      {item.directional && (
+        <div className="mt-2 rounded-md border border-border/70 bg-secondary/20 p-2 space-y-1">
+          <p className="text-xs font-medium">
+            {item.directional.aspectLine} · {item.directional.orbLine}
+          </p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            <div>
+              <p className="text-[11px] font-medium">{item.directional.a.roleLine}</p>
+              <p className="text-[11px] text-muted-foreground">{item.directional.a.feels}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium">{item.directional.b.roleLine}</p>
+              <p className="text-[11px] text-muted-foreground">{item.directional.b.feels}</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            <span className="font-medium text-foreground/80">How it can work well: </span>
+            {item.directional.worksWell}
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            <span className="font-medium text-foreground/80">Possible friction / growth edge: </span>
+            {item.directional.growthEdge}
+          </p>
+          <p className="text-[11px] text-foreground/90">
+            <span className="font-medium">In one line: </span>
+            {item.directional.summary}
+          </p>
+        </div>
+      )}
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="mt-2 text-xs text-primary flex items-center gap-1">
           {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
