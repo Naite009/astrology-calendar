@@ -1210,6 +1210,7 @@ export const FiveEssentialQuestions = ({
                 personBName={asp.owner2}
                 orb={asp.orb}
                 focus={focus}
+                context={context}
               />
             ))
           ) : (
