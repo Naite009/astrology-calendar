@@ -15,6 +15,8 @@
  * conjunction to South Node. This prevents artificial score inflation.
  */
 
+import { sanitizeRelationshipDeep } from './relationship/relationshipLanguage';
+import type { RelationshipContext } from './relationship/relationshipContext';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 
 export type RelationshipFocus = 'all' | 'romantic' | 'friendship' | 'business' | 'creative' | 'family';

@@ -85,6 +85,21 @@ const UNIVERSAL_RULES: Rule[] = [
   { id: 'ventures-succeed', pattern: /\bambitious ventures succeed\b/gi, replace: 'ambitious plans get real energy behind them' },
   { id: 'financial-success', pattern: /\b(?:guaranteed |assured )?financial success\b/gi, replace: 'shared enthusiasm for resources' },
   { id: 'wealth-promise', pattern: /\bbrings wealth\b/gi, replace: 'brings enthusiasm' },
+  { id: 'fated-caps', pattern: /\bFATED\b/g, replace: 'STRONGLY EMPHASISED' },
+  { id: 'fated-word', pattern: /\bfated\b/gi, replace: 'strongly emphasised' },
+  { id: 'destined', pattern: /\bdestined\b/gi, replace: 'strongly emphasised' },
+  { id: 'destiny', pattern: /\bdestin(?:y|ies)\b/gi, replace: 'direction' },
+  { id: 'karma', pattern: /\bkarma\b/gi, replace: 'recurring theme' },
+  { id: 'karmically', pattern: /\bkarmically\b/gi, replace: 'symbolically' },
+  { id: 'soul-contract-noun', pattern: /\bsoul contracts?\b/gi, replace: 'symbolic theme' },
+  { id: 'meant-to-happen', pattern: /\bwas meant to happen\b/gi, replace: 'is worth noticing' },
+  { id: 'meant-to-experience', pattern: /\bis meant to experience\b/gi, replace: 'may be developing' },
+  { id: 'prosperity-caps', pattern: /\bPROSPERITY TOGETHER\b/g, replace: 'SHARED SENSE OF WHAT MATTERS' },
+  { id: 'material-success', pattern: /\bindicates material success\b/gi, replace: 'is a symbolic flavour only' },
+  { id: 'financial-gain', pattern: /\bpotential for financial gain\b/gi, replace: 'shared enthusiasm about resources' },
+  { id: 'exit-plan', pattern: /\bExit plan[^.]*\.?/gi, replace: '' },
+  { id: 'hotline', pattern: /National Domestic Violence Hotline[^.]*\.?/gi, replace: '' },
+  { id: 'shadow-work', pattern: /\bactive (?:therapy|healing)[^.]*\.?/gi, replace: 'open, deliberate conversation about what each person needs.' },
 ];
 
 /** Vocabulary swapped out when the context does not allow romantic framing. */
