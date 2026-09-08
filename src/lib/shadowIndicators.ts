@@ -4,16 +4,16 @@
  * This module analyzes potentially challenging dynamics that require awareness:
  * - Power-balance patterns (described as dynamics to stay aware of, never as
  *   predictions about behaviour, danger or either person's character)
- * - Manipulation/Gaslighting indicators
- * - Codependency patterns
- * - Boundary issues
- * - Addiction enabling dynamics
+ * - Patterns where influence can run one way more than the other
+ * - Patterns where closeness can crowd out independence
+ * - Boundary and pacing patterns
  * 
  * IMPORTANT DISCLAIMER: These are energetic patterns, not predictions.
  * Awareness + consciousness can transform any pattern.
  */
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import { sanitizeRelationshipDeep } from '@/lib/relationship';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
