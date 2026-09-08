@@ -148,6 +148,40 @@ const NON_BUSINESS_RULES: Rule[] = [
   { id: 'nb-profit', pattern: /\bprofits?\b/gi, replace: 'results' },
 ];
 
+/**
+ * Applied when a romantic context involves a minor. Romance itself stays — liking,
+ * closeness, trust, support — but every adult/sexual/marriage/cohabitation/
+ * family-building/financial framing is swapped for age-appropriate wording.
+ */
+const MINOR_ROMANTIC_RULES: Rule[] = [
+  { id: 'mr-sexual-chem', pattern: /\b(?:intense |strong |explosive )?sexual chemistry\b/gi, replace: 'strong spark and mutual liking' },
+  { id: 'mr-sexual', pattern: /\bsexual(?:ly)?\b/gi, replace: 'physical-energy' },
+  { id: 'mr-erotic', pattern: /\berotic\w*\b/gi, replace: 'charged' },
+  { id: 'mr-eros', pattern: /\bEros\b/g, replace: 'warmth (advanced point, not used here)' },
+  { id: 'mr-bedroom', pattern: /\bbedroom\b/gi, replace: 'time alone together' },
+  { id: 'mr-physical-intimacy', pattern: /\bphysical intimacy\b/gi, replace: 'closeness' },
+  { id: 'mr-intimacy', pattern: /\bintimacy\b/gi, replace: 'closeness' },
+  { id: 'mr-hands', pattern: /\b(?:can\u2019t|cannot|can't) keep (?:their |your )?hands off (?:each other|one another)\b/gi, replace: 'want to be around each other a lot' },
+  { id: 'mr-lovers', pattern: /\blovers?\b/gi, replace: 'a couple who are dating' },
+  { id: 'mr-seduc', pattern: /\bseduc\w*\b/gi, replace: 'charm' },
+  { id: 'mr-desire', pattern: /\b(?:sexual |erotic )?desire\b/gi, replace: 'interest in each other' },
+  { id: 'mr-lust', pattern: /\blust\w*\b/gi, replace: 'strong attraction' },
+  { id: 'mr-dominance', pattern: /\bdominance and surrender\b/gi, replace: 'who leads and who goes along' },
+  { id: 'mr-marriage', pattern: /\bmarriage\b/gi, replace: 'a serious long-term bond later on' },
+  { id: 'mr-married', pattern: /\bmarried\b/gi, replace: 'seriously committed later on' },
+  { id: 'mr-marry', pattern: /\bmarry(?:ing)?\b/gi, replace: 'commit long-term later on' },
+  { id: 'mr-spouse', pattern: /\bspouse|\bhusband\b|\bwife\b/gi, replace: 'partner' },
+  { id: 'mr-wedding', pattern: /\bwedding\b/gi, replace: 'long-term commitment' },
+  { id: 'mr-cohab', pattern: /\b(?:living together|cohabit\w*)\b/gi, replace: 'spending a lot of everyday time together' },
+  { id: 'mr-moving-in', pattern: /\bmoving in together\b/gi, replace: 'being part of each other\u2019s daily routine' },
+  { id: 'mr-children', pattern: /\b(?:having|raising) (?:children|kids)\b/gi, replace: 'shared plans far in the future' },
+  { id: 'mr-family-building', pattern: /\bfamily[- ]building\b/gi, replace: 'long-term plans far in the future' },
+  { id: 'mr-shared-finances', pattern: /\b(?:shared|joint) (?:finances|bank account|assets|income)\b/gi, replace: 'what they each value' },
+  { id: 'mr-financial-partnership', pattern: /\bfinancial partnership\b/gi, replace: 'shared sense of what matters' },
+  { id: 'mr-mortgage', pattern: /\bmortgage\b/gi, replace: 'long-term plan' },
+  { id: 'mr-soulmate-lover', pattern: /\bsoul ?mate\b/gi, replace: 'a person who feels very familiar' },
+];
+
 /** Teen / child vocabulary softening for adult-life topics. */
 const MINOR_RULES: Rule[] = [
   { id: 'm-career', pattern: /\bcareer(?:s)?\b/gi, replace: 'school and future interests' },
@@ -173,6 +207,7 @@ export function sanitizeRelationshipText(text: string, ctx?: RelationshipContext
     if (!ctx.allowRomantic) out = applyRules(out, NON_ROMANTIC_RULES);
     if (!ctx.allowBusiness) out = applyRules(out, NON_BUSINESS_RULES);
     if (ctx.involvesMinor || ctx.stage !== 'adult') out = applyRules(out, MINOR_RULES);
+    if (ctx.involvesMinor && ctx.allowRomantic) out = applyRules(out, MINOR_ROMANTIC_RULES);
   }
   return out.replace(/\s{2,}/g, ' ').trim();
 }
@@ -233,6 +268,36 @@ export const FORBIDDEN_NON_ROMANTIC_PHRASES: RegExp[] = [
   /\bpassionate\b/i,
   /\bbedroom\b/i,
   /power couple/i,
+];
+
+/**
+ * Additionally forbidden whenever a minor is involved, INCLUDING teen romance.
+ * Teen dating copy may talk about liking, closeness and trust; it may never use
+ * sexual, marital, cohabitation, family-building or financial-partnership framing.
+ */
+export const FORBIDDEN_MINOR_PHRASES: RegExp[] = [
+  /\bsexual\b/i,
+  /sexual chemistry/i,
+  /\berotic/i,
+  /\bEros\b/,
+  /\blust\b/i,
+  /\bseduc/i,
+  /\bbedroom\b/i,
+  /physical intimacy/i,
+  /\bmarriage\b/i,
+  /\bmarried\b/i,
+  /\bspouse\b/i,
+  /\bwedding\b/i,
+  /living together/i,
+  /\bcohabit/i,
+  /moving in together/i,
+  /dominance and surrender/i,
+  /family[- ]building/i,
+  /financial partnership/i,
+  /joint finances/i,
+  /shared finances/i,
+  /\bsoulmate\b/i,
+  /keep (?:their|your) hands off/i,
 ];
 
 export function findForbiddenRelationshipPhrases(

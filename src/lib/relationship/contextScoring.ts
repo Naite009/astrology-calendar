@@ -272,7 +272,7 @@ export function scoreRelationship(aspects: CrossAspect[], ctx: RelationshipConte
 
   return {
     profile: ctx.scoringProfile,
-    label: PROFILE_LABEL[ctx.scoringProfile],
+    label: ctx.isTeenRomance ? 'Teen dating connection index' : PROFILE_LABEL[ctx.scoringProfile],
     overall,
     dimensions,
     disclaimer: DISCLAIMER,
