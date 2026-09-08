@@ -177,6 +177,14 @@ const PROFILE_DIMENSIONS: Record<RelationshipKind, DimensionKey[]> = {
   ],
 };
 
+const TEEN_ROMANTIC_DIMENSIONS: DimensionKey[] = [
+  'warmthAndAttraction',
+  'emotionalFit',
+  'communication',
+  'mutualSupport',
+  'frictionRecovery',
+];
+
 const PROFILE_LABEL: Record<RelationshipKind, string> = {
   family: 'Family connection index',
   friendship: 'Friendship index',
@@ -244,7 +252,12 @@ function scoreDimension(key: DimensionKey, aspects: CrossAspect[]): ScoredDimens
  */
 export function scoreRelationship(aspects: CrossAspect[], ctx: RelationshipContext): ContextScore {
   const core = coreAspects(aspects);
-  const keys = PROFILE_DIMENSIONS[ctx.scoringProfile];
+  // Teen dating is scored on age-appropriate dimensions: liking, emotional fit,
+  // talking, encouragement and recovery after friction — never long-term
+  // "steadiness over time", which is an adult-partnership question.
+  const keys = ctx.isTeenRomance
+    ? TEEN_ROMANTIC_DIMENSIONS
+    : PROFILE_DIMENSIONS[ctx.scoringProfile];
   const dimensions = keys.map((k) => scoreDimension(k, core));
 
   const overall =
