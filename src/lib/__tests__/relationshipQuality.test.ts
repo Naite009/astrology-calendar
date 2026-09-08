@@ -464,7 +464,10 @@ describe('Pair reading — Ava + Max TEEN ROMANTIC regression', () => {
     expect(reading.context.kind).toBe('romantic');
     expect(reading.context.isTeenRomance).toBe(true);
     expect(reading.context.familyRelation).toBeNull();
-    expect(text).not.toMatch(/\b(sibling|siblings|brother|sister|family relationship)\b/i);
+    // House arenas legitimately mention "siblings"/"family" as life areas; what must
+    // never appear is the pair being FRAMED as siblings or family.
+    expect(text).not.toMatch(/read as a family|family relationship between|as siblings\b|your (?:brother|sister)\b|sibling (?:bond|dynamic|relationship)/i);
+    expect(reading.context.label).toMatch(/dating/i);
     expect(reading.score.label).toMatch(/teen dating/i);
   });
 
