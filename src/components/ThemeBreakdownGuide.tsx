@@ -19,6 +19,7 @@ import {
   ChevronDown, ChevronUp, BookOpen, Calculator, History, 
   Sparkles, Flame, Heart, Scale, Star, ArrowRight
 } from 'lucide-react';
+import { SYMBOLIC_LENS_NOTE, symbolicShareLine } from '@/lib/relationship/symbolicFraming';
 import { useState } from 'react';
 
 interface ThemeBreakdownGuideProps {
@@ -242,11 +243,12 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-serif flex items-center justify-center gap-2">
           <BookOpen className="text-primary" size={24} />
-          How We Determined These Themes (Teaching Guide)
+          How These Symbolic Themes Were Scored (Teaching Guide)
         </h2>
         <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
-          This shows exactly what we looked for in {chart1.name} & {chart2.name}'s charts, 
-          what we found, and how we calculated each theme score.
+          This shows exactly what we looked for in {chart1.name} & {chart2.name}'s charts, what we
+          found, and how each theme score was weighted. These are internal weightings of specific
+          chart contacts within an optional symbolic lens, not probabilities or measurements.
         </p>
       </div>
 
@@ -255,15 +257,15 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-3xl font-bold text-primary">{karmicAnalysis.totalKarmicScore}</div>
-            <div className="text-xs text-muted-foreground">Total Karmic Score</div>
+            <div className="text-xs text-muted-foreground">Total symbolic marker weight</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{soulGrowthPercent}%</div>
-            <div className="text-xs text-muted-foreground">Soul Growth Focus</div>
+            <div className="text-xs text-muted-foreground">Share of weighting: growth-direction contacts</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{pastLifePercent}%</div>
-            <div className="text-xs text-muted-foreground">Past Life Theme</div>
+            <div className="text-xs text-muted-foreground">Share of weighting: familiarity contacts</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{karmicAnalysis.indicators.length}</div>
@@ -306,20 +308,22 @@ South Node sextile = 4 points
         {/* Soul Growth Theme */}
         <ThemeSection
           theme="soul_growth"
-          title="Soul Growth Theme"
+          title="Growth-direction theme (symbolic)"
           icon={<Sparkles className="text-purple-600" size={20} />}
           color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800"
           whatWeLookedFor={[
             "North Node (☊) contacts between personal planets",
             "Quality of those contacts (conjunction = strongest, opposition/square = challenging growth, trine/sextile = easy growth)"
           ]}
-          astrologyBehindIt={`The North Node represents your DESTINY - where your soul is headed in THIS lifetime. It's uncomfortable, unfamiliar, but it's your growth edge. When someone's planets conjunct your North Node, they literally EMBODY the qualities you're here to develop.
+          astrologyBehindIt={`The North Node is traditionally read as a direction worth developing rather than a destiny. Contacts to it are usually read as one person drawing out qualities the other is still growing into. Treat this as symbolic imagery, not a verdict about either life.
 
-${themeTotals.soul_growth.count > 0 ? `In your case, the North Node contacts mean one person is a teacher/guide for the other's evolution, often without even trying.` : 'No major North Node contacts were detected in your synastry.'}`}
-          whyItMatters={soulGrowthPercent >= 50
-            ? `This relationship is ${soulGrowthPercent}% about FORWARD movement, not resolving the past. ${chart1.name} and ${chart2.name} are here to help each other evolve.`
-            : `Soul growth is ${soulGrowthPercent}% of your connection - present but not the primary theme.`
-          }
+${themeTotals.soul_growth.count > 0 ? `Here, the North Node contacts can mean each may draw slightly newer behaviour out of the other, often without trying.` : 'No major North Node contacts were detected between these charts.'}`}
+          whyItMatters={symbolicShareLine(
+            soulGrowthPercent >= 50
+              ? `Growth-direction contacts are the largest part of this pair's symbolic weighting, so the forward-looking imagery is the one worth mentioning first`
+              : `Growth-direction contacts are present but not the largest part of this pair's symbolic weighting`,
+            soulGrowthPercent
+          )}
           indicators={karmicAnalysis.indicators}
           totalScore={karmicAnalysis.totalKarmicScore}
           chart1Name={chart1.name}
@@ -330,9 +334,9 @@ North Node square = 6 points
 North Node trine = 5 points
 North Node sextile = 3 points
 
-Calculation:
-Soul Growth % = (Soul Growth points ÷ Total Score) × 100
-Soul Growth % = (${themeTotals.soul_growth.points} ÷ ${karmicAnalysis.totalKarmicScore}) × 100 = ${soulGrowthPercent}%`}
+Calculation (share of this app's internal weighting, not a probability):
+Growth-direction share = (growth points ÷ total symbolic points) × 100
+Growth-direction share = (${themeTotals.soul_growth.points} ÷ ${karmicAnalysis.totalKarmicScore}) × 100 = ${soulGrowthPercent}%`}
         />
 
         {/* Transformation Theme */}
@@ -461,14 +465,15 @@ Important: Fated doesn't mean "meant to last forever" - it means "meant to meet 
           <div className="p-4 rounded-lg bg-card border">
             <h4 className="font-medium mb-2">What this means:</h4>
             <p className="text-sm text-muted-foreground">
-              Your relationship is <strong>{soulGrowthPercent}% about FORWARD GROWTH</strong> and {pastLifePercent}% about past karma. 
+              {symbolicShareLine('Growth-direction contacts', soulGrowthPercent)}{' '}
+              {symbolicShareLine('Familiarity contacts', pastLifePercent)}{' '}
               {karmicAnalysis.karmicType === 'soul_family' && 
-                ` This is a ${karmicAnalysis.karmicType.replace('_', ' ')} connection where ${chart1.name} and ${chart2.name} support each other's evolution.`}
+                ` Symbolically this reads as an ease-and-support theme, where ${chart1.name} and ${chart2.name} may find being around each other takes little effort.`}
               {themeTotals.transformation.count > 0 &&
                 ` The Pluto contacts add intensity and transformation to the mix.`}
               {themeTotals.healing.count > 0 &&
-                ` Chiron contacts indicate healing opportunities.`}
-              {' '}The core purpose is <strong>{karmicAnalysis.soulPurpose.toLowerCase()}</strong>
+                ` Chiron contacts point to a tender area where kindness tends to land better than advice.`}
+              {' '}Symbolic theme, offered as imagery rather than fact: <strong>{karmicAnalysis.soulPurpose.toLowerCase()}</strong>
             </p>
           </div>
 
