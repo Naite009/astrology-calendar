@@ -722,6 +722,8 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: 'Moderate',
       supportCount: 2,
       group: 'nodes',
+      ...evidenceFields(['NorthNode', 'SouthNode'], [nn.house, sn.house]),
+
     };
   }
 
