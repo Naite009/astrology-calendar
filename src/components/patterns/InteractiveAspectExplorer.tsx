@@ -112,7 +112,20 @@ const getAllAspects = (positions: PlanetaryPositions): AspectData[] => {
             orb: aspect.orb,
             isApplying: false, // Simplified - would need ephemeris for true calculation
             interpretation,
+            signVsDegree: analyzeSignVsDegree({
+              labelA: PLANETS[i],
+              signA: p1.signName,
+              degreeA: p1.degree,
+              labelB: PLANETS[j],
+              signB: p2.signName,
+              degreeB: p2.degree,
+              aspect: aspect.type,
+              aspectAngle: aspect.angle,
+              separation: aspect.separation,
+              orb: aspect.orb,
+            }),
           });
+
         }
       }
     }
