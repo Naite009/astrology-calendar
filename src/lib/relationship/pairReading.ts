@@ -328,6 +328,9 @@ function overlayItems(
       ),
       say: `A lot of ${c.bodyOwner} shows up in ${c.houseOwner}'s ${c.arena.toLowerCase()}.`,
       strength: c.bodies.length >= 3 ? 'strong' : 'moderate',
+      tier: contactTier(c.bodies),
+      doesNotMean: doesNotMeanFor({ bodies: c.bodies, houses: [c.house] }),
+
     });
   }
 
