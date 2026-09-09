@@ -238,7 +238,22 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
             </div>
           ))}
         </div>
+        {guide.startHereDeeper.length > 0 && (
+          <details className="mt-3 rounded-sm border border-dashed border-border p-3">
+            <summary className="cursor-pointer text-xs text-primary">{EXPLORE_DEEPER_LABEL}</summary>
+            <p className="mt-1 text-xs text-muted-foreground">{EXPLORE_DEEPER_NOTE}</p>
+            <ul className="mt-2 space-y-1">
+              {guide.startHereDeeper.map((item) => (
+                <li key={item.id} className="text-xs text-muted-foreground">
+                  <span className="uppercase tracking-widest text-[10px] mr-1">{item.label}:</span>
+                  {item.value}. {item.note}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </Section>
+
 
       {/* 2. Blended characteristics */}
       <Section title="Blended characteristics" icon={<Link2 size={14} className="text-primary" />} subtitle="the heart of the reading">
