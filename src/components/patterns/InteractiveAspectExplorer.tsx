@@ -44,7 +44,7 @@ const calculateAspect = (
   sign1: string,
   deg2: number,
   sign2: string
-): { type: string; symbol: string; orb: number } | null => {
+): { type: string; symbol: string; orb: number; angle: number; separation: number } | null => {
   // Convert to absolute degrees
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   const abs1 = signs.indexOf(sign1) * 30 + deg1;
@@ -70,12 +70,19 @@ const calculateAspect = (
   for (const aspect of aspects) {
     const aspectOrb = Math.abs(diff - aspect.angle);
     if (aspectOrb <= aspect.orb) {
-      return { type: aspect.name, symbol: aspect.symbol, orb: Math.round(aspectOrb * 10) / 10 };
+      return {
+        type: aspect.name,
+        symbol: aspect.symbol,
+        orb: Math.round(aspectOrb * 10) / 10,
+        angle: aspect.angle,
+        separation: diff,
+      };
     }
   }
   
   return null;
 };
+
 
 // Get all current aspects
 const getAllAspects = (positions: PlanetaryPositions): AspectData[] => {
