@@ -68,3 +68,19 @@ export {
   FORBIDDEN_INTERPRETIVE_PHRASES, sanitizeInterpretiveText,
   findForbiddenPhrases, sanitizeInterpretiveDeep,
 } from './languagePolicy';
+
+// ── Evidence hierarchy, signal strength, misreading clarifications ──────────
+export {
+  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, EVIDENCE_TIER_WEIGHT,
+  evidenceTier, contactTier, rankByEvidence,
+  TOP_FACTOR_MIN, TOP_FACTOR_MAX, EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE, splitTopFactors,
+  SIGNAL_LABEL, SIGNAL_MEANING, SIGNAL_DISCLAIMER, signalLevel, signalLabel, signalLevelFromCount,
+  WHAT_THIS_DOES_NOT_MEAN, doesNotMeanFor, DOES_NOT_MEAN_HEADING,
+  buildEvidenceCard, auditEvidenceCard,
+  RELATIONSHIP_DIMENSION_LABELS, SUMMARY_INDEX_DISCLAIMER,
+  FORBIDDEN_PSEUDO_METRICS, isPseudoMetricLabel,
+} from './evidenceStandard';
+export type {
+  EvidenceTier, TieredItem, SignalLevel, SignalInput, MisreadKey, MisreadContext,
+  EvidenceCardModel, EvidenceCardInput,
+} from './evidenceStandard';

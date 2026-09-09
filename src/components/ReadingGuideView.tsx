@@ -12,6 +12,12 @@ import { ChartSelector } from './ChartSelector';
 import { buildReadingGuide, type BlendCard, type ReadingGuide } from '@/lib/readingGuide/readingGuideEngine';
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
+import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
+import {
+  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
+  EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE,
+} from '@/lib/interpretation/evidenceStandard';
+
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { ChevronDown, ChevronUp, Compass, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
 
@@ -66,10 +72,22 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
     <article className="border border-border rounded-sm bg-background/40 p-4 space-y-3">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-sm font-medium text-foreground">{card.name}</h4>
-        <span className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STRENGTH_STYLE[card.strength]}`}>
-          {card.strength} · {card.supportCount} factor{card.supportCount === 1 ? '' : 's'}
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span
+            className="rounded-sm border border-border bg-secondary/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground"
+            title={EVIDENCE_TIER_NOTE[card.tier]}
+          >
+            {EVIDENCE_TIER_LABEL[card.tier]}
+          </span>
+          <span
+            className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STRENGTH_STYLE[card.strength]}`}
+            title={SIGNAL_DISCLAIMER}
+          >
+            {card.strength} · {card.supportCount} factor{card.supportCount === 1 ? '' : 's'}
+          </span>
         </span>
       </header>
+
 
       <div>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What created it</p>
@@ -112,6 +130,9 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
         <HelpCircle size={12} className="mt-0.5 shrink-0" />
         <span><span className="uppercase tracking-widest text-[10px] mr-1">Ask them this:</span>{card.askThis}</span>
       </p>
+
+      <DoesNotMean lines={card.doesNotMean} />
+
     </article>
   );
 };
@@ -217,7 +238,22 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
             </div>
           ))}
         </div>
+        {guide.startHereDeeper.length > 0 && (
+          <details className="mt-3 rounded-sm border border-dashed border-border p-3">
+            <summary className="cursor-pointer text-xs text-primary">{EXPLORE_DEEPER_LABEL}</summary>
+            <p className="mt-1 text-xs text-muted-foreground">{EXPLORE_DEEPER_NOTE}</p>
+            <ul className="mt-2 space-y-1">
+              {guide.startHereDeeper.map((item) => (
+                <li key={item.id} className="text-xs text-muted-foreground">
+                  <span className="uppercase tracking-widest text-[10px] mr-1">{item.label}:</span>
+                  {item.value}. {item.note}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </Section>
+
 
       {/* 2. Blended characteristics */}
       <Section title="Blended characteristics" icon={<Link2 size={14} className="text-primary" />} subtitle="the heart of the reading">

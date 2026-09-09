@@ -12,13 +12,20 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { PairReading, ReadingItem } from '@/lib/relationship';
+import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
+
 import { ordinal } from '@/lib/interpretation/ordinals';
+import {
+  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER, SUMMARY_INDEX_DISCLAIMER,
+} from '@/lib/interpretation/evidenceStandard';
+
 
 const STRENGTH_LABEL: Record<ReadingItem['strength'], string> = {
   strong: 'Strong signal',
   moderate: 'Moderate signal',
-  'single-contact': 'Single contact',
+  'single-contact': 'Single-placement clue',
 };
+
 
 const ItemCard = ({ item }: { item: ReadingItem }) => {
   const [open, setOpen] = useState(false);
@@ -26,10 +33,16 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
     <div className="p-3 rounded-lg border border-border bg-card">
       <div className="flex items-start justify-between gap-2 mb-1">
         <h5 className="font-medium text-sm">{item.title}</h5>
-        <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
-          {STRENGTH_LABEL[item.strength]}
-        </Badge>
+        <span className="flex flex-wrap items-center gap-1 justify-end">
+          <Badge variant="outline" className="text-[10px] whitespace-nowrap" title={EVIDENCE_TIER_NOTE[item.tier]}>
+            {EVIDENCE_TIER_LABEL[item.tier]}
+          </Badge>
+          <Badge variant="secondary" className="text-[10px] whitespace-nowrap" title={SIGNAL_DISCLAIMER}>
+            {STRENGTH_LABEL[item.strength]}
+          </Badge>
+        </span>
       </div>
+
       <p className="text-sm text-foreground/90">{item.statement}</p>
       {item.growthEdge && (
         <p className="text-sm text-muted-foreground mt-1">{item.growthEdge}</p>
@@ -84,7 +97,7 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="mt-2 text-xs text-primary flex items-center gap-1">
           {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          Why this reading
+          Why am I saying this? How I got there
         </CollapsibleTrigger>
         <CollapsibleContent>
           <ul className="mt-2 space-y-1">
@@ -97,6 +110,8 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
           )}
         </CollapsibleContent>
       </Collapsible>
+      {item.doesNotMean.length > 0 && <DoesNotMean lines={item.doesNotMean} />}
+
     </div>
   );
 };
@@ -159,6 +174,9 @@ export const PairReadingView = ({ reading }: { reading: PairReading }) => {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">{score.disclaimer}</p>
+        <p className="text-xs text-muted-foreground">{SUMMARY_INDEX_DISCLAIMER}</p>
+        <p className="text-xs text-muted-foreground">{SIGNAL_DISCLAIMER}</p>
+
         <p className="text-xs text-muted-foreground">{score.weightingNote}</p>
       </div>
 

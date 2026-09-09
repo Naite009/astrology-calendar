@@ -36,6 +36,10 @@ import { RelationshipContext, RelationshipSectionKey } from './relationshipConte
 import { sanitizeRelationshipDeep } from './relationshipLanguage';
 import { AgeStage } from '@/lib/readingGuide/ageContext';
 import { describeDirectionalContact, directionalEvidenceLines, type DirectionalContact } from './directionalRoles';
+import {
+  contactTier, doesNotMeanFor, rankByEvidence, signalLevel,
+  type EvidenceTier, type SignalLevel,
+} from '@/lib/interpretation/evidenceStandard';
 
 export interface ReadingItem {
   title: string;
@@ -48,9 +52,14 @@ export interface ReadingItem {
   /** Exact chart evidence. */
   evidence: string[];
   strength: 'strong' | 'moderate' | 'single-contact';
+  /** Shared evidence hierarchy: primary / secondary / supplemental. */
+  tier: EvidenceTier;
+  /** Concise clarifications for easily misread signatures. */
+  doesNotMean: string[];
   /** Explicit "who feels what" breakdown for the contact behind this item. */
   directional?: DirectionalContact;
 }
+
 
 export interface PairSection {
   key: RelationshipSectionKey;
@@ -226,10 +235,39 @@ function contactCopy(a: CrossAspect, ctx: RelationshipContext): ContactCopy {
   }
 }
 
+const STRENGTH_FROM_SIGNAL: Record<SignalLevel, ReadingItem['strength']> = {
+  strong: 'strong',
+  moderate: 'moderate',
+  single: 'single-contact',
+};
+
+/**
+ * Signal strength through the shared evidence hierarchy: primary contacts count in
+ * full, nodes/Chiron count as secondary, and a very tight contact to a luminary,
+ * angle or chart ruler can stand alone as a strong central signature.
+ */
 function strengthOf(supporting: CrossAspect[]): ReadingItem['strength'] {
-  if (supporting.length >= 3) return 'strong';
-  if (supporting.length === 2) return 'moderate';
-  return 'single-contact';
+  const bodiesOf = (a: CrossAspect) => [a.fromBody, a.toBody];
+  const primaryFactors = supporting.filter((a) => contactTier(bodiesOf(a)) === 'primary').length;
+  const secondaryFactors = supporting.filter((a) => contactTier(bodiesOf(a)) === 'secondary').length;
+  const supplementalFactors = supporting.filter((a) => contactTier(bodiesOf(a)) === 'supplemental').length;
+  const tightCentralSignature = supporting.some(
+    (a) =>
+      a.orb <= 1 &&
+      contactTier(bodiesOf(a)) === 'primary' &&
+      bodiesOf(a).some((b) => ['Sun', 'Moon', 'Ascendant', 'Midheaven'].includes(b))
+  );
+  return STRENGTH_FROM_SIGNAL[
+    signalLevel({ primaryFactors, secondaryFactors, supplementalFactors, tightCentralSignature })
+  ];
+}
+
+function contactDoesNotMean(a: CrossAspect): string[] {
+  return doesNotMeanFor({
+    bodies: [a.fromBody, a.toBody],
+    aspectTone: a.tone,
+    isOutOfSign: !!(a as CrossAspect & { isOutOfSign?: boolean }).isOutOfSign,
+  });
 }
 
 /** Group contacts by flavour so the reading synthesises instead of listing. */
@@ -239,10 +277,19 @@ function groupedItems(aspects: CrossAspect[], ctx: RelationshipContext, limit: n
     const f = flavour(a);
     groups.set(f, [...(groups.get(f) ?? []), a]);
   }
+  // Rank groups through the shared hierarchy: a pile of secondary/supplemental
+  // contacts can never float above a primary major-planet theme.
+  const ranked = rankByEvidence(
+    [...groups.entries()].map(([f, list]) => ({
+      flavour: f,
+      list,
+      bodies: [...new Set(list.flatMap((a) => [a.fromBody, a.toBody]))],
+      weight: list.reduce((s, a) => s + a.weight, 0),
+    }))
+  );
+
   const items: ReadingItem[] = [];
-  for (const [, list] of [...groups.entries()].sort(
-    (x, y) => y[1].reduce((s, a) => s + a.weight, 0) - x[1].reduce((s, a) => s + a.weight, 0)
-  )) {
+  for (const { list } of ranked) {
     const lead = list[0];
     const copy = contactCopy(lead, ctx);
     items.push({
@@ -252,12 +299,15 @@ function groupedItems(aspects: CrossAspect[], ctx: RelationshipContext, limit: n
       say: copy.say,
       evidence: [...list.slice(0, 4).map(describeAspect), ...directionalEvidenceLines(describeDirectionalContact(lead, ctx))],
       strength: strengthOf(list),
+      tier: contactTier([lead.fromBody, lead.toBody]),
+      doesNotMean: contactDoesNotMean(lead),
       directional: describeDirectionalContact(lead, ctx),
     });
     if (items.length >= limit) break;
   }
   return items;
 }
+
 
 // ── section builders ──────────────────────────────────────────────────
 
@@ -278,6 +328,9 @@ function overlayItems(
       ),
       say: `A lot of ${c.bodyOwner} shows up in ${c.houseOwner}'s ${c.arena.toLowerCase()}.`,
       strength: c.bodies.length >= 3 ? 'strong' : 'moderate',
+      tier: contactTier(c.bodies),
+      doesNotMean: doesNotMeanFor({ bodies: c.bodies, houses: [c.house] }),
+
     });
   }
 
@@ -290,6 +343,8 @@ function overlayItems(
         ...(o.approximationNote ? [o.approximationNote] : []),
       ],
       strength: 'single-contact',
+      tier: contactTier([o.body]),
+      doesNotMean: doesNotMeanFor({ bodies: [o.body], houses: [o.house] }),
     });
   }
   return items;
@@ -307,8 +362,11 @@ function aspectItems(top: CrossAspect[], ctx: RelationshipContext): ReadingItem[
       ...directionalEvidenceLines(d),
     ],
     strength: (a.weight >= 0.5 ? 'strong' : a.weight >= 0.3 ? 'moderate' : 'single-contact') as ReadingItem['strength'],
+    tier: contactTier([a.fromBody, a.toBody]),
+    doesNotMean: doesNotMeanFor({ bodies: [a.fromBody, a.toBody], aspectTone: a.tone, isOutOfSign: d.isOutOfSign }),
     };
   });
+
 }
 
 const SECTION_TITLES: Partial<Record<RelationshipSectionKey, string>> = {

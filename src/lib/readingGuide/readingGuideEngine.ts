@@ -23,6 +23,12 @@ import { MAJOR_ASPECTS, getEffectiveOrb } from '@/lib/aspectOrbs';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import {
+  contactTier, doesNotMeanFor, signalLevelFromCount, rankByEvidence, TOP_FACTOR_MAX,
+  type EvidenceTier,
+} from '@/lib/interpretation/evidenceStandard';
+
+
+import {
   AgeStage, AgeContext, buildAgeContext, houseArena, applyStageVocabulary, voiceFor,
 } from './ageContext';
 import {
@@ -70,7 +76,16 @@ export interface BlendCard {
   strength: SignalStrength;
   supportCount: number;
   group: 'core' | 'personal-group' | 'growth' | 'outer' | 'nodes' | 'chiron';
+  /** Bodies this card rests on, for the shared evidence hierarchy. */
+  bodies: string[];
+  /** Houses involved, used for the misreading clarifications. */
+  houses: number[];
+  /** Primary / secondary / supplemental. */
+  tier: EvidenceTier;
+  /** Concise "what this does not mean" clarifications. */
+  doesNotMean: string[];
 }
+
 
 export interface StartHereItem {
   id: string;
@@ -117,6 +132,9 @@ export interface ReadingGuide {
   houseClusters: HouseCluster[];
   chartRuler: { sign: string; ruler: string; placement?: CoreBodyPlacement; note: string } | null;
   startHere: StartHereItem[];
+  /** Lower-ranked "start here" detail, shown under Explore deeper. */
+  startHereDeeper: StartHereItem[];
+
   blends: BlendCard[];
   personalGroups: BlendCard[];
   growth: BlendCard[];
@@ -284,11 +302,35 @@ function speak(template: string, stage: AgeStage): string {
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
-function strengthFor(count: number): SignalStrength {
-  if (count >= 4) return 'Strong';
-  if (count >= 2) return 'Moderate';
-  return 'Single-placement';
+/**
+ * Signal strength comes from the shared evidence standard so the Reading Guide,
+ * the natal surfaces and synastry all use the same thresholds.
+ */
+function strengthFor(count: number, tightCentral = false): SignalStrength {
+  const level = signalLevelFromCount(count, tightCentral);
+  return level === 'strong' ? 'Strong' : level === 'moderate' ? 'Moderate' : 'Single-placement';
 }
+
+/** Evidence-tier + "what this does not mean" fields for any blend card. */
+function evidenceFields(
+  bodies: string[],
+  houses: Array<number | null | undefined>,
+  opts: { retrograde?: boolean; tense?: boolean } = {}
+): Pick<BlendCard, 'bodies' | 'houses' | 'tier' | 'doesNotMean'> {
+  const cleanHouses = houses.filter((h): h is number => typeof h === 'number' && h > 0);
+  return {
+    bodies,
+    houses: cleanHouses,
+    tier: contactTier(bodies),
+    doesNotMean: doesNotMeanFor({
+      bodies,
+      houses: cleanHouses,
+      isRetrograde: opts.retrograde,
+      aspectTone: opts.tense ? 'tense' : undefined,
+    }),
+  };
+}
+
 
 // ── aspects ─────────────────────────────────────────────────────────────────
 const IMPORTANCE_WEIGHT: Record<string, number> = {
@@ -504,6 +546,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       support += 1;
       reasons.push(`${p.sign} repeats (${repeated.bodies.join(', ')}), so the style shows up in more than one area`);
     }
+    const linkedBodies: string[] = [];
+    const linkedHouses: Array<number | null> = [];
+    let hasTenseLink = false;
     for (const asp of aspectsTo(bodyName, placements).slice(0, 2)) {
       if (asp.orb > 4) continue;
       factors.push({
@@ -512,8 +557,12 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       });
       chain.push(`${p.label} ${asp.aspect} ${asp.other.label} = ${BODY_MEANINGS[asp.other.body]} joins in`);
       support += 1;
+      linkedBodies.push(asp.other.body);
+      linkedHouses.push(asp.other.house);
+      if (['square', 'opposition'].includes(asp.aspect)) hasTenseLink = true;
       reasons.push(`${asp.other.label} is tied in at ${asp.orb}°, which adds ${BODY_MEANINGS[asp.other.body]}`);
     }
+
     if (chartRuler?.ruler === bodyName) {
       factors.push({ label: `Chart ruler (${chartRuler.sign} rising)`, meaning: 'runs the whole chart, so it carries extra weight' });
       support += 1;
@@ -535,14 +584,24 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(support),
       supportCount: support,
       group,
+      ...evidenceFields([bodyName, ...linkedBodies], [p.house, ...linkedHouses], {
+        retrograde: p.isRetrograde,
+        tense: hasTenseLink,
+      }),
     };
+
   }
 
   const coreOrder = ['Moon', 'Sun', 'Ascendant', 'Mercury', 'Venus', 'Mars'];
-  const blends = coreOrder
-    .map((b) => buildBlend(b, 'core'))
-    .filter((b): b is BlendCard => !!b)
-    .sort((a, b) => b.supportCount - a.supportCount);
+  // Ranked through the shared hierarchy first (primary majors/angles ahead of
+  // nodes/Chiron and minor points), then by how many factors support the blend.
+  const blends = rankByEvidence(
+    coreOrder
+      .map((b) => buildBlend(b, 'core'))
+      .filter((b): b is BlendCard => !!b)
+      .map((b) => ({ ...b, weight: b.supportCount }))
+  ).map(({ weight: _weight, ...card }) => card as BlendCard);
+
 
   // personal planets grouped by repeated sign / shared house
   const personalGroups: BlendCard[] = [];
@@ -578,6 +637,10 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      ...evidenceFields(group.map((g) => g.body), group.map((g) => g.house), {
+        retrograde: group.some((g) => g.isRetrograde),
+      }),
+
     });
   }
   for (const [house, group] of groupBy((p) => p.house)) {
@@ -601,6 +664,10 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      ...evidenceFields(group.map((g) => g.body), [house], {
+        retrograde: group.some((g) => g.isRetrograde),
+      }),
+
     });
   }
 
@@ -664,6 +731,8 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: 'Moderate',
       supportCount: 2,
       group: 'nodes',
+      ...evidenceFields(['NorthNode', 'SouthNode'], [nn.house, sn.house]),
+
     };
   }
 
@@ -703,6 +772,8 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         strength: tight.length ? 'Moderate' : 'Single-placement',
         supportCount: tight.length ? 2 : 1,
         group: 'chiron',
+        ...evidenceFields(['Chiron', ...tight.map((t) => t.other.body)], [ch.house, ...tight.map((t) => t.other.house)]),
+
       };
     }
   }
@@ -787,6 +858,11 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     });
   }
   startHere.sort((a, b) => b.importance - a.importance);
+  // Top factors first: only the handful that actually explains the chart leads.
+  // Everything else moves under "Explore deeper".
+  const startHereTop = startHere.slice(0, TOP_FACTOR_MAX);
+  const startHereDeeper = startHere.slice(TOP_FACTOR_MAX);
+
 
   // ── the story ─────────────────────────────────────────────────────────────
   const storyParts: string[] = [];
@@ -836,7 +912,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     repeatedSigns,
     houseClusters,
     chartRuler,
-    startHere,
+    startHere: startHereTop,
+    startHereDeeper,
+
     blends,
     personalGroups,
     growth,
