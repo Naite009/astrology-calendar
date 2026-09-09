@@ -284,11 +284,35 @@ function speak(template: string, stage: AgeStage): string {
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
-function strengthFor(count: number): SignalStrength {
-  if (count >= 4) return 'Strong';
-  if (count >= 2) return 'Moderate';
-  return 'Single-placement';
+/**
+ * Signal strength comes from the shared evidence standard so the Reading Guide,
+ * the natal surfaces and synastry all use the same thresholds.
+ */
+function strengthFor(count: number, tightCentral = false): SignalStrength {
+  const level = signalLevelFromCount(count, tightCentral);
+  return level === 'strong' ? 'Strong' : level === 'moderate' ? 'Moderate' : 'Single-placement';
 }
+
+/** Evidence-tier + "what this does not mean" fields for any blend card. */
+function evidenceFields(
+  bodies: string[],
+  houses: Array<number | null | undefined>,
+  opts: { retrograde?: boolean; tense?: boolean } = {}
+): Pick<BlendCard, 'bodies' | 'houses' | 'tier' | 'doesNotMean'> {
+  const cleanHouses = houses.filter((h): h is number => typeof h === 'number' && h > 0);
+  return {
+    bodies,
+    houses: cleanHouses,
+    tier: contactTier(bodies),
+    doesNotMean: doesNotMeanFor({
+      bodies,
+      houses: cleanHouses,
+      isRetrograde: opts.retrograde,
+      aspectTone: opts.tense ? 'tense' : undefined,
+    }),
+  };
+}
+
 
 // ── aspects ─────────────────────────────────────────────────────────────────
 const IMPORTANCE_WEIGHT: Record<string, number> = {
