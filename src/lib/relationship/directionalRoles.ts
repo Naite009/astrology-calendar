@@ -185,7 +185,10 @@ export function describeDirectionalContact(
   const fa = feelFor(a.fromBody, stage);
   const fb = feelFor(a.toBody, stage);
 
-  const aspectLine = `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody}`;
+  const layers = a.signVsDegree;
+  const aspectLine = `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody}${
+    layers?.isOutOfSign ? ' (out of sign)' : ''
+  }`;
   const orbLine = `orb ${a.orb.toFixed(1)}° (allowance ${a.maxOrb}° for these bodies, exact angle ${a.aspectAngle}°)`;
 
   const worksWell = tense
@@ -197,11 +200,15 @@ export function describeDirectionalContact(
     : `Because it comes easily, both can lean on it and skip the conversation. It helps to check that what feels obvious to one is actually landing for the other.`;
 
   const summaryVerb = ASPECT_PHRASE[a.aspect] ?? 'contacts';
-  const summary = `${a.fromOwner}'s ${a.fromBody} ${summaryVerb} ${a.toOwner}'s ${a.toBody}, so ${a.fromOwner} ${fa.feels.split(',')[0]} while ${a.toOwner} ${fb.feels.split(',')[0]}.`;
+  const oosNote = layers?.isOutOfSign
+    ? ` The signs (${a.fromSign}–${a.toSign}) do not match that aspect, so read both layers rather than the aspect name alone.`
+    : '';
+  const summary = `${a.fromOwner}'s ${a.fromBody} ${summaryVerb} ${a.toOwner}'s ${a.toBody}, so ${a.fromOwner} ${fa.feels.split(',')[0]} while ${a.toOwner} ${fb.feels.split(',')[0]}.${oosNote}`;
 
   return {
     aspectLine,
     orbLine,
+    positionsLine: layers?.positionsLine ?? '',
     a: {
       owner: a.fromOwner,
       body: a.fromBody,
@@ -217,20 +224,31 @@ export function describeDirectionalContact(
     worksWell,
     growthEdge,
     summary,
+    isOutOfSign: !!layers?.isOutOfSign,
+    badge: layers?.badge ?? null,
+    signLine: layers?.signLine ?? '',
+    degreeLine: layers?.degreeLine ?? '',
+    synthesisLine: layers?.synthesisLine ?? '',
   };
 }
 
 /** Flat evidence lines, for exports and PDFs that cannot render the card. */
 export function directionalEvidenceLines(d: DirectionalContact): string[] {
   return [
+    d.positionsLine ? `Positions: ${d.positionsLine}` : '',
     `${d.aspectLine} — ${d.orbLine}`,
+    d.isOutOfSign ? 'OUT OF SIGN: the sign relationship and the degree aspect disagree.' : '',
+    d.signLine,
+    d.degreeLine,
+    d.synthesisLine,
     `${d.a.roleLine}: ${d.a.feels}`,
     `${d.b.roleLine}: ${d.b.feels}`,
     `How it can work well: ${d.worksWell}`,
     `Possible friction / growth edge: ${d.growthEdge}`,
     `In one line: ${d.summary}`,
-  ];
+  ].filter(Boolean);
 }
+
 
 /** Aspect angles used when building a directional description from loose parts. */
 const ASPECT_ANGLE: Record<string, number> = {
