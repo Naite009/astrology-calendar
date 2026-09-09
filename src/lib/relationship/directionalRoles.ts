@@ -15,6 +15,8 @@
  */
 
 import type { CrossAspect } from './synastryEngine';
+import { analyzeSignVsDegree } from '@/lib/aspects/outOfSign';
+
 import type { RelationshipContext } from './relationshipContext';
 import type { AgeStage } from '@/lib/readingGuide/ageContext';
 
