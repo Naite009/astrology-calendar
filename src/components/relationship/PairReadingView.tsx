@@ -13,12 +13,17 @@ import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { PairReading, ReadingItem } from '@/lib/relationship';
 import { ordinal } from '@/lib/interpretation/ordinals';
+import {
+  DOES_NOT_MEAN_HEADING, EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
+  SUMMARY_INDEX_DISCLAIMER,
+} from '@/lib/interpretation/evidenceStandard';
 
 const STRENGTH_LABEL: Record<ReadingItem['strength'], string> = {
   strong: 'Strong signal',
   moderate: 'Moderate signal',
-  'single-contact': 'Single contact',
+  'single-contact': 'Single-placement clue',
 };
+
 
 const ItemCard = ({ item }: { item: ReadingItem }) => {
   const [open, setOpen] = useState(false);
