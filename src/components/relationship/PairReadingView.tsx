@@ -95,7 +95,7 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="mt-2 text-xs text-primary flex items-center gap-1">
           {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          Why this reading
+          Why am I saying this? How I got there
         </CollapsibleTrigger>
         <CollapsibleContent>
           <ul className="mt-2 space-y-1">
@@ -108,6 +108,8 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
           )}
         </CollapsibleContent>
       </Collapsible>
+      {item.doesNotMean.length > 0 && <DoesNotMean lines={item.doesNotMean} />}
+
     </div>
   );
 };
