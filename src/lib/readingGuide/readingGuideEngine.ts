@@ -542,6 +542,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       support += 1;
       reasons.push(`${p.sign} repeats (${repeated.bodies.join(', ')}), so the style shows up in more than one area`);
     }
+    const linkedBodies: string[] = [];
+    const linkedHouses: Array<number | null> = [];
+    let hasTenseLink = false;
     for (const asp of aspectsTo(bodyName, placements).slice(0, 2)) {
       if (asp.orb > 4) continue;
       factors.push({
@@ -550,8 +553,12 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       });
       chain.push(`${p.label} ${asp.aspect} ${asp.other.label} = ${BODY_MEANINGS[asp.other.body]} joins in`);
       support += 1;
+      linkedBodies.push(asp.other.body);
+      linkedHouses.push(asp.other.house);
+      if (['square', 'opposition'].includes(asp.aspect)) hasTenseLink = true;
       reasons.push(`${asp.other.label} is tied in at ${asp.orb}°, which adds ${BODY_MEANINGS[asp.other.body]}`);
     }
+
     if (chartRuler?.ruler === bodyName) {
       factors.push({ label: `Chart ruler (${chartRuler.sign} rising)`, meaning: 'runs the whole chart, so it carries extra weight' });
       support += 1;
