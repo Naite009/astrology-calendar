@@ -220,6 +220,20 @@ export function calculateCrossAspects(
           (ASPECT_WEIGHT[def.name] ?? 0.5) *
           (0.45 + 0.55 * closeness);
         const rounded = Math.round(orb * 10) / 10;
+        const posA = signPosition(lA);
+        const posB = signPosition(lB);
+        const signVsDegree = analyzeSignVsDegree({
+          labelA: `${chart1.name}'s ${bodyA}`,
+          signA: posA.sign,
+          degreeA: posA.degree,
+          labelB: `${chart2.name}'s ${bodyB}`,
+          signB: posB.sign,
+          degreeB: posB.degree,
+          aspect: def.name,
+          aspectAngle: def.angle,
+          separation,
+          orb,
+        });
         out.push({
           fromBody: bodyA,
           fromOwner: chart1.name,
@@ -235,8 +249,17 @@ export function calculateCrossAspects(
           tone: toneFor(def.name),
           weight: Math.round(weight * 1000) / 1000,
           isCoreContact: coreSet.has(bodyA) && coreSet.has(bodyB),
-          label: `${chart1.name}'s ${bodyA} ${def.name} ${chart2.name}'s ${bodyB} (${rounded.toFixed(1)}° orb)`,
+          fromSign: posA.sign,
+          fromDegreeInSign: posA.degree,
+          toSign: posB.sign,
+          toDegreeInSign: posB.degree,
+          signVsDegree,
+          isOutOfSign: signVsDegree.isOutOfSign,
+          label: `${chart1.name}'s ${bodyA} ${def.name} ${chart2.name}'s ${bodyB} (${rounded.toFixed(1)}° orb${
+            signVsDegree.isOutOfSign ? ', out of sign' : ''
+          })`,
         });
+
         break; // one aspect per pair: the tightest definition wins
       }
     }
