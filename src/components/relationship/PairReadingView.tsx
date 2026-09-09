@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { PairReading, ReadingItem } from '@/lib/relationship';
+import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
+
 import { ordinal } from '@/lib/interpretation/ordinals';
 import {
   DOES_NOT_MEAN_HEADING, EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
