@@ -1277,6 +1277,11 @@ export const FiveEssentialQuestions = ({
                 orb={asp.orb}
                 focus={focus}
                 context={context}
+                fromSign={asp.fromSign}
+                fromDegreeInSign={asp.fromDegreeInSign}
+                toSign={asp.toSign}
+                toDegreeInSign={asp.toDegreeInSign}
+
               />
             ))
           ) : (
