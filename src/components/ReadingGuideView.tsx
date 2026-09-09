@@ -12,6 +12,12 @@ import { ChartSelector } from './ChartSelector';
 import { buildReadingGuide, type BlendCard, type ReadingGuide } from '@/lib/readingGuide/readingGuideEngine';
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
+import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
+import {
+  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
+  EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE,
+} from '@/lib/interpretation/evidenceStandard';
+
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { ChevronDown, ChevronUp, Compass, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
 
