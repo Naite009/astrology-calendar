@@ -880,7 +880,11 @@ const AspectCard = ({
   personBName,
   orb,
   focus = 'romance',
-  context
+  context,
+  fromSign,
+  fromDegreeInSign,
+  toSign,
+  toDegreeInSign
 }: { 
   planet1: string; 
   planet2: string; 
@@ -890,6 +894,10 @@ const AspectCard = ({
   orb?: number;
   focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
   context?: RelationshipContext;
+  fromSign?: string;
+  fromDegreeInSign?: number;
+  toSign?: string;
+  toDegreeInSign?: number;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
@@ -898,10 +906,22 @@ const AspectCard = ({
   const directional = useMemo(() => {
     if (!context) return null;
     return describeDirectionalFromParts(
-      { fromOwner: personAName, fromBody: planet1, toOwner: personBName, toBody: planet2, aspect, orb },
+      {
+        fromOwner: personAName,
+        fromBody: planet1,
+        toOwner: personBName,
+        toBody: planet2,
+        aspect,
+        orb,
+        fromSign,
+        fromDegreeInSign,
+        toSign,
+        toDegreeInSign,
+      },
       context
     );
-  }, [context, personAName, planet1, personBName, planet2, aspect, orb]);
+  }, [context, personAName, planet1, personBName, planet2, aspect, orb, fromSign, fromDegreeInSign, toSign, toDegreeInSign]);
+
 
   // Curated long-form directional interpretation, when one exists for this pair.
   // Suppressed for minors: the curated copy is written for adult relationships.
@@ -947,9 +967,27 @@ const AspectCard = ({
             {/* Canonical directional breakdown: exact aspect, both roles, both sides */}
             {directional && (
               <div className="p-3 rounded-lg border bg-secondary/20 space-y-2">
-                <p className="text-sm font-medium">
-                  {directional.aspectLine} · {directional.orbLine}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-medium">
+                    {directional.aspectLine} · {directional.orbLine}
+                  </p>
+                  {directional.isOutOfSign && (
+                    <Badge variant="outline" className="text-xs whitespace-nowrap border-amber-500/60 text-amber-600 dark:text-amber-400">
+                      Out of sign
+                    </Badge>
+                  )}
+                </div>
+                {directional.positionsLine && (
+                  <p className="text-xs text-muted-foreground">{directional.positionsLine}</p>
+                )}
+                {directional.isOutOfSign && (
+                  <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 space-y-1">
+                    <p className="text-xs">{directional.signLine}</p>
+                    <p className="text-xs">{directional.degreeLine}</p>
+                    <p className="text-xs">{directional.synthesisLine}</p>
+                  </div>
+                )}
+
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div>
                     <p className="text-xs font-medium">{directional.a.roleLine}</p>
@@ -1150,8 +1188,36 @@ export const FiveEssentialQuestions = ({
       }
     });
 
-    return aspects.slice(0, 8); // Limit to top 8 aspects
-  }, [report, karmicAnalysis, chart1.name, chart2.name, canonicalAspects]);
+    // Attach real sign + degree for each side so the sign-vs-degree ("out of
+    // sign") layer can be shown. Generic: any body, any pair.
+    const posOf = (chart: typeof chart1, body: string) => {
+      const src =
+        body === 'Ascendant'
+          ? chart.houseCusps?.house1 ?? chart.planets?.Ascendant
+          : body === 'Midheaven'
+            ? chart.houseCusps?.house10
+            : (chart.planets as Record<string, { sign?: string; degree?: number; minutes?: number }> | undefined)?.[body];
+      if (!src?.sign) return {};
+      return {
+        sign: src.sign as string,
+        degreeInSign: (Number(src.degree) || 0) + (Number(src.minutes) || 0) / 60,
+      };
+    };
+
+    return aspects.slice(0, 8).map((a) => {
+      const chartFor = (owner: string) => (owner === chart2.name ? chart2 : chart1);
+      const p1 = posOf(chartFor(a.owner1), a.planet1);
+      const p2 = posOf(chartFor(a.owner2), a.planet2);
+      return {
+        ...a,
+        fromSign: p1.sign,
+        fromDegreeInSign: p1.degreeInSign,
+        toSign: p2.sign,
+        toDegreeInSign: p2.degreeInSign,
+      };
+    }); // Limit to top 8 aspects
+  }, [report, karmicAnalysis, chart1, chart2, canonicalAspects]);
+
 
   // Generate lessons
   const lessons = useMemo(() => 
@@ -1211,6 +1277,11 @@ export const FiveEssentialQuestions = ({
                 orb={asp.orb}
                 focus={focus}
                 context={context}
+                fromSign={asp.fromSign}
+                fromDegreeInSign={asp.fromDegreeInSign}
+                toSign={asp.toSign}
+                toDegreeInSign={asp.toDegreeInSign}
+
               />
             ))
           ) : (

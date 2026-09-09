@@ -69,6 +69,17 @@ export { describeDirectionalContact, describeDirectionalFromParts, directionalEv
 export type { DirectionalContact, DirectionalRole } from './directionalRoles';
 
 export {
+  analyzeSignVsDegree,
+  isOutOfSignAspect,
+  formatDegreeMinutes,
+  formatArc,
+  SIGN_ELEMENT,
+  SIGN_MODALITY,
+} from '@/lib/aspects/outOfSign';
+export type { SignVsDegreeAnalysis, Element, Modality } from '@/lib/aspects/outOfSign';
+
+
+export {
   SYMBOLIC_LENS_HEADING,
   SYMBOLIC_LENS_NOTE,
   SYMBOLIC_THEMES,

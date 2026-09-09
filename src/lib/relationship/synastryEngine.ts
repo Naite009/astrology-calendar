@@ -18,6 +18,8 @@
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getEffectiveOrb, MAJOR_ASPECTS, STANDARD_ASPECTS } from '@/lib/aspectOrbs';
 import { signDegreesToLongitude } from '@/lib/houseCalculations';
+import { analyzeSignVsDegree, ZODIAC_ORDER, type SignVsDegreeAnalysis } from '@/lib/aspects/outOfSign';
+
 
 /** The bodies a core relationship reading is allowed to use. */
 export const CORE_SYNASTRY_BODIES = [
@@ -112,9 +114,23 @@ export interface CrossAspect {
   weight: number;
   /** False for minor bodies / points outside the core set. */
   isCoreContact: boolean;
+  /** Sign of the chart1 body, and its degree within that sign. */
+  fromSign: string;
+  fromDegreeInSign: number;
+  /** Sign of the chart2 body, and its degree within that sign. */
+  toSign: string;
+  toDegreeInSign: number;
+  /**
+   * Dual-layer sign-vs-degree analysis. `isOutOfSign` is true when the
+   * sign-to-sign relationship is NOT the aspect the degrees make.
+   */
+  signVsDegree: SignVsDegreeAnalysis;
+  /** Shorthand for UI badges. */
+  isOutOfSign: boolean;
   /** "Ava's Moon square Max's Saturn (2.3°)" */
   label: string;
 }
+
 
 export interface CrossAspectOptions {
   /** Include Ceres/Juno/Eros/Part of Fortune etc. Default false. */
@@ -168,6 +184,13 @@ export function collectSynastryLongitudes(
   }
   return out;
 }
+/** Longitude → sign name plus decimal degree inside that sign. */
+export function signPosition(longitude: number): { sign: string; degree: number } {
+  const norm = ((longitude % 360) + 360) % 360;
+  const idx = Math.floor(norm / 30) % 12;
+  return { sign: ZODIAC_ORDER[idx], degree: norm - idx * 30 };
+}
+
 
 export function separationBetween(lonA: number, lonB: number): number {
   let diff = Math.abs(lonA - lonB) % 360;
@@ -204,6 +227,20 @@ export function calculateCrossAspects(
           (ASPECT_WEIGHT[def.name] ?? 0.5) *
           (0.45 + 0.55 * closeness);
         const rounded = Math.round(orb * 10) / 10;
+        const posA = signPosition(lA);
+        const posB = signPosition(lB);
+        const signVsDegree = analyzeSignVsDegree({
+          labelA: `${chart1.name}'s ${bodyA}`,
+          signA: posA.sign,
+          degreeA: posA.degree,
+          labelB: `${chart2.name}'s ${bodyB}`,
+          signB: posB.sign,
+          degreeB: posB.degree,
+          aspect: def.name,
+          aspectAngle: def.angle,
+          separation,
+          orb,
+        });
         out.push({
           fromBody: bodyA,
           fromOwner: chart1.name,
@@ -219,8 +256,17 @@ export function calculateCrossAspects(
           tone: toneFor(def.name),
           weight: Math.round(weight * 1000) / 1000,
           isCoreContact: coreSet.has(bodyA) && coreSet.has(bodyB),
-          label: `${chart1.name}'s ${bodyA} ${def.name} ${chart2.name}'s ${bodyB} (${rounded.toFixed(1)}° orb)`,
+          fromSign: posA.sign,
+          fromDegreeInSign: posA.degree,
+          toSign: posB.sign,
+          toDegreeInSign: posB.degree,
+          signVsDegree,
+          isOutOfSign: signVsDegree.isOutOfSign,
+          label: `${chart1.name}'s ${bodyA} ${def.name} ${chart2.name}'s ${bodyB} (${rounded.toFixed(1)}° orb${
+            signVsDegree.isOutOfSign ? ', out of sign' : ''
+          })`,
         });
+
         break; // one aspect per pair: the tightest definition wins
       }
     }
@@ -247,8 +293,12 @@ export function involvesBoth(a: CrossAspect, groupA: string[], groupB: string[])
 
 /** Human-readable, direction-explicit description. */
 export function describeAspect(a: CrossAspect): string {
-  return `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody} (${a.orb.toFixed(1)}° orb)`;
+  const oos = a.isOutOfSign ? ', out of sign' : '';
+  return `${a.fromOwner}'s ${a.fromBody} ${a.fromDegreeInSign !== undefined ? `${Math.floor(a.fromDegreeInSign)}° ${a.fromSign} ` : ''}${a.aspect} ${a.toOwner}'s ${a.toBody}${
+    a.toSign ? ` ${Math.floor(a.toDegreeInSign)}° ${a.toSign}` : ''
+  } (${a.orb.toFixed(1)}° orb${oos})`;
 }
+
 
 /**
  * Nodal-axis geometry check: North/South Node contacts to the *same* body are

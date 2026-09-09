@@ -36,9 +36,27 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
       )}
       {item.directional && (
         <div className="mt-2 rounded-md border border-border/70 bg-secondary/20 p-2 space-y-1">
-          <p className="text-xs font-medium">
-            {item.directional.aspectLine} · {item.directional.orbLine}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-xs font-medium">
+              {item.directional.aspectLine} · {item.directional.orbLine}
+            </p>
+            {item.directional.isOutOfSign && (
+              <Badge variant="outline" className="text-[10px] whitespace-nowrap border-amber-500/60 text-amber-600 dark:text-amber-400">
+                Out of sign
+              </Badge>
+            )}
+          </div>
+          {item.directional.positionsLine && (
+            <p className="text-[11px] text-muted-foreground">{item.directional.positionsLine}</p>
+          )}
+          {item.directional.isOutOfSign && (
+            <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 space-y-1">
+              <p className="text-[11px] text-foreground/90">{item.directional.signLine}</p>
+              <p className="text-[11px] text-foreground/90">{item.directional.degreeLine}</p>
+              <p className="text-[11px] text-foreground/90">{item.directional.synthesisLine}</p>
+            </div>
+          )}
+
           <div className="grid gap-1 sm:grid-cols-2">
             <div>
               <p className="text-[11px] font-medium">{item.directional.a.roleLine}</p>

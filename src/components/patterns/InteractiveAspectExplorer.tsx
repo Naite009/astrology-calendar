@@ -10,6 +10,8 @@ import {
   PlanetaryPositions 
 } from '@/lib/astrology';
 import { ASPECT_INTERPRETATIONS, AspectInterpretation } from '@/lib/aspectInterpretations';
+import { analyzeSignVsDegree, type SignVsDegreeAnalysis } from '@/lib/aspects/outOfSign';
+
 
 // Planet pairs for aspect checking
 const PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
@@ -27,7 +29,10 @@ interface AspectData {
   orb: number;
   isApplying: boolean;
   interpretation: AspectInterpretation;
+  /** Dual-layer sign vs degree explanation (out-of-sign aware). */
+  signVsDegree: SignVsDegreeAnalysis;
 }
+
 
 interface InteractiveAspectExplorerProps {
   date?: Date;
@@ -39,7 +44,7 @@ const calculateAspect = (
   sign1: string,
   deg2: number,
   sign2: string
-): { type: string; symbol: string; orb: number } | null => {
+): { type: string; symbol: string; orb: number; angle: number; separation: number } | null => {
   // Convert to absolute degrees
   const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
   const abs1 = signs.indexOf(sign1) * 30 + deg1;
@@ -65,12 +70,19 @@ const calculateAspect = (
   for (const aspect of aspects) {
     const aspectOrb = Math.abs(diff - aspect.angle);
     if (aspectOrb <= aspect.orb) {
-      return { type: aspect.name, symbol: aspect.symbol, orb: Math.round(aspectOrb * 10) / 10 };
+      return {
+        type: aspect.name,
+        symbol: aspect.symbol,
+        orb: Math.round(aspectOrb * 10) / 10,
+        angle: aspect.angle,
+        separation: diff,
+      };
     }
   }
   
   return null;
 };
+
 
 // Get all current aspects
 const getAllAspects = (positions: PlanetaryPositions): AspectData[] => {
@@ -100,7 +112,20 @@ const getAllAspects = (positions: PlanetaryPositions): AspectData[] => {
             orb: aspect.orb,
             isApplying: false, // Simplified - would need ephemeris for true calculation
             interpretation,
+            signVsDegree: analyzeSignVsDegree({
+              labelA: PLANETS[i],
+              signA: p1.signName,
+              degreeA: p1.degree,
+              labelB: PLANETS[j],
+              signB: p2.signName,
+              degreeB: p2.degree,
+              aspect: aspect.type,
+              aspectAngle: aspect.angle,
+              separation: aspect.separation,
+              orb: aspect.orb,
+            }),
           });
+
         }
       }
     }
@@ -195,8 +220,14 @@ export const InteractiveAspectExplorer = ({ date = new Date() }: InteractiveAspe
           {aspect.planet1Position.degree}° {aspect.planet1Position.signName} — {aspect.planet2Position.degree}° {aspect.planet2Position.signName}
         </div>
         
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
           <Badge className={`text-[10px] ${nature.color}`}>{nature.label}</Badge>
+          {aspect.signVsDegree.isOutOfSign && (
+            <Badge variant="outline" className="text-[10px] border-amber-500/60 text-amber-600 dark:text-amber-400">
+              Out of sign
+            </Badge>
+          )}
+
           <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
             Click for details →
           </span>
@@ -307,6 +338,20 @@ export const InteractiveAspectExplorer = ({ date = new Date() }: InteractiveAspe
                     </div>
                   </div>
                 </div>
+
+                {/* Sign layer vs degree layer, shown when they disagree */}
+                {selectedAspect.signVsDegree.isOutOfSign && (
+                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 space-y-2">
+                    <Badge variant="outline" className="border-amber-500/60 text-amber-600 dark:text-amber-400">
+                      Out of sign
+                    </Badge>
+                    <p className="text-sm">{selectedAspect.signVsDegree.signLine}</p>
+                    <p className="text-sm">{selectedAspect.signVsDegree.degreeLine}</p>
+                    <p className="text-sm font-medium">{selectedAspect.signVsDegree.synthesisLine}</p>
+                  </div>
+                )}
+
+
 
                 {/* Keyword */}
                 <div className="text-center">

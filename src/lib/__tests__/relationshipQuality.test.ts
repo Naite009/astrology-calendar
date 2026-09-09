@@ -713,3 +713,59 @@ describe('Symbolic / spiritual layer framing', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Sign relationship vs degree geometry (out-of-sign contacts)
+// ---------------------------------------------------------------------------
+
+describe('synastry: sign vs degree layers', () => {
+  const chartWith = (name: string, sun: { sign: string; degree: number; minutes: number }): NatalChart =>
+    ({
+      id: name,
+      name,
+      planets: { Sun: { ...sun, seconds: 0, isRetrograde: false } },
+      houseCusps: {},
+    }) as unknown as NatalChart;
+
+  const ava = chartWith('Ava Kravitz', { sign: 'Taurus', degree: 28, minutes: 42 });
+  const max = chartWith('Max Levin', { sign: 'Aquarius', degree: 1, minutes: 17 });
+
+  const sunSun = calculateCrossAspects(ava, max).find(
+    (a) => a.fromBody === 'Sun' && a.toBody === 'Sun'
+  )!;
+
+  it('keeps the valid out-of-sign Sun trine and marks it', () => {
+    expect(sunSun).toBeTruthy();
+    expect(sunSun.aspect).toBe('trine');
+    expect(sunSun.isOutOfSign).toBe(true);
+    expect(sunSun.label).toContain('out of sign');
+    expect(sunSun.fromSign).toBe('Taurus');
+    expect(sunSun.toSign).toBe('Aquarius');
+  });
+
+  it('explains both layers instead of flattening to "trine = harmony"', () => {
+    const l = sunSun.signVsDegree;
+    expect(l.signAspect).toBe('square');
+    expect(l.signLine).toMatch(/Earth vs Air/);
+    expect(l.signLine).toMatch(/both fixed/);
+    expect(l.degreeLine).toMatch(/117°2\d'/);
+    expect(l.synthesisLine).toMatch(/still real/);
+    // must never imply shared element
+    expect(l.sameElement).toBe(false);
+  });
+
+  it('carries the layers into the directional "who feels what" card', () => {
+    const ctx = buildRelationshipContext({
+      kind: 'romantic',
+      personA: { name: 'Ava Kravitz', birthDate: '2011-05-19' },
+      personB: { name: 'Max Levin', birthDate: '2010-02-20' },
+    } as any);
+    const d = describeDirectionalContact(sunSun, ctx);
+    expect(d.isOutOfSign).toBe(true);
+    expect(d.badge).toBe('Out of sign');
+    expect(d.signLine).toMatch(/By sign:/);
+    expect(d.degreeLine).toMatch(/By degree:/);
+    expect(d.synthesisLine).toMatch(/Synthesis:/);
+    expect(d.positionsLine).toContain("28°42' Taurus");
+  });
+});

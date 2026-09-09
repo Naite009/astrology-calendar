@@ -15,6 +15,8 @@
  */
 
 import type { CrossAspect } from './synastryEngine';
+import { analyzeSignVsDegree } from '@/lib/aspects/outOfSign';
+
 import type { RelationshipContext } from './relationshipContext';
 import type { AgeStage } from '@/lib/readingGuide/ageContext';
 
@@ -32,13 +34,26 @@ export interface DirectionalContact {
   aspectLine: string;
   /** "orb 1.2° (allowance 6°)" */
   orbLine: string;
+  /** "Ava's Venus 5°12' Taurus · Max's Pluto 6°30' Capricorn" */
+  positionsLine: string;
   a: DirectionalRole;
   b: DirectionalRole;
   worksWell: string;
   growthEdge: string;
   /** One plain-English line. */
   summary: string;
+  /** True when the sign relationship is not the aspect the degrees make. */
+  isOutOfSign: boolean;
+  /** "Out of sign" or null. */
+  badge: string | null;
+  /** "By sign: …" */
+  signLine: string;
+  /** "By degree: …" */
+  degreeLine: string;
+  /** "Synthesis: …" holding both layers. */
+  synthesisLine: string;
 }
+
 
 type Feel = { role: string; adult: string; teen: string; child: string };
 
@@ -172,7 +187,10 @@ export function describeDirectionalContact(
   const fa = feelFor(a.fromBody, stage);
   const fb = feelFor(a.toBody, stage);
 
-  const aspectLine = `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody}`;
+  const layers = a.signVsDegree;
+  const aspectLine = `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody}${
+    layers?.isOutOfSign ? ' (out of sign)' : ''
+  }`;
   const orbLine = `orb ${a.orb.toFixed(1)}° (allowance ${a.maxOrb}° for these bodies, exact angle ${a.aspectAngle}°)`;
 
   const worksWell = tense
@@ -184,11 +202,15 @@ export function describeDirectionalContact(
     : `Because it comes easily, both can lean on it and skip the conversation. It helps to check that what feels obvious to one is actually landing for the other.`;
 
   const summaryVerb = ASPECT_PHRASE[a.aspect] ?? 'contacts';
-  const summary = `${a.fromOwner}'s ${a.fromBody} ${summaryVerb} ${a.toOwner}'s ${a.toBody}, so ${a.fromOwner} ${fa.feels.split(',')[0]} while ${a.toOwner} ${fb.feels.split(',')[0]}.`;
+  const oosNote = layers?.isOutOfSign
+    ? ` The signs (${a.fromSign}–${a.toSign}) do not match that aspect, so read both layers rather than the aspect name alone.`
+    : '';
+  const summary = `${a.fromOwner}'s ${a.fromBody} ${summaryVerb} ${a.toOwner}'s ${a.toBody}, so ${a.fromOwner} ${fa.feels.split(',')[0]} while ${a.toOwner} ${fb.feels.split(',')[0]}.${oosNote}`;
 
   return {
     aspectLine,
     orbLine,
+    positionsLine: layers?.positionsLine ?? '',
     a: {
       owner: a.fromOwner,
       body: a.fromBody,
@@ -204,20 +226,31 @@ export function describeDirectionalContact(
     worksWell,
     growthEdge,
     summary,
+    isOutOfSign: !!layers?.isOutOfSign,
+    badge: layers?.badge ?? null,
+    signLine: layers?.signLine ?? '',
+    degreeLine: layers?.degreeLine ?? '',
+    synthesisLine: layers?.synthesisLine ?? '',
   };
 }
 
 /** Flat evidence lines, for exports and PDFs that cannot render the card. */
 export function directionalEvidenceLines(d: DirectionalContact): string[] {
   return [
+    d.positionsLine ? `Positions: ${d.positionsLine}` : '',
     `${d.aspectLine} — ${d.orbLine}`,
+    d.isOutOfSign ? 'OUT OF SIGN: the sign relationship and the degree aspect disagree.' : '',
+    d.signLine,
+    d.degreeLine,
+    d.synthesisLine,
     `${d.a.roleLine}: ${d.a.feels}`,
     `${d.b.roleLine}: ${d.b.feels}`,
     `How it can work well: ${d.worksWell}`,
     `Possible friction / growth edge: ${d.growthEdge}`,
     `In one line: ${d.summary}`,
-  ];
+  ].filter(Boolean);
 }
+
 
 /** Aspect angles used when building a directional description from loose parts. */
 const ASPECT_ANGLE: Record<string, number> = {
@@ -244,6 +277,11 @@ export function describeDirectionalFromParts(
     aspect: string;
     orb?: number;
     maxOrb?: number;
+    /** Optional real positions: when present, the sign-vs-degree layer is built. */
+    fromSign?: string;
+    fromDegreeInSign?: number;
+    toSign?: string;
+    toDegreeInSign?: number;
   },
   ctx: RelationshipContext
 ): DirectionalContact {
@@ -257,6 +295,24 @@ export function describeDirectionalFromParts(
         : aspect === 'quincunx' || aspect === 'semisextile'
           ? 'adjusting'
           : 'flowing';
+  const hasPositions =
+    !!parts.fromSign &&
+    !!parts.toSign &&
+    parts.fromDegreeInSign !== undefined &&
+    parts.toDegreeInSign !== undefined;
+  const signVsDegree = hasPositions
+    ? analyzeSignVsDegree({
+        labelA: `${parts.fromOwner}'s ${parts.fromBody}`,
+        signA: parts.fromSign!,
+        degreeA: parts.fromDegreeInSign!,
+        labelB: `${parts.toOwner}'s ${parts.toBody}`,
+        signB: parts.toSign!,
+        degreeB: parts.toDegreeInSign!,
+        aspect,
+        aspectAngle: angle,
+        orb: parts.orb ?? 0,
+      })
+    : undefined;
   const pseudo = {
     fromOwner: parts.fromOwner,
     fromBody: parts.fromBody,
@@ -272,7 +328,14 @@ export function describeDirectionalFromParts(
     tone,
     weight: 0.5,
     isCoreContact: true,
+    fromSign: parts.fromSign ?? '',
+    fromDegreeInSign: parts.fromDegreeInSign ?? 0,
+    toSign: parts.toSign ?? '',
+    toDegreeInSign: parts.toDegreeInSign ?? 0,
+    signVsDegree,
+    isOutOfSign: !!signVsDegree?.isOutOfSign,
     label: '',
-  } as CrossAspect;
+  } as unknown as CrossAspect;
   return describeDirectionalContact(pseudo, ctx);
+
 }
