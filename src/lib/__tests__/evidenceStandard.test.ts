@@ -78,7 +78,9 @@ describe('signal strength labels', () => {
 describe('what this does not mean', () => {
   it('clarifies Pluto without pathology', () => {
     const lines = doesNotMeanFor({ bodies: ['Venus', 'Pluto'] });
-    expect(lines.join(' ')).toMatch(/obsession|manipulation|toxic/i);
+    expect(lines.join(' ')).toMatch(/fixation|control|doomed/i);
+    expect(lines.join(' ').toLowerCase()).not.toMatch(/toxic|narcissis|manipulative/);
+
     expect(lines.join(' ')).toBe(lines.join(' ')); // stable
   });
 
