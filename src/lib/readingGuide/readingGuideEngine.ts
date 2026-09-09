@@ -75,7 +75,16 @@ export interface BlendCard {
   strength: SignalStrength;
   supportCount: number;
   group: 'core' | 'personal-group' | 'growth' | 'outer' | 'nodes' | 'chiron';
+  /** Bodies this card rests on, for the shared evidence hierarchy. */
+  bodies: string[];
+  /** Houses involved, used for the misreading clarifications. */
+  houses: number[];
+  /** Primary / secondary / supplemental. */
+  tier: EvidenceTier;
+  /** Concise "what this does not mean" clarifications. */
+  doesNotMean: string[];
 }
+
 
 export interface StartHereItem {
   id: string;
