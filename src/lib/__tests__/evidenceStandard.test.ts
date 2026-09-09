@@ -42,10 +42,11 @@ describe('evidence hierarchy', () => {
 
   it('caps the primary reading and moves the rest to explore deeper', () => {
     const items = Array.from({ length: 14 }, (_, i) => ({ bodies: ['Venus'], weight: 14 - i }));
-    const { top, deeper } = splitTopFactors(items);
+    const { top, exploreDeeper } = splitTopFactors(items);
     expect(top.length).toBeLessThanOrEqual(TOP_FACTOR_MAX);
-    expect(top.length + deeper.length).toBe(14);
+    expect(top.length + exploreDeeper.length).toBe(14);
   });
+
 });
 
 describe('signal strength labels', () => {
