@@ -130,6 +130,9 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
         <HelpCircle size={12} className="mt-0.5 shrink-0" />
         <span><span className="uppercase tracking-widest text-[10px] mr-1">Ask them this:</span>{card.askThis}</span>
       </p>
+
+      <DoesNotMean lines={card.doesNotMean} />
+
     </article>
   );
 };
