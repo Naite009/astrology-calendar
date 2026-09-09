@@ -183,7 +183,8 @@ export type MisreadKey =
 
 export const WHAT_THIS_DOES_NOT_MEAN: Record<MisreadKey, string> = {
   pluto:
-    'Pluto contact means intensity and focus. It does not mean obsession, manipulation, abuse, toxicity or a doomed connection.',
+    'Pluto contact means intensity and focus. It does not mean fixation, control over another person, mistreatment or a doomed connection.',
+
   saturn:
     'Saturn contact adds structure, patience and follow-through. It does not mean coldness, punishment, failure or that something is destined to be hard.',
   chiron:
