@@ -589,10 +589,15 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   }
 
   const coreOrder = ['Moon', 'Sun', 'Ascendant', 'Mercury', 'Venus', 'Mars'];
-  const blends = coreOrder
-    .map((b) => buildBlend(b, 'core'))
-    .filter((b): b is BlendCard => !!b)
-    .sort((a, b) => b.supportCount - a.supportCount);
+  // Ranked through the shared hierarchy first (primary majors/angles ahead of
+  // nodes/Chiron and minor points), then by how many factors support the blend.
+  const blends = rankByEvidence(
+    coreOrder
+      .map((b) => buildBlend(b, 'core'))
+      .filter((b): b is BlendCard => !!b)
+      .map((b) => ({ ...b, weight: b.supportCount }))
+  ).map(({ weight: _weight, ...card }) => card as BlendCard);
+
 
   // personal planets grouped by repeated sign / shared house
   const personalGroups: BlendCard[] = [];
