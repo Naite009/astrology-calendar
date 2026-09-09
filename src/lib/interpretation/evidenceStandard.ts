@@ -325,10 +325,13 @@ export const FORBIDDEN_PSEUDO_METRICS = [
   'past life probability',
   'karmic probability',
   'destiny score',
-  'twin flame score',
+  'twin flame',
   'soul contract probability',
+  'soul growth focus',
   'fated love',
+  'compatibility probability',
 ];
+
 
 export function isPseudoMetricLabel(text: string): boolean {
   const t = (text || '').toLowerCase();
