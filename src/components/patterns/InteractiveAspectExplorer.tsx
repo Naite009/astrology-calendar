@@ -10,6 +10,8 @@ import {
   PlanetaryPositions 
 } from '@/lib/astrology';
 import { ASPECT_INTERPRETATIONS, AspectInterpretation } from '@/lib/aspectInterpretations';
+import { analyzeSignVsDegree, type SignVsDegreeAnalysis } from '@/lib/aspects/outOfSign';
+
 
 // Planet pairs for aspect checking
 const PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
