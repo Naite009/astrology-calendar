@@ -174,6 +174,9 @@ export const PairReadingView = ({ reading }: { reading: PairReading }) => {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">{score.disclaimer}</p>
+        <p className="text-xs text-muted-foreground">{SUMMARY_INDEX_DISCLAIMER}</p>
+        <p className="text-xs text-muted-foreground">{SIGNAL_DISCLAIMER}</p>
+
         <p className="text-xs text-muted-foreground">{score.weightingNote}</p>
       </div>
 
