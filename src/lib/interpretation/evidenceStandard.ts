@@ -200,7 +200,8 @@ export const WHAT_THIS_DOES_NOT_MEAN: Record<MisreadKey, string> = {
   intercepted:
     'An intercepted sign means a sign sits entirely inside one house. It describes emphasis and timing, not a blocked or missing part of life.',
   tenseAspect:
-    'A tense aspect describes friction and effort between two drives. It does not diagnose a personality problem, a disorder or a bad relationship.',
+    'A tense aspect describes friction and effort between two drives. It does not diagnose a personality problem, a disorder or a harmful relationship.',
+
   outOfSign:
     'An out-of-sign aspect is real by degree. It does not mean the two signs suddenly share an element or temperament.',
   summaryIndex:
