@@ -909,7 +909,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     repeatedSigns,
     houseClusters,
     chartRuler,
-    startHere,
+    startHere: startHereTop,
+    startHereDeeper,
+
     blends,
     personalGroups,
     growth,
