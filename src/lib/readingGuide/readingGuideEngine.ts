@@ -132,6 +132,9 @@ export interface ReadingGuide {
   houseClusters: HouseCluster[];
   chartRuler: { sign: string; ruler: string; placement?: CoreBodyPlacement; note: string } | null;
   startHere: StartHereItem[];
+  /** Lower-ranked "start here" detail, shown under Explore deeper. */
+  startHereDeeper: StartHereItem[];
+
   blends: BlendCard[];
   personalGroups: BlendCard[];
   growth: BlendCard[];
