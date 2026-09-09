@@ -1188,8 +1188,36 @@ export const FiveEssentialQuestions = ({
       }
     });
 
-    return aspects.slice(0, 8); // Limit to top 8 aspects
-  }, [report, karmicAnalysis, chart1.name, chart2.name, canonicalAspects]);
+    // Attach real sign + degree for each side so the sign-vs-degree ("out of
+    // sign") layer can be shown. Generic: any body, any pair.
+    const posOf = (chart: typeof chart1, body: string) => {
+      const src =
+        body === 'Ascendant'
+          ? chart.houseCusps?.house1 ?? chart.planets?.Ascendant
+          : body === 'Midheaven'
+            ? chart.houseCusps?.house10
+            : (chart.planets as Record<string, { sign?: string; degree?: number; minutes?: number }> | undefined)?.[body];
+      if (!src?.sign) return {};
+      return {
+        sign: src.sign as string,
+        degreeInSign: (Number(src.degree) || 0) + (Number(src.minutes) || 0) / 60,
+      };
+    };
+
+    return aspects.slice(0, 8).map((a) => {
+      const chartFor = (owner: string) => (owner === chart2.name ? chart2 : chart1);
+      const p1 = posOf(chartFor(a.owner1), a.planet1);
+      const p2 = posOf(chartFor(a.owner2), a.planet2);
+      return {
+        ...a,
+        fromSign: p1.sign,
+        fromDegreeInSign: p1.degreeInSign,
+        toSign: p2.sign,
+        toDegreeInSign: p2.degreeInSign,
+      };
+    }); // Limit to top 8 aspects
+  }, [report, karmicAnalysis, chart1, chart2, canonicalAspects]);
+
 
   // Generate lessons
   const lessons = useMemo(() => 
