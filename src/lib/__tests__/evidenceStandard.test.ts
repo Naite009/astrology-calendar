@@ -121,10 +121,10 @@ describe('evidence card anatomy', () => {
       headline: 'Competence builds confidence',
       bodies: ['Moon', 'Saturn'],
       houses: [2, 6],
-      factors: ['Moon in Capricorn', 'Moon in the 2nd house', 'strong Earth', 'strong 6th house'],
+      evidence: ['Moon in Capricorn', 'Moon in the 2nd house', 'strong Earth', 'strong 6th house'],
       derivation: ['Moon = emotional needs', 'Capricorn = competence', 'Together → progress feels steadying'],
       interpretation: 'Seeing effort pay off can feel steadying.',
-      primaryFactors: 4,
+      signal: { primaryFactors: 4 },
     });
     expect(card.signal).toBe('strong');
     expect(card.tier).toBe('primary');
@@ -136,10 +136,11 @@ describe('evidence card anatomy', () => {
     const card = buildEvidenceCard({
       headline: 'Past Life Probability: 33%',
       bodies: [],
-      factors: [],
+      evidence: [],
       derivation: [],
       interpretation: 'trust me',
     });
     expect(auditEvidenceCard(card).length).toBeGreaterThan(0);
   });
 });
+
