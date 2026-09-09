@@ -16,9 +16,9 @@ import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
 
 import { ordinal } from '@/lib/interpretation/ordinals';
 import {
-  DOES_NOT_MEAN_HEADING, EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
-  SUMMARY_INDEX_DISCLAIMER,
+  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER, SUMMARY_INDEX_DISCLAIMER,
 } from '@/lib/interpretation/evidenceStandard';
+
 
 const STRENGTH_LABEL: Record<ReadingItem['strength'], string> = {
   strong: 'Strong signal',
