@@ -275,6 +275,11 @@ export function describeDirectionalFromParts(
     aspect: string;
     orb?: number;
     maxOrb?: number;
+    /** Optional real positions: when present, the sign-vs-degree layer is built. */
+    fromSign?: string;
+    fromDegreeInSign?: number;
+    toSign?: string;
+    toDegreeInSign?: number;
   },
   ctx: RelationshipContext
 ): DirectionalContact {
@@ -288,6 +293,24 @@ export function describeDirectionalFromParts(
         : aspect === 'quincunx' || aspect === 'semisextile'
           ? 'adjusting'
           : 'flowing';
+  const hasPositions =
+    !!parts.fromSign &&
+    !!parts.toSign &&
+    parts.fromDegreeInSign !== undefined &&
+    parts.toDegreeInSign !== undefined;
+  const signVsDegree = hasPositions
+    ? analyzeSignVsDegree({
+        labelA: `${parts.fromOwner}'s ${parts.fromBody}`,
+        signA: parts.fromSign!,
+        degreeA: parts.fromDegreeInSign!,
+        labelB: `${parts.toOwner}'s ${parts.toBody}`,
+        signB: parts.toSign!,
+        degreeB: parts.toDegreeInSign!,
+        aspect,
+        aspectAngle: angle,
+        orb: parts.orb ?? 0,
+      })
+    : undefined;
   const pseudo = {
     fromOwner: parts.fromOwner,
     fromBody: parts.fromBody,
@@ -303,7 +326,14 @@ export function describeDirectionalFromParts(
     tone,
     weight: 0.5,
     isCoreContact: true,
+    fromSign: parts.fromSign ?? '',
+    fromDegreeInSign: parts.fromDegreeInSign ?? 0,
+    toSign: parts.toSign ?? '',
+    toDegreeInSign: parts.toDegreeInSign ?? 0,
+    signVsDegree,
+    isOutOfSign: !!signVsDegree?.isOutOfSign,
     label: '',
-  } as CrossAspect;
+  } as unknown as CrossAspect;
   return describeDirectionalContact(pseudo, ctx);
+
 }
