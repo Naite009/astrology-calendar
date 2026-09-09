@@ -184,6 +184,13 @@ export function collectSynastryLongitudes(
   }
   return out;
 }
+/** Longitude → sign name plus decimal degree inside that sign. */
+export function signPosition(longitude: number): { sign: string; degree: number } {
+  const norm = ((longitude % 360) + 360) % 360;
+  const idx = Math.floor(norm / 30) % 12;
+  return { sign: ZODIAC_ORDER[idx], degree: norm - idx * 30 };
+}
+
 
 export function separationBetween(lonA: number, lonB: number): number {
   let diff = Math.abs(lonA - lonB) % 360;
