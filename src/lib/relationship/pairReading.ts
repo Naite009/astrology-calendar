@@ -343,6 +343,8 @@ function overlayItems(
         ...(o.approximationNote ? [o.approximationNote] : []),
       ],
       strength: 'single-contact',
+      tier: contactTier([o.body]),
+      doesNotMean: doesNotMeanFor({ bodies: [o.body], houses: [o.house] }),
     });
   }
   return items;
@@ -360,8 +362,11 @@ function aspectItems(top: CrossAspect[], ctx: RelationshipContext): ReadingItem[
       ...directionalEvidenceLines(d),
     ],
     strength: (a.weight >= 0.5 ? 'strong' : a.weight >= 0.3 ? 'moderate' : 'single-contact') as ReadingItem['strength'],
+    tier: contactTier([a.fromBody, a.toBody]),
+    doesNotMean: doesNotMeanFor({ bodies: [a.fromBody, a.toBody], aspectTone: a.tone, isOutOfSign: d.isOutOfSign }),
     };
   });
+
 }
 
 const SECTION_TITLES: Partial<Record<RelationshipSectionKey, string>> = {
