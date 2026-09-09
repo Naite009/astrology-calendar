@@ -293,8 +293,12 @@ export function involvesBoth(a: CrossAspect, groupA: string[], groupB: string[])
 
 /** Human-readable, direction-explicit description. */
 export function describeAspect(a: CrossAspect): string {
-  return `${a.fromOwner}'s ${a.fromBody} ${a.aspect} ${a.toOwner}'s ${a.toBody} (${a.orb.toFixed(1)}° orb)`;
+  const oos = a.isOutOfSign ? ', out of sign' : '';
+  return `${a.fromOwner}'s ${a.fromBody} ${a.fromDegreeInSign !== undefined ? `${Math.floor(a.fromDegreeInSign)}° ${a.fromSign} ` : ''}${a.aspect} ${a.toOwner}'s ${a.toBody}${
+    a.toSign ? ` ${Math.floor(a.toDegreeInSign)}° ${a.toSign}` : ''
+  } (${a.orb.toFixed(1)}° orb${oos})`;
 }
+
 
 /**
  * Nodal-axis geometry check: North/South Node contacts to the *same* body are
