@@ -580,7 +580,12 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(support),
       supportCount: support,
       group,
+      ...evidenceFields([bodyName, ...linkedBodies], [p.house, ...linkedHouses], {
+        retrograde: p.isRetrograde,
+        tense: hasTenseLink,
+      }),
     };
+
   }
 
   const coreOrder = ['Moon', 'Sun', 'Ascendant', 'Mercury', 'Venus', 'Mars'];
