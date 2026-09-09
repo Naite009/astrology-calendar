@@ -655,6 +655,10 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      ...evidenceFields(group.map((g) => g.body), [house], {
+        retrograde: group.some((g) => g.isRetrograde),
+      }),
+
     });
   }
 
