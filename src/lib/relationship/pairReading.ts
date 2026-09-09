@@ -36,6 +36,10 @@ import { RelationshipContext, RelationshipSectionKey } from './relationshipConte
 import { sanitizeRelationshipDeep } from './relationshipLanguage';
 import { AgeStage } from '@/lib/readingGuide/ageContext';
 import { describeDirectionalContact, directionalEvidenceLines, type DirectionalContact } from './directionalRoles';
+import {
+  contactTier, doesNotMeanFor, rankByEvidence, signalLevel,
+  type EvidenceTier, type SignalLevel,
+} from '@/lib/interpretation/evidenceStandard';
 
 export interface ReadingItem {
   title: string;
@@ -48,9 +52,14 @@ export interface ReadingItem {
   /** Exact chart evidence. */
   evidence: string[];
   strength: 'strong' | 'moderate' | 'single-contact';
+  /** Shared evidence hierarchy: primary / secondary / supplemental. */
+  tier: EvidenceTier;
+  /** Concise clarifications for easily misread signatures. */
+  doesNotMean: string[];
   /** Explicit "who feels what" breakdown for the contact behind this item. */
   directional?: DirectionalContact;
 }
+
 
 export interface PairSection {
   key: RelationshipSectionKey;
