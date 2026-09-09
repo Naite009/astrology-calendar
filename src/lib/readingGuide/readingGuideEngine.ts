@@ -854,6 +854,11 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     });
   }
   startHere.sort((a, b) => b.importance - a.importance);
+  // Top factors first: only the handful that actually explains the chart leads.
+  // Everything else moves under "Explore deeper".
+  const startHereTop = startHere.slice(0, TOP_FACTOR_MAX);
+  const startHereDeeper = startHere.slice(TOP_FACTOR_MAX);
+
 
   // ── the story ─────────────────────────────────────────────────────────────
   const storyParts: string[] = [];
