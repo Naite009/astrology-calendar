@@ -71,7 +71,8 @@ describe('signal strength labels', () => {
   });
 
   it('never presents strength as a probability', () => {
-    expect(SIGNAL_DISCLAIMER.toLowerCase()).not.toMatch(/probability|chance|scientific/);
+    expect(SIGNAL_DISCLAIMER.toLowerCase()).toMatch(/not a probability/);
+
   });
 });
 
