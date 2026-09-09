@@ -31,10 +31,16 @@ const ItemCard = ({ item }: { item: ReadingItem }) => {
     <div className="p-3 rounded-lg border border-border bg-card">
       <div className="flex items-start justify-between gap-2 mb-1">
         <h5 className="font-medium text-sm">{item.title}</h5>
-        <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
-          {STRENGTH_LABEL[item.strength]}
-        </Badge>
+        <span className="flex flex-wrap items-center gap-1 justify-end">
+          <Badge variant="outline" className="text-[10px] whitespace-nowrap" title={EVIDENCE_TIER_NOTE[item.tier]}>
+            {EVIDENCE_TIER_LABEL[item.tier]}
+          </Badge>
+          <Badge variant="secondary" className="text-[10px] whitespace-nowrap" title={SIGNAL_DISCLAIMER}>
+            {STRENGTH_LABEL[item.strength]}
+          </Badge>
+        </span>
       </div>
+
       <p className="text-sm text-foreground/90">{item.statement}</p>
       {item.growthEdge && (
         <p className="text-sm text-muted-foreground mt-1">{item.growthEdge}</p>
