@@ -880,7 +880,11 @@ const AspectCard = ({
   personBName,
   orb,
   focus = 'romance',
-  context
+  context,
+  fromSign,
+  fromDegreeInSign,
+  toSign,
+  toDegreeInSign
 }: { 
   planet1: string; 
   planet2: string; 
@@ -890,6 +894,10 @@ const AspectCard = ({
   orb?: number;
   focus?: 'romance' | 'friendship' | 'business' | 'creative' | 'family';
   context?: RelationshipContext;
+  fromSign?: string;
+  fromDegreeInSign?: number;
+  toSign?: string;
+  toDegreeInSign?: number;
 }) => {
   const [expanded, setExpanded] = useState(false);
   const expressions = generateAspectExpressions(planet1, planet2, aspect, personAName, personBName);
@@ -898,10 +906,22 @@ const AspectCard = ({
   const directional = useMemo(() => {
     if (!context) return null;
     return describeDirectionalFromParts(
-      { fromOwner: personAName, fromBody: planet1, toOwner: personBName, toBody: planet2, aspect, orb },
+      {
+        fromOwner: personAName,
+        fromBody: planet1,
+        toOwner: personBName,
+        toBody: planet2,
+        aspect,
+        orb,
+        fromSign,
+        fromDegreeInSign,
+        toSign,
+        toDegreeInSign,
+      },
       context
     );
-  }, [context, personAName, planet1, personBName, planet2, aspect, orb]);
+  }, [context, personAName, planet1, personBName, planet2, aspect, orb, fromSign, fromDegreeInSign, toSign, toDegreeInSign]);
+
 
   // Curated long-form directional interpretation, when one exists for this pair.
   // Suppressed for minors: the curated copy is written for adult relationships.
