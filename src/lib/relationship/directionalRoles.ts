@@ -32,13 +32,26 @@ export interface DirectionalContact {
   aspectLine: string;
   /** "orb 1.2° (allowance 6°)" */
   orbLine: string;
+  /** "Ava's Venus 5°12' Taurus · Max's Pluto 6°30' Capricorn" */
+  positionsLine: string;
   a: DirectionalRole;
   b: DirectionalRole;
   worksWell: string;
   growthEdge: string;
   /** One plain-English line. */
   summary: string;
+  /** True when the sign relationship is not the aspect the degrees make. */
+  isOutOfSign: boolean;
+  /** "Out of sign" or null. */
+  badge: string | null;
+  /** "By sign: …" */
+  signLine: string;
+  /** "By degree: …" */
+  degreeLine: string;
+  /** "Synthesis: …" holding both layers. */
+  synthesisLine: string;
 }
+
 
 type Feel = { role: string; adult: string; teen: string; child: string };
 
