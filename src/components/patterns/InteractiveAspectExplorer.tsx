@@ -339,6 +339,20 @@ export const InteractiveAspectExplorer = ({ date = new Date() }: InteractiveAspe
                   </div>
                 </div>
 
+                {/* Sign layer vs degree layer, shown when they disagree */}
+                {selectedAspect.signVsDegree.isOutOfSign && (
+                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 space-y-2">
+                    <Badge variant="outline" className="border-amber-500/60 text-amber-600 dark:text-amber-400">
+                      Out of sign
+                    </Badge>
+                    <p className="text-sm">{selectedAspect.signVsDegree.signLine}</p>
+                    <p className="text-sm">{selectedAspect.signVsDegree.degreeLine}</p>
+                    <p className="text-sm font-medium">{selectedAspect.signVsDegree.synthesisLine}</p>
+                  </div>
+                )}
+
+
+
                 {/* Keyword */}
                 <div className="text-center">
                   <Badge className={`text-lg px-4 py-1 ${getAspectColor(selectedAspect.aspectType)}`}>
