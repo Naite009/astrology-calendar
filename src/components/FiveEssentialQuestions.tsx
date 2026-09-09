@@ -967,9 +967,27 @@ const AspectCard = ({
             {/* Canonical directional breakdown: exact aspect, both roles, both sides */}
             {directional && (
               <div className="p-3 rounded-lg border bg-secondary/20 space-y-2">
-                <p className="text-sm font-medium">
-                  {directional.aspectLine} · {directional.orbLine}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-medium">
+                    {directional.aspectLine} · {directional.orbLine}
+                  </p>
+                  {directional.isOutOfSign && (
+                    <Badge variant="outline" className="text-xs whitespace-nowrap border-amber-500/60 text-amber-600 dark:text-amber-400">
+                      Out of sign
+                    </Badge>
+                  )}
+                </div>
+                {directional.positionsLine && (
+                  <p className="text-xs text-muted-foreground">{directional.positionsLine}</p>
+                )}
+                {directional.isOutOfSign && (
+                  <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 space-y-1">
+                    <p className="text-xs">{directional.signLine}</p>
+                    <p className="text-xs">{directional.degreeLine}</p>
+                    <p className="text-xs">{directional.synthesisLine}</p>
+                  </div>
+                )}
+
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div>
                     <p className="text-xs font-medium">{directional.a.roleLine}</p>
