@@ -23,9 +23,10 @@ import { MAJOR_ASPECTS, getEffectiveOrb } from '@/lib/aspectOrbs';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import {
-  contactTier, doesNotMeanFor, signalLevelFromCount, rankByEvidence, splitTopFactors,
+  contactTier, doesNotMeanFor, signalLevelFromCount, rankByEvidence, TOP_FACTOR_MAX,
   type EvidenceTier,
 } from '@/lib/interpretation/evidenceStandard';
+
 
 import {
   AgeStage, AgeContext, buildAgeContext, houseArena, applyStageVocabulary, voiceFor,
