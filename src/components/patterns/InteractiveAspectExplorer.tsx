@@ -29,7 +29,10 @@ interface AspectData {
   orb: number;
   isApplying: boolean;
   interpretation: AspectInterpretation;
+  /** Dual-layer sign vs degree explanation (out-of-sign aware). */
+  signVsDegree: SignVsDegreeAnalysis;
 }
+
 
 interface InteractiveAspectExplorerProps {
   date?: Date;
