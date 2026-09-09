@@ -18,6 +18,8 @@
 import { NatalChart } from '@/hooks/useNatalChart';
 import { getEffectiveOrb, MAJOR_ASPECTS, STANDARD_ASPECTS } from '@/lib/aspectOrbs';
 import { signDegreesToLongitude } from '@/lib/houseCalculations';
+import { analyzeSignVsDegree, ZODIAC_ORDER, type SignVsDegreeAnalysis } from '@/lib/aspects/outOfSign';
+
 
 /** The bodies a core relationship reading is allowed to use. */
 export const CORE_SYNASTRY_BODIES = [
