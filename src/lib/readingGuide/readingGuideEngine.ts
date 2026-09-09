@@ -763,6 +763,8 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         strength: tight.length ? 'Moderate' : 'Single-placement',
         supportCount: tight.length ? 2 : 1,
         group: 'chiron',
+        ...evidenceFields(['Chiron', ...tight.map((t) => t.other.body)], [ch.house, ...tight.map((t) => t.other.house)]),
+
       };
     }
   }
