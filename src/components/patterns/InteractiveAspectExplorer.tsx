@@ -220,8 +220,14 @@ export const InteractiveAspectExplorer = ({ date = new Date() }: InteractiveAspe
           {aspect.planet1Position.degree}° {aspect.planet1Position.signName} — {aspect.planet2Position.degree}° {aspect.planet2Position.signName}
         </div>
         
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
           <Badge className={`text-[10px] ${nature.color}`}>{nature.label}</Badge>
+          {aspect.signVsDegree.isOutOfSign && (
+            <Badge variant="outline" className="text-[10px] border-amber-500/60 text-amber-600 dark:text-amber-400">
+              Out of sign
+            </Badge>
+          )}
+
           <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
             Click for details →
           </span>
