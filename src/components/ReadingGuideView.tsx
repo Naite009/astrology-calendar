@@ -72,10 +72,22 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
     <article className="border border-border rounded-sm bg-background/40 p-4 space-y-3">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-sm font-medium text-foreground">{card.name}</h4>
-        <span className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STRENGTH_STYLE[card.strength]}`}>
-          {card.strength} · {card.supportCount} factor{card.supportCount === 1 ? '' : 's'}
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span
+            className="rounded-sm border border-border bg-secondary/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground"
+            title={EVIDENCE_TIER_NOTE[card.tier]}
+          >
+            {EVIDENCE_TIER_LABEL[card.tier]}
+          </span>
+          <span
+            className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STRENGTH_STYLE[card.strength]}`}
+            title={SIGNAL_DISCLAIMER}
+          >
+            {card.strength} · {card.supportCount} factor{card.supportCount === 1 ? '' : 's'}
+          </span>
         </span>
       </header>
+
 
       <div>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What created it</p>
