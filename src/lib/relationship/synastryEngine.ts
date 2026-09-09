@@ -112,9 +112,23 @@ export interface CrossAspect {
   weight: number;
   /** False for minor bodies / points outside the core set. */
   isCoreContact: boolean;
+  /** Sign of the chart1 body, and its degree within that sign. */
+  fromSign: string;
+  fromDegreeInSign: number;
+  /** Sign of the chart2 body, and its degree within that sign. */
+  toSign: string;
+  toDegreeInSign: number;
+  /**
+   * Dual-layer sign-vs-degree analysis. `isOutOfSign` is true when the
+   * sign-to-sign relationship is NOT the aspect the degrees make.
+   */
+  signVsDegree: SignVsDegreeAnalysis;
+  /** Shorthand for UI badges. */
+  isOutOfSign: boolean;
   /** "Ava's Moon square Max's Saturn (2.3°)" */
   label: string;
 }
+
 
 export interface CrossAspectOptions {
   /** Include Ceres/Juno/Eros/Part of Fortune etc. Default false. */
