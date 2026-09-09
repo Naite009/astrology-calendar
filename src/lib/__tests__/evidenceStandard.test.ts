@@ -61,7 +61,7 @@ describe('signal strength labels', () => {
   });
 
   it('does not let supplemental factors alone reach strong', () => {
-    expect(signalLevel({ supplementalFactors: 6 })).not.toBe('strong');
+    expect(signalLevel({ primaryFactors: 0, supplementalFactors: 6 })).not.toBe('strong');
   });
 
   it('maps counts consistently', () => {
