@@ -351,7 +351,7 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
     davisonPlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
   }
   
-  const interpretation = generateDavisonInterpretation(davisonPlanets, averagedDate);
+  const interpretation = generateDavisonInterpretation(davisonPlanets, averagedDate, chart1.name, chart2.name, ctx);
   
   return {
     name: `${chart1.name} & ${chart2.name} Davison`,
