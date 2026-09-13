@@ -20,6 +20,7 @@ import {
   legacyKarmicFocus,
   SYMBOLIC_LENS_HEADING,
   SYMBOLIC_LENS_NOTE,
+  buildKarmicSummary,
 } from '@/lib/relationship';
 import { PairReadingView } from './relationship/PairReadingView';
 import { CompositeReadingView } from './relationship/CompositeReadingView';
@@ -543,6 +544,12 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     );
   }, [chart1, chart2, relContext, awaitingFamilyRelation, familyContext]);
 
+  /** One canonical symbolic summary, shared by every Synastry surface and the PDF. */
+  const karmicSummary = useMemo(
+    () => buildKarmicSummary(karmicAnalysis, relContext, chart1?.name, chart2?.name),
+    [karmicAnalysis, relContext, chart1?.name, chart2?.name]
+  );
+
   /**
    * Headline numbers come only from the canonical context-specific index.
    * The old "true overall score" averaged five unrelated categories (romance +
@@ -792,6 +799,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           focusAnalysis={focusAnalysis}
                           houseOverlays={focusedHouseOverlays}
                           karmicIndicators={focusedKarmicIndicators}
+                          karmicSummary={karmicSummary}
                           focus={relationshipFocus}
                           pairReading={pairReading ?? undefined}
                           compositeReading={compositeReadingForExport ?? undefined}
@@ -831,6 +839,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                               analysis={karmicAnalysis} 
                               chart1Name={chart1.name} 
                               chart2Name={chart2.name} 
+                              context={relContext ?? undefined}
                             />
                           )}
                         </CollapsibleContent>

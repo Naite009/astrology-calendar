@@ -20,6 +20,7 @@ import {
   Sparkles, Flame, Heart, Scale, Star, ArrowRight
 } from 'lucide-react';
 import { SYMBOLIC_LENS_NOTE, symbolicShareLine } from '@/lib/relationship/symbolicFraming';
+import { buildKarmicSummary } from '@/lib/relationship/karmicSummary';
 import { useState } from 'react';
 
 interface ThemeBreakdownGuideProps {
@@ -236,6 +237,7 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
     ? Math.round((themeTotals.soul_growth.points / karmicAnalysis.totalKarmicScore) * 100)
     : 0;
   const pastLifePercent = karmicAnalysis.pastLifeProbability;
+  const karmicSummary = buildKarmicSummary(karmicAnalysis as any, null, chart1.name, chart2.name);
   
   return (
     <div className="space-y-6">
@@ -254,26 +256,20 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
 
       <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">{SYMBOLIC_LENS_NOTE}</p>
 
-      {/* Summary Banner */}
-      <div className="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-3xl font-bold text-primary">{karmicAnalysis.totalKarmicScore}</div>
-            <div className="text-xs text-muted-foreground">Total symbolic marker weight</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{soulGrowthPercent}%</div>
-            <div className="text-xs text-muted-foreground">Share of weighting: growth-direction contacts</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{pastLifePercent}%</div>
-            <div className="text-xs text-muted-foreground">Share of weighting: familiarity contacts</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{karmicAnalysis.indicators.length}</div>
-            <div className="text-xs text-muted-foreground">Total Indicators</div>
-          </div>
+      {/* Summary Banner: labelled counts of contacts actually found, never a bare score */}
+      <div className="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border space-y-3">
+        <p className="text-sm">{karmicSummary.bigPicture}</p>
+        <div className="flex flex-wrap gap-2">
+          {karmicSummary.categories.map((cat) => (
+            <span key={cat.key} className="text-xs px-3 py-1 rounded-full bg-background/70 border">
+              {cat.label}
+            </span>
+          ))}
+          {karmicSummary.categories.length === 0 && (
+            <span className="text-xs text-muted-foreground">No symbolic contacts were found between these charts.</span>
+          )}
         </div>
+        <p className="text-xs text-muted-foreground">{karmicSummary.countsNote}</p>
       </div>
 
       {/* Theme Sections */}
@@ -291,9 +287,9 @@ export const ThemeBreakdownGuide = ({ chart1, chart2, karmicAnalysis }: ThemeBre
           astrologyBehindIt={`The South Node represents what we bring FROM past lives - it's our comfort zone, familiar patterns, what we've already mastered. When someone's planet touches your South Node, it feels INSTANTLY familiar because you've "done this before" across lifetimes. It's like meeting an old friend - you fall into patterns easily, sometimes too easily.
 
 The 12th house is the realm of the unconscious, hidden things, spirituality, and past life memories. When someone's planets fall in your 12th house, you have a psychic/spiritual connection that often transcends words.`}
-          whyItMatters={pastLifePercent < 30 
-            ? `Low past life scores (like yours at ${pastLifePercent}%) mean this is primarily a NEW soul agreement focused on growth, not completion. You're not here to resolve old karma - you're creating something new.`
-            : `Higher past life scores (${pastLifePercent}%) suggest you're completing old karma together. There may be patterns that feel familiar but need conscious attention.`
+          whyItMatters={themeTotals.past_life.count === 0
+            ? `No familiarity contacts (South Node or 12th-house overlays) were found between these charts, so this theme has nothing concrete behind it here.`
+            : `${themeTotals.past_life.count} familiarity ${themeTotals.past_life.count === 1 ? 'contact was' : 'contacts were'} found, listed above with their exact orbs. Symbolically that reads as patterns that may feel already known. It is imagery about repetition, not information about anyone's history.`
           }
           indicators={karmicAnalysis.indicators}
           totalScore={karmicAnalysis.totalKarmicScore}

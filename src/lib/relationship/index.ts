@@ -127,3 +127,18 @@ export type {
   CompositeReadingItem,
   LegacyCompositeInterpretation,
 } from './compositeReading';
+
+export {
+  buildKarmicSummary,
+  renderKarmicSummaryText,
+  karmicContactLine,
+  formatKarmicOrb,
+  formatKarmicBody,
+} from './karmicSummary';
+export type {
+  KarmicSummary,
+  KarmicCategory,
+  KarmicCategoryKey,
+  KarmicEvidenceLine,
+  KarmicGlossaryEntry,
+} from './karmicSummary';

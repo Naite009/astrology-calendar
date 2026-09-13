@@ -53,6 +53,12 @@ export interface KarmicIndicator {
   planet1: string;
   planet2: string;
   aspect?: string;
+  /** Exact orb in degrees for aspect-based indicators (undefined for house overlays). */
+  orb?: number;
+  /** Name of the person whose chart contributes planet1. */
+  owner1?: string;
+  /** Name of the person whose chart contributes planet2 (or whose house is overlaid). */
+  owner2?: string;
   weight: number;
   interpretation: string;
   theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'fated';
@@ -81,20 +87,26 @@ export interface KarmicAnalysis {
 
 const ZODIAC_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
-function calculateAspect(planet1: any, planet2: any): string | null {
+
+/**
+ * Same detection as calculateAspect, but also returns the exact orb so every
+ * karmic claim can show the measurement it came from.
+ */
+function calculateAspectWithOrb(planet1: any, planet2: any): { aspect: string; orb: number } | null {
   if (!planet1 || !planet2) return null;
   const signIndex1 = typeof planet1.sign === 'string' ? ZODIAC_SIGNS.indexOf(planet1.sign) : planet1.sign;
   const signIndex2 = typeof planet2.sign === 'string' ? ZODIAC_SIGNS.indexOf(planet2.sign) : planet2.sign;
   if (signIndex1 === -1 || signIndex2 === -1) return null;
-  const pos1 = signIndex1 * 30 + planet1.degree + (planet1.minutes / 60);
-  const pos2 = signIndex2 * 30 + planet2.degree + (planet2.minutes / 60);
+  const pos1 = signIndex1 * 30 + planet1.degree + ((planet1.minutes || 0) / 60);
+  const pos2 = signIndex2 * 30 + planet2.degree + ((planet2.minutes || 0) / 60);
   let diff = Math.abs(pos1 - pos2);
   if (diff > 180) diff = 360 - diff;
-  if (diff <= 8) return 'conjunction';
-  if (Math.abs(diff - 180) <= 8) return 'opposition';
-  if (Math.abs(diff - 120) <= 8) return 'trine';
-  if (Math.abs(diff - 90) <= 7) return 'square';
-  if (Math.abs(diff - 60) <= 6) return 'sextile';
+  const round = (n: number) => Math.round(n * 100) / 100;
+  if (diff <= 8) return { aspect: 'conjunction', orb: round(diff) };
+  if (Math.abs(diff - 180) <= 8) return { aspect: 'opposition', orb: round(Math.abs(diff - 180)) };
+  if (Math.abs(diff - 120) <= 8) return { aspect: 'trine', orb: round(Math.abs(diff - 120)) };
+  if (Math.abs(diff - 90) <= 7) return { aspect: 'square', orb: round(Math.abs(diff - 90)) };
+  if (Math.abs(diff - 60) <= 6) return { aspect: 'sextile', orb: round(Math.abs(diff - 60)) };
   return null;
 }
 
@@ -522,13 +534,17 @@ function analyzeSouthNodeConnections(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(southNode1, planet2);
-    if (aspect) {
+    const found = calculateAspectWithOrb(southNode1, planet2);
+    if (found) {
+      const aspect = found.aspect;
       indicators.push({ 
         type: 'south_node', 
         planet1: 'SouthNode', 
         planet2: planetName, 
         aspect, 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.southNode[aspect] || 0, 
         interpretation: getSouthNodeInterpretation(planetName, aspect, focus), 
         theme: 'past_life' 
@@ -548,13 +564,17 @@ function analyzeNorthNodeConnections(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(northNode1, planet2);
-    if (aspect) {
+    const found = calculateAspectWithOrb(northNode1, planet2);
+    if (found) {
+      const aspect = found.aspect;
       indicators.push({ 
         type: 'north_node', 
         planet1: 'NorthNode', 
         planet2: planetName, 
         aspect, 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.northNode[aspect] || 0, 
         interpretation: getNorthNodeInterpretation(planetName, aspect, focus), 
         theme: 'soul_growth' 
@@ -575,13 +595,17 @@ function analyzeSaturnKarma(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(saturn1, planet2);
-    if (aspect) {
+    const found = calculateAspectWithOrb(saturn1, planet2);
+    if (found) {
+      const aspect = found.aspect;
       indicators.push({ 
         type: 'saturn', 
         planet1: 'Saturn', 
         planet2: planetName, 
         aspect, 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.saturn[aspect] || 0, 
         interpretation: getSaturnInterpretation(planetName, aspect, focus), 
         theme: 'karmic_debt' 
@@ -606,13 +630,17 @@ function analyzePlutoTransformation(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(pluto1, planet2);
-    if (aspect) {
+    const found = calculateAspectWithOrb(pluto1, planet2);
+    if (found) {
+      const aspect = found.aspect;
       indicators.push({ 
         type: 'pluto', 
         planet1: 'Pluto', 
         planet2: planetName, 
         aspect, 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.pluto[aspect] || 0, 
         interpretation: getPlutoInterpretation(planetName, aspect, focus), 
         theme: 'transformation' 
@@ -637,13 +665,17 @@ function analyzeChironHealing(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(chiron1, planet2);
-    if (aspect) {
+    const found = calculateAspectWithOrb(chiron1, planet2);
+    if (found) {
+      const aspect = found.aspect;
       indicators.push({ 
         type: 'chiron', 
         planet1: 'Chiron', 
         planet2: planetName, 
         aspect, 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.chiron[aspect] || 0, 
         interpretation: getChironInterpretation(planetName, aspect, focus), 
         theme: 'healing' 
@@ -671,6 +703,8 @@ function analyzeTwelfthHouseOverlays(
         type: 'twelfth_house', 
         planet1: planetName, 
         planet2: '12th House', 
+        owner1: chart2.name,
+        owner2: chart1.name,
         weight: KARMIC_WEIGHTS.twelfthHouse, 
         interpretation: getTwelfthHouseInterpretation(planetName, focus), 
         theme: 'past_life' 
@@ -699,6 +733,8 @@ function analyzeEighthHouseOverlays(
         type: 'eighth_house', 
         planet1: planetName, 
         planet2: '8th House', 
+        owner1: chart2.name,
+        owner2: chart1.name,
         weight: KARMIC_WEIGHTS.eighthHouse, 
         interpretation: getEighthHouseInterpretation(planetName, focus), 
         theme: 'transformation' 
@@ -722,13 +758,16 @@ function analyzeVertexContacts(
   PERSONAL_PLANETS.forEach(planetName => {
     const planet2 = chart2.planets[planetName];
     if (!planet2) return;
-    const aspect = calculateAspect(vertex1, planet2);
-    if (aspect === 'conjunction') {
+    const found = calculateAspectWithOrb(vertex1, planet2);
+    if (found && found.aspect === 'conjunction') {
       indicators.push({ 
         type: 'vertex', 
         planet1: 'Vertex', 
         planet2: planetName, 
         aspect: 'conjunction', 
+        orb: found.orb,
+        owner1: chart1.name,
+        owner2: chart2.name,
         weight: KARMIC_WEIGHTS.vertex, 
         interpretation: getVertexInterpretation(planetName, focus), 
         theme: 'fated' 
@@ -914,25 +953,25 @@ export function calculateKarmicAnalysis(
   const karmicType = determineKarmicType(indicators, totalKarmicScore);
 
   const timelines: Record<KarmicAnalysis['karmicType'], { likely_duration: string; key_lessons: string[]; completion_indicators: string[]; }> = {
-    twin_flame: { likely_duration: '7-14 years', key_lessons: ['Self-love', 'Boundaries'], completion_indicators: ['Drama decreases', 'Peace emerges'] },
-    completion: { likely_duration: '6 months to 3 years', key_lessons: ['Forgiveness', 'Release'], completion_indicators: ['Resolution feeling', 'Natural drift'] },
-    catalyst: { likely_duration: '3 months to 2 years', key_lessons: ['Rapid transformation'], completion_indicators: ['Major life change'] },
-    soul_family: { likely_duration: 'Potentially lifetime', key_lessons: ['Unconditional love'], completion_indicators: ['Continues nourishing'] },
-    karmic_lesson: { likely_duration: '1-5 years', key_lessons: ['Wound healing'], completion_indicators: ['Pattern no longer triggers'] },
-    new_contract: { likely_duration: 'Variable', key_lessons: ['Present-moment relating'], completion_indicators: ['Based on choice'] }
+    twin_flame: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Self-love', 'Boundaries'], completion_indicators: ['Drama decreases', 'Peace emerges'] },
+    completion: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Forgiveness', 'Release'], completion_indicators: ['Resolution feeling', 'Natural drift'] },
+    catalyst: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Rapid transformation'], completion_indicators: ['Major life change'] },
+    soul_family: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Unconditional love'], completion_indicators: ['Continues nourishing'] },
+    karmic_lesson: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Wound healing'], completion_indicators: ['Pattern no longer triggers'] },
+    new_contract: { likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', key_lessons: ['Present-moment relating'], completion_indicators: ['Based on choice'] }
   };
 
   // Family-specific timeline adjustments
   if (focus === 'family' && familyContext) {
     if (familyContext.relationType === 'parent-child' || familyContext.relationType === 'child-parent') {
       timelines.soul_family = { 
-        likely_duration: 'Lifetime bond', 
+        likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', 
         key_lessons: ['Unconditional love', 'Healthy boundaries', 'Adult-to-adult relating'], 
         completion_indicators: ['Shifts from dependency to mutual respect'] 
       };
     } else if (familyContext.relationType === 'siblings' || familyContext.relationType === 'step-sibling') {
       timelines.soul_family = { 
-        likely_duration: 'Lifetime bond (evolving)', 
+        likely_duration: 'A chart cannot show how long a connection lasts, so no duration is given.', 
         key_lessons: ['Adult friendship', 'Releasing childhood roles'], 
         completion_indicators: ['Relating as equals, not roles'] 
       };

@@ -8,6 +8,7 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import type { PairReading } from '@/lib/relationship';
 import type { CompositeReading } from '@/lib/relationship/compositeReading';
 import { AdvancedSynastryReport, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
+import type { KarmicSummary } from '@/lib/relationship';
 import { FocusAnalysis } from '@/lib/relationshipFocusAnalysis';
 import { RelationshipFocus } from '@/lib/focusAwareInterpretations';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,8 @@ interface SynastryPDFExportProps {
   focusAnalysis: FocusAnalysis | null;
   houseOverlays: HouseOverlay[];
   karmicIndicators: KarmicIndicator[];
+  /** Canonical plain-language symbolic summary, identical to the on-screen version. */
+  karmicSummary?: KarmicSummary | null;
   focus: RelationshipFocus;
   /**
    * Canonical context-aware reading. When present the export renders the same
@@ -45,6 +48,7 @@ export const SynastryPDFExport = ({
   focusAnalysis,
   houseOverlays,
   karmicIndicators,
+  karmicSummary,
   focus,
   pairReading,
   compositeReading
@@ -56,7 +60,7 @@ export const SynastryPDFExport = ({
     
     // Create printable content
     const printContent = generatePrintableHTML(
-      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus, pairReading, compositeReading
+      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus, pairReading, compositeReading, karmicSummary
     );
     
     // Open print window
@@ -97,7 +101,8 @@ function generatePrintableHTML(
   karmicIndicators: KarmicIndicator[],
   focus: RelationshipFocus,
   pairReading?: PairReading,
-  compositeReading?: CompositeReading
+  compositeReading?: CompositeReading,
+  karmicSummary?: KarmicSummary | null
 
 ): string {
   const focusTitle = focus === 'all' ? 'Comprehensive' : focus.charAt(0).toUpperCase() + focus.slice(1);
@@ -498,19 +503,39 @@ function generatePrintableHTML(
   </div>
   ` : ''}
   
-  ${karmicIndicators.length > 0 ? `
+  ${karmicSummary && karmicSummary.hasEvidence ? `
   <div class="section">
-    <h2>Soul Connections & Karmic Indicators</h2>
-    <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">
-      ${report.soulContractTheme}
-    </p>
-    ${karmicIndicators.slice(0, 6).map(k => `
+    <h2>Symbolic Contacts: What Was Actually Found</h2>
+    <p style="font-size: 13px; color: #374151; margin-bottom: 10px;"><strong>The Big Picture:</strong> ${karmicSummary.bigPicture}</p>
+    <p style="font-size: 11px; color: #6b7280; margin-bottom: 12px;">${karmicSummary.countsNote}</p>
+    ${karmicSummary.categories.map(cat => `
       <div class="karmic-indicator">
-        <div class="card-title">${k.name} (${k.aspectType})</div>
-        <div class="card-content">${k.interpretation}</div>
-        <div style="font-size: 11px; color: #7c3aed; margin-top: 8px;">💡 Lesson: ${k.lessonToLearn}</div>
+        <div class="card-title">${cat.label}</div>
+        <div class="card-content">${cat.plainMeaning}</div>
+        <div style="font-size: 11px; color: #374151; margin-top: 8px;">
+          <strong>Why this appears:</strong>
+          <ul style="margin-left: 16px;">
+            ${cat.evidence.map(e => `<li>${e.contact} (${e.orbText}) &mdash; ${e.note}</li>`).join('')}
+          </ul>
+        </div>
       </div>
     `).join('')}
+    ${karmicSummary.symbolic ? `
+      <div class="karmic-indicator">
+        <div class="card-title">${karmicSummary.symbolic.heading}: ${karmicSummary.symbolic.label}</div>
+        <div class="card-content">${karmicSummary.symbolic.explanation}</div>
+        <div style="font-size: 11px; color: #6b7280; margin-top: 8px;">Derived from: ${karmicSummary.symbolic.derivedFrom.join('; ')}.</div>
+        <div style="font-size: 10px; color: #6b7280; margin-top: 6px;">${karmicSummary.symbolic.note}</div>
+      </div>
+    ` : ''}
+    <div class="karmic-indicator">
+      <div class="card-title">What this does not mean</div>
+      <div class="card-content"><ul style="margin-left: 16px;">${karmicSummary.doesNotMean.map(d => `<li>${d}</li>`).join('')}</ul></div>
+    </div>
+    <div class="karmic-indicator">
+      <div class="card-title">What these words mean in this app</div>
+      <div class="card-content"><ul style="margin-left: 16px;">${karmicSummary.glossary.map(g => `<li><strong>${g.term}:</strong> ${g.meaning}</li>`).join('')}</ul></div>
+    </div>
   </div>
   ` : ''}
   

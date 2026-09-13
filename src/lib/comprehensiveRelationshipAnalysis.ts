@@ -473,16 +473,20 @@ function calculateLongTermPotential(
   return Math.max(0, Math.min(100, score));
 }
 
-function getShortTermDescription(score: number, karmic: KarmicAnalysis): string {
-  if (score >= 80) return `Excellent short-term potential. ${karmic.timeline.likely_duration}`;
-  if (score >= 60) return `Good short-term experience likely. ${karmic.timeline.likely_duration}`;
-  return `Challenging short-term dynamics. ${karmic.timeline.likely_duration}`;
+/**
+ * Duration forecasts are not derivable from a chart, so the old
+ * `karmic.timeline.likely_duration` text is no longer appended here.
+ */
+function getShortTermDescription(score: number, _karmic: KarmicAnalysis): string {
+  if (score >= 80) return 'Many easier contacts in the early stretch; day-to-day time together can feel smooth.';
+  if (score >= 60) return 'A workable mix early on; some contacts flow and some need attention.';
+  return 'More friction contacts early on, so the first stretch may take more patience and talking.';
 }
 
-function getLongTermDescription(score: number, karmic: KarmicAnalysis): string {
-  if (score >= 75) return 'Strong long-term potential with conscious work.';
-  if (score >= 50) return 'Moderate long-term potential. Success depends on both partners\' commitment to growth.';
-  return 'Limited long-term potential. May be meant as shorter-term catalyst or lesson.';
+function getLongTermDescription(score: number, _karmic: KarmicAnalysis): string {
+  if (score >= 75) return 'Several steadying contacts that can support something durable if both people keep choosing it.';
+  if (score >= 50) return 'A mixed picture over time; how it goes depends far more on what both people do than on the chart.';
+  return 'More friction than steadying contacts over time. That is a description of the contacts found, not a prediction about whether this lasts.';
 }
 
 function getMarriageConsiderations(
@@ -542,7 +546,6 @@ function generateRecommendations(
   recommendations.push(...getFocusSpecificRecommendations(focus, potential, purpose));
 
   // Timeline awareness
-  recommendations.push(`Timeline awareness: ${karmic.timeline.likely_duration}`);
   recommendations.push(`Key lessons: ${karmic.timeline.key_lessons.join(', ')}`);
 
   return recommendations;
