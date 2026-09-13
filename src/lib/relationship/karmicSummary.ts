@@ -337,7 +337,6 @@ export function buildKarmicSummary(
       count: matching.length,
       label: `${matching.length} ${matching.length === 1 ? noun.singular : noun.plural}`,
       plainMeaning: meanings[key],
-      technicalLabel: TECHNICAL_LABEL[key],
       evidence: matching.map((ind) => ({
         technicalCategory: ind.technicalCategory,
         contact: karmicContactLine(ind, names[0], names[1]),
