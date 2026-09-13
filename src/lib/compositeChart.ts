@@ -7,6 +7,13 @@
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { birthMomentOf } from './chartAutoFill';
+import {
+  calculateCompositeModel,
+  davisonModelFromLongitudes,
+  type CompositeModel,
+} from './relationship/compositeEngine';
+import { buildCompositeReading, legacyCompositeInterpretation } from './relationship/compositeReading';
+import { buildRelationshipContext, type RelationshipContext } from './relationship/relationshipContext';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -22,6 +29,8 @@ export interface CompositePosition {
 }
 
 export interface CompositeChart {
+  /** The canonical composite model: positions, aspects with orbs, angles, balance. */
+  model: CompositeModel;
   name: string;
   person1: string;
   person2: string;
@@ -44,65 +53,14 @@ export interface CompositeInterpretation {
 }
 
 // Sign interpretations for composite planets
-const SUN_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Your relationship is pioneering, competitive, and action-oriented. You inspire each other to be bold.',
-  'Taurus': 'Stability, sensuality, and building lasting value together define your partnership.',
-  'Gemini': 'Communication and mental stimulation are central. You keep each other curious and engaged.',
-  'Cancer': 'Emotional security and nurturing are your foundation. Home and family are important.',
-  'Leo': 'Your relationship is creative, dramatic, and seeks recognition. You bring out each other\'s shine.',
-  'Virgo': 'Service, improvement, and practical support characterize your bond. You help each other grow.',
-  'Libra': 'Balance, harmony, and partnership are your essence. You create beauty together.',
-  'Scorpio': 'Deep transformation, intensity, and profound intimacy define your connection.',
-  'Sagittarius': 'Adventure, growth, and shared philosophy drive your partnership. You expand together.',
-  'Capricorn': 'Ambition, structure, and long-term goals unite you. You build something lasting.',
-  'Aquarius': 'Innovation, friendship, and unconventional approaches define your bond.',
-  'Pisces': 'Spiritual connection, empathy, and creative flow are your essence. Dreamy and intuitive.'
-};
+/**
+ * Sign-keyword tables used to live here: one canned sentence per composite Sun,
+ * Moon, Venus and Mars sign, which let a single sign define a whole
+ * relationship. They are gone. Every interpretation in this file now comes from
+ * the canonical composite engine and reading, which weighs aspects, angles,
+ * house emphasis and repeated themes before any sign placement.
+ */
 
-const MOON_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Emotionally direct and spontaneous. Needs excitement to feel alive together.',
-  'Taurus': 'Emotionally steady and comfort-seeking. Security and sensory pleasure nurture you.',
-  'Gemini': 'Emotionally curious and talkative. You process feelings through conversation.',
-  'Cancer': 'Deeply nurturing and protective. Home is your emotional sanctuary.',
-  'Leo': 'Emotionally expressive and dramatic. You need to feel special together.',
-  'Virgo': 'Emotionally practical and helpful. Acts of service show care.',
-  'Libra': 'Emotionally balanced and peace-seeking. Harmony is essential.',
-  'Scorpio': 'Emotionally intense and private. Deep loyalty and transformation.',
-  'Sagittarius': 'Emotionally adventurous and optimistic. Freedom within connection.',
-  'Capricorn': 'Emotionally reserved but loyal. Security comes from achievement.',
-  'Aquarius': 'Emotionally independent and unconventional. Friendship first.',
-  'Pisces': 'Emotionally merged and intuitive. Profound empathy and spiritual connection.'
-};
-
-const VENUS_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Passionate, direct love. Pursuit and conquest energize romance.',
-  'Taurus': 'Sensual, loyal love. Physical affection and material comfort matter.',
-  'Gemini': 'Playful, communicative love. Flirtation and mental connection.',
-  'Cancer': 'Nurturing, protective love. Emotional safety is paramount.',
-  'Leo': 'Generous, dramatic love. Romance, appreciation, and fun.',
-  'Virgo': 'Devoted, practical love. Love through acts of service.',
-  'Libra': 'Harmonious, balanced love. Beauty, fairness, and partnership.',
-  'Scorpio': 'Intense, transformative love. Deep bonding and passion.',
-  'Sagittarius': 'Adventurous, free-spirited love. Growth and exploration.',
-  'Capricorn': 'Committed, mature love. Building something lasting.',
-  'Aquarius': 'Unconventional, friendly love. Independence and innovation.',
-  'Pisces': 'Romantic, spiritual love. Empathy and transcendence.'
-};
-
-const MARS_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Direct, competitive drive. Quick to action, loves challenges.',
-  'Taurus': 'Steady, determined drive. Slow but unstoppable when motivated.',
-  'Gemini': 'Scattered, versatile drive. Multiple projects and mental energy.',
-  'Cancer': 'Protective, indirect drive. Action motivated by emotional security.',
-  'Leo': 'Creative, bold drive. Action for recognition and self-expression.',
-  'Virgo': 'Precise, productive drive. Detailed and efficient action.',
-  'Libra': 'Diplomatic, balanced drive. Action through partnership.',
-  'Scorpio': 'Intense, strategic drive. Powerful and transformative action.',
-  'Sagittarius': 'Adventurous, optimistic drive. Action toward expansion.',
-  'Capricorn': 'Ambitious, disciplined drive. Action for achievement.',
-  'Aquarius': 'Independent, innovative drive. Action for change.',
-  'Pisces': 'Inspired, intuitive drive. Action guided by feeling.'
-};
 
 /**
  * Convert position to ecliptic longitude (0-360)
@@ -159,125 +117,49 @@ function calculateMidpoint(lon1: number, lon2: number): number {
 }
 
 /**
- * Generate composite chart interpretation
+ * Interpretation now comes from the canonical composite reading: aspects with
+ * exact orbs, angles, house emphasis and repeated themes are weighed first, and
+ * the four sign fields are kept only so older screens keep working.
  */
-function generateInterpretation(planets: Record<string, CompositePosition>): CompositeInterpretation {
-  const sunSign = planets['Sun']?.sign || 'Unknown';
-  const moonSign = planets['Moon']?.sign || 'Unknown';
-  const venusSign = planets['Venus']?.sign || 'Unknown';
-  const marsSign = planets['Mars']?.sign || 'Unknown';
-  
-  const strengths: string[] = [];
-  const challenges: string[] = [];
-  
-  // Check for element balance
-  const elements: Record<string, number> = { fire: 0, earth: 0, air: 0, water: 0 };
-  const fireSign = ['Aries', 'Leo', 'Sagittarius'];
-  const earthSign = ['Taurus', 'Virgo', 'Capricorn'];
-  const airSign = ['Gemini', 'Libra', 'Aquarius'];
-  const waterSign = ['Cancer', 'Scorpio', 'Pisces'];
-  
-  Object.values(planets).forEach(pos => {
-    if (fireSign.includes(pos.sign)) elements.fire++;
-    else if (earthSign.includes(pos.sign)) elements.earth++;
-    else if (airSign.includes(pos.sign)) elements.air++;
-    else if (waterSign.includes(pos.sign)) elements.water++;
-  });
-  
-  // Determine dominant element
-  const dominantElement = Object.entries(elements).sort((a, b) => b[1] - a[1])[0][0];
-  
-  if (dominantElement === 'fire') {
-    strengths.push('Passionate and inspiring energy');
-    challenges.push('May burn too hot or fast');
-  } else if (dominantElement === 'earth') {
-    strengths.push('Stable and practical foundation');
-    challenges.push('May become too routine');
-  } else if (dominantElement === 'air') {
-    strengths.push('Strong mental connection');
-    challenges.push('May over-intellectualize feelings');
-  } else {
-    strengths.push('Deep emotional attunement');
-    challenges.push('May become too emotionally merged');
-  }
-  
-  // Sun-Moon compatibility
-  if (sunSign === moonSign) {
-    strengths.push('Natural alignment of will and emotions');
-  }
-  
-  // Venus-Mars chemistry
-  if (venusSign === marsSign) {
-    strengths.push('Love and passion naturally aligned');
-  }
-  
-  // Generate overall theme
-  let overallTheme = '';
-  if (elements.fire >= 3) {
-    overallTheme = 'A dynamic, action-oriented partnership that inspires growth and adventure.';
-  } else if (elements.earth >= 3) {
-    overallTheme = 'A stable, grounded partnership focused on building something lasting.';
-  } else if (elements.air >= 3) {
-    overallTheme = 'An intellectually stimulating partnership with strong communication.';
-  } else if (elements.water >= 3) {
-    overallTheme = 'A deeply emotional, intuitive partnership with profound empathy.';
-  } else {
-    overallTheme = 'A well-balanced partnership with diverse strengths across elements.';
-  }
-  
-  return {
-    sunSign,
-    moonSign,
-    venusSign,
-    marsSign,
-    relationshipStyle: SUN_INTERPRETATIONS[sunSign] || 'Unique relationship energy.',
-    emotionalCore: MOON_INTERPRETATIONS[moonSign] || 'Emotional patterns to explore.',
-    loveLanguage: VENUS_INTERPRETATIONS[venusSign] || 'Affection style to discover.',
-    passionStyle: MARS_INTERPRETATIONS[marsSign] || 'Drive and action to understand.',
-    challenges,
-    strengths,
-    overallTheme
-  };
+function interpretationFromModel(
+  model: CompositeModel,
+  ctx?: RelationshipContext | null,
+): CompositeInterpretation {
+  const context = ctx ?? buildRelationshipContext({ kind: 'neutral', chart1: null, chart2: null });
+  const reading = buildCompositeReading(model, context);
+  return legacyCompositeInterpretation(model, reading);
 }
+
 
 /**
  * Calculate composite chart from two natal charts
  */
-export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart): CompositeChart {
+export function calculateCompositeChart(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext | null,
+): CompositeChart {
+  // All midpoint maths, angle handling and aspect work lives in the canonical
+  // engine, so this function only adapts the model to the older shape.
+  const model = calculateCompositeModel(chart1, chart2);
+
   const compositePlanets: Record<string, CompositePosition> = {};
-  
-  // List of planets to calculate
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
-  
-  for (const planetName of planetNames) {
-    const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
-    const pos2 = chart2.planets[planetName as keyof typeof chart2.planets];
-    
-    if (pos1 && pos2) {
-      const lon1 = toAbsoluteLongitude(pos1);
-      const lon2 = toAbsoluteLongitude(pos2);
-      const midpoint = calculateMidpoint(lon1, lon2);
-      compositePlanets[planetName] = fromLongitude(midpoint);
-    }
+  for (const [body, pos] of Object.entries(model.positions)) {
+    compositePlanets[body] = {
+      sign: pos.sign,
+      degree: pos.degree,
+      minutes: pos.minutes,
+      longitude: pos.longitude,
+    };
   }
-  
-  // Calculate Ascendant midpoint if available — prefer houseCusps.house1
-  const compAsc1 = chart1.houseCusps?.house1 ? { sign: chart1.houseCusps.house1.sign, degree: chart1.houseCusps.house1.degree, minutes: chart1.houseCusps.house1.minutes || 0, seconds: 0 } : chart1.planets.Ascendant;
-  const compAsc2 = chart2.houseCusps?.house1 ? { sign: chart2.houseCusps.house1.sign, degree: chart2.houseCusps.house1.degree, minutes: chart2.houseCusps.house1.minutes || 0, seconds: 0 } : chart2.planets.Ascendant;
-  if (compAsc1 && compAsc2) {
-    const lon1 = toAbsoluteLongitude(compAsc1);
-    const lon2 = toAbsoluteLongitude(compAsc2);
-    compositePlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
-  }
-  
-  const interpretation = generateInterpretation(compositePlanets);
-  
+
   return {
-    name: `${chart1.name} & ${chart2.name} Composite`,
-    person1: chart1.name,
-    person2: chart2.name,
+    model,
+    name: model.name,
+    person1: model.person1,
+    person2: model.person2,
     planets: compositePlanets,
-    interpretation
+    interpretation: interpretationFromModel(model, ctx),
   };
 }
 
@@ -289,6 +171,8 @@ import * as Astronomy from 'astronomy-engine';
  * TRUE DAVISON: Uses astronomy-engine for precise ephemeris calculations
  */
 export interface DavisonChart {
+  /** The canonical Davison model: positions, aspects with orbs, balance. */
+  model: CompositeModel;
   name: string;
   person1: string;
   person2: string;
@@ -386,7 +270,11 @@ function getPlanetLongitudeAtDate(planetName: string, date: Date): number | null
  * This creates a chart for the "birth moment" of the relationship itself
  * Uses astronomy-engine for precise planetary positions at the averaged date
  */
-export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): DavisonChart {
+export function calculateDavisonChart(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext | null,
+): DavisonChart {
   // Midpoint in time between the two normalized birth instants.
   const instant1 = davisonBirthInstant(chart1);
   const instant2 = davisonBirthInstant(chart2);
@@ -469,9 +357,13 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
     davisonPlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
   }
   
-  const interpretation = generateDavisonInterpretation(davisonPlanets, averagedDate);
+  const interpretation = generateDavisonInterpretation(davisonPlanets, averagedDate, chart1.name, chart2.name, ctx);
   
+  const davisonLongitudes: Record<string, number> = {};
+  for (const [body, pos] of Object.entries(davisonPlanets)) davisonLongitudes[body] = pos.longitude;
+
   return {
+    model: davisonModelFromLongitudes(davisonLongitudes, chart1.name, chart2.name),
     name: `${chart1.name} & ${chart2.name} Davison`,
     person1: chart1.name,
     person2: chart2.name,
@@ -486,31 +378,26 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
 }
 
 /**
- * Generate Davison-specific interpretation (emphasizes timing and destiny)
+ * Davison interpretation. The old version added a "generational destiny" line
+ * based on the decade of the midpoint date, which is not something a chart can
+ * support. The Davison model is now read with the same evidence rules as the
+ * composite model, and the only extra note is factual: the moment used.
  */
-function generateDavisonInterpretation(planets: Record<string, CompositePosition>, averagedDate: Date): CompositeInterpretation {
-  const baseInterpretation = generateInterpretation(planets);
-  
-  // Add Davison-specific flavor based on the relationship's "birth year"
-  const year = averagedDate.getFullYear();
-  const decade = Math.floor(year / 10) * 10;
-  
-  let generationalNote = '';
-  if (decade <= 1960) {
-    generationalNote = 'This relationship has roots in traditional values with transformation potential.';
-  } else if (decade <= 1980) {
-    generationalNote = 'Born in an era of social change, this relationship carries evolutionary energy.';
-  } else if (decade <= 2000) {
-    generationalNote = 'This relationship emerged in a time of technological and cultural shift.';
-  } else {
-    generationalNote = 'A relationship for the new millennium, carrying forward-looking energy.';
-  }
-  
-  return {
-    ...baseInterpretation,
-    overallTheme: `${baseInterpretation.overallTheme} ${generationalNote}`
-  };
+function generateDavisonInterpretation(
+  planets: Record<string, CompositePosition>,
+  averagedDate: Date,
+  person1: string,
+  person2: string,
+  ctx?: RelationshipContext | null,
+): CompositeInterpretation {
+  const longitudes: Record<string, number> = {};
+  for (const [body, pos] of Object.entries(planets)) longitudes[body] = pos.longitude;
+  const model = davisonModelFromLongitudes(longitudes, person1, person2);
+  const base = interpretationFromModel(model, ctx);
+  const moment = `Midpoint moment used: ${averagedDate.toISOString().slice(0, 10)}.`;
+  return { ...base, overallTheme: `${base.overallTheme} ${moment}` };
 }
+
 
 /**
  * Get planet symbol

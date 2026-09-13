@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import type { PairReading } from '@/lib/relationship';
+import type { CompositeReading } from '@/lib/relationship/compositeReading';
 import { AdvancedSynastryReport, HouseOverlay, KarmicIndicator } from '@/lib/synastryAdvanced';
 import { FocusAnalysis } from '@/lib/relationshipFocusAnalysis';
 import { RelationshipFocus } from '@/lib/focusAwareInterpretations';
@@ -27,6 +28,8 @@ interface SynastryPDFExportProps {
    * a different (or romance-flavoured) version of a family or neutral reading.
    */
   pairReading?: PairReading;
+  /** Optional concise composite summary, same reading as the Composite tab. */
+  compositeReading?: CompositeReading;
 }
 
 const PLANET_SYMBOLS: Record<string, string> = {
@@ -43,7 +46,8 @@ export const SynastryPDFExport = ({
   houseOverlays,
   karmicIndicators,
   focus,
-  pairReading
+  pairReading,
+  compositeReading
 }: SynastryPDFExportProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   
@@ -52,7 +56,7 @@ export const SynastryPDFExport = ({
     
     // Create printable content
     const printContent = generatePrintableHTML(
-      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus, pairReading
+      chart1, chart2, report, focusAnalysis, houseOverlays, karmicIndicators, focus, pairReading, compositeReading
     );
     
     // Open print window
@@ -92,7 +96,8 @@ function generatePrintableHTML(
   houseOverlays: HouseOverlay[],
   karmicIndicators: KarmicIndicator[],
   focus: RelationshipFocus,
-  pairReading?: PairReading
+  pairReading?: PairReading,
+  compositeReading?: CompositeReading
 
 ): string {
   const focusTitle = focus === 'all' ? 'Comprehensive' : focus.charAt(0).toUpperCase() + focus.slice(1);
@@ -396,6 +401,38 @@ function generatePrintableHTML(
   </div>
   `}
   
+  ${compositeReading ? `
+  <div class="section">
+    <h2>Composite chart (the relationship as its own chart)</h2>
+    <p style="font-size: 12px; color: #6b7280;">${compositeReading.distinction.composite} ${compositeReading.distinction.synastry}</p>
+    <p style="font-size: 12px; color: #6b7280;">${compositeReading.housesNote}</p>
+    <h3 style="font-size: 13px; margin-top: 10px;">Look here first</h3>
+    <ul class="indicator-list">
+      ${compositeReading.lookHereFirst.slice(0, 5).map(item => `
+        <li>
+          <span class="name">${item.title}</span>
+          <span class="badge">${item.signalLabel}</span>
+          <div class="interpretation">${item.interpretation}</div>
+          <div class="interpretation" style="color:#6b7280;">Why: ${item.evidence.join('; ')}</div>
+        </li>
+      `).join('')}
+    </ul>
+    <h3 style="font-size: 13px; margin-top: 10px;">Core themes</h3>
+    <ul class="indicator-list">
+      ${compositeReading.themes.map(item => `
+        <li>
+          <span class="name">${item.title}</span>
+          <span class="badge">${item.signalLabel}</span>
+          <div class="interpretation">${item.howItShowsUp}</div>
+          <div class="interpretation" style="color:#6b7280;">Why: ${item.evidence.join('; ')}</div>
+        </li>
+      `).join('')}
+    </ul>
+    <p style="font-size: 13px;">${compositeReading.bottomLine}</p>
+    <p style="font-size: 11px; color: #6b7280;">${compositeReading.signalDisclaimer} ${compositeReading.methodNote}</p>
+  </div>
+  ` : ''}
+
   ${focusAnalysis ? `
   <div class="section">
     <h2>${focusAnalysis.title}</h2>

@@ -90,3 +90,40 @@ export {
   symbolicShareLine,
 } from './symbolicFraming';
 export type { SymbolicTheme, SymbolicThemeKey } from './symbolicFraming';
+
+export {
+  COMPOSITE_BODIES,
+  COMPOSITE_SECONDARY_POINTS,
+  COMPOSITE_ANGLES,
+  COMPOSITE_BALANCE_WEIGHT,
+  compositeMidpoint,
+  calculateCompositeAngles,
+  calculateCompositeAspects,
+  majorCompositeAspects,
+  aspectsInvolving,
+  aspectBetween,
+  calculateCompositeBalance,
+  compositeModelFromPositions,
+  calculateCompositeModel,
+  davisonModelFromLongitudes,
+  compositeBodySymbol,
+  houseForCusps,
+} from './compositeEngine';
+export type {
+  CompositeModel,
+  CompositePosition as CompositeBodyPosition,
+  CompositeAspect,
+  CompositeAngles,
+  CompositeBalance,
+  CompositeHouseEmphasis,
+  CompositeObservation,
+  CompositeMethod,
+  MidpointResult,
+} from './compositeEngine';
+
+export { buildCompositeReading, legacyCompositeInterpretation } from './compositeReading';
+export type {
+  CompositeReading,
+  CompositeReadingItem,
+  LegacyCompositeInterpretation,
+} from './compositeReading';

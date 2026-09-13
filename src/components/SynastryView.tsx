@@ -22,6 +22,9 @@ import {
   SYMBOLIC_LENS_NOTE,
 } from '@/lib/relationship';
 import { PairReadingView } from './relationship/PairReadingView';
+import { CompositeReadingView } from './relationship/CompositeReadingView';
+import { buildCompositeReading } from '@/lib/relationship/compositeReading';
+import type { RelationshipContext } from '@/lib/relationship/relationshipContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
@@ -351,151 +354,52 @@ const GroupDynamicsDisplay = ({ report, focus }: { report: GroupDynamicsReport; 
   );
 };
 
-// Composite/Davison Chart Display Component
-const RelationshipChartDisplay = ({ 
-  chart1, 
-  chart2, 
-  method 
-}: { 
-  chart1: NatalChart; 
-  chart2: NatalChart; 
+// Composite/Davison Chart Display — renders the canonical composite reading
+const RelationshipChartDisplay = ({
+  chart1,
+  chart2,
+  method,
+  relContext,
+}: {
+  chart1: NatalChart;
+  chart2: NatalChart;
   method: 'composite' | 'davison';
+  relContext: RelationshipContext;
 }) => {
-  const [showPlanets, setShowPlanets] = useState(false);
-  
-  const chartData = useMemo(() => {
-    if (method === 'composite') {
-      return calculateCompositeChart(chart1, chart2);
-    } else {
-      return calculateDavisonChart(chart1, chart2);
-    }
-  }, [chart1, chart2, method]);
-  
-  const { interpretation, planets } = chartData;
-  
+  const reading = useMemo(() => {
+    const model =
+      method === 'composite'
+        ? calculateCompositeChart(chart1, chart2, relContext).model
+        : calculateDavisonChart(chart1, chart2, relContext).model;
+    return buildCompositeReading(model, relContext);
+  }, [chart1, chart2, method, relContext]);
+
+  const davisonInfo = useMemo(() => {
+    if (method !== 'davison') return null;
+    const dav = calculateDavisonChart(chart1, chart2, relContext);
+    return { date: dav.averagedDate, note: dav.momentNote };
+  }, [chart1, chart2, method, relContext]);
+
   return (
-    <div className="space-y-6">
-      {/* Chart Wheel Visualization */}
-      <div className="flex justify-center">
-        <RelationshipChartWheel 
-          planets={planets} 
-          chartName={method === 'composite' ? 'Composite Chart' : 'Davison Chart'} 
-          size={350} 
-        />
-      </div>
-      
-      {/* Davison Date Info */}
-      {method === 'davison' && 'averagedDate' in chartData && chartData.averagedDate instanceof Date && (
-        <div className="p-4 rounded-lg bg-secondary/50 border">
-          <p className="text-sm">
-            <strong>Relationship "Birth Date":</strong> {format(chartData.averagedDate, 'MMMM d, yyyy')}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Davison calculates actual planetary positions for this date - different from Composite's midpoint method.
-          </p>
-          {'momentNote' in chartData && typeof chartData.momentNote === 'string' && (
-            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">{chartData.momentNote}</p>
-          )}
-        </div>
-      )}
-      
-      {/* Method Explanation */}
-      <div className="p-3 rounded-lg bg-muted/50 text-center text-sm">
-        {method === 'composite' 
-          ? '📐 Composite uses mathematical midpoints between each planet pair'
-          : '📅 Davison projects planets to the midpoint date using actual planetary motion'}
-      </div>
-      
-      {/* Key Planet Signs */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          ☉ Sun in {interpretation.sunSign}
-        </Badge>
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          ☽ Moon in {interpretation.moonSign}
-        </Badge>
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          ♀ Venus in {interpretation.venusSign}
-        </Badge>
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          ♂ Mars in {interpretation.marsSign}
-        </Badge>
-      </div>
-      
-      {/* Overall Theme */}
-      <div className="p-6 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/20 dark:to-violet-950/20 border border-indigo-200 dark:border-indigo-800 text-center">
-        <p className="text-lg font-medium">{interpretation.overallTheme}</p>
-      </div>
-      
-      {/* Interpretations Grid */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-            <span className="text-xl">☉</span> Relationship Style
-          </h4>
-          <p className="text-sm text-muted-foreground">{interpretation.relationshipStyle}</p>
-        </div>
-        
-        <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-            <span className="text-xl">☽</span> Emotional Core
-          </h4>
-          <p className="text-sm text-muted-foreground">{interpretation.emotionalCore}</p>
-        </div>
-        
-        <div className="p-4 rounded-lg bg-pink-50 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-800">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-            <span className="text-xl">♀</span> Love Language
-          </h4>
-          <p className="text-sm text-muted-foreground">{interpretation.loveLanguage}</p>
-        </div>
-        
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-            <span className="text-xl">♂</span> Drive & Action
-          </h4>
-          <p className="text-sm text-muted-foreground">{interpretation.passionStyle}</p>
-        </div>
-      </div>
-      
-      {/* Strengths & Challenges */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-          <h4 className="font-medium text-sm mb-2">✨ Strengths</h4>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            {interpretation.strengths.map((s, i) => (
-              <li key={i}>• {s}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-          <h4 className="font-medium text-sm mb-2">⚡ Growth Areas</h4>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            {interpretation.challenges.map((c, i) => (
-              <li key={i}>• {c}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      
-      {/* Planet Positions */}
-      <Collapsible open={showPlanets} onOpenChange={setShowPlanets}>
-        <CollapsibleTrigger className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground py-2">
-          {showPlanets ? 'Hide' : 'Show'} all planet positions
-          {showPlanets ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-            {Object.entries(planets).map(([planet, pos]) => (
-              <div key={planet} className="flex items-center justify-between p-2 rounded bg-secondary/50">
-                <span className="text-sm font-medium">{getPlanetSymbol(planet)} {planet}</span>
-                <span className="text-sm text-muted-foreground">{pos.degree}° {pos.sign}</span>
-              </div>
-            ))}
+    <CompositeReadingView
+      reading={reading}
+      extraHeader={
+        davisonInfo ? (
+          <div className="p-4 rounded-lg bg-secondary/50 border">
+            <p className="text-sm">
+              <strong>Midpoint moment used:</strong> {format(davisonInfo.date, 'MMMM d, yyyy')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Davison uses the real planetary positions for the moment halfway between the two births, rather than
+              averaging degrees the way the composite does.
+            </p>
+            {davisonInfo.note && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">{davisonInfo.note}</p>
+            )}
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+        ) : null
+      }
+    />
   );
 };
 
@@ -652,9 +556,15 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
   // Get composite interpretation for 5 Essential Questions
   const compositeInterpretation = useMemo(() => {
     if (!chart1 || !chart2) return null;
-    const compositeData = calculateCompositeChart(chart1, chart2);
+    const compositeData = calculateCompositeChart(chart1, chart2, relContext);
     return compositeData.interpretation;
-  }, [chart1, chart2]);
+  }, [chart1, chart2, relContext]);
+
+  // Composite reading, shared with the Composite tab and the printable export
+  const compositeReadingForExport = useMemo(() => {
+    if (!chart1 || !chart2 || !relContext) return null;
+    return buildCompositeReading(calculateCompositeChart(chart1, chart2, relContext).model, relContext);
+  }, [chart1, chart2, relContext]);
 
   // Calculate relationship potential (short-term vs long-term)
   const relationshipPotential = useMemo(() => {
@@ -884,6 +794,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           karmicIndicators={focusedKarmicIndicators}
                           focus={relationshipFocus}
                           pairReading={pairReading ?? undefined}
+                          compositeReading={compositeReadingForExport ?? undefined}
                         />
                       </div>
                       
@@ -1130,14 +1041,14 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                 {/* Composite Tab */}
                 <TabsContent value="composite" className="mt-6">
                   {chart1 && chart2 && (
-                    <RelationshipChartDisplay chart1={chart1} chart2={chart2} method="composite" />
+                    <RelationshipChartDisplay chart1={chart1} chart2={chart2} method="composite" relContext={relContext} />
                   )}
                 </TabsContent>
                 
                 {/* Davison Tab */}
                 <TabsContent value="davison" className="mt-6">
                   {chart1 && chart2 && (
-                    <RelationshipChartDisplay chart1={chart1} chart2={chart2} method="davison" />
+                    <RelationshipChartDisplay chart1={chart1} chart2={chart2} method="davison" relContext={relContext} />
                   )}
                 </TabsContent>
               </Tabs>
