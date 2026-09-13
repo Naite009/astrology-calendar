@@ -368,31 +368,26 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
 }
 
 /**
- * Generate Davison-specific interpretation (emphasizes timing and destiny)
+ * Davison interpretation. The old version added a "generational destiny" line
+ * based on the decade of the midpoint date, which is not something a chart can
+ * support. The Davison model is now read with the same evidence rules as the
+ * composite model, and the only extra note is factual: the moment used.
  */
-function generateDavisonInterpretation(planets: Record<string, CompositePosition>, averagedDate: Date): CompositeInterpretation {
-  const baseInterpretation = generateInterpretation(planets);
-  
-  // Add Davison-specific flavor based on the relationship's "birth year"
-  const year = averagedDate.getFullYear();
-  const decade = Math.floor(year / 10) * 10;
-  
-  let generationalNote = '';
-  if (decade <= 1960) {
-    generationalNote = 'This relationship has roots in traditional values with transformation potential.';
-  } else if (decade <= 1980) {
-    generationalNote = 'Born in an era of social change, this relationship carries evolutionary energy.';
-  } else if (decade <= 2000) {
-    generationalNote = 'This relationship emerged in a time of technological and cultural shift.';
-  } else {
-    generationalNote = 'A relationship for the new millennium, carrying forward-looking energy.';
-  }
-  
-  return {
-    ...baseInterpretation,
-    overallTheme: `${baseInterpretation.overallTheme} ${generationalNote}`
-  };
+function generateDavisonInterpretation(
+  planets: Record<string, CompositePosition>,
+  averagedDate: Date,
+  person1: string,
+  person2: string,
+  ctx?: RelationshipContext | null,
+): CompositeInterpretation {
+  const longitudes: Record<string, number> = {};
+  for (const [body, pos] of Object.entries(planets)) longitudes[body] = pos.longitude;
+  const model = davisonModelFromLongitudes(longitudes, person1, person2);
+  const base = interpretationFromModel(model, ctx);
+  const moment = `Midpoint moment used: ${averagedDate.toISOString().slice(0, 10)}.`;
+  return { ...base, overallTheme: `${base.overallTheme} ${moment}` };
 }
+
 
 /**
  * Get planet symbol
