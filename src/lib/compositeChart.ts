@@ -125,7 +125,7 @@ function interpretationFromModel(
   model: CompositeModel,
   ctx?: RelationshipContext | null,
 ): CompositeInterpretation {
-  const context = ctx ?? buildRelationshipContext({ kind: 'neutral' });
+  const context = ctx ?? buildRelationshipContext({ kind: 'neutral', chart1: null, chart2: null });
   const reading = buildCompositeReading(model, context);
   return legacyCompositeInterpretation(model, reading);
 }
