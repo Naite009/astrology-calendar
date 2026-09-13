@@ -457,12 +457,19 @@ function themeItem(build: ThemeBuild, ctx: RelationshipContext): CompositeReadin
     derivation,
     interpretation: copy.interpretation,
     howItShowsUp: stageWord(ctx, copy.adult, copy.teen, copy.teen),
-    doesNotMean: doesNotMeanFor({
-      bodies,
-      houses,
-      aspectTone: anyTense ? 'tense' : 'neutral',
-      isOutOfSign: false,
-    }),
+    doesNotMean: (() => {
+      const notes = doesNotMeanFor({
+        bodies,
+        houses,
+        aspectTone: anyTense ? 'tense' : 'neutral',
+        isOutOfSign: false,
+      });
+      return notes.length
+        ? notes
+        : [
+            'This theme describes a tendency the two of you can lean into, not something fixed about either person.',
+          ];
+    })(),
   };
 }
 
