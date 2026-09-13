@@ -780,11 +780,7 @@ describe('synastry: sign vs degree layers', () => {
  * backed by the exact contacts, with orbs and whose planet is whose.
  */
 describe('karmic summary (Ava Kravitz + Max Levin)', () => {
-  const ctx = buildRelationshipContext({
-    chart1: ava,
-    chart2: max,
-    selectedKind: 'romance',
-  } as any);
+  const ctx = buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
   const analysis = calculateKarmicAnalysis(ava, max, legacyKarmicFocus(ctx.kind));
   const summary = buildKarmicSummary(analysis, ctx, ava.name, max.name);
   const text = renderKarmicSummaryText(summary);
