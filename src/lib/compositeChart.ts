@@ -7,6 +7,13 @@
 
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { birthMomentOf } from './chartAutoFill';
+import {
+  calculateCompositeModel,
+  davisonModelFromLongitudes,
+  type CompositeModel,
+} from './relationship/compositeEngine';
+import { buildCompositeReading, legacyCompositeInterpretation } from './relationship/compositeReading';
+import { buildRelationshipContext, type RelationshipContext } from './relationship/relationshipContext';
 
 // Zodiac signs in order
 const ZODIAC_SIGNS = [
@@ -22,6 +29,8 @@ export interface CompositePosition {
 }
 
 export interface CompositeChart {
+  /** The canonical composite model: positions, aspects with orbs, angles, balance. */
+  model: CompositeModel;
   name: string;
   person1: string;
   person2: string;
@@ -125,41 +134,32 @@ function interpretationFromModel(
 /**
  * Calculate composite chart from two natal charts
  */
-export function calculateCompositeChart(chart1: NatalChart, chart2: NatalChart): CompositeChart {
+export function calculateCompositeChart(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext | null,
+): CompositeChart {
+  // All midpoint maths, angle handling and aspect work lives in the canonical
+  // engine, so this function only adapts the model to the older shape.
+  const model = calculateCompositeModel(chart1, chart2);
+
   const compositePlanets: Record<string, CompositePosition> = {};
-  
-  // List of planets to calculate
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
-  
-  for (const planetName of planetNames) {
-    const pos1 = chart1.planets[planetName as keyof typeof chart1.planets];
-    const pos2 = chart2.planets[planetName as keyof typeof chart2.planets];
-    
-    if (pos1 && pos2) {
-      const lon1 = toAbsoluteLongitude(pos1);
-      const lon2 = toAbsoluteLongitude(pos2);
-      const midpoint = calculateMidpoint(lon1, lon2);
-      compositePlanets[planetName] = fromLongitude(midpoint);
-    }
+  for (const [body, pos] of Object.entries(model.positions)) {
+    compositePlanets[body] = {
+      sign: pos.sign,
+      degree: pos.degree,
+      minutes: pos.minutes,
+      longitude: pos.longitude,
+    };
   }
-  
-  // Calculate Ascendant midpoint if available — prefer houseCusps.house1
-  const compAsc1 = chart1.houseCusps?.house1 ? { sign: chart1.houseCusps.house1.sign, degree: chart1.houseCusps.house1.degree, minutes: chart1.houseCusps.house1.minutes || 0, seconds: 0 } : chart1.planets.Ascendant;
-  const compAsc2 = chart2.houseCusps?.house1 ? { sign: chart2.houseCusps.house1.sign, degree: chart2.houseCusps.house1.degree, minutes: chart2.houseCusps.house1.minutes || 0, seconds: 0 } : chart2.planets.Ascendant;
-  if (compAsc1 && compAsc2) {
-    const lon1 = toAbsoluteLongitude(compAsc1);
-    const lon2 = toAbsoluteLongitude(compAsc2);
-    compositePlanets['Ascendant'] = fromLongitude(calculateMidpoint(lon1, lon2));
-  }
-  
-  const interpretation = generateInterpretation(compositePlanets);
-  
+
   return {
-    name: `${chart1.name} & ${chart2.name} Composite`,
-    person1: chart1.name,
-    person2: chart2.name,
+    model,
+    name: model.name,
+    person1: model.person1,
+    person2: model.person2,
     planets: compositePlanets,
-    interpretation
+    interpretation: interpretationFromModel(model, ctx),
   };
 }
 
@@ -171,6 +171,8 @@ import * as Astronomy from 'astronomy-engine';
  * TRUE DAVISON: Uses astronomy-engine for precise ephemeris calculations
  */
 export interface DavisonChart {
+  /** The canonical Davison model: positions, aspects with orbs, balance. */
+  model: CompositeModel;
   name: string;
   person1: string;
   person2: string;
@@ -268,7 +270,11 @@ function getPlanetLongitudeAtDate(planetName: string, date: Date): number | null
  * This creates a chart for the "birth moment" of the relationship itself
  * Uses astronomy-engine for precise planetary positions at the averaged date
  */
-export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): DavisonChart {
+export function calculateDavisonChart(
+  chart1: NatalChart,
+  chart2: NatalChart,
+  ctx?: RelationshipContext | null,
+): DavisonChart {
   // Midpoint in time between the two normalized birth instants.
   const instant1 = davisonBirthInstant(chart1);
   const instant2 = davisonBirthInstant(chart2);
@@ -353,7 +359,11 @@ export function calculateDavisonChart(chart1: NatalChart, chart2: NatalChart): D
   
   const interpretation = generateDavisonInterpretation(davisonPlanets, averagedDate, chart1.name, chart2.name, ctx);
   
+  const davisonLongitudes: Record<string, number> = {};
+  for (const [body, pos] of Object.entries(davisonPlanets)) davisonLongitudes[body] = pos.longitude;
+
   return {
+    model: davisonModelFromLongitudes(davisonLongitudes, chart1.name, chart2.name),
     name: `${chart1.name} & ${chart2.name} Davison`,
     person1: chart1.name,
     person2: chart2.name,
