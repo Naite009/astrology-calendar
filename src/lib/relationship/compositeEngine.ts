@@ -248,23 +248,37 @@ function positionFromLongitude(
   };
 }
 
-/** One natal body as an absolute longitude, or null when it is not stored. */
+/**
+ * One natal body as an absolute longitude, or null when it is not stored.
+ * Arcseconds are included when present so midpoints stay accurate to the second.
+ */
+function withSeconds(base: number, seconds?: number): number {
+  const s = typeof seconds === 'number' && Number.isFinite(seconds) ? seconds : 0;
+  return ((base + s / 3600) % 360 + 360) % 360;
+}
+
 function natalLongitude(chart: NatalChart, body: string): number | null {
   if (body === 'Ascendant') {
     const cusp = chart.houseCusps?.house1 ?? chart.planets?.Ascendant;
     if (!cusp?.sign) return null;
-    return signDegreesToLongitude(cusp.sign, cusp.degree, cusp.minutes);
+    return withSeconds(
+      signDegreesToLongitude(cusp.sign, cusp.degree, cusp.minutes),
+      (cusp as { seconds?: number }).seconds,
+    );
   }
   if (body === 'Midheaven') {
     const mc = chart.houseCusps?.house10;
     if (!mc?.sign) return null;
-    return signDegreesToLongitude(mc.sign, mc.degree, mc.minutes);
+    return withSeconds(
+      signDegreesToLongitude(mc.sign, mc.degree, mc.minutes),
+      (mc as { seconds?: number }).seconds,
+    );
   }
   const pos = chart.planets?.[body as keyof typeof chart.planets] as
-    | { sign?: string; degree?: number; minutes?: number }
+    | { sign?: string; degree?: number; minutes?: number; seconds?: number }
     | undefined;
   if (!pos?.sign) return null;
-  return signDegreesToLongitude(pos.sign, pos.degree ?? 0, pos.minutes ?? 0);
+  return withSeconds(signDegreesToLongitude(pos.sign, pos.degree ?? 0, pos.minutes ?? 0), pos.seconds);
 }
 
 // ── angles and houses ────────────────────────────────────────────────────────
