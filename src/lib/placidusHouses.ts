@@ -97,6 +97,24 @@ export const mcFromRamc = (ramc: number, obliquity: number): number =>
   raToEclipticLongitude(ramc, obliquity);
 
 /**
+ * Inverse of `mcFromRamc`: the right ascension of the meridian that puts this
+ * ecliptic degree on the upper meridian.
+ *
+ *   tan(RA) = tan(lambda) * cos(e)   ->   RA = atan2(sin l * cos e, cos l)
+ *
+ * Used when an MC is known but the instant and place are not, which is exactly
+ * the composite case: the composite MC is a midpoint, not a moment in time.
+ */
+export const ramcFromMc = (mcLongitude: number, obliquity: number): number => {
+  const lon = norm360(mcLongitude) * DEG_TO_RAD;
+  const obl = obliquity * DEG_TO_RAD;
+  return norm360(Math.atan2(Math.sin(lon) * Math.cos(obl), Math.cos(lon)) * RAD_TO_DEG);
+};
+
+/** Mean obliquity used when no instant is available (composite midpoint charts). */
+export const MEAN_OBLIQUITY = 23.4367;
+
+/**
  * Vertex: where the prime vertical meets the ecliptic in the west. It is the
  * rising degree seen from the co-latitude with the meridian turned half way
  * round, which is the standard construction (the same one Swiss Ephemeris
