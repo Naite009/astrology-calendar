@@ -108,86 +108,19 @@ function calculateMidpoint(lon1: number, lon2: number): number {
 }
 
 /**
- * Generate composite chart interpretation
+ * Interpretation now comes from the canonical composite reading: aspects with
+ * exact orbs, angles, house emphasis and repeated themes are weighed first, and
+ * the four sign fields are kept only so older screens keep working.
  */
-function generateInterpretation(planets: Record<string, CompositePosition>): CompositeInterpretation {
-  const sunSign = planets['Sun']?.sign || 'Unknown';
-  const moonSign = planets['Moon']?.sign || 'Unknown';
-  const venusSign = planets['Venus']?.sign || 'Unknown';
-  const marsSign = planets['Mars']?.sign || 'Unknown';
-  
-  const strengths: string[] = [];
-  const challenges: string[] = [];
-  
-  // Check for element balance
-  const elements: Record<string, number> = { fire: 0, earth: 0, air: 0, water: 0 };
-  const fireSign = ['Aries', 'Leo', 'Sagittarius'];
-  const earthSign = ['Taurus', 'Virgo', 'Capricorn'];
-  const airSign = ['Gemini', 'Libra', 'Aquarius'];
-  const waterSign = ['Cancer', 'Scorpio', 'Pisces'];
-  
-  Object.values(planets).forEach(pos => {
-    if (fireSign.includes(pos.sign)) elements.fire++;
-    else if (earthSign.includes(pos.sign)) elements.earth++;
-    else if (airSign.includes(pos.sign)) elements.air++;
-    else if (waterSign.includes(pos.sign)) elements.water++;
-  });
-  
-  // Determine dominant element
-  const dominantElement = Object.entries(elements).sort((a, b) => b[1] - a[1])[0][0];
-  
-  if (dominantElement === 'fire') {
-    strengths.push('Passionate and inspiring energy');
-    challenges.push('May burn too hot or fast');
-  } else if (dominantElement === 'earth') {
-    strengths.push('Stable and practical foundation');
-    challenges.push('May become too routine');
-  } else if (dominantElement === 'air') {
-    strengths.push('Strong mental connection');
-    challenges.push('May over-intellectualize feelings');
-  } else {
-    strengths.push('Deep emotional attunement');
-    challenges.push('May become too emotionally merged');
-  }
-  
-  // Sun-Moon compatibility
-  if (sunSign === moonSign) {
-    strengths.push('Natural alignment of will and emotions');
-  }
-  
-  // Venus-Mars chemistry
-  if (venusSign === marsSign) {
-    strengths.push('Love and passion naturally aligned');
-  }
-  
-  // Generate overall theme
-  let overallTheme = '';
-  if (elements.fire >= 3) {
-    overallTheme = 'A dynamic, action-oriented partnership that inspires growth and adventure.';
-  } else if (elements.earth >= 3) {
-    overallTheme = 'A stable, grounded partnership focused on building something lasting.';
-  } else if (elements.air >= 3) {
-    overallTheme = 'An intellectually stimulating partnership with strong communication.';
-  } else if (elements.water >= 3) {
-    overallTheme = 'A deeply emotional, intuitive partnership with profound empathy.';
-  } else {
-    overallTheme = 'A well-balanced partnership with diverse strengths across elements.';
-  }
-  
-  return {
-    sunSign,
-    moonSign,
-    venusSign,
-    marsSign,
-    relationshipStyle: SUN_INTERPRETATIONS[sunSign] || 'Unique relationship energy.',
-    emotionalCore: MOON_INTERPRETATIONS[moonSign] || 'Emotional patterns to explore.',
-    loveLanguage: VENUS_INTERPRETATIONS[venusSign] || 'Affection style to discover.',
-    passionStyle: MARS_INTERPRETATIONS[marsSign] || 'Drive and action to understand.',
-    challenges,
-    strengths,
-    overallTheme
-  };
+function interpretationFromModel(
+  model: CompositeModel,
+  ctx?: RelationshipContext | null,
+): CompositeInterpretation {
+  const context = ctx ?? buildRelationshipContext({ kind: 'neutral' });
+  const reading = buildCompositeReading(model, context);
+  return legacyCompositeInterpretation(model, reading);
 }
+
 
 /**
  * Calculate composite chart from two natal charts
