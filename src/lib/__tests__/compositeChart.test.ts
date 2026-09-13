@@ -179,8 +179,8 @@ describe('composite houses and angles', () => {
     const model = calculateCompositeModel(ava, max);
     expect(typeof model.angles.housesAvailable).toBe('boolean');
     if (model.angles.housesAvailable) {
-      expect(model.angles.cusps).toBeTruthy();
-      for (let i = 1; i <= 12; i++) expect(Number.isFinite(model.angles.cusps![i])).toBe(true);
+      expect(model.angles.cuspLongitudes).toBeTruthy();
+      for (let i = 1; i <= 12; i++) expect(Number.isFinite(model.angles.cuspLongitudes![i])).toBe(true);
       expect(model.angles.midheaven).toBeTruthy();
     }
     expect(model.angles.note.length).toBeGreaterThan(0);
@@ -190,7 +190,7 @@ describe('composite houses and angles', () => {
     const noLat = { ...ava, latitude: undefined } as unknown as NatalChart;
     const model = calculateCompositeModel(noLat, max);
     expect(model.angles.housesAvailable).toBe(false);
-    expect(model.angles.cusps).toBeFalsy();
+    expect(model.angles.cuspLongitudes).toBeFalsy();
     expect(model.angles.note.toLowerCase()).toContain('house');
     for (const body of COMPOSITE_BODIES) {
       expect(model.positions[body].house ?? null).toBeNull();
