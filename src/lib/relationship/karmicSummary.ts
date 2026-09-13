@@ -364,7 +364,7 @@ export function renderKarmicSummaryText(summary: KarmicSummary): string {
       const evidence = cat.evidence
         .map((e) => `${e.contact} (${e.orbText})`)
         .join('; ');
-      parts.push(`${cat.label} — ${cat.plainMeaning} Why this appears: ${evidence}.`);
+      parts.push(`${cat.label}. ${cat.plainMeaning} Why this appears: ${evidence}.`);
     });
   }
   if (summary.symbolic) {
@@ -374,7 +374,7 @@ export function renderKarmicSummaryText(summary: KarmicSummary): string {
   }
   parts.push('What this does not mean: ' + summary.doesNotMean.join(' '));
   parts.push(
-    'Glossary: ' + summary.glossary.map((g) => `${g.term} — ${g.meaning}`).join(' '),
+    'Glossary: ' + summary.glossary.map((g) => `${g.term}: ${g.meaning}`).join(' '),
   );
   return parts.join('\n\n');
 }
