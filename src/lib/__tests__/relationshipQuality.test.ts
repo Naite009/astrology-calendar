@@ -825,7 +825,7 @@ describe('karmic summary (Ava Kravitz + Max Levin)', () => {
   });
 
   it('uses teen-appropriate wording and includes a glossary', () => {
-    expect(findForbiddenRelationshipPhrases(collectStrings(summary), true)).toEqual([]);
+    expect(findForbiddenRelationshipPhrases(collectStrings(summary).join(' '), true)).toEqual([]);
     const terms = summary.glossary.map((g) => g.term.toLowerCase()).join(' ');
     ['growth', 'past-pattern', 'transformation', 'healing', 'nodal'].forEach((t) =>
       expect(terms).toContain(t),
