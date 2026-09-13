@@ -232,12 +232,12 @@ function contactCopy(
       };
     case 'saturn':
       return {
-        interpretation: `${head}. Saturn contacts read as seriousness, structure and patience rather than debt or punishment. ${A} may bring a steadier, more careful tone to ${B}'s ${subject}, and ${B} may feel either supported by that or slowed down by it, depending on the day.`,
+        interpretation: `${head}. Saturn contacts read as seriousness, structure, responsibility and patience. ${A} may bring a steadier, more careful tone to ${B}'s ${subject}, and ${B} may feel either supported by that or slowed down by it, depending on the day.`,
         supports: `Reliability, follow-through and taking each other seriously. Commitments made here tend to be kept.`,
         strains: tense
           ? `${B} can feel judged, corrected or held back, and ${A} can end up carrying the responsible role more often than either wants.`
           : `The steadying tone can tip into caution, so new or playful things may need deliberate effort.`,
-        optionalSymbolic: `Saturn is sometimes read symbolically as maturing work. It is not a debt owed by either person.`,
+        optionalSymbolic: `Saturn is sometimes read symbolically as maturing work: skill built through patience.`,
       };
     case 'pluto':
       return {
