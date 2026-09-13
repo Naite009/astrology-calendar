@@ -510,12 +510,13 @@ function generatePrintableHTML(
     <p style="font-size: 11px; color: #6b7280; margin-bottom: 12px;">${karmicSummary.countsNote}</p>
     ${karmicSummary.categories.map(cat => `
       <div class="karmic-indicator">
-        <div class="card-title">${cat.label}</div>
+        <div class="card-title">${cat.technicalLabel}</div>
+        <div style="font-size: 11px; color: #6b7280;">${cat.label}</div>
         <div class="card-content">${cat.plainMeaning}</div>
         <div style="font-size: 11px; color: #374151; margin-top: 8px;">
           <strong>Why this appears:</strong>
           <ul style="margin-left: 16px;">
-            ${cat.evidence.map(e => `<li>${e.contact} (${e.orbText}) &mdash; ${e.note}</li>`).join('')}
+            ${cat.evidence.map(e => `<li>[${e.technicalCategory}] ${e.contact} (${e.orbText}): ${e.note} <em>What tends to support this:</em> ${e.supports} <em>What can strain it:</em> ${e.strains}</li>`).join('')}
           </ul>
         </div>
       </div>
