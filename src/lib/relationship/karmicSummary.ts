@@ -394,7 +394,7 @@ export function renderKarmicSummaryText(summary: KarmicSummary): string {
         .map((e) => `${e.contact} (${e.orbText})`)
         .join('; ');
       parts.push(
-        `${cat.technicalLabel} \u2014 ${cat.label}. ${cat.plainMeaning} Why this appears: ${evidence}.`,
+        `${cat.technicalLabel}: ${cat.label}. ${cat.plainMeaning} Why this appears: ${evidence}.`,
       );
     });
   }
