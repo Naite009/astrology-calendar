@@ -1,55 +1,28 @@
-import { useState, useMemo } from 'react';
-import { Moon, Sparkles, Clock, Target, Heart, AlertTriangle, ChevronDown, ChevronUp, Flame, Users, Zap, Star, Compass, Calculator, BookOpen, HelpCircle, Plus, Equal } from 'lucide-react';
+/**
+ * Symbolic-contact card for Synastry.
+ *
+ * Rewritten to remove: the archetype headline ("Catalyst Connection", "Twin Flame"),
+ * the total karmic score, the "past life probability" percent, per-indicator point
+ * values, the duration/completion table, and the danger-flag alerts. What remains is
+ * the shared evidence-first summary plus a directional list of every contact, each
+ * with its neutral technical category, exact orb, whose planet is whose, what tends
+ * to support the connection, and what can strain it.
+ */
+
+import { useMemo, useState } from 'react';
+import { Moon, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   SYMBOLIC_LENS_NOTE,
-  symbolicEmphasisLabel,
   buildKarmicSummary,
   karmicContactLine,
   formatKarmicOrb,
   type RelationshipContext,
 } from '@/lib/relationship';
 import { KarmicSummaryCard } from '@/components/relationship/KarmicSummaryCard';
-
-
-
-export type KarmicType = 'completion' | 'new_contract' | 'soul_family' | 'catalyst' | 'twin_flame' | 'karmic_lesson';
-
-export interface KarmicIndicator {
-  type: 'south_node' | 'north_node' | 'saturn' | 'pluto' | 'chiron' | 'twelfth_house' | 'eighth_house' | 'vertex';
-  planet1: string;
-  planet2: string;
-  aspect?: string;
-  orb?: number;
-  owner1?: string;
-  owner2?: string;
-  weight: number;
-  interpretation: string;
-  theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'fated';
-}
-
-export interface KarmicTimeline {
-  likely_duration: string;
-  key_lessons: string[];
-  completion_indicators: string[];
-}
-
-export interface KarmicAnalysis {
-  totalKarmicScore: number;
-  pastLifeProbability: number;
-  karmicType: KarmicType;
-  indicators: KarmicIndicator[];
-  dangerFlags: string[];
-  healingOpportunities: string[];
-  soulPurpose: string;
-  recommendedApproach: string;
-  timeline: KarmicTimeline;
-}
+import type { KarmicAnalysis } from '@/lib/karmicAnalysis';
 
 interface KarmicAnalysisCardProps {
   analysis: KarmicAnalysis;
@@ -59,587 +32,106 @@ interface KarmicAnalysisCardProps {
   context?: RelationshipContext | null;
 }
 
-const karmicTypeConfig: Record<KarmicType, {
-  label: string;
-  icon: React.ReactNode;
-  color: string;
-  bgGradient: string;
-  description: string;
-}> = {
-  twin_flame: {
-    label: 'Mirror and intensity theme (symbolic)',
-    icon: <Flame size={20} />,
-    color: 'text-purple-600 dark:text-purple-400',
-    bgGradient: 'from-purple-500/20 to-pink-500/20',
-    description: 'Symbolic reading: each may recognise something of themselves in the other, and the connection tends not to feel casual. From close Pluto and Sun/Moon contacts, usually with a nodal contact.'
-  },
-  completion: {
-    label: 'Unfinished-business theme (symbolic)',
-    icon: <Target size={20} />,
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bgGradient: 'from-indigo-500/20 to-blue-500/20',
-    description: 'Symbolic reading: patterns that feel already in progress, which either person can choose differently. From South Node and Saturn contacts.'
-  },
-  catalyst: {
-    label: 'Catalyst theme (symbolic)',
-    icon: <Zap size={20} />,
-    color: 'text-amber-600 dark:text-amber-400',
-    bgGradient: 'from-amber-500/20 to-orange-500/20',
-    description: 'Symbolic reading: a connection that speeds things up and shifts perspective. Says nothing about how long it lasts. From Uranus and Pluto contacts to personal planets.'
-  },
-  soul_family: {
-    label: 'Ease and support theme (symbolic)',
-    icon: <Users size={20} />,
-    color: 'text-green-600 dark:text-green-400',
-    bgGradient: 'from-green-500/20 to-emerald-500/20',
-    description: 'Symbolic reading: a comfortable, supportive pairing. Ease still has to be maintained by how both behave. From flowing contacts between personal planets.'
-  },
-  karmic_lesson: {
-    label: 'Learning and maturity theme (symbolic)',
-    icon: <Compass size={20} />,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgGradient: 'from-blue-500/20 to-cyan-500/20',
-    description: 'Symbolic reading: a pairing where each may develop patience, skill or perspective over time. From Saturn contacts to personal planets.'
-  },
-  new_contract: {
-    label: 'Fresh-start theme (symbolic)',
-    icon: <Star size={20} />,
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgGradient: 'from-cyan-500/20 to-teal-500/20',
-    description: 'Symbolic reading: something built from scratch rather than repeated. Assigned when node, Saturn and Pluto contacts are sparse or wide.'
-  }
-};
+export function KarmicAnalysisCard({
+  analysis,
+  chart1Name,
+  chart2Name,
+  context,
+}: KarmicAnalysisCardProps) {
+  const [showContacts, setShowContacts] = useState(false);
 
-const themeIcons: Record<KarmicIndicator['theme'], React.ReactNode> = {
-  past_life: <Moon size={14} />,
-  soul_growth: <Sparkles size={14} />,
-  karmic_debt: <Target size={14} />,
-  transformation: <Zap size={14} />,
-  healing: <Heart size={14} />,
-  fated: <Star size={14} />
-};
-
-const themeColors: Record<KarmicIndicator['theme'], string> = {
-  past_life: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  soul_growth: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  karmic_debt: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  transformation: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  healing: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  fated: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-};
-
-const themeLabels: Record<KarmicIndicator['theme'], string> = {
-  past_life: 'Familiarity (symbolic)',
-  soul_growth: 'Growth direction (symbolic)',
-  karmic_debt: 'Responsibility and maturity (symbolic)',
-  transformation: 'Depth and intensity (symbolic)',
-  healing: 'Sensitivity and care (symbolic)',
-  fated: 'Timing (symbolic)'
-};
-
-const themeMeanings: Record<KarmicIndicator['theme'], string> = {
-  past_life: 'These contacts are traditionally read as familiarity: the connection may feel known quickly. That is symbolic imagery, not evidence of any shared history.',
-  soul_growth: 'These contacts indicate this person helps push you toward your soul\'s evolutionary purpose. They support your North Node direction and help you become who you\'re meant to be.',
-  karmic_debt: 'Saturn contacts are read as the area where trust, patience and follow-through may be built over time. Nothing here implies a debt owed by either person.',
-  transformation: 'Pluto contacts are read as depth and intensity: this part of the connection may not stay light. At its best it brings real investment; under strain the stakes can feel higher than the situation warrants.',
-  healing: 'Chiron contacts point to a tender area where each may understand the other unusually well, and where kindness lands more than advice. No claim is made about anyone\'s history.',
-  fated: 'These contacts are traditionally read as notable timing. Treat that as symbolic imagery: nothing in a chart shows that a meeting was destined.'
-};
-
-// Explain what each indicator type means in plain English
-const indicatorTypeMeanings: Record<string, string> = {
-  south_node: 'South Node contacts indicate past life familiarity. This person feels like "home" because you\'ve been here before.',
-  north_node: 'North Node contacts help you grow. This person pushes you toward your soul\'s purpose, even if it feels uncomfortable.',
-  saturn: 'Saturn brings lessons of commitment, responsibility, and sometimes restriction. This is karmic debt being worked out.',
-  pluto: 'Pluto brings transformation through intensity. This is about power, control, and deep psychological change.',
-  chiron: 'Chiron brings healing through pain. This person touches your core wounds—and you touch theirs.',
-  twelfth_house: '12th House overlays create psychic, hidden, or past-life connections. Often unconscious but deeply felt.',
-  eighth_house: '8th House overlays create intense bonding around intimacy, shared resources, and transformation.',
-  vertex: 'Vertex contacts mark fated, destined meetings. This person entered your life at exactly the right time.'
-};
-
-// Explain the thresholds for each karmic type
-const karmicTypeThresholds: Record<KarmicType, string> = {
-  twin_flame: 'Requires: 100+ total score AND 4+ past life indicators AND 3+ transformation indicators',
-  completion: 'Requires: 5+ past life indicators (heavy past life emphasis)',
-  catalyst: 'Requires: 4+ transformation indicators AND 60+ total score (intense but less past life)',
-  soul_family: 'Requires: 2+ soul growth indicators OR 2+ fated indicators OR 40+ score with 1+ growth',
-  karmic_lesson: 'Requires: 50+ total score AND 2+ past life indicators',
-  new_contract: 'Requires: <30 total score AND 0 past life AND 0 growth AND 0 transformation indicators'
-};
-
-export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name, context }: KarmicAnalysisCardProps) => {
-  const [expandedSection, setExpandedSection] = useState<string | null>('purpose');
-  const [showTeaching, setShowTeaching] = useState(false);
-  const config = karmicTypeConfig[analysis.karmicType];
   const karmicSummary = useMemo(
-    () => buildKarmicSummary(analysis as any, context, chart1Name, chart2Name),
+    () => buildKarmicSummary(analysis, context ?? null, chart1Name, chart2Name),
     [analysis, context, chart1Name, chart2Name]
   );
-  
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
-  
-  // Group indicators by theme with point totals
-  const themeBreakdown = useMemo(() => {
-    const breakdown: Record<string, { indicators: KarmicIndicator[]; points: number }> = {};
-    analysis.indicators.forEach(ind => {
-      if (!breakdown[ind.theme]) {
-        breakdown[ind.theme] = { indicators: [], points: 0 };
-      }
-      breakdown[ind.theme].indicators.push(ind);
-      breakdown[ind.theme].points += ind.weight;
-    });
-    return breakdown;
-  }, [analysis.indicators]);
 
-  // Calculate counts for karmic type reasoning
-  const themeCounts = useMemo(() => ({
-    past_life: themeBreakdown.past_life?.indicators.length || 0,
-    soul_growth: themeBreakdown.soul_growth?.indicators.length || 0,
-    transformation: themeBreakdown.transformation?.indicators.length || 0,
-    healing: themeBreakdown.healing?.indicators.length || 0,
-    fated: themeBreakdown.fated?.indicators.length || 0,
-    karmic_debt: themeBreakdown.karmic_debt?.indicators.length || 0,
-  }), [themeBreakdown]);
-
-  const pastLifePoints = themeBreakdown.past_life?.points || 0;
-  
-  // Generate the reasoning for why this karmic type was chosen
-  const karmicTypeReasoning = useMemo(() => {
-    const type = analysis.karmicType;
-    const reasons: string[] = [];
-    
-    switch(type) {
-      case 'twin_flame':
-        reasons.push(`Total score (${analysis.totalKarmicScore}) is ≥100`);
-        reasons.push(`Past life indicators (${themeCounts.past_life}) is ≥4`);
-        reasons.push(`Transformation indicators (${themeCounts.transformation}) is ≥3`);
-        break;
-      case 'completion':
-        reasons.push(`Past life indicators (${themeCounts.past_life}) is ≥5`);
-        reasons.push('Heavy past life emphasis suggests unfinished business to complete');
-        break;
-      case 'catalyst':
-        reasons.push(`Transformation indicators (${themeCounts.transformation}) is ≥4`);
-        reasons.push(`Total score (${analysis.totalKarmicScore}) is ≥60`);
-        reasons.push('High intensity without as much past life baggage = catalyst energy');
-        break;
-      case 'soul_family':
-        if (themeCounts.soul_growth >= 2) {
-          reasons.push(`Soul growth indicators (${themeCounts.soul_growth}) is ≥2`);
-        }
-        if (themeCounts.fated >= 2) {
-          reasons.push(`Fated indicators (${themeCounts.fated}) is ≥2`);
-        }
-        if (analysis.totalKarmicScore >= 40 && themeCounts.soul_growth >= 1) {
-          reasons.push(`Score (${analysis.totalKarmicScore}) ≥40 with ${themeCounts.soul_growth}+ growth indicator`);
-        }
-        reasons.push('Supportive connections that nurture mutual evolution');
-        break;
-      case 'karmic_lesson':
-        reasons.push(`Total score (${analysis.totalKarmicScore}) is ≥50`);
-        reasons.push(`Past life indicators (${themeCounts.past_life}) is ≥2`);
-        reasons.push('Moderate karma with specific lessons to master');
-        break;
-      case 'new_contract':
-        reasons.push(`Total score (${analysis.totalKarmicScore}) is <30`);
-        reasons.push(`Past life indicators (${themeCounts.past_life}) is 0`);
-        reasons.push('Minimal karmic baggage = fresh start together');
-        break;
-    }
-    
-    return reasons;
-  }, [analysis.karmicType, analysis.totalKarmicScore, themeCounts]);
-  
   return (
-    <div className={`rounded-xl border bg-gradient-to-br ${config.bgGradient} overflow-hidden`}>
-      {/* Header */}
+    <div className="rounded-xl border bg-card overflow-hidden">
       <div className="p-6">
         <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-full bg-background/80 ${config.color}`}>
-            {config.icon}
+          <div className="p-3 rounded-full bg-secondary/50 text-primary">
+            <Moon size={20} />
           </div>
           <div className="flex-1">
-            <div className="flex items-center flex-wrap gap-2 mb-2">
-              <h3 className={`text-xl font-semibold ${config.color}`}>
-                {config.label}
-              </h3>
-              <Badge variant="secondary">
-                {symbolicEmphasisLabel(analysis.pastLifeProbability)}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {config.description}
-            </p>
+            <h3 className="text-xl font-semibold">Symbolic contacts between these charts</h3>
+            <p className="text-sm text-muted-foreground mt-1">{analysis.emphasis}</p>
             <p className="text-[11px] text-muted-foreground mt-2">{SYMBOLIC_LENS_NOTE}</p>
           </div>
         </div>
-        
-        {/* Plain-language, evidence-first summary (identical on every surface) */}
+
+        {/* Shared evidence-first summary, identical on every Synastry surface */}
         <div className="mt-4">
           <KarmicSummaryCard summary={karmicSummary} />
         </div>
-
-        {/* Learn How This Was Calculated Button */}
-        <div className="mt-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowTeaching(!showTeaching)}
-            className="w-full flex items-center gap-2"
-          >
-            <BookOpen size={16} />
-            {showTeaching ? 'Hide Calculation Details' : 'Learn How This Was Calculated'}
-            {showTeaching ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </Button>
-        </div>
       </div>
 
-      {/* TEACHING SECTION - Educational Breakdown */}
-      {showTeaching && (
-        <div className="px-6 pb-6 space-y-4">
-          
-          {/* 1. INDICATORS BREAKDOWN */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Calculator size={16} className="text-primary" />
-              1. Indicators Breakdown
-            </h4>
-            <p className="text-xs text-muted-foreground mb-3">
-              Each astrological contact between your charts contributes points based on its karmic significance.
-            </p>
-            
-            <ScrollArea className="max-h-72">
-              <div className="space-y-2">
-                {analysis.indicators.map((ind, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-muted/50 border text-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge className={themeColors[ind.theme]} variant="secondary">
-                          {themeLabels[ind.theme]}
-                        </Badge>
-                        <span className="font-medium">
-                          {karmicContactLine(ind, chart1Name, chart2Name)}{' '}
-                          <span className="text-xs text-muted-foreground">({formatKarmicOrb(ind.orb)})</span>
-                        </span>
-                      </div>
-                      <Badge variant="outline" className="font-mono text-primary">
-                        +{ind.weight} pts
-                      </Badge>
-                    </div>
-                    
-                    {/* What this means */}
-                    <div className="text-xs text-muted-foreground mb-1">
-                      <span className="font-medium text-foreground">Why it matters: </span>
-                      {indicatorTypeMeanings[ind.type] || 'Karmic connection detected.'}
-                    </div>
-                    
-                    {/* Interpretation */}
-                    <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
-                      <span className="font-medium text-foreground">Interpretation: </span>
-                      {ind.interpretation}
-                    </div>
-                  </div>
-                ))}
-                
-                {analysis.indicators.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No karmic indicators detected.</p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* 2. SCORE CALCULATION */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Plus size={16} className="text-primary" />
-              2. Score Calculation
-            </h4>
-            
-            <div className="space-y-3">
-              {/* Total Score */}
-              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-                <div className="text-sm font-medium">
-                  Total Karmic Score: <span className="font-mono text-primary">{analysis.totalKarmicScore} points</span> from {analysis.indicators.length} indicators
-                </div>
-              </div>
-              
-              {/* Theme Breakdown */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {Object.entries(themeBreakdown).map(([theme, data]) => (
-                  <div key={theme} className="p-2 rounded bg-muted/50 text-xs">
-                    <div className="flex items-center gap-1 mb-1">
-                      {themeIcons[theme as keyof typeof themeIcons]}
-                      <span className="capitalize">{theme.replace('_', ' ')}</span>
-                    </div>
-                    <div className="font-mono">
-                      {data.points} pts ({data.indicators.length} indicators)
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Past Life Probability Formula */}
-              <div className="p-3 rounded-lg bg-muted/30 border">
-                <div className="text-xs text-muted-foreground mb-2">
-                  <HelpCircle size={12} className="inline mr-1" />
-                  <span className="font-medium text-foreground">Symbolic emphasis formula (internal weighting, not a probability):</span>
-                </div>
-                <div className="font-mono text-sm flex items-center gap-2 flex-wrap">
-                  <span>({pastLifePoints} past life pts</span>
-                  <span>÷</span>
-                  <span>80)</span>
-                  <span>×</span>
-                  <span>100</span>
-                  <Equal size={14} />
-                  <span className="font-bold text-primary">{analysis.pastLifeProbability}%</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  80 points is simply where this app caps the scale. The result is {symbolicEmphasisLabel(analysis.pastLifeProbability)} on the symbolic markers listed above: how many of them appear between these two charts and how close they are. It is not a probability, a measurement, or evidence about anyone's history.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. WHY THIS TYPE */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <HelpCircle size={16} className="text-primary" />
-              3. Why "{config.label}"?
-            </h4>
-            
-            <div className="space-y-3">
-              {/* Current counts */}
-              <div className="p-3 rounded-lg bg-muted/30 text-sm">
-                <div className="font-medium mb-2">Your Indicator Counts:</div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                  <div>Past Life: <span className="font-mono">{themeCounts.past_life}</span></div>
-                  <div>Growth direction: <span className="font-mono">{themeCounts.soul_growth}</span></div>
-                  <div>Transformation: <span className="font-mono">{themeCounts.transformation}</span></div>
-                  <div>Healing: <span className="font-mono">{themeCounts.healing}</span></div>
-                  <div>Fated: <span className="font-mono">{themeCounts.fated}</span></div>
-                  <div>Karmic Debt: <span className="font-mono">{themeCounts.karmic_debt}</span></div>
-                </div>
-              </div>
-
-              {/* Reasoning */}
-              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-                <div className="text-sm font-medium mb-2 flex items-center gap-2">
-                  {config.icon}
-                  <span className={config.color}>Why you matched "{config.label}":</span>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  {karmicTypeReasoning.map((reason, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-primary">✓</span>
-                      {reason}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Thresholds reference */}
-              <div className="p-3 rounded-lg bg-muted/30 border text-xs">
-                <div className="font-medium mb-2">All Karmic Type Thresholds:</div>
-                <div className="space-y-1 text-muted-foreground">
-                  {Object.entries(karmicTypeThresholds).map(([type, threshold]) => (
-                    <div key={type} className={type === analysis.karmicType ? 'text-primary font-medium' : ''}>
-                      <span className="capitalize">{type.replace('_', ' ')}</span>: {threshold}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. THEME MEANINGS REFERENCE */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <BookOpen size={16} className="text-primary" />
-              4. Theme Reference Guide
-            </h4>
-            <div className="grid gap-2">
-              {Object.entries(themeMeanings).map(([theme, meaning]) => (
-                <div key={theme} className="p-2 rounded bg-muted/30 text-xs">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge className={themeColors[theme as keyof typeof themeColors]} variant="secondary">
-                      {themeLabels[theme as keyof typeof themeLabels]}
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground">{meaning}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Soul Purpose Section */}
-      <Collapsible open={expandedSection === 'purpose'} onOpenChange={() => toggleSection('purpose')}>
+      <Collapsible open={showContacts} onOpenChange={setShowContacts}>
         <CollapsibleTrigger className="w-full px-6 py-3 border-t bg-background/40 hover:bg-background/60 transition-colors flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
-            <Sparkles size={16} className="text-primary" />
-            Soul Purpose & Timeline
+            <Moon size={16} className="text-primary" />
+            Every contact found ({analysis.indicators.length})
           </div>
-          {expandedSection === 'purpose' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </CollapsibleTrigger>
-        <CollapsibleContent className="px-6 py-4 border-t bg-background/30 space-y-4">
-          {/* Soul Purpose */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-              <Target size={14} className="text-primary" />
-              Why You Met
-            </h4>
-            <p className="text-sm text-muted-foreground">{analysis.soulPurpose}</p>
-          </div>
-          
-          {/* Timeline */}
-          <div className="p-4 rounded-lg bg-background/80 border">
-            <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-              <Clock size={14} className="text-primary" />
-              Themes that may matter over time
-            </h4>
-            <p className="text-xs text-muted-foreground mb-3">{analysis.timeline.likely_duration}</p>
-            
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs text-muted-foreground mb-2">Key Lessons</div>
-                <ul className="space-y-1">
-                  {analysis.timeline.key_lessons.map((lesson, i) => (
-                    <li key={i} className="text-sm flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      {lesson}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-2">Completion Signs</div>
-                <ul className="space-y-1">
-                  {analysis.timeline.completion_indicators.map((sign, i) => (
-                    <li key={i} className="text-sm flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      {sign}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          {/* Recommended Approach */}
-          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-            <h4 className="font-medium text-sm mb-2">💡 Recommended Approach</h4>
-            <p className="text-sm text-muted-foreground">{analysis.recommendedApproach}</p>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      {/* Indicators Section (Compact version for non-teaching mode) */}
-      <Collapsible open={expandedSection === 'indicators'} onOpenChange={() => toggleSection('indicators')}>
-        <CollapsibleTrigger className="w-full px-6 py-3 border-t bg-background/40 hover:bg-background/60 transition-colors flex items-center justify-between">
-          <div className="flex items-center gap-2 font-medium">
-            <Moon size={16} className="text-purple-500" />
-            Karmic Indicators ({analysis.indicators.length})
-          </div>
-          {expandedSection === 'indicators' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {showContacts ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </CollapsibleTrigger>
         <CollapsibleContent className="px-6 py-4 border-t bg-background/30">
-          <Tabs defaultValue={Object.keys(themeBreakdown)[0] || 'all'} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-4">
-              {Object.entries(themeBreakdown).map(([theme, data]) => (
-                <TabsTrigger 
-                  key={theme} 
-                  value={theme}
-                  className="text-xs flex items-center gap-1"
-                >
-                  {themeIcons[theme as keyof typeof themeIcons]}
-                  <span className="hidden md:inline capitalize">{theme.replace('_', ' ')}</span>
-                  <span className="text-muted-foreground">({data.indicators.length})</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            
-            {Object.entries(themeBreakdown).map(([theme, data]) => (
-              <TabsContent key={theme} value={theme}>
-                <ScrollArea className="max-h-64">
-                  <div className="space-y-2">
-                    {data.indicators.map((indicator, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-background/80 border">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={themeColors[indicator.theme]}>
-                            {indicator.type.replace('_', ' ')}
-                          </Badge>
-                          {indicator.aspect && (
-                            <span className="text-xs text-muted-foreground">
-                              {indicator.planet1} {indicator.aspect} {indicator.planet2}
-                            </span>
-                          )}
-                          <span className="ml-auto text-xs font-mono text-primary">
-                            +{indicator.weight} pts
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{indicator.interpretation}</p>
-                      </div>
-                    ))}
+          {analysis.indicators.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No contacts of this kind were found between these two charts.
+            </p>
+          ) : (
+            <ScrollArea className="max-h-96">
+              <div className="space-y-2">
+                {analysis.indicators.map((ind, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-background/80 border text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary">{ind.technicalCategory}</Badge>
+                      <span className="font-medium">
+                        {karmicContactLine(ind, chart1Name, chart2Name)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({formatKarmicOrb(ind.orb)})
+                      </span>
+                      {ind.isOutOfSign && <Badge variant="outline">Out of sign</Badge>}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">{ind.interpretation}</p>
+                    {ind.signVsDegreeNote && (
+                      <p className="text-xs text-muted-foreground mt-1">{ind.signVsDegreeNote}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      <span className="font-medium text-foreground">What tends to support this: </span>
+                      {ind.supports}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <span className="font-medium text-foreground">What can strain it: </span>
+                      {ind.strains}
+                    </p>
+                    {ind.optionalSymbolic && (
+                      <p className="text-[11px] text-muted-foreground mt-1 italic">
+                        Optional symbolic reading: {ind.optionalSymbolic}
+                      </p>
+                    )}
                   </div>
-                </ScrollArea>
-              </TabsContent>
-            ))}
-          </Tabs>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+
+          {analysis.careAreas.length > 0 && (
+            <div className="mt-4 p-3 rounded-lg border bg-muted/30">
+              <h4 className="font-medium text-sm mb-1">Areas worth care and awareness</h4>
+              <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
+                {analysis.careAreas.map((area, i) => (
+                  <li key={i}>{area}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground mt-4">{analysis.recommendedApproach}</p>
         </CollapsibleContent>
       </Collapsible>
-      
-      {/* Healing & Danger Flags Section */}
-      {(analysis.healingOpportunities.length > 0 || analysis.dangerFlags.length > 0) && (
-        <Collapsible open={expandedSection === 'healing'} onOpenChange={() => toggleSection('healing')}>
-          <CollapsibleTrigger className="w-full px-6 py-3 border-t bg-background/40 hover:bg-background/60 transition-colors flex items-center justify-between">
-            <div className="flex items-center gap-2 font-medium">
-              <Heart size={16} className="text-pink-500" />
-              Healing & Growth Areas
-            </div>
-            {expandedSection === 'healing' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="px-6 py-4 border-t bg-background/30 space-y-4">
-            {/* Healing Opportunities */}
-            {analysis.healingOpportunities.length > 0 && (
-              <div className="p-4 rounded-lg bg-pink-50/50 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-800">
-                <h4 className="font-medium text-sm mb-2 text-pink-700 dark:text-pink-300">
-                  💚 Healing Opportunities
-                </h4>
-                <ul className="space-y-1">
-                  {analysis.healingOpportunities.map((opp, i) => (
-                    <li key={i} className="text-sm text-pink-700 dark:text-pink-300">
-                      • {opp}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {/* Danger Flags */}
-            {analysis.dangerFlags.length > 0 && (
-              <div className="p-4 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                <h4 className="font-medium text-sm mb-2 text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                  <AlertTriangle size={14} />
-                  Areas to Watch
-                </h4>
-                <ul className="space-y-1">
-                  {analysis.dangerFlags.map((flag, i) => (
-                    <li key={i} className="text-sm text-amber-700 dark:text-amber-300">
-                      • {flag}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
     </div>
   );
-};
+}
 
 export default KarmicAnalysisCard;
