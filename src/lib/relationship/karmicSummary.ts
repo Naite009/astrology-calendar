@@ -258,7 +258,7 @@ const GLOSSARY: KarmicGlossaryEntry[] = [
   {
     term: 'Past-pattern',
     meaning:
-      'A South Node or 12th-house contact. Read as familiarity, a sense of "already known". It is imagery about a repeating pattern, not a claim about anyone\u2019s history or a past life.',
+      'A South Node or 12th-house contact. Read as familiarity, a sense of "already known". It is imagery about a repeating pattern, not a claim about anyone\u2019s history or any earlier lifetime.',
   },
   {
     term: 'Transformation / intensity',
