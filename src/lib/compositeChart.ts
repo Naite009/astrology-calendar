@@ -44,65 +44,14 @@ export interface CompositeInterpretation {
 }
 
 // Sign interpretations for composite planets
-const SUN_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Your relationship is pioneering, competitive, and action-oriented. You inspire each other to be bold.',
-  'Taurus': 'Stability, sensuality, and building lasting value together define your partnership.',
-  'Gemini': 'Communication and mental stimulation are central. You keep each other curious and engaged.',
-  'Cancer': 'Emotional security and nurturing are your foundation. Home and family are important.',
-  'Leo': 'Your relationship is creative, dramatic, and seeks recognition. You bring out each other\'s shine.',
-  'Virgo': 'Service, improvement, and practical support characterize your bond. You help each other grow.',
-  'Libra': 'Balance, harmony, and partnership are your essence. You create beauty together.',
-  'Scorpio': 'Deep transformation, intensity, and profound intimacy define your connection.',
-  'Sagittarius': 'Adventure, growth, and shared philosophy drive your partnership. You expand together.',
-  'Capricorn': 'Ambition, structure, and long-term goals unite you. You build something lasting.',
-  'Aquarius': 'Innovation, friendship, and unconventional approaches define your bond.',
-  'Pisces': 'Spiritual connection, empathy, and creative flow are your essence. Dreamy and intuitive.'
-};
+/**
+ * Sign-keyword tables used to live here: one canned sentence per composite Sun,
+ * Moon, Venus and Mars sign, which let a single sign define a whole
+ * relationship. They are gone. Every interpretation in this file now comes from
+ * the canonical composite engine and reading, which weighs aspects, angles,
+ * house emphasis and repeated themes before any sign placement.
+ */
 
-const MOON_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Emotionally direct and spontaneous. Needs excitement to feel alive together.',
-  'Taurus': 'Emotionally steady and comfort-seeking. Security and sensory pleasure nurture you.',
-  'Gemini': 'Emotionally curious and talkative. You process feelings through conversation.',
-  'Cancer': 'Deeply nurturing and protective. Home is your emotional sanctuary.',
-  'Leo': 'Emotionally expressive and dramatic. You need to feel special together.',
-  'Virgo': 'Emotionally practical and helpful. Acts of service show care.',
-  'Libra': 'Emotionally balanced and peace-seeking. Harmony is essential.',
-  'Scorpio': 'Emotionally intense and private. Deep loyalty and transformation.',
-  'Sagittarius': 'Emotionally adventurous and optimistic. Freedom within connection.',
-  'Capricorn': 'Emotionally reserved but loyal. Security comes from achievement.',
-  'Aquarius': 'Emotionally independent and unconventional. Friendship first.',
-  'Pisces': 'Emotionally merged and intuitive. Profound empathy and spiritual connection.'
-};
-
-const VENUS_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Passionate, direct love. Pursuit and conquest energize romance.',
-  'Taurus': 'Sensual, loyal love. Physical affection and material comfort matter.',
-  'Gemini': 'Playful, communicative love. Flirtation and mental connection.',
-  'Cancer': 'Nurturing, protective love. Emotional safety is paramount.',
-  'Leo': 'Generous, dramatic love. Romance, appreciation, and fun.',
-  'Virgo': 'Devoted, practical love. Love through acts of service.',
-  'Libra': 'Harmonious, balanced love. Beauty, fairness, and partnership.',
-  'Scorpio': 'Intense, transformative love. Deep bonding and passion.',
-  'Sagittarius': 'Adventurous, free-spirited love. Growth and exploration.',
-  'Capricorn': 'Committed, mature love. Building something lasting.',
-  'Aquarius': 'Unconventional, friendly love. Independence and innovation.',
-  'Pisces': 'Romantic, spiritual love. Empathy and transcendence.'
-};
-
-const MARS_INTERPRETATIONS: Record<string, string> = {
-  'Aries': 'Direct, competitive drive. Quick to action, loves challenges.',
-  'Taurus': 'Steady, determined drive. Slow but unstoppable when motivated.',
-  'Gemini': 'Scattered, versatile drive. Multiple projects and mental energy.',
-  'Cancer': 'Protective, indirect drive. Action motivated by emotional security.',
-  'Leo': 'Creative, bold drive. Action for recognition and self-expression.',
-  'Virgo': 'Precise, productive drive. Detailed and efficient action.',
-  'Libra': 'Diplomatic, balanced drive. Action through partnership.',
-  'Scorpio': 'Intense, strategic drive. Powerful and transformative action.',
-  'Sagittarius': 'Adventurous, optimistic drive. Action toward expansion.',
-  'Capricorn': 'Ambitious, disciplined drive. Action for achievement.',
-  'Aquarius': 'Independent, innovative drive. Action for change.',
-  'Pisces': 'Inspired, intuitive drive. Action guided by feeling.'
-};
 
 /**
  * Convert position to ecliptic longitude (0-360)
