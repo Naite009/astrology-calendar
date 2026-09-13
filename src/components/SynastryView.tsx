@@ -560,6 +560,12 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
     return compositeData.interpretation;
   }, [chart1, chart2, relContext]);
 
+  // Composite reading, shared with the Composite tab and the printable export
+  const compositeReadingForExport = useMemo(() => {
+    if (!chart1 || !chart2 || !relContext) return null;
+    return buildCompositeReading(calculateCompositeChart(chart1, chart2, relContext).model, relContext);
+  }, [chart1, chart2, relContext]);
+
   // Calculate relationship potential (short-term vs long-term)
   const relationshipPotential = useMemo(() => {
     if (!chart1 || !chart2) return null;
@@ -788,6 +794,7 @@ export const SynastryView = ({ userNatalChart, savedCharts }: SynastryViewProps)
                           karmicIndicators={focusedKarmicIndicators}
                           focus={relationshipFocus}
                           pairReading={pairReading ?? undefined}
+                          compositeReading={compositeReadingForExport ?? undefined}
                         />
                       </div>
                       
