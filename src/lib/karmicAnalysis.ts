@@ -262,7 +262,7 @@ function contactCopy(
         interpretation: `${A}'s ${prettyBody(contactBody)} falls in ${B}'s 12th house, which this app reads as the private, less-visible part of ${B}'s chart. ${B} may find that ${A} touches things they do not usually put into words, and some of what happens between them may take a while to become clear to either of them.`,
         supports: `Privacy and quiet trust: ${B} may share things here they normally keep internal.`,
         strains: `A lot may go unsaid, so assumptions can build. Saying things out loud plainly helps more than usual.`,
-        optionalSymbolic: `Some traditions read the 12th house as a spiritual or unconscious area. That is an optional lens, not a claim about past lives, psychic ability or secrets.`,
+        optionalSymbolic: `Some traditions read the 12th house as a spiritual or unconscious area. That is an optional lens only, and nothing here asserts anything about either person's history or hidden motives.`,
       };
     case 'eighth_house':
       return {
