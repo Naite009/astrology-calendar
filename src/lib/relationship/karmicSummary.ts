@@ -18,7 +18,7 @@
 
 import { KarmicAnalysis, KarmicIndicator } from '@/lib/karmicAnalysis';
 import { RelationshipContext } from './relationshipContext';
-import { SYMBOLIC_LENS_NOTE, symbolicTheme } from './symbolicFraming';
+import { SYMBOLIC_LENS_NOTE } from './symbolicFraming';
 
 export type KarmicCategoryKey =
   | 'growth'
@@ -29,6 +29,16 @@ export type KarmicCategoryKey =
   | 'timing';
 
 export interface KarmicEvidenceLine {
+  /** Neutral technical category, shown before any interpretive wording. */
+  technicalCategory: string;
+  /** What tends to support the connection through this contact. */
+  supports: string;
+  /** What can strain the connection through this contact. */
+  strains: string;
+  /** Sign-versus-degree note when the aspect holds by degree but not by sign. */
+  outOfSignNote?: string;
+  /** Optional, clearly symbolic reading of this same contact. */
+  optionalSymbolic?: string;
   /** e.g. "Ava Kravitz's North Node trine Max Levin's Venus" */
   contact: string;
   /** e.g. "orb 2°14'" or "house placement (no orb)" */
@@ -39,6 +49,8 @@ export interface KarmicEvidenceLine {
 
 export interface KarmicCategory {
   key: KarmicCategoryKey;
+  /** Neutral technical heading, e.g. "Node contacts". Always shown first. */
+  technicalLabel: string;
   /** Fully labelled count, e.g. "1 growth-related contact". */
   label: string;
   count: number;
@@ -90,6 +102,16 @@ const CATEGORY_ORDER: KarmicCategoryKey[] = [
   'structure',
   'timing',
 ];
+
+/** Neutral, technical headings. These lead; interpretive words follow. */
+const TECHNICAL_LABEL: Record<KarmicCategoryKey, string> = {
+  growth: 'Node contacts (North/South Node axis)',
+  past_pattern: 'Node and 12th-house contacts',
+  intensity: 'Pluto and 8th-house contacts',
+  healing: 'Chiron contacts',
+  structure: 'Saturn contacts',
+  timing: 'Vertex contacts',
+};
 
 const CATEGORY_NOUN: Record<KarmicCategoryKey, { singular: string; plural: string }> = {
   growth: { singular: 'growth-related contact', plural: 'growth-related contacts' },
@@ -268,7 +290,7 @@ const GLOSSARY: KarmicGlossaryEntry[] = [
   {
     term: 'Healing / sensitivity',
     meaning:
-      'A Chiron contact. Read as a tender subject, where words may land harder than intended. It is not a diagnosis or a claim about anyone\u2019s wounds.',
+      'A Chiron contact. Read as a tender subject, where words may land harder than intended. It is not a diagnosis or a claim about anyone\u2019s history.',
   },
   {
     term: 'Nodal',
@@ -311,13 +333,19 @@ export function buildKarmicSummary(
     const noun = CATEGORY_NOUN[key];
     return {
       key,
+      technicalLabel: TECHNICAL_LABEL[key],
       count: matching.length,
       label: `${matching.length} ${matching.length === 1 ? noun.singular : noun.plural}`,
       plainMeaning: meanings[key],
       evidence: matching.map((ind) => ({
+        technicalCategory: ind.technicalCategory,
         contact: karmicContactLine(ind, names[0], names[1]),
         orbText: formatKarmicOrb(ind.orb),
         note: notes[ind.type] || 'One detected contact.',
+        supports: ind.supports,
+        strains: ind.strains,
+        outOfSignNote: ind.signVsDegreeNote,
+        optionalSymbolic: ind.optionalSymbolic,
       })),
     };
     // Categories with a count of 0 are filtered out below: a labelled count only
@@ -325,7 +353,7 @@ export function buildKarmicSummary(
   }).filter((cat) => cat.count > 0);
 
   const allowSymbolic = ctx ? ctx.allowSymbolic : true;
-  const theme = analysis ? symbolicTheme(analysis.karmicType) : null;
+  const lens = analysis?.optionalSymbolicLens ?? null;
   const derivedFrom = [...indicators]
     .sort(sortStrength)
     .slice(0, 4)
@@ -336,14 +364,14 @@ export function buildKarmicSummary(
     categories,
     bigPicture: buildBigPicture(indicators, categories, teen, names),
     symbolic:
-      allowSymbolic && theme && indicators.length > 0
+      allowSymbolic && lens && indicators.length > 0
         ? {
-            heading: 'Optional symbolic theme',
-            label: theme.label,
+            heading: 'Optional symbolic lens',
+            label: lens.label,
             explanation: teen
-              ? `${theme.description} This is an optional way of describing the contacts listed above. It is not a type of relationship, and it says nothing about how long anything lasts.`
-              : `${theme.description} It is a way of describing the contacts listed above, nothing more.`,
-            derivedFrom,
+              ? `${lens.explanation} It is not a type of relationship, and it says nothing about how long anything lasts.`
+              : lens.explanation,
+            derivedFrom: lens.derivedFrom.length > 0 ? lens.derivedFrom : derivedFrom,
             note: SYMBOLIC_LENS_NOTE,
           }
         : null,
@@ -364,7 +392,9 @@ export function renderKarmicSummaryText(summary: KarmicSummary): string {
       const evidence = cat.evidence
         .map((e) => `${e.contact} (${e.orbText})`)
         .join('; ');
-      parts.push(`${cat.label}. ${cat.plainMeaning} Why this appears: ${evidence}.`);
+      parts.push(
+        `${cat.technicalLabel}: ${cat.label}. ${cat.plainMeaning} Why this appears: ${evidence}.`,
+      );
     });
   }
   if (summary.symbolic) {

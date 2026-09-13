@@ -17,7 +17,9 @@ function CategoryBlock({ category }: { category: KarmicCategory }) {
     <div className="p-4 rounded-lg border bg-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-medium">{category.label}</p>
+          {/* Neutral technical category leads; interpretive wording follows. */}
+          <p className="font-medium">{category.technicalLabel}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{category.label}</p>
           <p className="text-sm text-muted-foreground mt-1">{category.plainMeaning}</p>
         </div>
       </div>
@@ -31,12 +33,29 @@ function CategoryBlock({ category }: { category: KarmicCategory }) {
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
       {open && (
-        <ul className="mt-3 space-y-2 border-t pt-3">
+        <ul className="mt-3 space-y-3 border-t pt-3">
           {category.evidence.map((e, i) => (
             <li key={i} className="text-sm">
+              <Badge variant="outline" className="mr-2 align-middle text-[10px]">
+                {e.technicalCategory}
+              </Badge>
               <span className="font-medium">{e.contact}</span>{' '}
               <span className="text-muted-foreground">({e.orbText})</span>
-              <span className="block text-xs text-muted-foreground">{e.note}</span>
+              <span className="block text-xs text-muted-foreground mt-1">{e.note}</span>
+              {e.outOfSignNote && (
+                <span className="block text-xs text-muted-foreground mt-1">{e.outOfSignNote}</span>
+              )}
+              <span className="block text-xs text-muted-foreground mt-1">
+                <strong>What tends to support this:</strong> {e.supports}
+              </span>
+              <span className="block text-xs text-muted-foreground mt-1">
+                <strong>What can strain it:</strong> {e.strains}
+              </span>
+              {e.optionalSymbolic && (
+                <span className="block text-[11px] text-muted-foreground mt-1 italic">
+                  Optional symbolic reading: {e.optionalSymbolic}
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -44,6 +63,7 @@ function CategoryBlock({ category }: { category: KarmicCategory }) {
     </div>
   );
 }
+
 
 export function KarmicSummaryCard({ summary }: { summary: KarmicSummary }) {
   const [glossaryOpen, setGlossaryOpen] = useState(false);

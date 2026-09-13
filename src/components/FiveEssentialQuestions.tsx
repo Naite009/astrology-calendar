@@ -3,7 +3,7 @@
  * 
  * The primary educational structure for synastry analysis:
  * 1. What are the relationship dynamics? (Aspects with light/shadow)
- * 2. Why did you meet? (Soul purpose/karmic)
+ * 2. Why this connection may feel significant (symbolic contacts)
  * 3. What are you building together? (Composite)
  * 4. How long will this last? (Timeline)
  * 5. What are you here to learn? (Lessons)
@@ -61,250 +61,20 @@ const ASPECT_SYMBOLS: Record<string, string> = {
   conjunction: '☌', opposition: '☍', trine: '△', square: '□', sextile: '⚹'
 };
 
-// Karmic type base info (descriptions only - indicators are generated dynamically)
-const KARMIC_TYPE_BASE: Record<string, { label: string; duration: string; description: string }> = {
-  soul_family: {
-    label: 'Ease and support theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as a comfortable, supportive pairing where being around each other takes little effort. Ease still has to be maintained by how both behave.'
-  },
-  twin_flame: {
-    label: 'Mirror and intensity theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as a mirror: each may see something of themselves in the other, and the connection tends not to feel casual. Produced by close Pluto and Sun/Moon contacts, usually with a nodal contact. Interpretive imagery, not a category either person belongs to.'
-  },
-  catalyst: {
-    label: 'Catalyst theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as a connection that speeds things up and shifts how each person sees things. Produced by close Uranus and Pluto contacts to personal planets.'
-  },
-  completion: {
-    label: 'Unfinished-business theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as picking up something that already feels in progress. In practice it often shows up as familiar patterns both keep choosing, which either can change. Produced mainly by South Node and Saturn contacts.'
-  },
-  new_contract: {
-    label: 'Fresh-start theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as something built from scratch rather than repeated. Assigned when node, Saturn and Pluto contacts between the charts are sparse or wide.'
-  },
-  karmic_lesson: {
-    label: 'Learning and maturity theme (symbolic)',
-    duration: 'Chart symbolism says nothing about how long a relationship lasts',
-    description: 'Symbolically this reads as a pairing where each may develop patience, skill or perspective over time. Produced mainly by Saturn contacts to personal planets. Growth language, not a debt to be paid.'
-  }
-};
-
 /**
- * Generate chart-specific thriving indicators based on actual karmic analysis
+ * Evidence-derived lists. There are no relationship archetypes here: nothing
+ * classifies a pairing as a twin flame, catalyst, karmic completion or soul family,
+ * and nothing predicts duration or "completion". Both lists come straight from the
+ * contacts the canonical engine actually found, and stay empty when it found none.
  */
-function generateChartSpecificThrivingIndicators(
-  karmicAnalysis: KarmicAnalysis | null,
-  chart1Name: string,
-  chart2Name: string
-): string[] {
-  if (!karmicAnalysis || karmicAnalysis.indicators.length === 0) {
-    return ['The relationship continues to feel supportive', 'Both feel free to grow'];
-  }
-  
-  const indicators: string[] = [];
-  const { indicators: karmicIndicators, karmicType } = karmicAnalysis;
-  
-  // Find the most significant indicators by type/theme
-  const northNodeIndicators = karmicIndicators.filter(i => i.type === 'north_node');
-  const plutoIndicators = karmicIndicators.filter(i => i.type === 'pluto');
-  const saturnIndicators = karmicIndicators.filter(i => i.type === 'saturn');
-  const chironIndicators = karmicIndicators.filter(i => i.type === 'chiron');
-  const southNodeIndicators = karmicIndicators.filter(i => i.type === 'south_node');
-  
-  // Generate specific indicators based on what's in the chart
-  if (northNodeIndicators.length > 0) {
-    const topNorth = northNodeIndicators[0];
-    const planet = topNorth.planet2 || topNorth.planet1;
-    indicators.push(`${chart1Name} continues helping ${chart2Name} grow into their destiny (${planet} evolution)`);
-  }
-  
-  if (plutoIndicators.length > 0) {
-    const topPluto = plutoIndicators[0];
-    indicators.push(`The ${topPluto.aspect || 'Pluto'} intensity is transforming both of you consciously, not destructively`);
-  }
-  
-  if (saturnIndicators.length > 0) {
-    indicators.push(`The Saturn lessons feel like growth rather than restriction`);
-  }
-  
-  if (chironIndicators.length > 0) {
-    const topChiron = chironIndicators[0];
-    indicators.push(`${chart2Name}'s old wounds (${topChiron.planet2}) are healing rather than being triggered`);
-  }
-  
-  // Add type-specific thriving indicators
-  switch (karmicType) {
-    case 'twin_flame':
-      indicators.push(`Mirror-like recognition: you see yourself clearly through ${chart2Name}`);
-      if (plutoIndicators.length > 0) {
-        indicators.push(`Power struggles are becoming conscious co-creation`);
-      }
-      break;
-    case 'soul_family':
-      indicators.push(`Both ${chart1Name} and ${chart2Name} feel free to grow as individuals`);
-      if (northNodeIndicators.length > 0) {
-        indicators.push(`${chart2Name}'s North Node journey is supported, not controlled`);
-      }
-      break;
-    case 'catalyst':
-      indicators.push(`Rapid transformation is exciting, not destabilizing`);
-      if (saturnIndicators.length > 0) {
-        indicators.push(`Saturn's structure helps ground the catalytic energy`);
-      }
-      break;
-    case 'completion':
-      indicators.push(`Old patterns are being resolved, not repeated`);
-      if (southNodeIndicators.length > 0) {
-        indicators.push(`Past life karma is clearing - you feel "lighter" together`);
-      }
-      break;
-  }
-  
-  // Ensure we have at least 3 indicators
-  while (indicators.length < 3) {
-    indicators.push('The connection continues to evolve naturally');
-  }
-  
-  return indicators.slice(0, 5);
+function supportLines(karmicAnalysis: KarmicAnalysis | null): string[] {
+  return (karmicAnalysis?.supportingFactors ?? []).slice(0, 5);
 }
 
-/**
- * Generate chart-specific completion indicators based on actual karmic analysis
- */
-function generateChartSpecificCompletionIndicators(
-  karmicAnalysis: KarmicAnalysis | null,
-  chart1Name: string,
-  chart2Name: string
-): string[] {
-  if (!karmicAnalysis || karmicAnalysis.indicators.length === 0) {
-    return ['The lessons feel complete', 'Natural gratitude for what was shared'];
-  }
-  
-  const indicators: string[] = [];
-  const { indicators: karmicIndicators, karmicType } = karmicAnalysis;
-  
-  // Find the most significant indicators by type
-  const northNodeIndicators = karmicIndicators.filter(i => i.type === 'north_node');
-  const plutoIndicators = karmicIndicators.filter(i => i.type === 'pluto');
-  const saturnIndicators = karmicIndicators.filter(i => i.type === 'saturn');
-  const chironIndicators = karmicIndicators.filter(i => i.type === 'chiron');
-  const southNodeIndicators = karmicIndicators.filter(i => i.type === 'south_node');
-  
-  // Generate specific completion indicators based on actual chart contacts
-  if (northNodeIndicators.length > 0) {
-    const topNorth = northNodeIndicators[0];
-    const planet = topNorth.planet2 || topNorth.planet1;
-    indicators.push(`${chart2Name} has integrated the ${planet} lessons ${chart1Name} brought`);
-    indicators.push(`${chart2Name}'s North Node growth no longer requires ${chart1Name}'s presence to progress`);
-  }
-  
-  if (plutoIndicators.length > 0) {
-    const topPluto = plutoIndicators[0];
-    indicators.push(`The ${topPluto.planet1}-${topPluto.planet2} intensity has transformed both - you're both different people now`);
-  }
-  
-  if (saturnIndicators.length > 0) {
-    indicators.push(`The Saturn tests are passed - you've earned what this relationship taught`);
-  }
-  
-  if (chironIndicators.length > 0) {
-    const topChiron = chironIndicators[0];
-    indicators.push(`${chart2Name}'s ${topChiron.planet2} wound is healed - the medicine has been delivered`);
-  }
-  
-  if (southNodeIndicators.length > 0) {
-    indicators.push(`Past life patterns are cleared - you feel "complete" rather than "stuck"`);
-  }
-  
-  // Add type-specific completion indicators
-  switch (karmicType) {
-    case 'twin_flame':
-      indicators.push(`You can love ${chart2Name} from a distance without longing`);
-      indicators.push(`The mirror has done its work - you see yourself clearly now`);
-      break;
-    case 'soul_family':
-      indicators.push(`Gratitude for what ${chart1Name} and ${chart2Name} shared`);
-      indicators.push(`Natural drift without drama - you wish each other well`);
-      break;
-    case 'catalyst':
-      indicators.push(`The "shake-up" energy has integrated - life is different now`);
-      indicators.push(`You appreciate what ${chart2Name} catalyzed without needing more`);
-      break;
-    case 'completion':
-      indicators.push(`The karmic debt between ${chart1Name} and ${chart2Name} feels repaid`);
-      indicators.push(`Freedom from obligation - you stay by choice, not karma`);
-      break;
-  }
-  
-  // Ensure we have at least 3 indicators
-  while (indicators.length < 3) {
-    indicators.push('Natural sense of completion without trauma');
-  }
-  
-  return indicators.slice(0, 5);
+function strainLines(karmicAnalysis: KarmicAnalysis | null): string[] {
+  return (karmicAnalysis?.strainingFactors ?? []).slice(0, 5);
 }
 
-// Legacy fallback (kept for compatibility)
-const KARMIC_TYPE_INFO: Record<string, { label: string; duration: string; description: string; thrivingIndicators: string[]; completionIndicators: string[] }> = {
-  soul_family: {
-    ...KARMIC_TYPE_BASE.soul_family,
-    thrivingIndicators: ['Connection feels nourishing', 'Freedom to grow individually'],
-    completionIndicators: ['Growth feels complete', 'Natural gratitude']
-  },
-  twin_flame: {
-    ...KARMIC_TYPE_BASE.twin_flame,
-    thrivingIndicators: ['Intense growth', 'Mirror recognition'],
-    completionIndicators: ['Integration complete', 'Peace with cycles']
-  },
-  catalyst: {
-    ...KARMIC_TYPE_BASE.catalyst,
-    thrivingIndicators: ['Rapid transformation', 'Feeling alive'],
-    completionIndicators: ['Changes integrated', 'Less urgency']
-  },
-  completion: {
-    ...KARMIC_TYPE_BASE.completion,
-    thrivingIndicators: ['Working through patterns', 'Deep forgiveness'],
-    completionIndicators: ['Debt feels repaid', 'Closure achieved']
-  },
-  new_contract: {
-    ...KARMIC_TYPE_BASE.new_contract,
-    thrivingIndicators: [
-      'Building something new together',
-      'Collaborative creation energy',
-      'Mutual support for individual growth',
-      'Sense of shared mission or purpose'
-    ],
-    completionIndicators: [
-      'The project/mission is complete',
-      'Natural evolution apart',
-      'What you came to create exists',
-      'New paths calling each separately'
-    ]
-  },
-  karmic_lesson: {
-    label: 'Karmic Lesson',
-    duration: 'Until the lesson is learned',
-    description: 'This connection is primarily a teaching relationship - you\'re here to learn specific lessons from each other.',
-    thrivingIndicators: [
-      'Active learning and growth',
-      'Willingness to be uncomfortable',
-      'Seeing patterns clearly',
-      'Integrating the teachings'
-    ],
-    completionIndicators: [
-      'The lesson is internalized',
-      'Patterns no longer repeat',
-      'Gratitude for the teaching',
-      'Ready to apply elsewhere'
-    ]
-  }
-};
 
 /**
  * Generate light and shadow expressions for an aspect
@@ -819,14 +589,11 @@ function generateLessons(
       }
     });
 
-    // Add key lessons from timeline
-    if (karmicAnalysis.timeline.key_lessons) {
-      karmicAnalysis.timeline.key_lessons.forEach(lesson => {
-        if (!togetherLessons.includes(lesson)) {
-          togetherLessons.push(lesson);
-        }
-      });
-    }
+    // Practice items, each derived from an actual contact (never filler)
+    karmicAnalysis.practiceFocus.forEach(item => {
+      if (!togetherLessons.includes(item)) togetherLessons.push(item);
+    });
+
   }
 
   // Add conflict triggers as growth opportunities
@@ -1235,21 +1002,17 @@ export const FiveEssentialQuestions = ({
     [chart1, chart2, report, karmicAnalysis]
   );
 
-  // Get karmic type base info
-  const karmicTypeBase = karmicAnalysis 
-    ? KARMIC_TYPE_BASE[karmicAnalysis.karmicType] || KARMIC_TYPE_BASE.soul_family
-    : KARMIC_TYPE_BASE.new_contract;
+  // Evidence-derived support/strain lists (no archetype labels, no duration claims)
+  const chartSpecificThrivingIndicators = useMemo(
+    () => supportLines(karmicAnalysis),
+    [karmicAnalysis]
+  );
 
-  // Generate chart-specific indicators
-  const chartSpecificThrivingIndicators = useMemo(() => 
-    generateChartSpecificThrivingIndicators(karmicAnalysis, chart1.name, chart2.name),
-    [karmicAnalysis, chart1.name, chart2.name]
+  const chartSpecificStrainIndicators = useMemo(
+    () => strainLines(karmicAnalysis),
+    [karmicAnalysis]
   );
-  
-  const chartSpecificCompletionIndicators = useMemo(() => 
-    generateChartSpecificCompletionIndicators(karmicAnalysis, chart1.name, chart2.name),
-    [karmicAnalysis, chart1.name, chart2.name]
-  );
+
 
   return (
     <div className="space-y-12">
@@ -1306,7 +1069,7 @@ export const FiveEssentialQuestions = ({
       <section className="space-y-4">
         <SectionHeader 
           number={2} 
-          title="Why Did You Meet? (Soul Purpose)" 
+          title="Why This Connection May Feel Significant" 
           icon={<Compass className="text-purple-500" size={24} />}
         />
         
@@ -1331,7 +1094,7 @@ export const FiveEssentialQuestions = ({
           </div>
         ) : (
           <p className="text-center text-muted-foreground py-8">
-            Soul purpose analysis requires complete birth data for both charts.
+            This section needs complete birth data for both charts.
           </p>
         )}
       </section>
@@ -1405,67 +1168,80 @@ export const FiveEssentialQuestions = ({
           <div className="flex items-center gap-3 mb-4">
             <Clock className="text-green-600 dark:text-green-400" size={24} />
             <div>
-              <h3 className="text-xl font-serif">{say(karmicTypeBase.label)}: what tends to sustain it</h3>
+              <h3 className="text-xl font-serif">What tends to support this connection, and what can strain it</h3>
               <p className="text-sm text-green-700 dark:text-green-400">
-                A chart cannot predict how long a relationship lasts. What follows is what tends to keep
-                this kind of connection working, and what tends to strain it.
+                A chart cannot say how long a relationship lasts or when it is finished. Each line below
+                names the exact contact it comes from, with its orb and whose planet is whose.
               </p>
             </div>
           </div>
-          
-          <p className="text-sm mb-4">{say(karmicTypeBase.description)}</p>
+
+          <p className="text-sm mb-4">{say(karmicAnalysis?.emphasis || 'No contacts of this kind were found between these two charts.')}</p>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-3 rounded-lg bg-white/50 dark:bg-black/20">
               <h4 className="font-medium text-sm mb-2 text-green-700 dark:text-green-400">
-                What indicates it's thriving (specific to {chart1.name} & {chart2.name}):
+                What tends to support this connection:
               </h4>
-              <ul className="text-sm space-y-1">
-                {chartSpecificThrivingIndicators.map((ind, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 size={14} className="mt-0.5 text-green-600 flex-shrink-0" />
-                    <span>{ind}</span>
-                  </li>
-                ))}
-              </ul>
+              {chartSpecificThrivingIndicators.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No supporting contacts of this kind were found, so nothing is listed here.
+                </p>
+              ) : (
+                <ul className="text-sm space-y-1">
+                  {chartSpecificThrivingIndicators.map((ind, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 size={14} className="mt-0.5 text-green-600 flex-shrink-0" />
+                      <span>{say(ind)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            
+
             <div className="p-3 rounded-lg bg-white/50 dark:bg-black/20">
               <h4 className="font-medium text-sm mb-2 text-amber-700 dark:text-amber-400">
-                What indicates natural completion (specific to this relationship):
+                What can strain it:
               </h4>
-              <ul className="text-sm space-y-1">
-                {chartSpecificCompletionIndicators.map((ind, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Compass size={14} className="mt-0.5 text-amber-600 flex-shrink-0" />
-                    <span>{ind}</span>
-                  </li>
-                ))}
-              </ul>
+              {chartSpecificStrainIndicators.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No tense contacts of this kind were found, so nothing is listed here.
+                </p>
+              ) : (
+                <ul className="text-sm space-y-1">
+                  {chartSpecificStrainIndicators.map((ind, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <Compass size={14} className="mt-0.5 text-amber-600 flex-shrink-0" />
+                      <span>{say(ind)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
 
-        {karmicAnalysis && karmicAnalysis.timeline.key_lessons.length > 0 && (
+        {karmicAnalysis && karmicAnalysis.careAreas.length > 0 && (
           <div className="p-4 rounded-lg border bg-card">
-            <h4 className="font-medium mb-2">Key lessons for this connection:</h4>
+            <h4 className="font-medium mb-2">Areas worth a little care and awareness:</h4>
             <ul className="text-sm space-y-1">
-              {karmicAnalysis.timeline.key_lessons.map((lesson, i) => (
+              {karmicAnalysis.careAreas.map((area, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <GraduationCap size={14} className="mt-0.5 text-primary flex-shrink-0" />
-                  <span>{lesson}</span>
+                  <span>{say(area)}</span>
                 </li>
               ))}
             </ul>
           </div>
         )}
+
       </section>
 
       {/* Question 5: What Are You Here To Learn? */}
       <section className="space-y-4">
         <SectionHeader 
           number={5} 
-          title="What Are You Here To Learn?" 
+          title="What This Relationship May Help Each Person Practice" 
           icon={<GraduationCap className="text-amber-500" size={24} />}
         />
         

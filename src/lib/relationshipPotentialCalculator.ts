@@ -175,16 +175,10 @@ function calculateShortTermPotential(
     factors.push('Mental rapport makes conversation enjoyable');
   }
   
-  // Karmic catalyst types boost short-term
-  if (karmicAnalysis) {
-    if (karmicAnalysis.karmicType === 'catalyst') {
-      score += 10;
-      factors.push('Catalyst connection creates intense initial attraction');
-    }
-    if (karmicAnalysis.karmicType === 'twin_flame') {
-      score += 8;
-      factors.push('Twin flame recognition creates magnetic pull');
-    }
+  // Pluto contacts often show up as strong early investment. No archetype labels.
+  if (karmicAnalysis?.indicators.some(i => i.type === 'pluto')) {
+    score += 8;
+    factors.push('Pluto contacts to personal planets: the connection may feel absorbing early on');
   }
   
   score = Math.min(100, Math.max(0, score));
@@ -288,32 +282,19 @@ function calculateLongTermPotential(
     }
   }
   
-  // Karmic type impact
+  // Contact families, read as tendencies. No relationship archetypes, no verdicts.
   if (karmicAnalysis) {
-    switch (karmicAnalysis.karmicType) {
-      case 'soul_family':
-      case 'new_contract':
-        score += 15;
-        factors.push('Soul family connection supports lasting bonds');
-        break;
-      case 'twin_flame':
-        score += 10;
-        factors.push('Twin flame connection provides deep foundation');
-        break;
-      case 'catalyst':
-        score -= 10;
-        factors.push('Catalyst connections often serve a temporary purpose');
-        break;
-      case 'completion':
-        score -= 5;
-        factors.push('Completion karma: may naturally conclude after lessons learned');
-        break;
+    if (karmicAnalysis.indicators.some(i => i.type === 'saturn')) {
+      score += 10;
+      factors.push('Saturn contacts: steadiness and follow-through are available here');
     }
-    
-    // Danger flags reduce long-term score
-    if (karmicAnalysis.dangerFlags.length > 0) {
-      score -= karmicAnalysis.dangerFlags.length * 5;
-      factors.push('Karmic danger patterns require conscious work');
+    if (karmicAnalysis.indicators.some(i => i.type === 'north_node' || i.type === 'south_node')) {
+      score += 5;
+      factors.push('Node contacts: being around each other may nudge each person to stretch');
+    }
+    if (karmicAnalysis.careAreas.length > 0) {
+      score -= karmicAnalysis.careAreas.length * 4;
+      factors.push('A few tense contacts ask for extra care around tone and timing');
     }
   }
   
@@ -391,11 +372,10 @@ function calculateMarriagePotential(
   
   // Karmic considerations
   if (karmicAnalysis) {
-    considerations.push(`Karmic type: ${karmicAnalysis.karmicType}`);
-    considerations.push(karmicAnalysis.soulPurpose);
-    
-    if (karmicAnalysis.dangerFlags.length > 0) {
-      considerations.push('⚠️ Address danger patterns before committing');
+    considerations.push(karmicAnalysis.emphasis);
+
+    if (karmicAnalysis.careAreas.length > 0) {
+      considerations.push('Some contacts here ask for extra care around tone and timing.');
       score -= 10;
     }
   }
@@ -536,9 +516,8 @@ function calculateGrowthPotential(
   // Evolutionary path from karmic analysis
   let evolutionaryPath = 'Your connection is designed to catalyze spiritual evolution.';
   if (karmicAnalysis) {
-    evolutionaryPath = karmicAnalysis.timeline.key_lessons.join(' → ') || evolutionaryPath;
-    if (karmicAnalysis.healingOpportunities.length > 0) {
-      evolutionaryPath = `Healing opportunity: ${karmicAnalysis.healingOpportunities[0]}`;
+    if (karmicAnalysis.practiceFocus.length > 0) {
+      evolutionaryPath = karmicAnalysis.practiceFocus.join(' ');
     }
   }
   

@@ -825,7 +825,7 @@ describe('karmic summary (Ava Kravitz + Max Levin)', () => {
   });
 
   it('uses teen-appropriate wording and includes a glossary', () => {
-    expect(findForbiddenRelationshipPhrases(collectStrings(summary).join(' '), true)).toEqual([]);
+    expect(findForbiddenRelationshipPhrases(collectStrings(summary).join(' '), ctx)).toEqual([]);
     const terms = summary.glossary.map((g) => g.term.toLowerCase()).join(' ');
     ['growth', 'past-pattern', 'transformation', 'healing', 'nodal'].forEach((t) =>
       expect(terms).toContain(t),
@@ -835,5 +835,173 @@ describe('karmic summary (Ava Kravitz + Max Levin)', () => {
   it('summarises actual evidence in the Big Picture', () => {
     expect(summary.bigPicture.length).toBeGreaterThan(30);
     expect(summary.bigPicture).not.toMatch(/karmic score/i);
+  });
+});
+
+/**
+ * Structural regressions for the rebuilt symbolic-contact engine.
+ * These cover archetype labels, duration/completion predictions, exposed weights,
+ * neutral technical taxonomy, Saturn/Pluto/Chiron/house/Vertex wording, directional
+ * ownership, ranking, orbs, node-axis double counting and safety inference.
+ */
+describe('symbolic contact engine (Ava Kravitz + Max Levin, teen romantic)', () => {
+  const ctx = buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
+  const analysis = calculateKarmicAnalysis(ava, max, legacyKarmicFocus(ctx.kind));
+  const summary = buildKarmicSummary(analysis, ctx, ava.name, max.name);
+  const allText = [
+    analysis.emphasis,
+    analysis.recommendedApproach,
+    ...analysis.supportingFactors,
+    ...analysis.strainingFactors,
+    ...analysis.careAreas,
+    ...analysis.practiceFocus,
+    ...analysis.indicators.flatMap((i) => [
+      i.interpretation,
+      i.supports,
+      i.strains,
+      i.optionalSymbolic ?? '',
+    ]),
+    renderKarmicSummaryText(summary),
+  ].join(' ');
+
+  it('never labels the relationship as an archetype', () => {
+    [
+      'twin flame',
+      'catalyst connection',
+      'karmic completion',
+      'soul family',
+      'karmic lesson',
+      'new soul contract',
+      'soul contract',
+    ].forEach((label) => expect(allText.toLowerCase()).not.toContain(label));
+  });
+
+  it('makes no duration or completion prediction', () => {
+    expect(allText).not.toMatch(/\d+\s?[-–]\s?\d+\s?(months|years)/i);
+    expect(allText).not.toMatch(/\d+\s?(months|years)/i);
+    expect(allText).not.toMatch(/until karma is resolved/i);
+    expect(allText).not.toMatch(/potentially lifetime/i);
+    expect(allText).not.toMatch(/natural completion/i);
+    expect(allText).not.toMatch(/medicine has been delivered/i);
+    expect(allText).not.toMatch(/meant to last/i);
+    expect(allText).not.toMatch(/karmic debt/i);
+  });
+
+  it('exposes no score, probability or points anywhere', () => {
+    expect(allText).not.toMatch(/total karmic score/i);
+    expect(allText).not.toMatch(/past life probability/i);
+    expect(allText).not.toMatch(/\+\d+\s?pts?\b/i);
+    expect(allText).not.toMatch(/\d+\s?points/i);
+    expect(allText).not.toMatch(/\d+\s?%/);
+    expect(analysis as unknown as Record<string, unknown>).not.toHaveProperty('totalKarmicScore');
+    expect(analysis as unknown as Record<string, unknown>).not.toHaveProperty('pastLifeProbability');
+    expect(analysis as unknown as Record<string, unknown>).not.toHaveProperty('dangerFlags');
+    expect(analysis as unknown as Record<string, unknown>).not.toHaveProperty('timeline');
+  });
+
+  it('leads every contact with a neutral technical category', () => {
+    const allowed = [
+      'Node contact',
+      'Saturn contact',
+      'Pluto contact',
+      'Chiron contact',
+      '12th-house overlay',
+      '8th-house overlay',
+      'Vertex contact',
+    ];
+    analysis.indicators.forEach((ind) => {
+      expect(allowed).toContain(ind.technicalCategory);
+    });
+    summary.categories.forEach((cat) => {
+      expect(cat.technicalLabel.length).toBeGreaterThan(5);
+      cat.evidence.forEach((e) => expect(allowed).toContain(e.technicalCategory));
+    });
+  });
+
+  it('avoids pathology, trauma, safety and control claims', () => {
+    [
+      'wound',
+      'trauma',
+      'obsess',
+      'possess',
+      'manipulat',
+      'power struggle',
+      'destructive',
+      'danger',
+      'high alert',
+      'caution:',
+      'abuse',
+      'telepath',
+      'psychic',
+      'hidden agenda',
+      'secrets',
+      'sexual',
+      'past life',
+      'fated encounter',
+      'destined moment',
+      'soul plan',
+      'punishment',
+    ].forEach((bad) => expect(allText.toLowerCase()).not.toContain(bad));
+  });
+
+  it('is directional: every contact names both owners', () => {
+    analysis.indicators.forEach((ind) => {
+      expect([ava.name, max.name]).toContain(ind.owner1);
+      expect([ava.name, max.name]).toContain(ind.owner2);
+      expect(ind.interpretation).toMatch(/Ava Kravitz|Max Levin/);
+    });
+  });
+
+  it('shows an orb on every aspect contact and ranks tight major contacts first', () => {
+    const aspectContacts = analysis.indicators.filter((i) => i.aspect);
+    aspectContacts.forEach((i) => expect(typeof i.orb).toBe('number'));
+
+    const tierOf = (t: string) =>
+      t === 'saturn' || t === 'pluto'
+        ? 0
+        : t === 'north_node' || t === 'south_node' || t === 'chiron'
+          ? 1
+          : t === 'vertex'
+            ? 2
+            : 3;
+    const tiers = analysis.indicators.map((i) => tierOf(i.type));
+    expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
+  });
+
+  it('counts the node axis once per subject planet', () => {
+    const nodeKeys = analysis.indicators
+      .filter((i) => i.type === 'north_node' || i.type === 'south_node')
+      .map((i) => `${i.owner1}|${i.owner2}|${i.planet2}`);
+    expect(new Set(nodeKeys).size).toBe(nodeKeys.length);
+  });
+
+  it('keeps house overlays real (canonical engine) rather than undefined lookups', () => {
+    analysis.indicators
+      .filter((i) => i.type === 'eighth_house' || i.type === 'twelfth_house')
+      .forEach((i) => {
+        expect(['8th House', '12th House']).toContain(i.planet2);
+        expect(i.owner1).toBeTruthy();
+        expect(i.owner2).toBeTruthy();
+      });
+  });
+
+  it('offers support/strain lists instead of forecasts, with no filler', () => {
+    analysis.supportingFactors.forEach((line) => expect(line).toMatch(/Ava Kravitz|Max Levin/));
+    analysis.strainingFactors.forEach((line) => expect(line).toMatch(/Ava Kravitz|Max Levin/));
+    analysis.practiceFocus.forEach((line) => expect(line).toMatch(/Ava Kravitz|Max Levin/));
+    expect(allText).not.toMatch(/continues to evolve naturally/i);
+    expect(allText).not.toMatch(/balance between togetherness and individuality/i);
+  });
+
+  it('keeps any spiritual framing optional and separated', () => {
+    if (analysis.optionalSymbolicLens) {
+      expect(analysis.optionalSymbolicLens.label.toLowerCase()).toContain('optional');
+      expect(analysis.optionalSymbolicLens.explanation).toMatch(/not as a type of relationship/i);
+    }
+    if (summary.symbolic) expect(summary.symbolic.heading.toLowerCase()).toContain('optional');
+  });
+
+  it('stays teen-appropriate throughout', () => {
+    expect(findForbiddenRelationshipPhrases(allText, ctx)).toEqual([]);
   });
 });
