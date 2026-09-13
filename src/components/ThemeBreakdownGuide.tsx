@@ -39,7 +39,7 @@ const GROUPS: { label: string; types: KarmicIndicator['type'][]; whatItIs: strin
     label: 'Saturn contacts',
     types: ['saturn'],
     whatItIs:
-      'Saturn contacting a personal planet or angle. Read as seriousness, structure, patience and commitment, not as debt or punishment.',
+      'Saturn contacting a personal planet or angle. Read as seriousness, structure, responsibility, patience and commitment.',
   },
   {
     label: 'Pluto contacts',
