@@ -249,7 +249,7 @@ function assessIntensity(karmic: KarmicAnalysis, synastry: any): IntensityAssess
   const highIntensityDynamics: IntensityAssessment['highIntensityDynamics'] = [];
   let intensityIndex = 0;
 
-  karmic.dangerFlags.forEach(flag => {
+  karmic.careAreas.forEach(flag => {
     let prominence: 'high' | 'moderate' | 'low' = 'moderate';
     if (flag.includes('Pluto') && (flag.includes('Venus') || flag.includes('Moon'))) {
       prominence = 'high';
@@ -315,8 +315,8 @@ function identifyGreenFlags(karmic: KarmicAnalysis, synastry: any): string[] {
   }
 
   // Healing opportunities
-  if (karmic.healingOpportunities.length >= 3) {
-    flags.push('Strong healing potential - opportunity to resolve old wounds together');
+  if (karmic.indicators.filter(i => i.type === 'chiron').length >= 2) {
+    flags.push('Several Chiron contacts - understanding is available on subjects that may feel tender');
   }
 
   // Soul family type
@@ -444,8 +444,7 @@ function calculateShortTermPotential(compatibility: CompatibilityReport, karmic:
   let score = compatibility.overallScore;
   
   // Intense karmic connections often great short-term
-  if (karmic.karmicType === 'catalyst') score += 10;
-  if (karmic.karmicType === 'twin_flame') score += 5;
+  if (karmic.indicators.some(i => i.type === 'pluto')) score += 5;
   
   return Math.min(100, score);
 }
@@ -501,7 +500,7 @@ function getMarriageConsiderations(
   }
   
   considerations.push(composite.relationshipPurpose);
-  considerations.push(`Karmic type: ${karmic.karmicType} - ${karmic.soulPurpose}`);
+  considerations.push(karmic.emphasis);
   considerations.push(karmic.recommendedApproach);
   
   return considerations;
@@ -546,7 +545,9 @@ function generateRecommendations(
   recommendations.push(...getFocusSpecificRecommendations(focus, potential, purpose));
 
   // Timeline awareness
-  recommendations.push(`Key lessons: ${karmic.timeline.key_lessons.join(', ')}`);
+  if (karmic.practiceFocus.length > 0) {
+    recommendations.push(`Worth practising: ${karmic.practiceFocus.join(' ')}`);
+  }
 
   return recommendations;
 }
@@ -583,7 +584,7 @@ function compileCriticalWarnings(karmic: KarmicAnalysis, safety: IntensityAssess
     .filter(d => d.prominence === 'high')
     .forEach(d => warnings.push(`${d.description} ${d.workingWithIt}`));
 
-  karmic.dangerFlags.forEach(flag => warnings.push(flag));
+  karmic.careAreas.forEach(area => warnings.push(area));
   
   return warnings;
 }
@@ -595,7 +596,7 @@ function compileGrowthOpportunities(
 ): string[] {
   const opportunities: string[] = [];
   
-  opportunities.push(...karmic.healingOpportunities);
+  opportunities.push(...karmic.supportingFactors);
   opportunities.push(...composite.strengths);
   
   if (davison) {
