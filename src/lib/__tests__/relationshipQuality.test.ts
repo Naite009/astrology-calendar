@@ -996,7 +996,7 @@ describe('symbolic contact engine (Ava Kravitz + Max Levin, teen romantic)', () 
   it('keeps any spiritual framing optional and separated', () => {
     if (analysis.optionalSymbolicLens) {
       expect(analysis.optionalSymbolicLens.label.toLowerCase()).toContain('optional');
-      expect(analysis.optionalSymbolicLens.explanation).toMatch(/not a type of relationship/i);
+      expect(analysis.optionalSymbolicLens.explanation).toMatch(/not as a type of relationship/i);
     }
     if (summary.symbolic) expect(summary.symbolic.heading.toLowerCase()).toContain('optional');
   });

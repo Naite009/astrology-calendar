@@ -290,7 +290,7 @@ const GLOSSARY: KarmicGlossaryEntry[] = [
   {
     term: 'Healing / sensitivity',
     meaning:
-      'A Chiron contact. Read as a tender subject, where words may land harder than intended. It is not a diagnosis or a claim about anyone\u2019s wounds.',
+      'A Chiron contact. Read as a tender subject, where words may land harder than intended. It is not a diagnosis or a claim about anyone\u2019s history.',
   },
   {
     term: 'Nodal',
