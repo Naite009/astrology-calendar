@@ -99,7 +99,7 @@ export function calculateCompositeChart(
       sign: pos.sign,
       degree: pos.degree,
       minutes: pos.minutes,
-      seconds: pos.seconds,
+      seconds: Math.round((((pos.degreeInSign - pos.degree) * 60) - pos.minutes) * 60),
       longitude: pos.longitude,
       house: pos.house ?? undefined,
       isRetrograde: false,

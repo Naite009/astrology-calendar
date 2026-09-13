@@ -28,7 +28,11 @@ import {
   SYMBOLIC_LENS_NOTE,
   symbolicEmphasisLine,
   describeDirectionalFromParts,
+  buildKarmicSummary,
+  karmicContactLine,
+  formatKarmicOrb,
 } from '@/lib/relationship';
+import { KarmicSummaryCard } from '@/components/relationship/KarmicSummaryCard';
 import { 
   ChevronDown, ChevronUp, Sun, Moon, Heart, Sparkles, Users, 
   Clock, GraduationCap, BookOpen, Lightbulb, AlertTriangle, 
@@ -1116,6 +1120,12 @@ export const FiveEssentialQuestions = ({
     );
 
   const say = (text: string) => sanitizeRelationshipText(text, context);
+
+  /** Canonical, evidence-first symbolic summary shared with every other surface. */
+  const karmicSummary = useMemo(
+    () => buildKarmicSummary(karmicAnalysis, context, chart1.name, chart2.name),
+    [karmicAnalysis, context, chart1.name, chart2.name]
+  );
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     allAspects: false,
     calculations: false,
@@ -1302,73 +1312,22 @@ export const FiveEssentialQuestions = ({
         
         {karmicAnalysis ? (
           <div className="space-y-4">
-            {/* Karmic Type Badge */}
-            <div className="p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-serif">{karmicTypeBase.label}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {symbolicEmphasisLine(
-                      karmicAnalysis.pastLifeProbability,
-                      karmicAnalysis.indicators.slice(0, 3).map(
-                        (ind) => `${ind.planet1} ${ind.aspect} ${ind.planet2}`
-                      )
-                    )}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{SYMBOLIC_LENS_NOTE}</p>
-                </div>
-              </div>
-              
-              <div className="text-sm space-y-3">
-                <p className="font-medium">Why your paths crossed:</p>
-                <p>{karmicAnalysis.soulPurpose}</p>
-              </div>
-            </div>
-
-            {/* Node contacts */}
+            {/* Node contacts, each with its own evidence line */}
             {karmicAnalysis.indicators.filter(ind => 
               ind.type === 'north_node' || ind.type === 'south_node'
             ).map((ind, i) => (
               <div key={i} className="p-4 rounded-lg border bg-card">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">{ind.type.replace('_', ' ')}</Badge>
-                  <span className="font-medium">{ind.planet1} {ind.aspect} {ind.planet2}</span>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Badge variant="secondary">{ind.type === 'north_node' ? 'nodal (North Node)' : 'nodal (South Node)'}</Badge>
+                  <span className="font-medium">{karmicContactLine(ind, chart1.name, chart2.name)}</span>
+                  <span className="text-xs text-muted-foreground">({formatKarmicOrb(ind.orb)})</span>
                 </div>
-                <p className="text-sm text-muted-foreground">{ind.interpretation}</p>
+                <p className="text-sm text-muted-foreground">{say(ind.interpretation)}</p>
               </div>
             ))}
 
-            {/* The Big Picture */}
-            <div className="p-4 rounded-lg bg-secondary/30 border">
-              <h4 className="font-medium mb-2">The Big Picture</h4>
-              <p className="text-sm text-muted-foreground">{karmicTypeBase.description}</p>
-            </div>
-
-            {/* Score Breakdown */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-card border text-center">
-                <div className="text-2xl font-bold text-primary">{karmicAnalysis.totalKarmicScore}</div>
-                <div className="text-xs text-muted-foreground">Total Karmic Score</div>
-              </div>
-              <div className="p-3 rounded-lg bg-card border text-center">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {karmicAnalysis.indicators.filter(i => i.theme === 'soul_growth').length}
-                </div>
-                <div className="text-xs text-muted-foreground">Growth-flavoured contacts</div>
-              </div>
-              <div className="p-3 rounded-lg bg-card border text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {karmicAnalysis.indicators.filter(i => i.theme === 'past_life').length}
-                </div>
-                <div className="text-xs text-muted-foreground">Past Life</div>
-              </div>
-              <div className="p-3 rounded-lg bg-card border text-center">
-                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                  {karmicAnalysis.indicators.filter(i => i.theme === 'transformation' || i.theme === 'healing').length}
-                </div>
-                <div className="text-xs text-muted-foreground">Transformation</div>
-              </div>
-            </div>
+            {/* Plain-language, evidence-first summary (shared with all Synastry surfaces) */}
+            <KarmicSummaryCard summary={karmicSummary} />
           </div>
         ) : (
           <p className="text-center text-muted-foreground py-8">

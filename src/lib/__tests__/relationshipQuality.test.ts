@@ -27,7 +27,10 @@ import {
   symbolicEmphasisLine,
   symbolicShareLine,
   symbolicTheme,
+  buildKarmicSummary,
+  renderKarmicSummaryText,
 } from '@/lib/relationship';
+import { calculateKarmicAnalysis } from '@/lib/karmicAnalysis';
 
 interface Fixture {
   id: string;
@@ -767,5 +770,70 @@ describe('synastry: sign vs degree layers', () => {
     expect(d.degreeLine).toMatch(/By degree:/);
     expect(d.synthesisLine).toMatch(/Synthesis:/);
     expect(d.positionsLine).toContain("28°42' Taurus");
+  });
+});
+
+
+/**
+ * Regression: the karmic summary shown for Ava Kravitz + Max Levin must never be
+ * the old unexplained "86 / 1 / 1 / 6" card set. Every count is fully labelled and
+ * backed by the exact contacts, with orbs and whose planet is whose.
+ */
+describe('karmic summary (Ava Kravitz + Max Levin)', () => {
+  const ctx = buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
+  const analysis = calculateKarmicAnalysis(ava, max, legacyKarmicFocus(ctx.kind));
+  const summary = buildKarmicSummary(analysis, ctx, ava.name, max.name);
+  const text = renderKarmicSummaryText(summary);
+
+  it('never presents a bare total score or a probability', () => {
+    expect(text).not.toMatch(/Total Karmic Score/i);
+    expect(text).not.toMatch(/Past Life Probability/i);
+    expect(text).not.toMatch(/\d+\s?%/);
+    expect(text).not.toMatch(/\b86\b/);
+  });
+
+  it('labels every count and only shows categories with real contacts', () => {
+    summary.categories.forEach((cat) => {
+      expect(cat.count).toBeGreaterThan(0);
+      expect(cat.label).toMatch(/^\d+ [a-z]/);
+      expect(cat.label).not.toMatch(/^\d+$/);
+      expect(cat.evidence.length).toBe(cat.count);
+      expect(cat.plainMeaning.length).toBeGreaterThan(20);
+    });
+  });
+
+  it('gives exact evidence with orbs and whose planet is whose', () => {
+    const evidence = summary.categories.flatMap((c) => c.evidence);
+    if (evidence.length > 0) {
+      evidence.forEach((e) => {
+        expect(e.contact).toMatch(/Ava Kravitz|Max Levin/);
+        expect(e.orbText).toMatch(/orb \d+°\d+'|house placement \(no orb\)/);
+        expect(e.note.length).toBeGreaterThan(10);
+      });
+    }
+  });
+
+  it('never classifies the relationship or forecasts duration', () => {
+    expect(text).not.toMatch(/Catalyst Connection/i);
+    expect(text).not.toMatch(/Twin Flame/i);
+    expect(text).not.toMatch(/meant to last/i);
+    expect(text).not.toMatch(/\d+\s?(months|years)/i);
+    if (summary.symbolic) {
+      expect(summary.symbolic.heading).toMatch(/symbolic/i);
+      expect(summary.symbolic.derivedFrom.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('uses teen-appropriate wording and includes a glossary', () => {
+    expect(findForbiddenRelationshipPhrases(collectStrings(summary).join(' '), true)).toEqual([]);
+    const terms = summary.glossary.map((g) => g.term.toLowerCase()).join(' ');
+    ['growth', 'past-pattern', 'transformation', 'healing', 'nodal'].forEach((t) =>
+      expect(terms).toContain(t),
+    );
+  });
+
+  it('summarises actual evidence in the Big Picture', () => {
+    expect(summary.bigPicture.length).toBeGreaterThan(30);
+    expect(summary.bigPicture).not.toMatch(/karmic score/i);
   });
 });

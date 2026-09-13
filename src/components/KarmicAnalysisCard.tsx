@@ -6,7 +6,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SYMBOLIC_LENS_NOTE, symbolicEmphasisLabel } from '@/lib/relationship';
+import {
+  SYMBOLIC_LENS_NOTE,
+  symbolicEmphasisLabel,
+  buildKarmicSummary,
+  karmicContactLine,
+  formatKarmicOrb,
+  type RelationshipContext,
+} from '@/lib/relationship';
+import { KarmicSummaryCard } from '@/components/relationship/KarmicSummaryCard';
 
 
 
@@ -17,6 +25,9 @@ export interface KarmicIndicator {
   planet1: string;
   planet2: string;
   aspect?: string;
+  orb?: number;
+  owner1?: string;
+  owner2?: string;
   weight: number;
   interpretation: string;
   theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'fated';
@@ -44,6 +55,8 @@ interface KarmicAnalysisCardProps {
   analysis: KarmicAnalysis;
   chart1Name: string;
   chart2Name: string;
+  /** Canonical relationship context: drives age-aware wording and symbolic permission. */
+  context?: RelationshipContext | null;
 }
 
 const karmicTypeConfig: Record<KarmicType, {
@@ -155,10 +168,14 @@ const karmicTypeThresholds: Record<KarmicType, string> = {
   new_contract: 'Requires: <30 total score AND 0 past life AND 0 growth AND 0 transformation indicators'
 };
 
-export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicAnalysisCardProps) => {
+export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name, context }: KarmicAnalysisCardProps) => {
   const [expandedSection, setExpandedSection] = useState<string | null>('purpose');
   const [showTeaching, setShowTeaching] = useState(false);
   const config = karmicTypeConfig[analysis.karmicType];
+  const karmicSummary = useMemo(
+    () => buildKarmicSummary(analysis as any, context, chart1Name, chart2Name),
+    [analysis, context, chart1Name, chart2Name]
+  );
   
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -260,22 +277,9 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
           </div>
         </div>
         
-        {/* Karmic Score */}
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="p-3 rounded-lg bg-background/60 border">
-            <div className="text-xs text-muted-foreground mb-1">Symbolic marker weight (internal score)</div>
-            <div className="flex items-center gap-2">
-              <Progress value={Math.min(100, analysis.totalKarmicScore)} className="flex-1 h-2" />
-              <span className="font-mono text-sm">{analysis.totalKarmicScore}</span>
-            </div>
-          </div>
-          <div className="p-3 rounded-lg bg-background/60 border">
-            <div className="text-xs text-muted-foreground mb-1">Symbolic emphasis (interpretive, not a probability)</div>
-            <div className="flex items-center gap-2">
-              <Progress value={analysis.pastLifeProbability} className="flex-1 h-2" />
-              <span className="font-mono text-sm">{analysis.pastLifeProbability}%</span>
-            </div>
-          </div>
+        {/* Plain-language, evidence-first summary (identical on every surface) */}
+        <div className="mt-4">
+          <KarmicSummaryCard summary={karmicSummary} />
         </div>
 
         {/* Learn How This Was Calculated Button */}
@@ -317,10 +321,8 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
                           {themeLabels[ind.theme]}
                         </Badge>
                         <span className="font-medium">
-                          {ind.aspect 
-                            ? `${ind.planet1} ${ind.aspect} ${ind.planet2}`
-                            : `${ind.planet1} → ${ind.planet2}`
-                          }
+                          {karmicContactLine(ind, chart1Name, chart2Name)}{' '}
+                          <span className="text-xs text-muted-foreground">({formatKarmicOrb(ind.orb)})</span>
                         </span>
                       </div>
                       <Badge variant="outline" className="font-mono text-primary">
@@ -497,8 +499,9 @@ export const KarmicAnalysisCard = ({ analysis, chart1Name, chart2Name }: KarmicA
           <div className="p-4 rounded-lg bg-background/80 border">
             <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
               <Clock size={14} className="text-primary" />
-              Timeline: {analysis.timeline.likely_duration}
+              Themes that may matter over time
             </h4>
+            <p className="text-xs text-muted-foreground mb-3">{analysis.timeline.likely_duration}</p>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div>
