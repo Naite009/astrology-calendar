@@ -87,7 +87,7 @@ const ConnectionCard = ({ c }: { c: RankedConnection }) => {
             <p className="text-sm leading-relaxed text-foreground">{r.whatToSay}</p>
             <p className="mt-1 text-xs text-muted-foreground">Then ask: {r.askThis}</p>
           </div>
-          <DoesNotMean items={r.doesNotMean} />
+          <DoesNotMean lines={r.doesNotMean} />
         </div>
       )}
     </div>
