@@ -39,8 +39,8 @@ export const SIGN_MODALITY: Record<string, Modality> = {
 
 /** Adjective side of a sign — the flavour it adds to another factor. */
 const SIGN_ADJ: Record<string, string> = {
-  Aries: 'Direct', Taurus: 'Grounded', Gemini: 'Quick', Cancer: 'Protective',
-  Leo: 'Warm', Virgo: 'Precise', Libra: 'Diplomatic', Scorpio: 'Private',
+  Aries: 'Bold', Taurus: 'Steady', Gemini: 'Quick', Cancer: 'Protective',
+  Leo: 'Radiant', Virgo: 'Precise', Libra: 'Diplomatic', Scorpio: 'Magnetic',
   Sagittarius: 'Far-Seeing', Capricorn: 'Strategic', Aquarius: 'Independent',
   Pisces: 'Intuitive',
 };
@@ -48,7 +48,7 @@ const SIGN_ADJ: Record<string, string> = {
 /** Role side of a sign — the kind of person it reads as. */
 const SIGN_NOUN: Record<string, string> = {
   Aries: 'Starter', Taurus: 'Builder', Gemini: 'Communicator', Cancer: 'Carer',
-  Leo: 'Performer', Virgo: 'Craftsperson', Libra: 'Harmonizer', Scorpio: 'Investigator',
+  Leo: 'Leader', Virgo: 'Craftsperson', Libra: 'Harmonizer', Scorpio: 'Investigator',
   Sagittarius: 'Explorer', Capricorn: 'Strategist', Aquarius: 'Rebel',
   Pisces: 'Dreamer',
 };
@@ -313,12 +313,14 @@ export function bigThreeCard(input: {
     });
   }
 
-  // The Sun carries the role; the Moon (or, absent a Moon, the Ascendant)
-  // supplies the adjective, because it colours how that role is actually lived.
-  const modifierSign = moonSign && SIGN_ADJ[moonSign] ? moonSign : risingSign;
+  // Spoken convention: the Sun supplies the adjective (what is being expressed)
+  // and the Moon supplies the role noun (how it is actually lived). With no Moon
+  // the Ascendant takes the noun slot.
+  const roleSign = moonSign && SIGN_NOUN[moonSign] ? moonSign : (risingSign && SIGN_NOUN[risingSign] ? risingSign : sunSign);
+  const modifierSign = sunSign;
   const { label, tension } = shorthandLabel(
-    { label: `Sun in ${sunSign}`, contributes: FACTOR_JOB.Sun, sign: sunSign },
-    modifierSign ? { label: `${modifierSign}`, contributes: '', sign: modifierSign } : null,
+    { label: `Moon in ${roleSign}`, contributes: FACTOR_JOB.Moon, sign: roleSign },
+    { label: `Sun in ${modifierSign}`, contributes: FACTOR_JOB.Sun, sign: modifierSign },
     SIGN_NOUN[sunSign]
   );
 
@@ -362,7 +364,7 @@ export function bigThreeCard(input: {
     growthEdge: tension
       ? `The growth edge is not picking a side. It usually helps to name the need out loud early, so the ${sunSign} drive is not read as the whole story.`
       : `Because these factors agree, the useful edge is deliberately borrowing the qualities this combination does not reach for on its own.`,
-    why: `Sun in ${sunSign}${moonSign ? `, Moon in ${moonSign}` : ''}${risingSign ? `, ${risingSign} Ascendant` : ''}. Sun = ${FACTOR_JOB.Sun}; Moon = ${FACTOR_JOB.Moon}; Ascendant = ${FACTOR_JOB.Ascendant}. The label puts the Sun's role at the end and the ${modifierSign ?? 'second factor'} flavour in front, because that is the order the chart itself sets.`,
+    why: `Sun in ${sunSign}${moonSign ? `, Moon in ${moonSign}` : ''}${risingSign ? `, ${risingSign} Ascendant` : ''}. Sun = ${FACTOR_JOB.Sun}; Moon = ${FACTOR_JOB.Moon}; Ascendant = ${FACTOR_JOB.Ascendant}. The label puts the ${roleSign} role at the end and the ${modifierSign} flavour in front: the Sun says what is being expressed, the ${roleSign === moonSign ? 'Moon' : 'Ascendant'} says the shape it actually takes.`,
   };
 }
 
