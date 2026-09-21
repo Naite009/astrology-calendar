@@ -37,6 +37,8 @@ import {
   ELEMENT_MEANINGS, MODALITY_MEANINGS, LOW_ELEMENT_READING, HOUSE_KEYWORDS,
   bodyLabel, factorChip,
 } from './factorMeanings';
+import { pairAspectReading, type AspectPairReading } from './aspectPairLibrary';
+
 
 const ZODIAC = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -107,12 +109,18 @@ export interface HouseCluster {
 export interface RankedConnection {
   a: string;
   b: string;
+  /** Canonical body keys, kept so the reading library can be re-queried. */
+  bodyA: string;
+  bodyB: string;
   aspect: string;
   symbol: string;
   orb: number;
   importance: number;
   adds: string;
+  /** Full pair-specific interpretation: what to actually say about this contact. */
+  reading: AspectPairReading;
 }
+
 
 export interface ElementProfile {
   counts: Record<string, number>;
