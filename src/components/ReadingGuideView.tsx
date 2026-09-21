@@ -287,7 +287,10 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
               </span>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</p>
-                <p className="text-sm text-foreground">{item.value}</p>
+                {item.shorthandLabel && (
+                  <p className="text-sm font-medium text-foreground">{item.shorthandLabel}</p>
+                )}
+                <p className={item.shorthandLabel ? 'text-xs text-muted-foreground' : 'text-sm text-foreground'}>{item.value}</p>
                 <p className="text-xs text-muted-foreground mt-1">{item.note}</p>
               </div>
               <div className="ml-auto hidden sm:block w-20 shrink-0">
