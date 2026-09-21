@@ -239,6 +239,18 @@ function composeLabel(first: string, second: string, fallback: string): string {
 }
 
 /**
+ * 1-3 word label for a repeated or signature sign, e.g. Libra -> "Diplomatic
+ * Harmonizer". Returns null for unknown signs.
+ */
+export function signSignature(sign?: string | null): string | null {
+  if (!sign) return null;
+  const a = SIGN_ADJ[sign];
+  const n = SIGN_NOUN[sign];
+  if (!a || !n) return null;
+  return `${a} ${n}`;
+}
+
+/**
  * Generic label generator: an adjective from the modifying factor plus a role
  * noun from the leading factor. When the two conflict, the resulting phrase
  * carries that contrast on purpose ("Private Performer", "Grounded Rebel").
