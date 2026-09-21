@@ -1159,12 +1159,14 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "natal-portrait" && (
-          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
-            <NatalPortraitView
-              userNatalChart={userNatalChart}
-              savedCharts={savedCharts}
-            />
-          </Suspense>
+          <SectionErrorBoundary sectionName="Natal Portrait">
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+              <NatalPortraitView
+                userNatalChart={userNatalChart}
+                savedCharts={savedCharts}
+              />
+            </Suspense>
+          </SectionErrorBoundary>
         )}
 
         {viewMode === "retrogrades" && (
