@@ -255,17 +255,18 @@ describe('Known Ava + Max contacts', () => {
     expect(c!.aspect).toBe('trine');
     expect(c!.orb).toBeCloseTo(2.58, 1);
     const analysis = analyzeSignVsDegree({
-      aLabel: "Ava Kravitz's Sun",
-      bLabel: "Max Levin's Sun",
-      aSign: 'Taurus',
-      aDegree: 28,
-      aMinutes: 42,
-      bSign: 'Aquarius',
-      bDegree: 1,
-      bMinutes: 17,
+      labelA: "Ava Kravitz's Sun",
+      signA: 'Taurus',
+      degreeA: 28,
+      minutesA: 42,
+      labelB: "Max Levin's Sun",
+      signB: 'Aquarius',
+      degreeB: 1,
+      minutesB: 17,
       aspect: 'trine',
+      aspectAngle: 120,
       orb: c!.orb,
-    } as any);
+    });
     expect(analysis.isOutOfSign).toBe(true);
     // The degree trine stands, and the Taurus/Aquarius square-by-sign tension is
     // still reported rather than flattened into easy harmony.
