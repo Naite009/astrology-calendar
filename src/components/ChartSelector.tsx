@@ -156,8 +156,13 @@ export const ChartSelector = ({
           {/* Options list */}
           <div className="max-h-[250px] overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">No charts found</div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                {searchTerm.trim()
+                  ? `No saved chart matches "${searchTerm.trim()}".`
+                  : 'No charts saved yet.'}
+              </div>
             ) : (
+
               filteredOptions.map(opt => (
                 <button
                   key={opt.id}
