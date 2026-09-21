@@ -3,13 +3,14 @@
  * 12-section unified report comparable to Solar Return Birthday Gift
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, RankedTheme, NatalPowerPortrait, LifetimeWisdom } from '@/lib/natalPortraitEngine';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
+import { buildSectionArchetypes, type SectionArchetype } from '@/lib/natal/sectionArchetypes';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
@@ -27,10 +28,32 @@ interface NatalPortraitViewProps {
 
 // ─── Sub-components ─────────────────────────────────────────────────
 
+const ArchetypeChip = ({ archetype }: { archetype?: SectionArchetype }) => {
+  if (!archetype) return null;
+  return (
+    <span
+      title={archetype.why}
+      className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium tracking-wide whitespace-nowrap"
+    >
+      {archetype.label}
+    </span>
+  );
+};
+
+const ArchetypeWhy = ({ archetype }: { archetype?: SectionArchetype }) => {
+  if (!archetype) return null;
+  return (
+    <p className="text-[10px] text-muted-foreground mb-3">
+      <span className="text-primary font-medium">{archetype.label}</span> — {archetype.why} A short label like this is
+      shorthand for the section below, not a personality type.
+    </p>
+  );
+};
+
 const SectionWrapper = ({ 
-  title, emoji, children, defaultOpen = true 
+  title, emoji, children, defaultOpen = true, archetype
 }: { 
-  title: string; emoji: string; children: React.ReactNode; defaultOpen?: boolean;
+  title: string; emoji: string; children: React.ReactNode; defaultOpen?: boolean; archetype?: SectionArchetype;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -39,13 +62,19 @@ const SectionWrapper = ({
         onClick={() => setOpen(!open)}
         className="w-full px-5 py-4 flex items-center justify-between border-b border-border hover:bg-secondary/30 transition-colors"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap text-left">
           <span className="text-lg">{emoji}</span>
           <span className="text-sm font-medium uppercase tracking-widest text-foreground">{title}</span>
+          <ArchetypeChip archetype={archetype} />
         </div>
         {open ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
       </button>
-      {open && <div className="p-5">{children}</div>}
+      {open && (
+        <div className="p-5">
+          <ArchetypeWhy archetype={archetype} />
+          {children}
+        </div>
+      )}
     </div>
   );
 };
@@ -100,11 +129,11 @@ function getRisingCoreLine(sign: string): string {
 
 // ─── 1. Life Purpose ────────────────────────────────────────────────
 
-const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
+const LifePurposeSection = ({ portrait, archetype }: { portrait: NatalPortrait; archetype?: SectionArchetype }) => {
   const lp = portrait.lifePurpose;
   
   return (
-    <SectionWrapper title="Life Purpose & Core Identity" emoji="☀️" defaultOpen={true}>
+    <SectionWrapper title="Life Purpose & Core Identity" emoji="☀️" defaultOpen={true} archetype={archetype}>
       <div className="space-y-6">
         {/* Big Three Cards */}
         <div className="grid sm:grid-cols-3 gap-4">
@@ -207,8 +236,8 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
 
 // ─── 2. Top Themes ──────────────────────────────────────────────────
 
-const TopThemesSection = ({ themes }: { themes: RankedTheme[] }) => (
-  <SectionWrapper title="Top 5 Life Themes" emoji="🎯" defaultOpen={true}>
+const TopThemesSection = ({ themes, archetype }: { themes: RankedTheme[]; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Top 5 Life Themes" emoji="🎯" defaultOpen={true} archetype={archetype}>
     <div className="space-y-3">
       {themes.map((t) => (
         <div key={t.rank} className="p-4 bg-secondary/30 rounded-sm border-l-2 border-primary">
@@ -233,11 +262,11 @@ const TopThemesSection = ({ themes }: { themes: RankedTheme[] }) => (
 
 // ─── Domain Deep Dive Card ──────────────────────────────────────────
 
-const DomainSection = ({ domain, meta }: { domain: DomainDeepDive; meta: ExportMeta }) => {
+const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; meta: ExportMeta; archetype?: SectionArchetype }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <SectionWrapper title={domain.title} emoji={domain.emoji}>
+    <SectionWrapper title={domain.title} emoji={domain.emoji} archetype={archetype}>
       <div className="space-y-4">
         <p className="text-[12px] text-foreground leading-relaxed">{domain.summary}</p>
 
@@ -324,8 +353,8 @@ const DomainSection = ({ domain, meta }: { domain: DomainDeepDive; meta: ExportM
 
 // ─── House Emphasis Grid ────────────────────────────────────────────
 
-const HouseEmphasisSection = ({ houses }: { houses: HouseEmphasis[] }) => (
-  <SectionWrapper title="House Emphasis Map" emoji="🏠">
+const HouseEmphasisSection = ({ houses, archetype }: { houses: HouseEmphasis[]; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="House Emphasis Map" emoji="🏠" archetype={archetype}>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {houses.map((h) => (
         <div
@@ -354,8 +383,8 @@ const HouseEmphasisSection = ({ houses }: { houses: HouseEmphasis[] }) => (
 
 // ─── Power Portrait ─────────────────────────────────────────────────
 
-const PowerPortraitSection = ({ power }: { power: NatalPowerPortrait }) => (
-  <SectionWrapper title="Power Portrait" emoji="⚡">
+const PowerPortraitSection = ({ power, archetype }: { power: NatalPowerPortrait; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Power Portrait" emoji="⚡" archetype={archetype}>
     <div className="space-y-4">
       {/* Mantra */}
       <div className="px-5 py-3 bg-primary/5 rounded-sm text-center">
@@ -398,8 +427,8 @@ const PowerPortraitSection = ({ power }: { power: NatalPowerPortrait }) => (
 
 // ─── Patterns ───────────────────────────────────────────────────────
 
-const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortrait['patterns']; minorBodyPatterns: NatalPortrait['minorBodyPatterns'] }) => (
-  <SectionWrapper title="Chart Patterns & Configurations" emoji="🔷">
+const PatternsSection = ({ patterns, minorBodyPatterns, archetype }: { patterns: NatalPortrait['patterns']; minorBodyPatterns: NatalPortrait['minorBodyPatterns']; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Chart Patterns & Configurations" emoji="🔷" archetype={archetype}>
     {patterns.length === 0 ? (
       <p className="text-[12px] text-muted-foreground">No major geometric patterns detected. This isn't a lack — it means your energy is more evenly distributed across your chart rather than concentrated in specific configurations.</p>
     ) : (
@@ -465,8 +494,8 @@ const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortr
 
 // ─── Lifetime Wisdom ────────────────────────────────────────────────
 
-const LifetimeWisdomSection = ({ wisdom }: { wisdom: LifetimeWisdom }) => (
-  <SectionWrapper title="Lifetime Wisdom — Take This With You" emoji="🧭">
+const LifetimeWisdomSection = ({ wisdom, archetype }: { wisdom: LifetimeWisdom; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Lifetime Wisdom — Take This With You" emoji="🧭" archetype={archetype}>
     <div className="space-y-5">
       {/* Nodal Axis */}
       <div className="grid sm:grid-cols-2 gap-4">
@@ -511,12 +540,50 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
 
   const [selectedChartId, setSelectedChartId] = useState(allCharts[0]?.id || '');
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // Charts can arrive after this view mounts (fresh entry, import, cloud restore).
+  // Keep the selection valid, and jump to a newly added chart so it renders
+  // immediately instead of appearing to "not load".
+  const knownIdsRef = useRef<string[] | null>(null);
+  useEffect(() => {
+    const ids = allCharts.map(c => c.id).filter(Boolean) as string[];
+    const previous = knownIdsRef.current;
+    knownIdsRef.current = ids;
+    if (!ids.length) return;
+
+    const added = previous ? ids.filter(id => !previous.includes(id)) : [];
+    if (previous && added.length === 1) {
+      setSelectedChartId(added[0]);
+      return;
+    }
+    if (!selectedChartId || !ids.includes(selectedChartId)) {
+      setSelectedChartId(ids[0]);
+    }
+  }, [allCharts, selectedChartId]);
+
   const selectedChart = allCharts.find(c => c.id === selectedChartId) || allCharts[0];
 
+  const hasCoreBodies = Boolean(selectedChart?.planets?.Sun?.sign && selectedChart?.planets?.Moon?.sign);
+
   const portrait = useMemo(() => {
-    if (!selectedChart) return null;
-    return generateNatalPortrait(selectedChart);
-  }, [selectedChart]);
+    if (!selectedChart || !hasCoreBodies) return null;
+    try {
+      return generateNatalPortrait(selectedChart);
+    } catch (e) {
+      console.error('[NatalPortrait] Failed to build portrait for', selectedChart?.name, e);
+      return null;
+    }
+  }, [selectedChart, hasCoreBodies]);
+
+  const archetypes = useMemo(() => {
+    if (!portrait || !selectedChart) return {} as Record<string, SectionArchetype>;
+    try {
+      return buildSectionArchetypes(portrait, selectedChart);
+    } catch {
+      return {} as Record<string, SectionArchetype>;
+    }
+  }, [portrait, selectedChart]);
+
 
   const exportMeta: ExportMeta = useMemo(() => ({
     name: selectedChart?.name || 'Chart',
@@ -531,6 +598,41 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       <div className="text-center py-20 text-muted-foreground">
         <Crown size={48} className="mx-auto mb-4 opacity-30" />
         <p>Add a natal chart first to generate your Natal Portrait.</p>
+      </div>
+    );
+  }
+
+  const chartPicker = (
+    <div className="flex items-center gap-3 mb-6">
+      <ChartSelector
+        userNatalChart={userNatalChart}
+        savedCharts={savedCharts}
+        selectedChartId={selectedChartId === userNatalChart?.id ? 'user' : selectedChartId}
+        onSelect={(id) => setSelectedChartId(id === 'user' ? (userNatalChart?.id || '') : id)}
+        label="Select Chart"
+      />
+    </div>
+  );
+
+  if (selectedChart && !portrait) {
+    const missing: string[] = [];
+    if (!selectedChart.planets?.Sun?.sign) missing.push('Sun');
+    if (!selectedChart.planets?.Moon?.sign) missing.push('Moon');
+    if (!selectedChart.birthTime) missing.push('birth time');
+    return (
+      <div className="max-w-4xl mx-auto">
+        {allCharts.length > 1 && chartPicker}
+        <div className="border border-border rounded-sm bg-card p-6 text-center">
+          <Crown size={36} className="mx-auto mb-3 text-primary opacity-60" />
+          <p className="text-sm text-foreground">
+            {selectedChart.name}'s portrait can't be built yet.
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {missing.length
+              ? `This chart is still missing: ${missing.join(', ')}. Open the chart and add that, then come back here.`
+              : 'Something in this chart\'s saved data could not be read. Open the chart, re-save it, then come back here.'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -586,36 +688,54 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       </div>
 
       {/* 1. Life Purpose & Core Identity */}
-      <LifePurposeSection portrait={portrait} />
+      <LifePurposeSection portrait={portrait} archetype={archetypes.lifePurpose} />
 
       {/* 2. Top 5 Life Themes */}
-      <TopThemesSection themes={portrait.topThemes} />
+      <TopThemesSection themes={portrait.topThemes} archetype={archetypes.topThemes} />
 
       {/* 2b. Soul Agreements (symbolic evolutionary layer) */}
-      <SoulAgreementsSection chart={selectedChart} />
+      <div>
+        {archetypes.soulAgreements && (
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">In short</span>
+            <ArchetypeChip archetype={archetypes.soulAgreements} />
+            <span className="text-[10px] text-muted-foreground">{archetypes.soulAgreements.why}</span>
+          </div>
+        )}
+        <SoulAgreementsSection chart={selectedChart} />
+      </div>
 
       {/* 3-8. Domain Deep Dives */}
-      <DomainSection domain={portrait.relationshipBlueprint} meta={exportMeta} />
-      <DomainSection domain={portrait.careerMoneyMap} meta={exportMeta} />
-      <DomainSection domain={portrait.emotionalArchitecture} meta={exportMeta} />
-      <DomainSection domain={portrait.healthVitality} meta={exportMeta} />
-      <DomainSection domain={portrait.shadowGrowth} meta={exportMeta} />
-      <DomainSection domain={portrait.spiritualKarmic} meta={exportMeta} />
+      <DomainSection domain={portrait.relationshipBlueprint} meta={exportMeta} archetype={archetypes.relationship} />
+      <DomainSection domain={portrait.careerMoneyMap} meta={exportMeta} archetype={archetypes.career} />
+      <DomainSection domain={portrait.emotionalArchitecture} meta={exportMeta} archetype={archetypes.emotional} />
+      <DomainSection domain={portrait.healthVitality} meta={exportMeta} archetype={archetypes.health} />
+      <DomainSection domain={portrait.shadowGrowth} meta={exportMeta} archetype={archetypes.shadow} />
+      <DomainSection domain={portrait.spiritualKarmic} meta={exportMeta} archetype={archetypes.spiritual} />
 
       {/* 9. House Emphasis */}
-      <HouseEmphasisSection houses={portrait.houseEmphasis} />
+      <HouseEmphasisSection houses={portrait.houseEmphasis} archetype={archetypes.houseEmphasis} />
 
       {/* 10. Power Portrait */}
-      <PowerPortraitSection power={portrait.powerPortrait} />
+      <PowerPortraitSection power={portrait.powerPortrait} archetype={archetypes.powerPortrait} />
 
       {/* 10b. Dominant Planets */}
-      <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
+      <div>
+        {archetypes.dominantPlanets && (
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">In short</span>
+            <ArchetypeChip archetype={archetypes.dominantPlanets} />
+            <span className="text-[10px] text-muted-foreground">{archetypes.dominantPlanets.why}</span>
+          </div>
+        )}
+        <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
+      </div>
 
       {/* 11. Chart Patterns */}
-      <PatternsSection patterns={portrait.patterns} minorBodyPatterns={portrait.minorBodyPatterns} />
+      <PatternsSection patterns={portrait.patterns} minorBodyPatterns={portrait.minorBodyPatterns} archetype={archetypes.patterns} />
 
       {/* 12. Lifetime Wisdom */}
-      <LifetimeWisdomSection wisdom={portrait.lifetimeWisdom} />
+      <LifetimeWisdomSection wisdom={portrait.lifetimeWisdom} archetype={archetypes.lifetimeWisdom} />
     </div>
   );
 };

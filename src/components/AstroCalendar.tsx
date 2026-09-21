@@ -7,6 +7,7 @@ const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ de
 import { AskView } from "./AskView";
 import { ChartSelector } from "./ChartSelector";
 import { SacredScriptErrorBoundary } from "./SacredScriptErrorBoundary";
+import { SectionErrorBoundary } from "./SectionErrorBoundary";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
@@ -1158,12 +1159,14 @@ export const AstroCalendar = () => {
         )}
 
         {viewMode === "natal-portrait" && (
-          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
-            <NatalPortraitView
-              userNatalChart={userNatalChart}
-              savedCharts={savedCharts}
-            />
-          </Suspense>
+          <SectionErrorBoundary sectionName="Natal Portrait">
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+              <NatalPortraitView
+                userNatalChart={userNatalChart}
+                savedCharts={savedCharts}
+              />
+            </Suspense>
+          </SectionErrorBoundary>
         )}
 
         {viewMode === "retrogrades" && (
