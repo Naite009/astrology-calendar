@@ -602,6 +602,41 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
     );
   }
 
+  const chartPicker = (
+    <div className="flex items-center gap-3 mb-6">
+      <ChartSelector
+        userNatalChart={userNatalChart}
+        savedCharts={savedCharts}
+        selectedChartId={selectedChartId === userNatalChart?.id ? 'user' : selectedChartId}
+        onSelect={(id) => setSelectedChartId(id === 'user' ? (userNatalChart?.id || '') : id)}
+        label="Select Chart"
+      />
+    </div>
+  );
+
+  if (selectedChart && !portrait) {
+    const missing: string[] = [];
+    if (!selectedChart.planets?.Sun?.sign) missing.push('Sun');
+    if (!selectedChart.planets?.Moon?.sign) missing.push('Moon');
+    if (!selectedChart.birthTime) missing.push('birth time');
+    return (
+      <div className="max-w-4xl mx-auto">
+        {allCharts.length > 1 && chartPicker}
+        <div className="border border-border rounded-sm bg-card p-6 text-center">
+          <Crown size={36} className="mx-auto mb-3 text-primary opacity-60" />
+          <p className="text-sm text-foreground">
+            {selectedChart.name}'s portrait can't be built yet.
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {missing.length
+              ? `This chart is still missing: ${missing.join(', ')}. Open the chart and add that, then come back here.`
+              : 'Something in this chart\'s saved data could not be read. Open the chart, re-save it, then come back here.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!portrait || !selectedChart) return null;
 
   return (
