@@ -925,6 +925,34 @@ export const placeFromSourceCoordinates = (
   };
 };
 
+/** A candidate this close to already-known coordinates is the same town. */
+export const CANDIDATE_MATCH_KM = 75;
+
+/**
+ * Coordinates that came from the source file (Astro.com) or from the imported
+ * record answer the "which town?" question by themselves: the candidate that
+ * sits on those coordinates is the one the source used. The match must be
+ * unmistakable — within CANDIDATE_MATCH_KM and clearly closer than any other
+ * candidate — otherwise nothing is chosen and the user still confirms.
+ */
+export const candidateMatchingCoordinates = (
+  place: ResolvedBirthPlace | null | undefined,
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+): { candidate: PlaceCandidate; distanceKm: number } | null => {
+  if (!place?.ambiguous || !place.candidates?.length) return null;
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  const ranked = place.candidates
+    .map(candidate => ({ candidate, distanceKm: distanceKm(latitude, longitude, candidate.latitude, candidate.longitude) }))
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+  const best = ranked[0];
+  if (!best || best.distanceKm > CANDIDATE_MATCH_KM) return null;
+  const next = ranked[1];
+  if (next && next.distanceKm < CANDIDATE_MATCH_KM && next.distanceKm < best.distanceKm * 3) return null;
+  return best;
+};
+
 /** The user picked one of the same-name candidates. */
 export const placeFromCandidate = (query: string, candidate: PlaceCandidate): ResolvedBirthPlace => ({
   query,
