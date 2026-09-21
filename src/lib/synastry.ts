@@ -74,7 +74,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       interpretations: {
         conjunction: "Explosive chemistry! Love and desire merge perfectly. Strong physical and romantic attraction that rarely dims.",
         opposition: "Irresistible magnetic pull. The attraction is electric but can swing between passion and conflict.",
-        trine: "Natural romantic and sexual harmony. Desire flows easily between you without games or struggle.",
+        trine: "Warmth and wanting move easily between you, with little friction.",
         square: "Hot and challenging! The tension creates intense attraction but may lead to push-pull dynamics.",
         sextile: "Gentle, building attraction. Chemistry develops through effort and grows over time."
       }
@@ -140,7 +140,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
         conjunction: "High energy dynamic! Mars energizes Sun's identity. Can be competitive or inspiring.",
         opposition: "Strong attraction with power dynamics to navigate.",
         trine: "You energize and support each other's goals and identity.",
-        square: "Ego clashes possible but creates dynamic sexual tension.",
+        square: "Ego clashes are possible, and the friction can also be energising.",
         sextile: "Mutual encouragement. You push each other toward action."
       }
     }
@@ -215,7 +215,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       category: 'passion',
       significance: 'major',
       interpretations: {
-        conjunction: "Transformative, obsessive attraction. Love changes you both forever.",
+        conjunction: "Transformative, unusually strong focus on one person. Love changes you both forever.",
         opposition: "Intense magnetic pull with power dynamics. All-consuming passion.",
         trine: "Deep, empowering love. Transformation through intimacy.",
         square: "Intense but challenging. Power struggles in love. Transformative if navigated.",
@@ -241,7 +241,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       category: 'emotional',
       significance: 'moderate',
       interpretations: {
-        conjunction: "Soulmate feeling. Idealized, spiritual love. Watch for illusion.",
+        conjunction: "Easy idealising and shared ideals. Worth checking against who each person actually is.",
         opposition: "Romantic dreams meet reality. Beautiful but needs grounding.",
         trine: "Spiritual, artistic love connection. Dream-like romance.",
         square: "Illusion in love. Beautiful fantasies but clarity needed.",

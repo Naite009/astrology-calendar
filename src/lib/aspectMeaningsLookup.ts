@@ -120,7 +120,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'mercury-square-saturn': 'Mental blocks or negative thinking. Communication feels heavy or restricted.',
   'mercury-square-uranus': 'Mental restlessness. Repetitive thoughts indicate stuck energy needing to move. Ask: "Is there a way to look at this differently?"',
   'mercury-square-neptune': 'Miscommunication and confusion. Double-check facts. Not the day for contracts.',
-  'mercury-square-pluto': 'Obsessive thinking or verbal power plays. Mind goes to dark places.',
+  'mercury-square-pluto': 'The mind keeps circling one subject, and words can land harder than intended.',
 
   'mercury-trine-mars': 'Assertive, clear communication. Good for negotiations and presentations.',
   'mercury-trine-jupiter': 'Expansive, positive thinking. Teaching and learning flow.',
@@ -156,7 +156,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-square-saturn': 'Feeling unloved or unworthy. Relationship delays or coldness.',
   'venus-square-uranus': 'Relationship instability. Craving freedom vs. commitment. Sudden attractions.',
   'venus-square-neptune': 'The crush, the partner, or the deal is not what you have been telling yourself it is. Do not lend money, do not sign a lease together, do not believe the version of them in your head.',
-  'venus-square-pluto': 'Jealousy, possessiveness, or obsessive attraction. Power dynamics in love.',
+  'venus-square-pluto': 'Jealousy, possessiveness, or unusually strong focus on one person. Power dynamics in love.',
 
   'venus-trine-mars': 'Harmonious desire. Excellent for romance, creativity, and enjoyment.',
   'venus-trine-jupiter': 'Love and luck combine. Great social energy, generosity, celebration.',

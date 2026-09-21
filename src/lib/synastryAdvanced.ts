@@ -265,7 +265,7 @@ const NODE_SYNASTRY: Record<string, Record<string, { interpretation: string; pas
   },
   'NorthNode-Chiron': {
     conjunction: {
-      interpretation: "The Chiron person's wounds are connected to the Node person's destiny. Healing Chiron's pain is somehow linked to the Node person's life purpose. A profound healing-destiny connection.",
+      interpretation: "The Chiron person’s sensitive area meets the Node person’s growth direction. Some astrologers read this as a growth-linked contact; treat it as symbolic, not a verdict.",
       pastLife: "Wounds from long-standing patterns that need healing as part of this lifetime's growth.",
       lesson: "Growing understanding of a sensitive area can become part of what this person cares about."
     }
@@ -285,7 +285,7 @@ const CONFLICT_PATTERNS: Record<string, { trigger: string; emotion: string; reso
   },
   'Mars-Mars-opposition': {
     trigger: "Opposite approaches to action. One pushes while the other pulls. Can feel like working at cross-purposes even when goals align.",
-    emotion: "Frustration at feeling opposed. The push-pull dynamic can create sexual tension or outright conflict.",
+    emotion: "Frustration at feeling opposed. The push-pull can feel charged, or spill into open conflict.",
     resolution: "Find the middle ground. Both approaches have value. Take turns leading.",
     intensity: 'moderate'
   },
@@ -296,8 +296,8 @@ const CONFLICT_PATTERNS: Record<string, { trigger: string; emotion: string; reso
     intensity: 'intense'
   },
   'Mars-Pluto-square': {
-    trigger: "Power struggles. Both want control. Pluto's intensity meets Mars's action drive, creating a combustible mix. Manipulation or domination attempts may occur.",
-    emotion: "Deep rage, feeling dominated or manipulated. The intensity can be intoxicating but also destructive.",
+    trigger: "Power struggles. Both want control. Pluto's intensity meets Mars's action drive, creating a combustible mix. Both can push for the upper hand.",
+    emotion: "Strong anger, or a sense of being pushed. The intensity can be compelling and also wearing.",
     resolution: "Acknowledge the power dynamic openly. Neither person should try to control the other. Channel the intensity into transformation, not destruction.",
     intensity: 'intense'
   },
@@ -314,7 +314,7 @@ const CONFLICT_PATTERNS: Record<string, { trigger: string; emotion: string; reso
     intensity: 'moderate'
   },
   'Sun-Pluto-square': {
-    trigger: "Ego versus control. Pluto may try to dominate or transform Sun's identity. Sun may resist or feel their sense of self is under attack.",
+    trigger: "Ego versus control. Pluto may press on the Sun person's sense of self. Sun may resist or feel their sense of self is under attack.",
     emotion: "Sun feels threatened, controlled. Pluto feels Sun won't evolve or surrender ego.",
     resolution: "Pluto should influence, not control. Sun should be open to transformation without losing self. The intensity can be empowering if handled with maturity.",
     intensity: 'intense'
@@ -334,11 +334,11 @@ const CONFLICT_PATTERNS: Record<string, { trigger: string; emotion: string; reso
 function getAttractionDynamics(chart1: NatalChart, chart2: NatalChart): AttractionDynamic[] {
   const dynamics: AttractionDynamic[] = [];
   
-  // Venus-Mars aspects = sexual chemistry
+  // Venus-Mars aspects = classic attraction contacts
   if (hasAspect(chart1, 'Venus', chart2, 'Mars', ['conjunction', 'opposition', 'trine', 'square'])) {
     dynamics.push({
       name: 'Venus-Mars Magnetism',
-      description: `${chart1.name}'s Venus draws ${chart2.name}'s Mars like a moth to flame. This is classic romantic and sexual attraction—the archetypal feminine allure meeting masculine desire.`,
+      description: `${chart1.name}'s Venus draws ${chart2.name}'s Mars like a moth to flame. This is a classic attraction contact: one person’s warmth meets the other’s drive.`,
       chemistry: 'magnetic',
       planets: ['Venus', 'Mars'],
       energy: "The 'can't keep hands off each other' dynamic. Physical attraction is undeniable."
@@ -365,14 +365,14 @@ function getAttractionDynamics(chart1: NatalChart, chart2: NatalChart): Attracti
     });
   }
   
-  // Venus-Pluto = obsessive attraction
+  // Venus-Pluto = unusually strong focus on one person
   if (hasAspect(chart1, 'Venus', chart2, 'Pluto', ['conjunction', 'opposition', 'square'])) {
     dynamics.push({
-      name: 'Venus-Pluto Obsession',
+      name: 'Venus-Pluto: strong focus and depth',
       description: `Intense, transformative attraction. ${chart2.name}'s Pluto sees through ${chart1.name}'s Venus, creating a compelling but potentially overwhelming dynamic.`,
       chemistry: 'deep',
       planets: ['Venus', 'Pluto'],
-      energy: 'All-consuming passion that transforms both people. Can feel fated but also obsessive.'
+      energy: 'Deep investment that changes how both people see themselves. It can feel unusually significant, and it asks for room to breathe.'
     });
   }
   
@@ -387,10 +387,10 @@ function getAttractionDynamics(chart1: NatalChart, chart2: NatalChart): Attracti
     });
   }
   
-  // Venus-Neptune = soulmate feeling
+  // Venus-Neptune = idealising contact
   if (hasAspect(chart1, 'Venus', chart2, 'Neptune', ['conjunction', 'trine'])) {
     dynamics.push({
-      name: 'Soulmate Illusion/Reality',
+      name: 'Venus-Neptune: idealising and reality',
       description: `Dreamy, romantic, spiritual attraction. You may feel you've known each other forever. Beautiful but needs grounding to avoid disappointment.`,
       chemistry: 'deep',
       planets: ['Venus', 'Neptune'],
@@ -570,7 +570,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   // ROMANTIC INDICATORS
   if (hasAspect(chart1, 'Venus', chart2, 'Mars')) {
     scores.romantic.points += 25;
-    scores.romantic.indicators.push('Venus-Mars: Classic romantic/sexual chemistry');
+    scores.romantic.indicators.push('Venus-Mars: classic attraction and warmth');
   }
   if (hasAspect(chart2, 'Venus', chart1, 'Mars')) {
     scores.romantic.points += 25;
@@ -822,10 +822,10 @@ const PLANET_HOUSE_OVERLAYS: Record<string, Record<number, { interpretation: str
     2: { interpretation: "They activate your earning potential or challenge your values. Financial drive together.", impact: 'activating' },
     3: { interpretation: "Stimulating debates. They challenge how you think and communicate. Mental sparring.", impact: 'challenging' },
     4: { interpretation: "May activate family issues or drive to create home together. Emotional passion.", impact: 'challenging' },
-    5: { interpretation: "Passionate romance and creative fire. Strong sexual and creative chemistry.", impact: 'activating' },
+    5: { interpretation: "Warm romance and creative spark, with a lot of shared enthusiasm.", impact: 'activating' },
     6: { interpretation: "They push you to work harder or improve health. Can feel demanding.", impact: 'challenging' },
     7: { interpretation: "Partnership drive. May be competitive or passionate. They push you toward commitment.", impact: 'activating' },
-    8: { interpretation: "Intense sexual chemistry. Power dynamics around intimacy and shared resources.", impact: 'transformative' },
+    8: { interpretation: "Strong mutual pull, with real sensitivity about trust, privacy and shared resources.", impact: 'transformative' },
     9: { interpretation: "Adventure together! They inspire action toward growth, travel, and new experiences.", impact: 'activating' },
     10: { interpretation: "Career drive. They push your professional ambitions. May compete or collaborate publicly.", impact: 'activating' },
     11: { interpretation: "Active friendship. They energize your social life and fight for your dreams.", impact: 'activating' },

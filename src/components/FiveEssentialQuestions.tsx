@@ -122,7 +122,7 @@ function generateAspectExpressions(
         `${personAName} helps ${personBName} access deep emotional truth and healing`,
         `${personAName} empowers ${personBName} to transform old emotional patterns`,
         'Profound emotional intimacy and trust',
-        `${personBName} feels seen at a soul level by ${personAName}`
+        `${personBName} feels deeply understood by ${personAName}`
       ],
       shadowExpressions: [
         `${personAName} may unconsciously trigger intense emotional reactions in ${personBName}`,
@@ -143,9 +143,9 @@ function generateAspectExpressions(
         'Profound values transformation through the relationship'
       ],
       shadowExpressions: [
-        'Obsessive attraction or possessiveness',
-        'Jealousy or control around love/affection',
-        'Power games in romance',
+        'Intensity that can tip into wanting constant reassurance',
+        'Sensitivity about attention and reassurance',
+        'Push and pull about who leads',
         'Difficulty with autonomy in the relationship'
       ],
       personAAdvice: `Your magnetic pull is powerful - use it to empower ${personBName}'s heart, not possess it.`,
@@ -162,9 +162,9 @@ function generateAspectExpressions(
       ],
       shadowExpressions: [
         'Power struggles over who leads',
-        `${personBName} may feel dominated or eclipsed`,
+        `${personBName} may feel overshadowed`,
         'Competition rather than collaboration',
-        'Control battles that undermine both'
+        'Repeated tugs-of-war about who decides'
       ],
       personAAdvice: `Your transformative power works best when you support ${personBName}'s light, not overshadow it.`,
       personBAdvice: `Stand in your honest power. Don't shrink yourself.`,
@@ -176,12 +176,12 @@ function generateAspectExpressions(
         `${personAName}'s transformative power fuses with ${personBName}'s core identity`,
         'Profound capacity for mutual empowerment',
         'Deep understanding of each other\'s shadows and light',
-        'Potential for soul-level recognition'
+        'A sense of being recognised at a deep level (a symbolic reading, not a fact)'
       ],
       shadowExpressions: [
-        'Risk of identity fusion or enmeshment',
-        `${personBName} may feel consumed by ${personAName}'s intensity`,
-        'Obsessive focus on each other',
+        'The two lives can blend so closely that separate interests get thin',
+        `${personBName} may feel swept along by ${personAName}’s intensity`,
+        'A lot of attention going to each other, leaving little room for other parts of life',
         'Difficulty separating individual identities'
       ],
       personAAdvice: 'Your intensity is felt deeply. Use it to witness and empower, not consume.',
@@ -192,14 +192,14 @@ function generateAspectExpressions(
       energy: 'Intense power dynamics around action, desire, and will.',
       lightExpressions: [
         'Powerful motivation to achieve together',
-        'Sexual chemistry that transforms both',
+        'A strong pull that changes how both people see themselves',
         'Courage to face difficult truths together',
         'Mutual empowerment to take bold action'
       ],
       shadowExpressions: [
         'Power struggles over who controls what',
         'Explosive anger or arguments',
-        'Compulsive or obsessive pursuit',
+        'Pushing hard when it would be better to pause',
         'Physical tension or aggression'
       ],
       personAAdvice: 'Channel intensity into shared goals rather than competition.',
@@ -210,7 +210,7 @@ function generateAspectExpressions(
     'Neptune-Venus-conjunction': {
       energy: 'Romantic idealization with spiritual love potential.',
       lightExpressions: [
-        'Soul-mate feeling and spiritual connection',
+        'A sense of easy recognition and shared ideals',
         'Unconditional love and compassion',
         'Artistic and creative inspiration together',
         'Deep empathy and emotional attunement'
@@ -371,7 +371,7 @@ function generateAspectExpressions(
       growthEdge: 'Developing inner authority while respecting each other\'s autonomy.'
     },
     'Venus-Mars-conjunction': {
-      energy: 'Powerful romantic and sexual chemistry.',
+      energy: 'A strong romantic pull and easy warmth.',
       lightExpressions: [
         'Magnetic attraction and desire',
         'Passion that keeps the relationship alive',
@@ -400,7 +400,7 @@ function generateAspectExpressions(
         'Taking each other for granted',
         'Losing individual identity in the merge',
         'Assuming you know what the other needs',
-        'Enmeshment without healthy boundaries'
+        'Closeness that leaves little separate space'
       ],
       personAAdvice: `Your connection is natural - don't forget to keep growing individually.`,
       personBAdvice: `The ease between you is a gift. Stay curious about each other.`,
@@ -451,7 +451,7 @@ function generateAspectExpressions(
         'Conversations that change perspectives'
       ],
       shadowExpressions: [
-        'One person dominating conversations',
+        'One person taking up most of the conversation',
         'Feeling stupid or inferior intellectually',
         'Communication styles that clash',
         'Over-intellectualizing the relationship'
