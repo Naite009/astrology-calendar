@@ -704,6 +704,17 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      shorthand: blendCard({
+        factors: group.map((g) => ({
+          label: `${g.label} in ${sign}${g.house ? `, ${ordinalHouse(g.house)}` : ''}`,
+          contributes: FACTOR_JOB[g.body] ?? BODY_MEANINGS[g.body],
+          sign,
+          body: g.body,
+          house: g.house ?? null,
+        })),
+        theme: speak(`${'{Sub}'} may run a consistent ${sign} style through ${labels.join(' and ')}`, stage),
+        fallbackNoun: 'Style',
+      }),
       ...evidenceFields(group.map((g) => g.body), group.map((g) => g.house), {
         retrograde: group.some((g) => g.isRetrograde),
       }),
@@ -731,6 +742,17 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      shorthand: blendCard({
+        factors: group.map((g) => ({
+          label: `${g.label} in the ${ordinalHouse(house)}`,
+          contributes: FACTOR_JOB[g.body] ?? BODY_MEANINGS[g.body],
+          sign: g.sign,
+          body: g.body,
+          house,
+        })),
+        theme: speak(`A lot of ${'{your}'} attention may land on ${houseArena(house, stage)}`, stage),
+        fallbackNoun: 'Focus',
+      }),
       ...evidenceFields(group.map((g) => g.body), [house], {
         retrograde: group.some((g) => g.isRetrograde),
       }),
@@ -798,6 +820,26 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: 'Moderate',
       supportCount: 2,
       group: 'nodes',
+      shorthand: blendCard({
+        factors: [
+          {
+            label: `North Node in ${nn.sign}${nn.house ? `, ${ordinalHouse(nn.house)}` : ''}`,
+            contributes: FACTOR_JOB.NorthNode,
+            sign: nn.sign,
+            body: 'NorthNode',
+            house: nn.house ?? null,
+          },
+          {
+            label: `South Node in ${sn.sign}${sn.house ? `, ${ordinalHouse(sn.house)}` : ''}`,
+            contributes: BODY_MEANINGS.SouthNode,
+            sign: sn.sign,
+            body: 'SouthNode',
+            house: sn.house ?? null,
+          },
+        ],
+        evidence: ['The nodes always oppose each other, so the opposition is geometry, not extra evidence.'],
+        fallbackNoun: 'Stretch',
+      }),
       ...evidenceFields(['NorthNode', 'SouthNode'], [nn.house, sn.house]),
 
     };
