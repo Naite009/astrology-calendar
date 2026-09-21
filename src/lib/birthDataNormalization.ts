@@ -35,6 +35,8 @@ import {
   placeFromCoordinates,
   placeFromSourceCoordinates,
   checkPlaceAgainstText,
+  candidateMatchingCoordinates,
+  placeFromCandidate,
   formatCoordinates,
   type ResolvedBirthPlace,
   type PlaceConfidence,
@@ -355,8 +357,31 @@ export const birthMomentFromPlace = (
   };
   const precision: TimePrecision = time ? time.precision : 'unknown';
 
-  // Several towns share the name and nothing in the text picks one. The
-  // candidates can be in different zones, so nothing is computed at all.
+  // Several towns share the name. If the record already carries coordinates —
+  // printed by the source (Astro.com) or saved with the import — the town that
+  // sits on those coordinates is the one that was used, so the question is
+  // already answered and nothing needs confirming.
+  if (place?.ambiguous) {
+    const bySource = candidateMatchingCoordinates(place, input.sourceLatitude, input.sourceLongitude);
+    const byStored = bySource ? null : candidateMatchingCoordinates(place, input.latitude, input.longitude);
+    const matched = bySource || byStored;
+    if (matched) {
+      const origin = bySource
+        ? `the coordinates printed by the source (${formatCoordinates(input.sourceLatitude!, input.sourceLongitude!)})`
+        : `the coordinates saved with this chart (${formatCoordinates(input.latitude!, input.longitude!)})`;
+      place = {
+        ...placeFromCandidate(place.query, matched.candidate),
+        source: bySource ? 'source-coordinates' : 'stored',
+        ...(bySource ? { latitude: input.sourceLatitude!, longitude: input.sourceLongitude!, sourceText: input.sourceCoordinatesText || undefined } : {}),
+        notes: [
+          `${place.candidates!.length} places share the name "${matched.candidate.name}"; ${matched.candidate.label} was used because it matches ${origin}.`,
+        ],
+      };
+    }
+  }
+
+  // Nothing picks one of the same-name towns. The candidates can be in
+  // different zones, so nothing is computed at all.
   if (place?.ambiguous) {
     return {
       ...emptyMoment('ambiguous-place', [...warnings, ...place.notes], settings, place),

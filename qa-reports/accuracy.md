@@ -1,6 +1,6 @@
 # Accuracy suite
 
-Run: 2026-09-13T15:12:29.397Z
+Run: 2026-09-21T14:20:23.457Z
 People: 20 | Sky moment for readings: 2026-06-15
 
 ## Headline
