@@ -142,7 +142,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-conjunction-saturn': 'Love gets serious. Commitment, loyalty, or feeling unloved surfaces.',
   'venus-conjunction-uranus': 'Unexpected attraction or creative breakthrough. Love surprises.',
   'venus-conjunction-neptune': 'Romantic idealism peaks. Beautiful but potentially illusory. Art inspired.',
-  'venus-conjunction-pluto': 'You will fixate on one person. Either you cannot stop wanting them, or jealousy spikes, or a dead relationship finally ends today. Money tied up with someone may also get messy.',
+  'venus-conjunction-pluto': 'Attention narrows onto one person. Wanting can run high, reassurance can feel scarce, or something already over may finally be named. Shared money matters can also need attention.',
 
   'venus-sextile-mars': 'Balanced passion. Good for romance, socializing, and creative projects.',
   'venus-sextile-jupiter': 'Social grace and abundance. Good for celebrations, gifts, generosity.',
@@ -156,7 +156,7 @@ const ASPECT_MEANINGS: Record<string, string> = {
   'venus-square-saturn': 'Feeling unloved or unworthy. Relationship delays or coldness.',
   'venus-square-uranus': 'Relationship instability. Craving freedom vs. commitment. Sudden attractions.',
   'venus-square-neptune': 'The crush, the partner, or the deal is not what you have been telling yourself it is. Do not lend money, do not sign a lease together, do not believe the version of them in your head.',
-  'venus-square-pluto': 'Jealousy, possessiveness, or unusually strong focus on one person. Power dynamics in love.',
+  'venus-square-pluto': 'Unusually strong focus on one person, with sensitivity about reassurance and about who leads in the connection.',
 
   'venus-trine-mars': 'Harmonious desire. Excellent for romance, creativity, and enjoyment.',
   'venus-trine-jupiter': 'Love and luck combine. Great social energy, generosity, celebration.',

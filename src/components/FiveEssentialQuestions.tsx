@@ -407,7 +407,7 @@ function generateAspectExpressions(
       growthEdge: 'Maintaining individual identity within deep connection.'
     },
     'NorthNode-Sun-conjunction': {
-      energy: 'Destiny connection - you illuminate each other\'s life path.',
+      energy: 'A contact many astrologers read as significant for direction; each person tends to light up the other\'s sense of where they are going.',
       lightExpressions: [
         `${personAName} illuminates ${personBName}'s life purpose and destiny path`,
         `${personBName} helps ${personAName} step into their honest self`,
@@ -505,7 +505,7 @@ function generateAspectExpressions(
         'Breaking generational emotional patterns'
       ],
       shadowExpressions: [
-        'Triggering each other\'s deepest insecurities',
+        'Touching each other\'s sore spots',
         'Emotional reactions that seem "too much"',
         'Feeling unsafe emotionally',
         'Old family wounds playing out in the relationship'
