@@ -9,6 +9,7 @@
 import { useMemo, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
+import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
 import { buildReadingGuide, type BlendCard, type ReadingGuide, type RankedConnection } from '@/lib/readingGuide/readingGuideEngine';
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
@@ -140,6 +141,13 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
         </span>
       </header>
 
+
+      {card.shorthand && (
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">In a word or two</p>
+          <ShorthandCardBlock card={card.shorthand} />
+        </div>
+      )}
 
       <div>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What created it</p>
@@ -332,6 +340,13 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
         </Section>
       )}
 
+      {/* 3b. Big Three, taught as a hierarchy with a combined descriptor */}
+      {guide.bigThreeShorthand && (
+        <Section title="The Big Three, layered" subtitle="Sun = centre, Moon = needs, Ascendant = what people meet first">
+          <ShorthandCardBlock card={guide.bigThreeShorthand} />
+        </Section>
+      )}
+
       {/* 4. Elements & modality, including lightly represented elements */}
       <Section title="Element and modality balance" icon={<Droplets size={14} className="text-primary" />}>
         <div className="flex flex-wrap gap-1.5">
@@ -343,6 +358,9 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
           ))}
         </div>
         <p className="text-[11px] text-muted-foreground">{guide.modalities.note}</p>
+        {guide.emphasisCards.map((c, i) => (
+          <ShorthandCardBlock key={i} card={c} />
+        ))}
         {guide.elements.lowReadings.map((r) => (
           <div key={r.element} className="rounded-sm border border-dashed border-border p-3 space-y-1.5">
             <p className="text-sm font-medium text-foreground">Low {r.element}: {r.headline}</p>
