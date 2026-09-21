@@ -309,6 +309,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
               {guide.startHereDeeper.map((item) => (
                 <li key={item.id} className="text-xs text-muted-foreground">
                   <span className="uppercase tracking-widest text-[10px] mr-1">{item.label}:</span>
+                  {item.shorthandLabel && <span className="font-medium text-foreground">{item.shorthandLabel} — </span>}
                   {item.value}. {item.note}
                 </li>
               ))}
