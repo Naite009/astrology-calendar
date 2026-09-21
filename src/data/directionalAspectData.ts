@@ -578,7 +578,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
       romance: "You're the wounded healer in this relationship. You've been hurt in similar ways and can help them heal—but you must be far enough along in your own healing. If not, you'll wound each other. You see their pain because it mirrors yours. You can be the medicine OR the poison.",
       friendship: "You understand their worthiness wounds because you have similar ones. You can help them heal OR trigger them depending on your awareness. You're the teacher here—are you conscious enough?",
       business: "Your wounds around value and money are activated too. You can teach them what you've learned OR compete in scarcity mindset. You have the gift of seeing value (yours and theirs) but must be healed enough to share it.",
-      creative: "You've been wounded around creativity and can help them avoid your mistakes OR traumatize them with your unhealed shame. You're the teacher of creative worthiness. Teach consciously.",
+      creative: "You have your own sensitive history around creative work. You can spare them some of your mistakes, or pass your own discouragement along. Teach with that in mind.",
       family: "You carry family wounds around love and acceptance. You can help them heal family patterns OR perpetuate them. You're likely the older soul or the one further along the healing path. Use that wisely."
     },
     

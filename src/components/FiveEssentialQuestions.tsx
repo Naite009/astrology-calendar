@@ -148,7 +148,7 @@ function generateAspectExpressions(
         'Push and pull about who leads',
         'Difficulty with autonomy in the relationship'
       ],
-      personAAdvice: `Your magnetic pull is powerful - use it to empower ${personBName}'s heart, not possess it.`,
+      personAAdvice: `Your magnetic pull is powerful - use it to encourage ${personBName}, not to hold on tightly.`,
       personBAdvice: `The intensity is real, but you can set boundaries while staying open to transformation.`,
       growthEdge: 'Learning that deep love and personal freedom can coexist.'
     },
