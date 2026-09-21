@@ -35,6 +35,7 @@ import {
 import { isInsideUsState } from '@/lib/geo/regionBounds';
 import {
   resolveBirthMomentSync,
+  birthMomentFromPlace,
   resolveBirthMoment,
   birthInputFromChart,
   type BirthInput,
@@ -580,6 +581,45 @@ describe('duplicate town names through the geocoder', () => {
     expect(arcmin(calc.positions.Moon!.longitude, lon('Gemini', 0, 52))).toBeLessThan(2);
     // The geocoder point is ~0.3' of longitude from the printed one: Ascendant within a few arcminutes.
     expect(arcmin(calc.angles!.ascendant, lon('Aquarius', 18, 38))).toBeLessThan(6);
+  });
+
+  it('coordinates printed by the source pick the matching same-name town, with nothing to confirm', async () => {
+    const ambiguous = await resolveBirthPlace('Franklin');
+    expect(ambiguous?.ambiguous).toBe(true);
+    const m = birthMomentFromPlace(
+      {
+        birthDate: '1964-08-29', birthTime: '18:45', birthLocation: 'Franklin',
+        sourceLatitude: 41.1167, sourceLongitude: -74.5833, sourceCoordinatesText: '74w35, 41n07',
+      },
+      ambiguous,
+    );
+    expect(m.status).toBe('ok');
+    expect(m.place?.source).toBe('source-coordinates');
+    expect(m.place?.admin2).toBe('Sussex');
+    expect(m.zone?.id).toBe('America/New_York');
+    expect(m.utc?.toISOString()).toBe('1964-08-29T22:45:00.000Z');
+    expect(m.place?.notes.join(' ')).toMatch(/matches the coordinates printed by the source/);
+  });
+
+  it('coordinates saved with the import pick the same-name town when the source printed none', async () => {
+    const ambiguous = await resolveBirthPlace('Franklin');
+    const m = birthMomentFromPlace(
+      { birthDate: '1964-08-29', birthTime: '18:45', birthLocation: 'Franklin', latitude: 41.122, longitude: -74.5804 },
+      ambiguous,
+    );
+    expect(m.status).toBe('ok');
+    expect(m.place?.admin2).toBe('Sussex');
+    expect(m.zone?.id).toBe('America/New_York');
+  });
+
+  it('coordinates that match no candidate still require a choice', async () => {
+    const ambiguous = await resolveBirthPlace('Franklin');
+    expect(candidateMatchingCoordinates(ambiguous, 48.86, 2.35)).toBeNull();
+    const m = birthMomentFromPlace(
+      { birthDate: '1964-08-29', birthTime: '18:45', birthLocation: 'Franklin', sourceLatitude: 48.86, sourceLongitude: 2.35 },
+      ambiguous,
+    );
+    expect(m.status).toBe('ambiguous-place');
   });
 
   it('a stale Franklin, TN record for Franklin, NJ text is re-resolved through the geocoder', async () => {
