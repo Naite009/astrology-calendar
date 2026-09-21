@@ -97,18 +97,28 @@ const AVA: Fixture = {
   place: 'West Hills, California, United States',
 };
 
-// Max — Ava's boyfriend. Also a minor: this pair is the TEEN ROMANTIC reference
-// case. They are NOT siblings, and nothing about their ages or shared surname-like
+// Max Levin — Ava's boyfriend. Also a minor: this pair is the TEEN ROMANTIC
+// reference case. They are NOT siblings, and nothing about their ages or shared
 // fixture ids may cause the app to read them as family.
+//
+// PROVENANCE — DO NOT DRIFT.
+// These two fixtures mirror the canonical saved reference charts used for manual
+// QA. Every birth field below is copied from those saved records, and the
+// positions the engine derives from them have been verified against the saved
+// charts (see the "reference chart fidelity" describe block, which asserts the
+// derived placements degree-for-degree). Tests must never query live user data;
+// instead, if either saved chart is ever corrected, update these fields and the
+// fidelity assertions together. Changing one without the other silently
+// invalidates every Ava + Max regression in this file.
 const MAX: Fixture = {
   id: 'max',
   name: 'Max Levin',
-  date: '2014-02-08',
-  time: '09:20',
-  latitude: 34.2011,
-  longitude: -118.6317,
-  timezoneId: 'America/Los_Angeles',
-  place: 'West Hills, California, United States',
+  date: '2011-01-21',
+  time: '11:47',
+  latitude: 39.9526,
+  longitude: -75.1652,
+  timezoneId: 'America/New_York',
+  place: 'Philadelphia, Pennsylvania, United States',
 };
 
 // Jamie — an unrelated minor, used for the FAMILY/sibling context checks so that
