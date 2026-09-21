@@ -371,15 +371,20 @@ export function rankConnections(placements: CoreBodyPlacement[], limit = 5): Ran
         if (orb > getEffectiveOrb(a.body, b.body, asp.name)) continue;
         const weight = (IMPORTANCE_WEIGHT[a.body] ?? 3) + (IMPORTANCE_WEIGHT[b.body] ?? 3);
         const tightness = Math.max(0, 8 - orb);
+        const rounded = Math.round(orb * 10) / 10;
         list.push({
           a: a.label,
           b: b.label,
+          bodyA: a.body,
+          bodyB: b.body,
           aspect: asp.name,
           symbol: asp.symbol,
-          orb: Math.round(orb * 10) / 10,
+          orb: rounded,
           importance: Math.round(weight * 2 + tightness * 3),
           adds: ASPECT_ADDS[asp.name] ?? 'these two are linked in the chart',
+          reading: pairAspectReading(a.body, b.body, asp.name, rounded),
         });
+
         break;
       }
     }
