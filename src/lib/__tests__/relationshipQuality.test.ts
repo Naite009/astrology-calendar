@@ -163,7 +163,7 @@ const jamie = buildChart(JAMIE);
 const dana = buildChart(DANA);
 const sam = buildChart(SAM);
 
-// Fixed "now": Ava 15, Max 12, Jamie 13 — all minors.
+// Fixed "now": Ava and Max are both 15 here, Jamie 13 — all minors.
 const NOW = new Date('2026-09-07T00:00:00Z');
 
 /** Family/sibling checks use an unrelated minor pair, never Ava + Max. */
