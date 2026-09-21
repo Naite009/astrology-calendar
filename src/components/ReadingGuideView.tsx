@@ -338,22 +338,15 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
 
       {/* 9. Top connections */}
       {guide.topConnections.length > 0 && (
-        <Section title="Top connections" subtitle="tightest and most personal first">
+        <Section title="What each connection means" subtitle="tightest and most personal first">
           <div className="space-y-2">
-            {guide.topConnections.map((c, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-sm border border-border bg-background/40 p-3">
-                <span className="text-base text-primary">{c.symbol}</span>
-                <div>
-                  <p className="text-sm text-foreground">{c.a} {c.aspect} {c.b} <span className="text-muted-foreground">({c.orb}° orb)</span></p>
-                  <p className="text-xs text-muted-foreground">What it adds: {c.adds}.</p>
-                </div>
-              </div>
-            ))}
+            {guide.topConnections.map((c, i) => <ConnectionCard key={i} c={c} />)}
           </div>
           <p className="text-[11px] text-muted-foreground">
             The North Node–South Node opposition is automatic geometry, so it is never listed here as a connection.
           </p>
         </Section>
+
       )}
 
       {/* 10. Story */}
