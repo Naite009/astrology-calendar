@@ -35,6 +35,8 @@ import {
   placeFromCoordinates,
   placeFromSourceCoordinates,
   checkPlaceAgainstText,
+  candidateMatchingCoordinates,
+  placeFromCandidate,
   formatCoordinates,
   type ResolvedBirthPlace,
   type PlaceConfidence,
