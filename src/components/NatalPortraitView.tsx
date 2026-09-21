@@ -10,6 +10,7 @@ import { generateNatalPortrait, NatalPortrait, DomainDeepDive, HouseEmphasis, Ra
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
+import { buildSectionArchetypes, type SectionArchetype } from '@/lib/natal/sectionArchetypes';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
