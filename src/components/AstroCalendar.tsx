@@ -7,6 +7,7 @@ const ChartDecoderView = lazy(() => import("./ChartDecoderView").then(m => ({ de
 import { AskView } from "./AskView";
 import { ChartSelector } from "./ChartSelector";
 import { SacredScriptErrorBoundary } from "./SacredScriptErrorBoundary";
+import { SectionErrorBoundary } from "./SectionErrorBoundary";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { YearView } from "./YearView";
