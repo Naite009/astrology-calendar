@@ -266,7 +266,7 @@ describe('Known Ava + Max contacts', () => {
       aspect: 'trine',
       orb: c!.orb,
     } as any);
-    expect(analysis.outOfSign).toBe(true);
+    expect(analysis.isOutOfSign).toBe(true);
     // The degree trine stands, and the Taurus/Aquarius square-by-sign tension is
     // still reported rather than flattened into easy harmony.
     const text = collectStrings(analysis).join(' ');
