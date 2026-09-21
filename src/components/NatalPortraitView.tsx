@@ -27,10 +27,32 @@ interface NatalPortraitViewProps {
 
 // ─── Sub-components ─────────────────────────────────────────────────
 
+const ArchetypeChip = ({ archetype }: { archetype?: SectionArchetype }) => {
+  if (!archetype) return null;
+  return (
+    <span
+      title={archetype.why}
+      className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium tracking-wide whitespace-nowrap"
+    >
+      {archetype.label}
+    </span>
+  );
+};
+
+const ArchetypeWhy = ({ archetype }: { archetype?: SectionArchetype }) => {
+  if (!archetype) return null;
+  return (
+    <p className="text-[10px] text-muted-foreground mb-3">
+      <span className="text-primary font-medium">{archetype.label}</span> — {archetype.why} A short label like this is
+      shorthand for the section below, not a personality type.
+    </p>
+  );
+};
+
 const SectionWrapper = ({ 
-  title, emoji, children, defaultOpen = true 
+  title, emoji, children, defaultOpen = true, archetype
 }: { 
-  title: string; emoji: string; children: React.ReactNode; defaultOpen?: boolean;
+  title: string; emoji: string; children: React.ReactNode; defaultOpen?: boolean; archetype?: SectionArchetype;
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -39,13 +61,19 @@ const SectionWrapper = ({
         onClick={() => setOpen(!open)}
         className="w-full px-5 py-4 flex items-center justify-between border-b border-border hover:bg-secondary/30 transition-colors"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap text-left">
           <span className="text-lg">{emoji}</span>
           <span className="text-sm font-medium uppercase tracking-widest text-foreground">{title}</span>
+          <ArchetypeChip archetype={archetype} />
         </div>
         {open ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
       </button>
-      {open && <div className="p-5">{children}</div>}
+      {open && (
+        <div className="p-5">
+          <ArchetypeWhy archetype={archetype} />
+          {children}
+        </div>
+      )}
     </div>
   );
 };
