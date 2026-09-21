@@ -372,6 +372,7 @@ export const birthMomentFromPlace = (
       place = {
         ...placeFromCandidate(place.query, matched.candidate),
         source: bySource ? 'source-coordinates' : 'stored',
+        ...(bySource ? { latitude: input.sourceLatitude!, longitude: input.sourceLongitude!, sourceText: input.sourceCoordinatesText || undefined } : {}),
         notes: [
           `${place.candidates!.length} places share the name "${matched.candidate.name}"; ${matched.candidate.label} was used because it matches ${origin}.`,
         ],
