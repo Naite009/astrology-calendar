@@ -540,12 +540,50 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
 
   const [selectedChartId, setSelectedChartId] = useState(allCharts[0]?.id || '');
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // Charts can arrive after this view mounts (fresh entry, import, cloud restore).
+  // Keep the selection valid, and jump to a newly added chart so it renders
+  // immediately instead of appearing to "not load".
+  const knownIdsRef = useRef<string[] | null>(null);
+  useEffect(() => {
+    const ids = allCharts.map(c => c.id).filter(Boolean) as string[];
+    const previous = knownIdsRef.current;
+    knownIdsRef.current = ids;
+    if (!ids.length) return;
+
+    const added = previous ? ids.filter(id => !previous.includes(id)) : [];
+    if (previous && added.length === 1) {
+      setSelectedChartId(added[0]);
+      return;
+    }
+    if (!selectedChartId || !ids.includes(selectedChartId)) {
+      setSelectedChartId(ids[0]);
+    }
+  }, [allCharts, selectedChartId]);
+
   const selectedChart = allCharts.find(c => c.id === selectedChartId) || allCharts[0];
 
+  const hasCoreBodies = Boolean(selectedChart?.planets?.Sun?.sign && selectedChart?.planets?.Moon?.sign);
+
   const portrait = useMemo(() => {
-    if (!selectedChart) return null;
-    return generateNatalPortrait(selectedChart);
-  }, [selectedChart]);
+    if (!selectedChart || !hasCoreBodies) return null;
+    try {
+      return generateNatalPortrait(selectedChart);
+    } catch (e) {
+      console.error('[NatalPortrait] Failed to build portrait for', selectedChart?.name, e);
+      return null;
+    }
+  }, [selectedChart, hasCoreBodies]);
+
+  const archetypes = useMemo(() => {
+    if (!portrait || !selectedChart) return {} as Record<string, SectionArchetype>;
+    try {
+      return buildSectionArchetypes(portrait, selectedChart);
+    } catch {
+      return {} as Record<string, SectionArchetype>;
+    }
+  }, [portrait, selectedChart]);
+
 
   const exportMeta: ExportMeta = useMemo(() => ({
     name: selectedChart?.name || 'Chart',
