@@ -612,6 +612,24 @@ describe('duplicate town names through the geocoder', () => {
     expect(m.zone?.id).toBe('America/New_York');
   });
 
+  it('uses imported angles to identify La Serena when OCR misses the coordinate line', async () => {
+    const report = await verifyChartAgainstEphemerisAsync({
+      birthDate: '1993-11-07', birthTime: '11:30', birthLocation: 'La Serena, CHILE',
+      planets: { Ascendant: { sign: 'Capricorn', degree: 24, minutes: 6 } },
+      houseCusps: {
+        house1: { sign: 'Capricorn', degree: 24, minutes: 6 },
+        house2: { sign: 'Aquarius', degree: 16, minutes: 49 },
+        house3: { sign: 'Pisces', degree: 13, minutes: 0 },
+        house10: { sign: 'Libra', degree: 14, minutes: 10 },
+        house11: { sign: 'Scorpio', degree: 18, minutes: 58 },
+        house12: { sign: 'Sagittarius', degree: 23, minutes: 11 },
+      },
+    });
+    expect(report.readiness).toBe('ready');
+    expect(report.moment.place?.admin1).toBe('Coquimbo Region');
+    expect(report.moment.place?.notes.join(' ')).toMatch(/matches the imported Ascendant and house cusps/);
+  });
+
   it('coordinates that match no candidate still require a choice', async () => {
     const ambiguous = await resolveBirthPlace('Franklin');
     expect(candidateMatchingCoordinates(ambiguous, 48.86, 2.35)).toBeNull();
