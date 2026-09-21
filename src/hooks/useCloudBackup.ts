@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { NatalChart } from './useNatalChart';
 import { toast } from 'sonner';
 import { getCachedUserId, getSessionSafely, readCachedSupabaseSession } from '@/lib/supabaseSessionRecovery';
+import { chartIdentityKey, dedupeChartsByIdentity } from '@/lib/charts/chartIdentity';
 
 const DEVICE_ID_KEY = 'astro_device_id';
 const LAST_SYNC_KEY = 'astro_last_cloud_sync';
@@ -337,10 +338,10 @@ export const useCloudBackup = (
         localCharts = savedCharts;
       }
 
-      // Build a merged map keyed by normalized name. Local-only charts are
-      // preserved; cloud charts fill in missing names; if both exist, prefer
-      // the entry with more planet data (otherwise the cloud copy).
-      const mergedByName = new Map<string, NatalChart>();
+      // Merge by the complete birth record, never by name alone. Name-only
+      // merging can replace a newly added client with another person or an
+      // older import that happens to use the same name.
+      const mergedByIdentity = new Map<string, NatalChart>();
 
       const planetCount = (c: NatalChart): number => {
         if (!c?.planets) return 0;
@@ -356,9 +357,9 @@ export const useCloudBackup = (
       for (const lc of localCharts) {
         if ((lc as any).solarReturnYear) continue;
         if (lc.id?.startsWith('hd_')) continue;
-        const key = (lc.name || '').toLowerCase().trim();
+        const key = chartIdentityKey(lc);
         if (!key) continue;
-        mergedByName.set(key, lc);
+        mergedByIdentity.set(key, lc);
       }
 
       for (const cloudChart of deduped) {
@@ -375,26 +376,25 @@ export const useCloudBackup = (
           continue;
         }
 
-        const normName = (chartData.name || '').toLowerCase().trim();
-        if (!normName) continue;
-
         const cloudVersion: NatalChart = {
           ...chartData,
           id: cloudChart.chart_id,
         };
 
-        const existing = mergedByName.get(normName);
+        const identity = chartIdentityKey(cloudVersion);
+        if (!identity) continue;
+        const existing = mergedByIdentity.get(identity);
         if (!existing) {
-          mergedByName.set(normName, cloudVersion);
+          mergedByIdentity.set(identity, cloudVersion);
           restoredCount++;
         } else if (planetCount(cloudVersion) > planetCount(existing)) {
           // Cloud has richer data — prefer it.
-          mergedByName.set(normName, cloudVersion);
+          mergedByIdentity.set(identity, cloudVersion);
         }
         // else: keep local copy (preserves locally-added charts not yet synced)
       }
 
-      const restoredSavedCharts = Array.from(mergedByName.values());
+      const restoredSavedCharts = dedupeChartsByIdentity(Array.from(mergedByIdentity.values()));
 
       if (restoredSavedCharts.length > 0) {
         setSavedCharts(restoredSavedCharts);

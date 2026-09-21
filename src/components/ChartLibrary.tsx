@@ -782,9 +782,11 @@ export const ChartLibrary = ({
       if (editingChart === 'user' && formData.name.trim()) {
         onSaveUserChart({ id: 'user', ...formData });
       } else if (editingChart === 'new' && formData.name.trim()) {
-        onAddChart({ id: '', ...formData });
+        const saved = onAddChart({ id: '', ...formData });
+        toast.success(`${saved.name} was added to Chart Library.`);
       } else if (typeof editingChart === 'object') {
         onUpdateChart(editingChart.id, formData);
+        toast.success(`${formData.name} was saved.`);
       }
     }
     
@@ -976,7 +978,10 @@ export const ChartLibrary = ({
         if (newPlanetsAdded > 0 || Object.keys(birthInfoUpdates).length > 0) {
           setFormData(prev => ({
             ...prev,
-            // Only update birth info if fields are empty
+            // Keep all source metadata, especially printed coordinates and
+            // Universal Time. Text fields only fill blanks, but source facts
+            // from the imported chart must survive into the saved record.
+            ...birthInfoUpdates,
             name: birthInfoUpdates.name && !prev.name ? birthInfoUpdates.name : prev.name,
             birthDate: birthInfoUpdates.birthDate && !prev.birthDate ? birthInfoUpdates.birthDate : prev.birthDate,
             birthTime: birthInfoUpdates.birthTime && !prev.birthTime ? birthInfoUpdates.birthTime : prev.birthTime,
@@ -1003,6 +1008,7 @@ export const ChartLibrary = ({
         // Even if no planets found, still update birth info if we have it (only empty fields)
         setFormData(prev => ({
           ...prev,
+          ...birthInfoUpdates,
           name: birthInfoUpdates.name && !prev.name ? birthInfoUpdates.name : prev.name,
           birthDate: birthInfoUpdates.birthDate && !prev.birthDate ? birthInfoUpdates.birthDate : prev.birthDate,
           birthTime: birthInfoUpdates.birthTime && !prev.birthTime ? birthInfoUpdates.birthTime : prev.birthTime,
