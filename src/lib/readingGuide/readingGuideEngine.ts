@@ -881,6 +881,30 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         strength: tight.length ? 'Moderate' : 'Single-placement',
         supportCount: tight.length ? 2 : 1,
         group: 'chiron',
+        shorthand: blendCard({
+          factors: [
+            {
+              label: `Chiron in ${ch.sign}${ch.house ? `, ${ordinalHouse(ch.house)}` : ''}`,
+              contributes: FACTOR_JOB.Chiron,
+              sign: ch.sign,
+              body: 'Chiron',
+              house: ch.house ?? null,
+            },
+            ...tight.slice(0, 1).map((t) => ({
+              label: `Chiron ${t.aspect} ${t.other.label} (${t.orb}°)`,
+              contributes: FACTOR_JOB[t.other.body] ?? BODY_MEANINGS[t.other.body],
+              sign: t.other.sign,
+              body: t.other.body,
+              house: t.other.house ?? null,
+            })),
+          ],
+          theme: speak(
+            `There may be extra sensitivity around ${ch.house ? houseArena(ch.house, stage) : SIGN_MEANINGS[ch.sign]}, and that often becomes an area of real understanding`,
+            stage
+          ),
+          evidence: ['Read as sensitivity and eventual understanding, never as injury or diagnosis.'],
+          fallbackNoun: 'Sensitivity',
+        }),
         ...evidenceFields(['Chiron', ...tight.map((t) => t.other.body)], [ch.house, ...tight.map((t) => t.other.house)]),
 
       };
