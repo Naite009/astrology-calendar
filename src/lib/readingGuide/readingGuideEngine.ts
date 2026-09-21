@@ -105,6 +105,12 @@ export interface BlendCard {
 export interface StartHereItem {
   id: string;
   label: string;
+  /**
+   * Shared shorthand-descriptor standard: a 1-3 word phrase naming what this
+   * factor combination can look like in a person ("Diplomatic Harmonizer").
+   * Null only when the underlying data is too sparse to name.
+   */
+  shorthandLabel: string | null;
   value: string;
   note: string;
   /** 0-100; drives the visual ranking of where to look first. */
