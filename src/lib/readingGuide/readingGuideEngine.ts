@@ -859,7 +859,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     note: `${dominantModalities.join(' and ')} leads — ${dominantModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')}${lowModalities.length ? `. ${lowModalities.join(' and ')} is light, so ${lowModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')} may take more deliberate effort.` : '.'}`,
     importance: 72,
   });
-  const topConnections = rankConnections(placements, 5);
+  const topConnections = rankConnections(placements, 12);
   if (topConnections.length) {
     const t = topConnections[0];
     startHere.push({
