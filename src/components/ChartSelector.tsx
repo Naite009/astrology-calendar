@@ -184,7 +184,16 @@ export const ChartSelector = ({
             )}
           </div>
 
+          {hiddenCount > 0 && (
+            <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+              {hiddenCount === 1
+                ? '1 saved record is not a birth chart (a Solar Return, or a record with no placements) and is not listed here.'
+                : `${hiddenCount} saved records are not birth charts (Solar Returns, or records with no placements) and are not listed here.`}
+            </div>
+          )}
+
           {!hasSignedInSession && (
+
             <div className="border-t border-border bg-secondary/40 p-2">
               <button
                 type="button"
