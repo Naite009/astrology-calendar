@@ -600,7 +600,10 @@ export const useNatalChart = () => {
       return chart;
     }
 
-    const newChart = autoFillChartBodies({ ...chart, id: Date.now().toString() });
+    // Millisecond timestamps collide on bulk imports / fast double-saves, which
+    // made a newly added chart vanish from chart pickers. Add a random suffix.
+    const uniqueId = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+    const newChart = autoFillChartBodies({ ...chart, id: uniqueId });
     const updated = [...savedCharts, newChart];
 
     replaceSavedCharts(updated);
