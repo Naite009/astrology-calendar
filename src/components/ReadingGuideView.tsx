@@ -9,7 +9,7 @@
 import { useMemo, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
-import { buildReadingGuide, type BlendCard, type ReadingGuide } from '@/lib/readingGuide/readingGuideEngine';
+import { buildReadingGuide, type BlendCard, type ReadingGuide, type RankedConnection } from '@/lib/readingGuide/readingGuideEngine';
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
@@ -41,6 +41,58 @@ const Chip = ({ children, tone = 'default' }: { children: React.ReactNode; tone?
     {children}
   </span>
 );
+
+/** One aspect, with the pair-specific reading a reader can speak from. */
+const ConnectionCard = ({ c }: { c: RankedConnection }) => {
+  const [open, setOpen] = useState(false);
+  const r = c.reading;
+  return (
+    <div className="rounded-sm border border-border bg-background/40">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-start gap-3 p-3 text-left hover:bg-secondary/20 transition-colors"
+      >
+        <span className="text-base text-primary">{c.symbol}</span>
+        <span className="flex-1">
+          <span className="block text-sm text-foreground">
+            {c.a} {c.aspect} {c.b} <span className="text-muted-foreground">({c.orb}° orb)</span>
+          </span>
+          <span className="block text-xs text-primary/90">{r.headline}</span>
+        </span>
+        {open ? <ChevronUp className="w-3 h-3 mt-1 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 mt-1 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-border px-3 py-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">How it works</p>
+            {r.howItWorks.map((l, i) => (
+              <p key={i} className="text-sm leading-relaxed text-foreground">{l}</p>
+            ))}
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">How it may show up</p>
+            <ul className="list-disc pl-4 space-y-1">
+              {r.mayShowUp.map((l, i) => (
+                <li key={i} className="text-sm leading-relaxed text-foreground">{l}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Where it can strain, and what helps</p>
+            <p className="text-sm leading-relaxed text-foreground">{r.watchFor}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">{r.strengthNote}</p>
+          <div className="rounded-sm border border-primary/30 bg-primary/5 p-2">
+            <p className="text-[11px] uppercase tracking-widest text-primary">Say this</p>
+            <p className="text-sm leading-relaxed text-foreground">{r.whatToSay}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Then ask: {r.askThis}</p>
+          </div>
+          <DoesNotMean items={r.doesNotMean} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Section = ({
   title, icon, children, subtitle, defaultOpen = true,
