@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T15:01:51.677Z",
+  "generatedAt": "2026-09-21T16:06:39.271Z",
   "skyDate": "2026-06-15",
   "people": [
     {
@@ -2413,8 +2413,8 @@
           {
             "body": "Ascendant",
             "expected": 197.6236,
-            "actual": 197.62670803545228,
-            "deltaArcmin": 0.18648212713287649,
+            "actual": 197.6267080354523,
+            "deltaArcmin": 0.1864821271396977,
             "limit": 30,
             "status": "pass",
             "note": "City-level coordinates and rounding to the minute both move the Ascendant slightly."
