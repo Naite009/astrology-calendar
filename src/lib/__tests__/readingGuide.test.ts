@@ -109,7 +109,8 @@ describe('Reading Guide — Ava Kravitz', () => {
     expect(bigThree.note).not.toMatch(/say these three first/);
     expect(bigThree.note.length).toBeGreaterThan(60);
 
-    for (const id of ['elements', 'repeated-sign', 'chart-ruler', 'cluster', 'top-aspect', 'modality']) {
+    // Modality can be an honest tie, which must not be labelled as one modality.
+    for (const id of ['elements', 'repeated-sign', 'chart-ruler', 'cluster', 'top-aspect']) {
       const item = [...guide.startHere, ...guide.startHereDeeper].find((i) => i.id === id);
       if (!item) continue;
       expect(item.shorthandLabel, `${id} needs a shorthand label`).toBeTruthy();
@@ -120,10 +121,13 @@ describe('Reading Guide — Ava Kravitz', () => {
   it('calls a triple-sign Big Three a clear signature of that sign', () => {
     const card = bigThreeCard({ sunSign: 'Libra', moonSign: 'Libra', risingSign: 'Libra' })!;
     expect(card.label).toBe('Diplomatic Harmonizer');
+    const base = buildAvaChart();
     const synthetic = {
-      ...buildAvaChart(),
+      ...base,
+      // Ascendant source of truth is house cusp 1, so both must move together.
+      houseCusps: { ...base.houseCusps, house1: { sign: 'Libra', degree: 5, minutes: 0 } },
       planets: {
-        ...buildAvaChart().planets,
+        ...base.planets,
         Sun: { sign: 'Libra', degree: 10, minutes: 0, seconds: 0, isRetrograde: false },
         Moon: { sign: 'Libra', degree: 20, minutes: 0, seconds: 0, isRetrograde: false },
         Ascendant: { sign: 'Libra', degree: 5, minutes: 0, seconds: 0, isRetrograde: false },
