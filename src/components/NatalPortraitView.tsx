@@ -688,36 +688,54 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
       </div>
 
       {/* 1. Life Purpose & Core Identity */}
-      <LifePurposeSection portrait={portrait} />
+      <LifePurposeSection portrait={portrait} archetype={archetypes.lifePurpose} />
 
       {/* 2. Top 5 Life Themes */}
-      <TopThemesSection themes={portrait.topThemes} />
+      <TopThemesSection themes={portrait.topThemes} archetype={archetypes.topThemes} />
 
       {/* 2b. Soul Agreements (symbolic evolutionary layer) */}
-      <SoulAgreementsSection chart={selectedChart} />
+      <div>
+        {archetypes.soulAgreements && (
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">In short</span>
+            <ArchetypeChip archetype={archetypes.soulAgreements} />
+            <span className="text-[10px] text-muted-foreground">{archetypes.soulAgreements.why}</span>
+          </div>
+        )}
+        <SoulAgreementsSection chart={selectedChart} />
+      </div>
 
       {/* 3-8. Domain Deep Dives */}
-      <DomainSection domain={portrait.relationshipBlueprint} meta={exportMeta} />
-      <DomainSection domain={portrait.careerMoneyMap} meta={exportMeta} />
-      <DomainSection domain={portrait.emotionalArchitecture} meta={exportMeta} />
-      <DomainSection domain={portrait.healthVitality} meta={exportMeta} />
-      <DomainSection domain={portrait.shadowGrowth} meta={exportMeta} />
-      <DomainSection domain={portrait.spiritualKarmic} meta={exportMeta} />
+      <DomainSection domain={portrait.relationshipBlueprint} meta={exportMeta} archetype={archetypes.relationship} />
+      <DomainSection domain={portrait.careerMoneyMap} meta={exportMeta} archetype={archetypes.career} />
+      <DomainSection domain={portrait.emotionalArchitecture} meta={exportMeta} archetype={archetypes.emotional} />
+      <DomainSection domain={portrait.healthVitality} meta={exportMeta} archetype={archetypes.health} />
+      <DomainSection domain={portrait.shadowGrowth} meta={exportMeta} archetype={archetypes.shadow} />
+      <DomainSection domain={portrait.spiritualKarmic} meta={exportMeta} archetype={archetypes.spiritual} />
 
       {/* 9. House Emphasis */}
-      <HouseEmphasisSection houses={portrait.houseEmphasis} />
+      <HouseEmphasisSection houses={portrait.houseEmphasis} archetype={archetypes.houseEmphasis} />
 
       {/* 10. Power Portrait */}
-      <PowerPortraitSection power={portrait.powerPortrait} />
+      <PowerPortraitSection power={portrait.powerPortrait} archetype={archetypes.powerPortrait} />
 
       {/* 10b. Dominant Planets */}
-      <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
+      <div>
+        {archetypes.dominantPlanets && (
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">In short</span>
+            <ArchetypeChip archetype={archetypes.dominantPlanets} />
+            <span className="text-[10px] text-muted-foreground">{archetypes.dominantPlanets.why}</span>
+          </div>
+        )}
+        <DominantPlanetsCard report={portrait.dominantPlanets} context="natal" />
+      </div>
 
       {/* 11. Chart Patterns */}
-      <PatternsSection patterns={portrait.patterns} minorBodyPatterns={portrait.minorBodyPatterns} />
+      <PatternsSection patterns={portrait.patterns} minorBodyPatterns={portrait.minorBodyPatterns} archetype={archetypes.patterns} />
 
       {/* 12. Lifetime Wisdom */}
-      <LifetimeWisdomSection wisdom={portrait.lifetimeWisdom} />
+      <LifetimeWisdomSection wisdom={portrait.lifetimeWisdom} archetype={archetypes.lifetimeWisdom} />
     </div>
   );
 };
