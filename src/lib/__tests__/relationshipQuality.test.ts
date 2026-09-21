@@ -182,6 +182,152 @@ function teenRomanticContext() {
   return buildRelationshipContext({ kind: 'romantic', chart1: ava, chart2: max, now: NOW });
 }
 
+/** Degrees+minutes of a stored placement, as a comparable decimal. */
+function deg(chart: NatalChart, body: string): number {
+  const p = (chart.planets as any)?.[body];
+  if (!p?.sign) throw new Error(`missing ${body}`);
+  return p.degree + (p.minutes || 0) / 60;
+}
+function signOf(chart: NatalChart, body: string): string {
+  return (chart.planets as any)?.[body]?.sign;
+}
+
+/**
+ * Reference chart fidelity. These assertions are the contract between the fixed
+ * fixtures above and the canonical saved charts they mirror. If one of them
+ * fails, the fixture has drifted (or the calculation engine changed) — fix that
+ * before trusting any other Ava + Max expectation in this file.
+ */
+describe('Reference chart fidelity (Ava Kravitz + Max Levin)', () => {
+  const near = (actual: number, expected: number, tol = 0.05) =>
+    expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tol);
+
+  it('derives Ava Kravitz exactly as saved', () => {
+    expect(signOf(ava, 'Sun')).toBe('Taurus');
+    near(deg(ava, 'Sun'), 28 + 42 / 60);
+    expect(signOf(ava, 'Moon')).toBe('Capricorn');
+    near(deg(ava, 'Moon'), 2 + 45 / 60);
+    expect(signOf(ava, 'Venus')).toBe('Taurus');
+    near(deg(ava, 'Venus'), 5, 0.6);
+    expect(signOf(ava, 'Ascendant')).toBe('Scorpio');
+    near(deg(ava, 'Ascendant'), 7 + 9 / 60, 0.7);
+  });
+
+  it('derives Max Levin exactly as saved (2011-01-21, 11:47, Philadelphia)', () => {
+    const expected: Array<[string, string, number, number]> = [
+      ['Ascendant', 'Taurus', 13, 33],
+      ['Sun', 'Aquarius', 1, 17],
+      ['Moon', 'Leo', 26, 3],
+      ['Mercury', 'Capricorn', 10, 34],
+      ['Venus', 'Sagittarius', 14, 55],
+      ['Mars', 'Aquarius', 4, 30],
+      ['Jupiter', 'Pisces', 29, 49],
+      ['Saturn', 'Libra', 17, 12],
+      ['Uranus', 'Pisces', 27, 34],
+      ['Neptune', 'Aquarius', 27, 23],
+      ['Pluto', 'Capricorn', 6, 3],
+      ['NorthNode', 'Capricorn', 2, 30],
+      ['Chiron', 'Aquarius', 28, 48],
+    ];
+    for (const [body, sign, d, m] of expected) {
+      expect(signOf(max, body), body).toBe(sign);
+      near(deg(max, body), d + m / 60, 0.05);
+    }
+  });
+
+  it('is not the old synthetic 2014 West Hills fixture', () => {
+    expect(MAX.date).toBe('2011-01-21');
+    expect(MAX.place).toMatch(/Philadelphia/);
+    expect(MAX.timezoneId).toBe('America/New_York');
+  });
+});
+
+describe('Known Ava + Max contacts', () => {
+  const ctx = teenRomanticContext();
+  const aspects = calculateCrossAspects(ava, max);
+  const find = (fromBody: string, toBody: string) =>
+    aspects.find((a) => a.fromBody === fromBody && a.toBody === toBody);
+
+  it('reads Ava Sun (28°42 Taurus) vs Max Sun (1°17 Aquarius) as an out-of-sign trine', () => {
+    const c = find('Sun', 'Sun');
+    expect(c).toBeTruthy();
+    expect(c!.aspect).toBe('trine');
+    expect(c!.orb).toBeCloseTo(2.58, 1);
+    const analysis = analyzeSignVsDegree({
+      aLabel: "Ava Kravitz's Sun",
+      bLabel: "Max Levin's Sun",
+      aSign: 'Taurus',
+      aDegree: 28,
+      aMinutes: 42,
+      bSign: 'Aquarius',
+      bDegree: 1,
+      bMinutes: 17,
+      aspect: 'trine',
+      orb: c!.orb,
+    } as any);
+    expect(analysis.outOfSign).toBe(true);
+    // The degree trine stands, and the Taurus/Aquarius square-by-sign tension is
+    // still reported rather than flattened into easy harmony.
+    const text = collectStrings(analysis).join(' ');
+    expect(text).toMatch(/Taurus/);
+    expect(text).toMatch(/Aquarius/);
+    expect(text).toMatch(/square/i);
+  });
+
+  it('finds Ava Venus trine Max Pluto inside about one degree', () => {
+    const c = find('Venus', 'Pluto');
+    expect(c).toBeTruthy();
+    expect(c!.aspect).toBe('trine');
+    expect(c!.orb).toBeLessThan(1.6);
+    expect(c!.fromSign).toBe('Taurus');
+    expect(c!.toSign).toBe('Capricorn');
+  });
+
+  it('finds Ava Moon conjunct Max North Node within a quarter degree', () => {
+    const c = find('Moon', 'NorthNode');
+    expect(c).toBeTruthy();
+    expect(c!.aspect).toBe('conjunction');
+    expect(c!.orb).toBeLessThan(0.4);
+    expect(c!.fromSign).toBe('Capricorn');
+    expect(c!.toSign).toBe('Capricorn');
+  });
+
+  it('keeps directional roles on every ranked contact', () => {
+    for (const a of rankTopContacts(coreAspects(aspects)).slice(0, 8)) {
+      expect(a.fromOwner).toBe('Ava Kravitz');
+      expect(a.toOwner).toBe('Max Levin');
+      const d = describeDirectionalContact(a, ctx);
+      expect(d.a.roleLine).toMatch(/Ava Kravitz is the/);
+      expect(d.b.roleLine).toMatch(/Max Levin is the/);
+    }
+  });
+
+  it('uses the real house cusps of both saved charts for overlays', () => {
+    const overlays = calculateHouseOverlaysAccurate(ava, max);
+    expect(overlays.length).toBeGreaterThan(0);
+    for (const o of overlays) {
+      expect(o.method).toBe('cusps');
+      expect(o.approximationNote).toBeUndefined();
+      expect(o.house).toBeGreaterThanOrEqual(1);
+      expect(o.house).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('never revives pseudo-probabilities, duration verdicts or archetype labels', () => {
+    const reading = buildPairReading(ava, max, ctx);
+    const karmic = renderKarmicSummaryText(
+      buildKarmicSummary(calculateKarmicAnalysis(ava, max, ctx as any) as any, ctx as any)
+    );
+    const text = [collectStrings(reading).join('\n'), karmic].join('\n');
+    expect(text).not.toMatch(/twin flame|catalyst connection|karmic completion|soul family|soul contract/i);
+    expect(text).not.toMatch(/past[- ]life probability|total karmic score|karmic score|probability:\s*\d/i);
+    expect(text).not.toMatch(/\d+\s*[-–]\s*\d+\s*(years|months)|not meant to last|until karma is resolved|lifetime connection/i);
+    expect(findForbiddenRelationshipPhrases(text, ctx)).toEqual([]);
+  });
+});
+
+
+
 describe('Relationship context — kind, family exactness, age gates', () => {
   it('never maps neutral/all to romance', () => {
     expect(kindFromFocus('all')).toBe('neutral');
