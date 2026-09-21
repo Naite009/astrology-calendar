@@ -607,6 +607,10 @@ export const useNatalChart = () => {
       saveWithRollingBackups('savedCharts', updated);
       return updated;
     });
+    // The chart the user just added is the one they expect to see when they
+    // open Natal Portrait or Chart Walkthrough next.
+    localStorage.setItem('selectedChartForTiming', uniqueId);
+    setSelectedChartForTiming(uniqueId);
     return newChart;
   };
 
