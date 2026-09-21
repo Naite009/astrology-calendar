@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { autoFillChartBodies } from '@/lib/chartAutoFill';
+import { dedupeChartsByIdentity } from '@/lib/charts/chartIdentity';
+
 
 export interface NatalPlanetPosition {
   sign: string;
@@ -492,27 +494,14 @@ export const useNatalChart = () => {
       .map(applyAutoSeededPronouns)
       .map(normalizeSouthNode)
       .map(autoFillChartBodies);
-    // Deduplicate by normalized name on load, keeping entries with more planet data
-    // Also filter out solar return charts and HD-only charts
-    const seen = new Map<string, NatalChart>();
-    for (const c of raw) {
-      if ((c as any).solarReturnYear) continue;
-      if (c.id?.startsWith('hd_')) continue;
-      const key = (c.name || '').toLowerCase().trim();
-      if (!key) continue;
-      const existing = seen.get(key);
-      if (!existing) {
-        seen.set(key, c);
-      } else {
-        // Keep the one with more planet data
-        const existingCount = existing.planets ? Object.keys(existing.planets).length : 0;
-        const newCount = c.planets ? Object.keys(c.planets).length : 0;
-        if (newCount > existingCount) {
-          seen.set(key, c);
-        }
-      }
-    }
-    return Array.from(seen.values());
+    // Collapse only records that describe the same person AND the same birth
+    // moment. Collapsing by name alone made a second chart with a shared name
+    // (a same-named client, a relative, a corrected re-import) disappear.
+    // Solar Return and Human Design-only records are not birth charts.
+    return dedupeChartsByIdentity(
+      raw.filter((c) => !(c as any).solarReturnYear && !c.id?.startsWith('hd_')),
+    );
+
   });
 
   // Determine initial selection: prefer stored value, otherwise default to 'user' if chart exists

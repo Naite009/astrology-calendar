@@ -1,7 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Check, ChevronDown, LogIn } from 'lucide-react';
 import { NatalChart } from '@/hooks/useNatalChart';
-import { normalizeName } from '@/lib/nameMatching';
+import {
+  dedupeChartsByIdentity, chartIdentityKey, chartPickerLabels, chartHiddenReason,
+} from '@/lib/charts/chartIdentity';
+
 import { getCachedUserId } from '@/lib/supabaseSessionRecovery';
 
 interface ChartSelectorProps {
@@ -53,47 +56,48 @@ export const ChartSelector = ({
     }
   }, [isOpen]);
 
-  // Build deduplicated, sorted chart list: skip charts whose normalized name already seen
-  // Also filter out solar return charts (they have solarReturnYear) and HD-only charts
-  const deduplicatedCharts = useMemo(() => {
-    const seen = new Set<string>();
-    // If user chart exists, mark its normalized name as seen
-    if (userNatalChart) {
-      seen.add(normalizeName(userNatalChart.name));
-    }
-    const result: NatalChart[] = [];
-    const sorted = [...savedCharts].sort((a, b) => a.name.localeCompare(b.name));
-    for (const chart of sorted) {
-      if ((chart as any).solarReturnYear) continue;
-      if (chart.id.startsWith('hd_')) continue;
-      const key = normalizeName(chart.name);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      result.push(chart);
-    }
-    return result;
+  // Listed charts: every saved birth chart stays visible. Only a record with the
+  // identical name AND birth moment is treated as the same chart, and Solar
+  // Return / Human Design-only records are not birth charts. Two different
+  // people sharing a name are both shown, separated by birth date.
+  const listedCharts = useMemo(() => {
+    const isBirthChart = (c: NatalChart) => !(c as any).solarReturnYear && !c.id?.startsWith('hd_');
+    const pool = savedCharts.filter(isBirthChart);
+    const deduped = dedupeChartsByIdentity(pool).filter((c) => {
+      // The starred chart is already listed on top; skip only that exact record.
+      if (!userNatalChart) return true;
+      return chartIdentityKey(c) !== chartIdentityKey(userNatalChart);
+    });
+    return [...deduped].sort((a, b) => a.name.localeCompare(b.name));
   }, [savedCharts, userNatalChart]);
+
+  const hiddenCount = useMemo(
+    () => savedCharts.filter((c) => chartHiddenReason(c as any)).length,
+    [savedCharts],
+  );
 
   // Build options list
   const options = useMemo(() => {
     const opts: { id: string; name: string; isUser?: boolean; isGeneral?: boolean }[] = [];
-    
+
     if (includeGeneral) {
       opts.push({ id: generalId, name: generalLabel, isGeneral: true });
     }
-    
+
     // User's chart always first (after general if present)
     if (userNatalChart) {
       opts.push({ id: 'user', name: userNatalChart.name, isUser: true });
     }
-    
-    // Then alphabetically sorted, deduplicated saved charts
-    deduplicatedCharts.forEach(chart => {
-      opts.push({ id: chart.id, name: chart.name });
+
+    // Then alphabetically sorted saved charts, birth date added when names clash
+    const labels = chartPickerLabels(listedCharts);
+    listedCharts.forEach(chart => {
+      opts.push({ id: chart.id, name: labels.get(chart) || chart.name });
     });
-    
+
     return opts;
-  }, [userNatalChart, deduplicatedCharts, includeGeneral, generalLabel]);
+  }, [userNatalChart, listedCharts, includeGeneral, generalLabel, generalId]);
+
 
   // Filter by search term
   const filteredOptions = useMemo(() => {
@@ -152,8 +156,13 @@ export const ChartSelector = ({
           {/* Options list */}
           <div className="max-h-[250px] overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">No charts found</div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                {searchTerm.trim()
+                  ? `No saved chart matches "${searchTerm.trim()}".`
+                  : 'No charts saved yet.'}
+              </div>
             ) : (
+
               filteredOptions.map(opt => (
                 <button
                   key={opt.id}
@@ -175,7 +184,16 @@ export const ChartSelector = ({
             )}
           </div>
 
+          {hiddenCount > 0 && (
+            <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+              {hiddenCount === 1
+                ? '1 saved record is not a birth chart (a Solar Return, or a record with no placements) and is not listed here.'
+                : `${hiddenCount} saved records are not birth charts (Solar Returns, or records with no placements) and are not listed here.`}
+            </div>
+          )}
+
           {!hasSignedInSession && (
+
             <div className="border-t border-border bg-secondary/40 p-2">
               <button
                 type="button"
