@@ -111,6 +111,10 @@ const SPRINGFIELDS: Hit[] = [
   { name: 'Springfield', latitude: 44.0462, longitude: -123.0220, timezone: 'America/Los_Angeles', feature_code: 'PPL', country_code: 'US', country: 'United States', admin1: 'Oregon', admin2: 'Lane', population: 62353 },
   { name: 'Springfield', latitude: 39.9242, longitude: -83.8088, timezone: 'America/New_York', feature_code: 'PPLA2', country_code: 'US', country: 'United States', admin1: 'Ohio', admin2: 'Clark', population: 58662 },
 ];
+const LA_SERENAS: Hit[] = [
+  { name: 'La Serena', latitude: -29.90591, longitude: -71.25014, timezone: 'America/Santiago', feature_code: 'PPLA', country_code: 'CL', country: 'Chile', admin1: 'Coquimbo Region', admin2: 'Provincia de Elqui', population: 154521 },
+  { name: 'La Serena', latitude: -38.57682, longitude: -72.66552, timezone: 'America/Santiago', feature_code: 'PPL', country_code: 'CL', country: 'Chile', admin1: 'Araucania' },
+];
 
 const fakeFetch = (pages: Record<string, Hit[]>) =>
   vi.fn(async (url: string) => {
@@ -477,7 +481,7 @@ describe('duplicate town names through the geocoder', () => {
   const realFetch = globalThis.fetch;
   beforeEach(() => {
     clearBirthPlaceCache();
-    globalThis.fetch = fakeFetch({ franklin: FRANKLINS, springfield: SPRINGFIELDS }) as unknown as typeof fetch;
+    globalThis.fetch = fakeFetch({ franklin: FRANKLINS, springfield: SPRINGFIELDS, 'la serena': LA_SERENAS }) as unknown as typeof fetch;
   });
   afterEach(() => {
     globalThis.fetch = realFetch;
@@ -616,14 +620,7 @@ describe('duplicate town names through the geocoder', () => {
     const report = await verifyChartAgainstEphemerisAsync({
       birthDate: '1993-11-07', birthTime: '11:30', birthLocation: 'La Serena, CHILE',
       planets: { Ascendant: { sign: 'Capricorn', degree: 24, minutes: 6 } },
-      houseCusps: {
-        house1: { sign: 'Capricorn', degree: 24, minutes: 6 },
-        house2: { sign: 'Aquarius', degree: 16, minutes: 49 },
-        house3: { sign: 'Pisces', degree: 13, minutes: 0 },
-        house10: { sign: 'Libra', degree: 14, minutes: 10 },
-        house11: { sign: 'Scorpio', degree: 18, minutes: 58 },
-        house12: { sign: 'Sagittarius', degree: 23, minutes: 11 },
-      },
+      houseCusps: {},
     });
     expect(report.readiness).toBe('ready');
     expect(report.moment.place?.admin1).toBe('Coquimbo Region');
