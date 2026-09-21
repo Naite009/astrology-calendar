@@ -31,6 +31,7 @@ import {
   renderKarmicSummaryText,
 } from '@/lib/relationship';
 import { calculateKarmicAnalysis } from '@/lib/karmicAnalysis';
+import { analyzeSignVsDegree } from '@/lib/aspects/outOfSign';
 
 interface Fixture {
   id: string;
