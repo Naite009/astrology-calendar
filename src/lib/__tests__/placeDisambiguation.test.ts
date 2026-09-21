@@ -30,6 +30,7 @@ import {
   checkPlaceAgainstText,
   clearBirthPlaceCache,
   placeFromCandidate,
+  candidateMatchingCoordinates,
 } from '@/lib/geo/birthPlace';
 import { isInsideUsState } from '@/lib/geo/regionBounds';
 import {
