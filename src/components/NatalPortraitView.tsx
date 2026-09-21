@@ -129,11 +129,11 @@ function getRisingCoreLine(sign: string): string {
 
 // ─── 1. Life Purpose ────────────────────────────────────────────────
 
-const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
+const LifePurposeSection = ({ portrait, archetype }: { portrait: NatalPortrait; archetype?: SectionArchetype }) => {
   const lp = portrait.lifePurpose;
   
   return (
-    <SectionWrapper title="Life Purpose & Core Identity" emoji="☀️" defaultOpen={true}>
+    <SectionWrapper title="Life Purpose & Core Identity" emoji="☀️" defaultOpen={true} archetype={archetype}>
       <div className="space-y-6">
         {/* Big Three Cards */}
         <div className="grid sm:grid-cols-3 gap-4">
@@ -236,8 +236,8 @@ const LifePurposeSection = ({ portrait }: { portrait: NatalPortrait }) => {
 
 // ─── 2. Top Themes ──────────────────────────────────────────────────
 
-const TopThemesSection = ({ themes }: { themes: RankedTheme[] }) => (
-  <SectionWrapper title="Top 5 Life Themes" emoji="🎯" defaultOpen={true}>
+const TopThemesSection = ({ themes, archetype }: { themes: RankedTheme[]; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Top 5 Life Themes" emoji="🎯" defaultOpen={true} archetype={archetype}>
     <div className="space-y-3">
       {themes.map((t) => (
         <div key={t.rank} className="p-4 bg-secondary/30 rounded-sm border-l-2 border-primary">
@@ -262,11 +262,11 @@ const TopThemesSection = ({ themes }: { themes: RankedTheme[] }) => (
 
 // ─── Domain Deep Dive Card ──────────────────────────────────────────
 
-const DomainSection = ({ domain, meta }: { domain: DomainDeepDive; meta: ExportMeta }) => {
+const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; meta: ExportMeta; archetype?: SectionArchetype }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <SectionWrapper title={domain.title} emoji={domain.emoji}>
+    <SectionWrapper title={domain.title} emoji={domain.emoji} archetype={archetype}>
       <div className="space-y-4">
         <p className="text-[12px] text-foreground leading-relaxed">{domain.summary}</p>
 
@@ -353,8 +353,8 @@ const DomainSection = ({ domain, meta }: { domain: DomainDeepDive; meta: ExportM
 
 // ─── House Emphasis Grid ────────────────────────────────────────────
 
-const HouseEmphasisSection = ({ houses }: { houses: HouseEmphasis[] }) => (
-  <SectionWrapper title="House Emphasis Map" emoji="🏠">
+const HouseEmphasisSection = ({ houses, archetype }: { houses: HouseEmphasis[]; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="House Emphasis Map" emoji="🏠" archetype={archetype}>
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {houses.map((h) => (
         <div
@@ -383,8 +383,8 @@ const HouseEmphasisSection = ({ houses }: { houses: HouseEmphasis[] }) => (
 
 // ─── Power Portrait ─────────────────────────────────────────────────
 
-const PowerPortraitSection = ({ power }: { power: NatalPowerPortrait }) => (
-  <SectionWrapper title="Power Portrait" emoji="⚡">
+const PowerPortraitSection = ({ power, archetype }: { power: NatalPowerPortrait; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Power Portrait" emoji="⚡" archetype={archetype}>
     <div className="space-y-4">
       {/* Mantra */}
       <div className="px-5 py-3 bg-primary/5 rounded-sm text-center">
@@ -427,8 +427,8 @@ const PowerPortraitSection = ({ power }: { power: NatalPowerPortrait }) => (
 
 // ─── Patterns ───────────────────────────────────────────────────────
 
-const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortrait['patterns']; minorBodyPatterns: NatalPortrait['minorBodyPatterns'] }) => (
-  <SectionWrapper title="Chart Patterns & Configurations" emoji="🔷">
+const PatternsSection = ({ patterns, minorBodyPatterns, archetype }: { patterns: NatalPortrait['patterns']; minorBodyPatterns: NatalPortrait['minorBodyPatterns']; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Chart Patterns & Configurations" emoji="🔷" archetype={archetype}>
     {patterns.length === 0 ? (
       <p className="text-[12px] text-muted-foreground">No major geometric patterns detected. This isn't a lack — it means your energy is more evenly distributed across your chart rather than concentrated in specific configurations.</p>
     ) : (
@@ -494,8 +494,8 @@ const PatternsSection = ({ patterns, minorBodyPatterns }: { patterns: NatalPortr
 
 // ─── Lifetime Wisdom ────────────────────────────────────────────────
 
-const LifetimeWisdomSection = ({ wisdom }: { wisdom: LifetimeWisdom }) => (
-  <SectionWrapper title="Lifetime Wisdom — Take This With You" emoji="🧭">
+const LifetimeWisdomSection = ({ wisdom, archetype }: { wisdom: LifetimeWisdom; archetype?: SectionArchetype }) => (
+  <SectionWrapper title="Lifetime Wisdom — Take This With You" emoji="🧭" archetype={archetype}>
     <div className="space-y-5">
       {/* Nodal Axis */}
       <div className="grid sm:grid-cols-2 gap-4">
