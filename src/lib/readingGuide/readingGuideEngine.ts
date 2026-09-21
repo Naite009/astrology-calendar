@@ -922,28 +922,78 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   const sun = byBody.get('Sun');
   const moon = byBody.get('Moon');
   if (sun && moon && asc) {
+    const bt = bigThreeCard({
+      sunSign: sun.sign,
+      moonSign: moon.sign,
+      risingSign: asc.sign,
+      sunHouse: sun.house ?? null,
+      moonHouse: moon.house ?? null,
+    });
+    const tripleSignature = sun.sign === moon.sign && moon.sign === asc.sign;
     startHere.push({
       id: 'big-three',
       label: 'Big Three',
+      shorthandLabel: bt?.label ?? null,
       value: `Sun ${sun.sign} · Moon ${moon.sign} · ${asc.sign} rising`,
-      note: 'Identity, emotional needs, and first impression — say these three first, they orient everything else.',
+      note: tripleSignature
+        ? `All three in ${sun.sign} is a clear ${sun.sign} signature. ${bt?.blend ?? 'Identity, emotional needs, and first impression all point the same way.'}`
+        : bt?.blend ?? 'Identity, emotional needs, and first impression — say these three first, they orient everything else.',
       importance: 100,
     });
   }
   if (houseClusters.length) {
     const c = houseClusters[0];
+    const clusterFactors = c.bodies
+      .slice(0, 2)
+      .map((b) => {
+        const p = byBody.get(b);
+        return p
+          ? {
+              label: `${bodyLabel(b)} in ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''}`,
+              contributes: FACTOR_JOB[b] ?? BODY_MEANINGS[b] ?? 'one of the functions in play',
+              sign: p.sign,
+              body: b,
+              house: p.house ?? null,
+            }
+          : null;
+      })
+      .filter((f): f is NonNullable<typeof f> => Boolean(f));
+    const clusterCard = clusterFactors.length >= 2 ? blendCard({ factors: clusterFactors, theme: c.theme }) : null;
     startHere.push({
       id: 'cluster',
       label: 'Strongest house concentration',
+      shorthandLabel: clusterCard?.label ?? null,
       value: `${ordinalHouse(c.house)} — ${c.bodies.join(', ')}`,
       note: c.theme,
       importance: 92,
     });
   }
   if (chartRuler) {
+    const rulerCard = chartRuler.placement
+      ? blendCard({
+          factors: [
+            {
+              label: `${bodyLabel(chartRuler.ruler)} in ${chartRuler.placement.sign}${chartRuler.placement.house ? `, ${ordinalHouse(chartRuler.placement.house)}` : ''}`,
+              contributes: 'the chart ruler — the planet that steers the whole chart',
+              sign: chartRuler.placement.sign,
+              body: chartRuler.ruler,
+              house: chartRuler.placement.house ?? null,
+            },
+            ...(asc
+              ? [{
+                  label: `${asc.sign} Ascendant`,
+                  contributes: FACTOR_JOB.Ascendant,
+                  sign: asc.sign,
+                  body: 'Ascendant',
+                }]
+              : []),
+          ],
+        })
+      : null;
     startHere.push({
       id: 'chart-ruler',
       label: 'Chart ruler',
+      shorthandLabel: rulerCard?.label ?? (chartRuler.placement ? signSignature(chartRuler.placement.sign) : null),
       value: chartRuler.placement
         ? `${bodyLabel(chartRuler.ruler)} in ${chartRuler.placement.sign}${chartRuler.placement.house ? `, ${ordinalHouse(chartRuler.placement.house)}` : ''}`
         : bodyLabel(chartRuler.ruler),
@@ -951,17 +1001,33 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       importance: 88,
     });
   }
+  const elTotal = Object.values(elCounts).reduce((a, b) => a + b, 0);
+  const elCard = dominantElements.length === 1
+    ? emphasisCard({
+        kind: 'element',
+        value: dominantElements[0],
+        count: elCounts[dominantElements[0]],
+        total: elTotal,
+        secondary: Object.keys(elCounts)
+          .filter((e) => e !== dominantElements[0])
+          .sort((a, b) => elCounts[b] - elCounts[a])[0] ?? null,
+      })
+    : null;
   startHere.push({
     id: 'elements',
     label: 'Dominant element',
+    shorthandLabel: elCard?.label ?? null,
     value: dominantElements.map((e) => `${e} ${elCounts[e]}`).join(' · '),
-    note: `${dominantElements.join(' and ')} leads — ${dominantElements.map((e) => ELEMENT_MEANINGS[e]).join('; ')}.`,
+    note: elCard
+      ? `${elCard.blend} Strengths: ${elCard.howItMayShowUp[0]?.replace(/^Strengths: /, '').replace(/\.$/, '')}.`
+      : `${dominantElements.join(' and ')} leads — ${dominantElements.map((e) => ELEMENT_MEANINGS[e]).join('; ')}.`,
     importance: 84,
   });
   if (repeatedSigns.length) {
     startHere.push({
       id: 'repeated-sign',
       label: 'Repeated sign',
+      shorthandLabel: signSignature(repeatedSigns[0].sign),
       value: `${repeatedSigns[0].sign} ×${repeatedSigns[0].bodies.length}`,
       note: repeatedSigns[0].note,
       importance: 80,
@@ -971,6 +1037,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     startHere.push({
       id: 'low-element',
       label: 'Lightly represented element',
+      shorthandLabel: null,
       value: elements.low.map((e) => `${e} ${elCounts[e]}`).join(' · '),
       note: elements.lowReadings[0]
         ? `${elements.lowReadings[0].headline}. Frame it as a pattern, never as a missing quality.`
@@ -978,9 +1045,18 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       importance: 76,
     });
   }
+  const modCard = dominantModalities.length === 1
+    ? emphasisCard({
+        kind: 'modality',
+        value: dominantModalities[0],
+        count: modCounts[dominantModalities[0]] ?? 0,
+        total: elTotal,
+      })
+    : null;
   startHere.push({
     id: 'modality',
     label: 'Modality balance',
+    shorthandLabel: modCard?.label ?? null,
     value: Object.entries(modCounts).map(([m, n]) => `${m} ${n}`).join(' · '),
     note: `${dominantModalities.join(' and ')} leads — ${dominantModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')}${lowModalities.length ? `. ${lowModalities.join(' and ')} is light, so ${lowModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')} may take more deliberate effort.` : '.'}`,
     importance: 72,
@@ -988,9 +1064,11 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   const topConnections = rankConnections(placements, 12);
   if (topConnections.length) {
     const t = topConnections[0];
+    const pairReading = pairAspectReading(t.bodyA, t.aspect, t.bodyB);
     startHere.push({
       id: 'top-aspect',
       label: 'Tightest major connection',
+      shorthandLabel: pairReading?.shorthand ?? null,
       value: `${t.a} ${t.symbol} ${t.b} (${t.orb}°)`,
       note: `What it adds: ${t.adds}.`,
       importance: 86,
