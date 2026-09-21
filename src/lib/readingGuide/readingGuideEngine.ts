@@ -23,7 +23,6 @@ import {
   emphasisCard,
   FACTOR_JOB,
   type Element,
-  type Modality,
   type ShorthandCard,
 } from '@/lib/interpretation/shorthandDescriptor';
 import { getHouseForLongitude } from '@/lib/houseCalculations';
