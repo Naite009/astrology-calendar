@@ -16,8 +16,10 @@ import {
   type DstFold,
   resolveBirthMoment,
   resolveBirthMomentSync,
+  birthMomentFromPlace,
   formatLocalDateTime,
 } from './birthDataNormalization';
+import { placeFromCandidate, type PlaceCandidate } from './geo/birthPlace';
 import { calculateNatalFromMoment, type NatalCalculation, type CalculatedPosition } from './natalChartCalculation';
 import { circularSeparation, signPositionToLongitude, longitudeToSignPosition } from './ephemerisEngine';
 import { formatUtcOffset } from './time/zonedTime';
@@ -395,7 +397,61 @@ export async function verifyChartAgainstEphemerisAsync(
   options: { network?: boolean; signal?: AbortSignal } = {},
 ): Promise<ChartVerification> {
   const { planets, houseCusps, ...birth } = input;
-  return verifyChartWithMoment(await resolveBirthMoment(birth, options), { planets, houseCusps });
+  let moment = await resolveBirthMoment(birth, options);
+
+  // Some chart images clearly print the Ascendant and house cusps but the OCR
+  // may miss the tiny coordinate line. When same-name towns remain, compare
+  // those imported angles against every candidate. This uses chart evidence,
+  // not population or a guessed city, and persists the winning location via
+  // the verification panel just like a source-coordinate match.
+  if (moment.status === 'ambiguous-place' && moment.placeCandidates.length > 1) {
+    const evidence: Array<{ key: string; entered: VerifyPosition }> = [];
+    const asc = planets?.Ascendant;
+    if (asc?.sign) evidence.push({ key: 'Ascendant', entered: asc });
+    for (let h = 1; h <= 12; h++) {
+      const key = `house${h}`;
+      const cusp = houseCusps?.[key];
+      if (cusp?.sign) evidence.push({ key, entered: cusp });
+    }
+
+    const scoreCandidate = (candidate: PlaceCandidate) => {
+      const candidateMoment = birthMomentFromPlace(birth, placeFromCandidate(birth.birthLocation || candidate.label, candidate));
+      if (candidateMoment.status !== 'ok') return null;
+      const calc = calculateNatalFromMoment(candidateMoment);
+      const deltas = evidence.flatMap(({ key, entered }) => {
+        const expected = signPositionToLongitude(entered);
+        const actual = key === 'Ascendant'
+          ? calc.positions.Ascendant?.longitude
+          : calc.houseCusps?.[key as keyof typeof calc.houseCusps]?.longitude;
+        return expected === null || typeof actual !== 'number' ? [] : [circularSeparation(expected, actual)];
+      });
+      if (!deltas.length) return null;
+      return { candidate, moment: candidateMoment, score: deltas.reduce((sum, d) => sum + d, 0) / deltas.length };
+    };
+
+    const ranked = moment.placeCandidates
+      .map(scoreCandidate)
+      .filter((v): v is NonNullable<typeof v> => v !== null)
+      .sort((a, b) => a.score - b.score);
+    const best = ranked[0];
+    const next = ranked[1];
+    if (best && best.score <= 1 && (!next || next.score >= Math.max(3, best.score * 3))) {
+      moment = {
+        ...best.moment,
+        place: best.moment.place ? {
+          ...best.moment.place,
+          source: 'confirmed',
+          notes: [`${moment.placeCandidates.length} places share this name; ${best.candidate.label} matches the imported Ascendant and house cusps.`],
+        } : best.moment.place,
+        warnings: [
+          ...best.moment.warnings,
+          `${best.candidate.label} was selected because its calculated angles match the imported chart within ${best.score.toFixed(2)}° on average.`,
+        ],
+      };
+    }
+  }
+
+  return verifyChartWithMoment(moment, { planets, houseCusps });
 }
 
 /** Human-readable local time line for the header, honest about precision. */
