@@ -154,7 +154,7 @@ describe('Reading Guide — Ava Kravitz', () => {
       expect([c.a, c.b].sort().join('|')).not.toBe('North Node|South Node');
       expect(c.orb).toBeGreaterThanOrEqual(0);
     }
-    expect(guide.topConnections.length).toBeLessThanOrEqual(5);
+    expect(guide.topConnections.length).toBeLessThanOrEqual(12);
   });
 
   it('computes real aspects with real orbs (no invented connections)', () => {

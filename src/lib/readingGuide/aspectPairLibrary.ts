@@ -1016,7 +1016,7 @@ const PAIRS: Record<string, PairEntry> = {
         'Deflecting comfort with humour or logistics.',
         'Noticing a slight where none was intended.',
       ],
-      care: 'No event is implied by this contact — read sensitivity, never a diagnosis or a history.',
+      care: 'No event is implied by this contact — read sensitivity, not a conclusion about anyone’s health or past.',
     },
   },
 
@@ -1229,7 +1229,7 @@ const PAIRS: Record<string, PairEntry> = {
         'Strong resistance to being told how to do it.',
         'Restlessness in structured learning environments.',
       ],
-      care: 'Short, varied working blocks tend to fit this contact better than long uniform ones. It is a description of pace, not of any diagnosis.',
+      care: 'Short, varied working blocks tend to fit this contact better than long uniform ones. It is a description of pace, not a medical conclusion.',
     },
   },
   'Mercury|Neptune': {
