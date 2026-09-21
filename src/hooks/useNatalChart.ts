@@ -562,10 +562,16 @@ export const useNatalChart = () => {
     }
   }, [selectedChartForTiming, savedCharts, userNatalChart]);
 
+  const normalizeSavedCharts = (charts: NatalChart[]): NatalChart[] => {
+    return dedupeChartsByIdentity(
+      charts
+        .filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'))
+        .map((c) => autoFillChartBodies(normalizeAscendantFromHouse1(c))),
+    );
+  };
+
   const replaceSavedCharts = (charts: NatalChart[]) => {
-    const validCharts = charts
-      .filter((c) => c && c.name && !(c as any).solarReturnYear && !c.id?.startsWith('hd_'))
-      .map((c) => autoFillChartBodies(normalizeAscendantFromHouse1(c)));
+    const validCharts = normalizeSavedCharts(charts);
     saveWithRollingBackups('savedCharts', validCharts);
     setSavedCharts(validCharts);
   };
@@ -593,28 +599,37 @@ export const useNatalChart = () => {
     // made a newly added chart vanish from chart pickers. Add a random suffix.
     const uniqueId = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
     const newChart = autoFillChartBodies({ ...chart, id: uniqueId });
-    const updated = [...savedCharts, newChart];
-
-    replaceSavedCharts(updated);
+    // Use the latest React state. A cloud restore or another save can finish
+    // between opening and closing this form; using the render-time array here
+    // silently dropped whichever chart arrived last.
+    setSavedCharts((current) => {
+      const updated = normalizeSavedCharts([...current, newChart]);
+      saveWithRollingBackups('savedCharts', updated);
+      return updated;
+    });
     return newChart;
   };
 
   const updateChart = (id: string, chartUpdate: Partial<NatalChart>) => {
-    const updated = savedCharts.map((c) => (c.id === id ? { ...c, ...chartUpdate } : c));
-    
-    // Validate the updated array isn't corrupt
-    if (updated.length === 0 && savedCharts.length > 0) {
-      console.warn('[NatalChart] Update would result in data loss, ignoring');
-      return;
-    }
-
-    replaceSavedCharts(updated);
+    setSavedCharts((current) => {
+      const updated = normalizeSavedCharts(
+        current.map((c) => (c.id === id ? { ...c, ...chartUpdate } : c)),
+      );
+      if (updated.length === 0 && current.length > 0) {
+        console.warn('[NatalChart] Update would result in data loss, ignoring');
+        return current;
+      }
+      saveWithRollingBackups('savedCharts', updated);
+      return updated;
+    });
   };
 
   const deleteChart = (id: string) => {
-    const updated = savedCharts.filter((c) => c.id !== id);
-
-    replaceSavedCharts(updated);
+    setSavedCharts((current) => {
+      const updated = current.filter((c) => c.id !== id);
+      saveWithRollingBackups('savedCharts', updated);
+      return updated;
+    });
   };
 
   const selectChartForTiming = (id: string) => {

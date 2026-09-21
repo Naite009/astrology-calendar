@@ -782,9 +782,11 @@ export const ChartLibrary = ({
       if (editingChart === 'user' && formData.name.trim()) {
         onSaveUserChart({ id: 'user', ...formData });
       } else if (editingChart === 'new' && formData.name.trim()) {
-        onAddChart({ id: '', ...formData });
+        const saved = onAddChart({ id: '', ...formData });
+        toast.success(`${saved.name} was added to Chart Library.`);
       } else if (typeof editingChart === 'object') {
         onUpdateChart(editingChart.id, formData);
+        toast.success(`${formData.name} was saved.`);
       }
     }
     
