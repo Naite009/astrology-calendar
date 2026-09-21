@@ -21,6 +21,7 @@ import {
   bigThreeCard,
   blendCard,
   emphasisCard,
+  signSignature,
   FACTOR_JOB,
   type Element,
   type ShorthandCard,
@@ -1064,11 +1065,20 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   const topConnections = rankConnections(placements, 12);
   if (topConnections.length) {
     const t = topConnections[0];
-    const pairReading = pairAspectReading(t.bodyA, t.aspect, t.bodyB);
+    const pa = byBody.get(t.bodyA);
+    const pb = byBody.get(t.bodyB);
+    const pairCard = pa && pb
+      ? blendCard({
+          factors: [
+            { label: `${bodyLabel(t.bodyA)} in ${pa.sign}`, contributes: FACTOR_JOB[t.bodyA] ?? BODY_MEANINGS[t.bodyA] ?? '', sign: pa.sign, body: t.bodyA, house: pa.house ?? null },
+            { label: `${bodyLabel(t.bodyB)} in ${pb.sign}`, contributes: FACTOR_JOB[t.bodyB] ?? BODY_MEANINGS[t.bodyB] ?? '', sign: pb.sign, body: t.bodyB, house: pb.house ?? null },
+          ],
+        })
+      : null;
     startHere.push({
       id: 'top-aspect',
       label: 'Tightest major connection',
-      shorthandLabel: pairReading?.shorthand ?? null,
+      shorthandLabel: pairCard?.label ?? null,
       value: `${t.a} ${t.symbol} ${t.b} (${t.orb}°)`,
       note: `What it adds: ${t.adds}.`,
       importance: 86,
