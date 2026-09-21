@@ -5,6 +5,7 @@ import { buildReadingGuide, collectCoreBodies, rankConnections } from '../readin
 import { buildAgeContext, calculateAgeYears, stageForAge } from '../readingGuide/ageContext';
 import { CORE_BODIES } from '../readingGuide/factorMeanings';
 import { findForbiddenPhrases } from '@/lib/interpretation/languagePolicy';
+import { bigThreeCard, isVagueLabel } from '@/lib/interpretation/shorthandDescriptor';
 
 // Ava Kravitz: 2011-05-19 18:06, West Hills, California, United States.
 const AVA = {
@@ -95,6 +96,43 @@ describe('Reading Guide — Ava Kravitz', () => {
     expect(guide.startHere[0].id).toBe('big-three');
     const importances = guide.startHere.map((i) => i.importance);
     expect([...importances].sort((a, b) => b - a)).toEqual(importances);
+  });
+
+  it('names every Start Here factor combination with a 1-3 word shorthand label', () => {
+    const bigThree = guide.startHere.find((i) => i.id === 'big-three')!;
+    // Ava: Sun Taurus, Moon Capricorn, Scorpio rising — the label must be
+    // specific to the blend, never a vague filler, and 1-3 words.
+    expect(bigThree.shorthandLabel).toBeTruthy();
+    expect(bigThree.shorthandLabel!.split(/\s+/).length).toBeLessThanOrEqual(3);
+    expect(isVagueLabel(bigThree.shorthandLabel!)).toBe(false);
+    // The note must explain the actual blend, not just "say these three first".
+    expect(bigThree.note).not.toMatch(/say these three first/);
+    expect(bigThree.note.length).toBeGreaterThan(60);
+
+    for (const id of ['elements', 'repeated-sign', 'chart-ruler', 'cluster', 'top-aspect', 'modality']) {
+      const item = [...guide.startHere, ...guide.startHereDeeper].find((i) => i.id === id);
+      if (!item) continue;
+      expect(item.shorthandLabel, `${id} needs a shorthand label`).toBeTruthy();
+      expect(isVagueLabel(item.shorthandLabel!)).toBe(false);
+    }
+  });
+
+  it('calls a triple-sign Big Three a clear signature of that sign', () => {
+    const card = bigThreeCard({ sunSign: 'Libra', moonSign: 'Libra', risingSign: 'Libra' })!;
+    expect(card.label).toBe('Diplomatic Harmonizer');
+    const synthetic = {
+      ...buildAvaChart(),
+      planets: {
+        ...buildAvaChart().planets,
+        Sun: { sign: 'Libra', degree: 10, minutes: 0, seconds: 0, isRetrograde: false },
+        Moon: { sign: 'Libra', degree: 20, minutes: 0, seconds: 0, isRetrograde: false },
+        Ascendant: { sign: 'Libra', degree: 5, minutes: 0, seconds: 0, isRetrograde: false },
+      },
+    } as NatalChart;
+    const tripleGuide = buildReadingGuide(synthetic, { now: NOW });
+    const bt = tripleGuide.startHere.find((i) => i.id === 'big-three')!;
+    expect(bt.shorthandLabel).toBe('Diplomatic Harmonizer');
+    expect(bt.note).toMatch(/clear Libra signature/i);
   });
 
   it('reads low Water as a processing pattern, never as missing emotion', () => {
