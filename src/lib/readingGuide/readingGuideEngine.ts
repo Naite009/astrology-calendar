@@ -17,6 +17,14 @@
  */
 
 import type { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
+import {
+  bigThreeCard,
+  blendCard,
+  emphasisCard,
+  FACTOR_JOB,
+  type Element,
+  type ShorthandCard,
+} from '@/lib/interpretation/shorthandDescriptor';
 import { getHouseForLongitude } from '@/lib/houseCalculations';
 import { getReliableAscendant } from '@/lib/chartDataValidation';
 import { MAJOR_ASPECTS, getEffectiveOrb } from '@/lib/aspectOrbs';
@@ -86,6 +94,11 @@ export interface BlendCard {
   tier: EvidenceTier;
   /** Concise "what this does not mean" clarifications. */
   doesNotMean: string[];
+  /**
+   * Shared shorthand-descriptor standard: a 1-3 word phrase for what this
+   * multi-factor blend can look like in a person, plus the eight-part card.
+   */
+  shorthand: ShorthandCard | null;
 }
 
 
@@ -134,6 +147,10 @@ export interface ReadingGuide {
   age: AgeContext;
   placements: CoreBodyPlacement[];
   bigThree: { sun?: CoreBodyPlacement; moon?: CoreBodyPlacement; ascendant?: CoreBodyPlacement };
+  /** Big Three hierarchy card: Sun = centre, Moon = need, Ascendant = approach. */
+  bigThreeShorthand: ShorthandCard | null;
+  /** "So what?" cards for the leading element and modality emphasis. */
+  emphasisCards: ShorthandCard[];
   elements: ElementProfile;
   modalities: { counts: Record<string, number>; dominant: string[]; low: string[]; note: string };
   repeatedSigns: Array<{ sign: string; bodies: string[]; note: string }>;
@@ -584,6 +601,42 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
 
     chain.push(`Together → ${applyStageVocabulary(`${noun.toLowerCase()} and ${action}`, stage)}.`);
 
+    // Shorthand descriptor: 1-3 words first, then the eight-part explanation.
+    const modifierPlacement = linkedBodies.length ? byBody.get(linkedBodies[0]) : undefined;
+    const shorthand = blendCard({
+      factors: [
+        {
+          label: `${p.label} in ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''}`,
+          contributes: FACTOR_JOB[bodyName] ?? BODY_MEANINGS[bodyName],
+          sign: p.sign,
+          body: bodyName,
+          house: p.house ?? null,
+        },
+        ...(modifierPlacement
+          ? [
+              {
+                label: `${modifierPlacement.label} in ${modifierPlacement.sign}`,
+                contributes: FACTOR_JOB[modifierPlacement.body] ?? BODY_MEANINGS[modifierPlacement.body],
+                sign: modifierPlacement.sign,
+                body: modifierPlacement.body,
+                house: modifierPlacement.house ?? null,
+              },
+            ]
+          : dominantElements.includes(p.element) && elMax >= 4
+            ? [
+                {
+                  label: `${p.element} emphasis (${elCounts[p.element]} placements)`,
+                  contributes: ELEMENT_MEANINGS[p.element],
+                  element: p.element as Element,
+                },
+              ]
+            : []),
+      ],
+      theme: speak(frame.say(action), stage),
+      evidence: reasons.length ? [`Supporting factors: ${reasons.join('; ')}.`] : [],
+      fallbackNoun: noun,
+    });
+
     return {
       id: `${idPrefix}-${bodyName}`,
       name: frame.name(noun),
@@ -596,6 +649,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       askThis: applyStageVocabulary(frame.ask, stage),
       strength: strengthFor(support),
       supportCount: support,
+      shorthand,
       group,
       ...evidenceFields([bodyName, ...linkedBodies], [p.house, ...linkedHouses], {
         retrograde: p.isRetrograde,
@@ -650,6 +704,17 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      shorthand: blendCard({
+        factors: group.map((g) => ({
+          label: `${g.label} in ${sign}${g.house ? `, ${ordinalHouse(g.house)}` : ''}`,
+          contributes: FACTOR_JOB[g.body] ?? BODY_MEANINGS[g.body],
+          sign,
+          body: g.body,
+          house: g.house ?? null,
+        })),
+        theme: speak(`${'{Sub}'} may run a consistent ${sign} style through ${labels.join(' and ')}`, stage),
+        fallbackNoun: 'Style',
+      }),
       ...evidenceFields(group.map((g) => g.body), group.map((g) => g.house), {
         retrograde: group.some((g) => g.isRetrograde),
       }),
@@ -677,6 +742,17 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: strengthFor(group.length + 1),
       supportCount: group.length + 1,
       group: 'personal-group',
+      shorthand: blendCard({
+        factors: group.map((g) => ({
+          label: `${g.label} in the ${ordinalHouse(house)}`,
+          contributes: FACTOR_JOB[g.body] ?? BODY_MEANINGS[g.body],
+          sign: g.sign,
+          body: g.body,
+          house,
+        })),
+        theme: speak(`A lot of ${'{your}'} attention may land on ${houseArena(house, stage)}`, stage),
+        fallbackNoun: 'Focus',
+      }),
       ...evidenceFields(group.map((g) => g.body), [house], {
         retrograde: group.some((g) => g.isRetrograde),
       }),
@@ -744,6 +820,26 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       strength: 'Moderate',
       supportCount: 2,
       group: 'nodes',
+      shorthand: blendCard({
+        factors: [
+          {
+            label: `North Node in ${nn.sign}${nn.house ? `, ${ordinalHouse(nn.house)}` : ''}`,
+            contributes: FACTOR_JOB.NorthNode,
+            sign: nn.sign,
+            body: 'NorthNode',
+            house: nn.house ?? null,
+          },
+          {
+            label: `South Node in ${sn.sign}${sn.house ? `, ${ordinalHouse(sn.house)}` : ''}`,
+            contributes: BODY_MEANINGS.SouthNode,
+            sign: sn.sign,
+            body: 'SouthNode',
+            house: sn.house ?? null,
+          },
+        ],
+        evidence: ['The nodes always oppose each other, so the opposition is geometry, not extra evidence.'],
+        fallbackNoun: 'Stretch',
+      }),
       ...evidenceFields(['NorthNode', 'SouthNode'], [nn.house, sn.house]),
 
     };
@@ -785,6 +881,30 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         strength: tight.length ? 'Moderate' : 'Single-placement',
         supportCount: tight.length ? 2 : 1,
         group: 'chiron',
+        shorthand: blendCard({
+          factors: [
+            {
+              label: `Chiron in ${ch.sign}${ch.house ? `, ${ordinalHouse(ch.house)}` : ''}`,
+              contributes: FACTOR_JOB.Chiron,
+              sign: ch.sign,
+              body: 'Chiron',
+              house: ch.house ?? null,
+            },
+            ...tight.slice(0, 1).map((t) => ({
+              label: `Chiron ${t.aspect} ${t.other.label} (${t.orb}°)`,
+              contributes: FACTOR_JOB[t.other.body] ?? BODY_MEANINGS[t.other.body],
+              sign: t.other.sign,
+              body: t.other.body,
+              house: t.other.house ?? null,
+            })),
+          ],
+          theme: speak(
+            `There may be extra sensitivity around ${ch.house ? houseArena(ch.house, stage) : SIGN_MEANINGS[ch.sign]}, and that often becomes an area of real understanding`,
+            stage
+          ),
+          evidence: ['Read as sensitivity and eventual understanding, never as injury or diagnosis.'],
+          fallbackNoun: 'Sensitivity',
+        }),
         ...evidenceFields(['Chiron', ...tight.map((t) => t.other.body)], [ch.house, ...tight.map((t) => t.other.house)]),
 
       };
@@ -915,6 +1035,37 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     age: stageCtx,
     placements,
     bigThree: { sun, moon, ascendant: asc },
+    bigThreeShorthand: bigThreeCard({
+      sunSign: sun?.sign ?? null,
+      moonSign: moon?.sign ?? null,
+      risingSign: asc?.sign ?? null,
+      sunHouse: sun?.house ?? null,
+      moonHouse: moon?.house ?? null,
+    }),
+    emphasisCards: [
+      emphasisCard({
+        kind: 'element',
+        value: dominantElements[0],
+        count: elCounts[dominantElements[0]] ?? 0,
+        total: weighed.length,
+        bodies: weighed.filter((w) => w.element === dominantElements[0]).map((w) => w.label),
+        secondary:
+          Object.keys(elCounts)
+            .filter((e) => e !== dominantElements[0])
+            .sort((a, b) => elCounts[b] - elCounts[a])[0] ?? null,
+      }),
+      emphasisCard({
+        kind: 'modality',
+        value: dominantModalities[0],
+        count: modCounts[dominantModalities[0]] ?? 0,
+        total: weighed.length,
+        bodies: weighed.filter((w) => w.modality === dominantModalities[0]).map((w) => w.label),
+        secondary:
+          Object.keys(modCounts)
+            .filter((m) => m !== dominantModalities[0])
+            .sort((a, b) => modCounts[b] - modCounts[a])[0] ?? null,
+      }),
+    ].filter((c): c is ShorthandCard => !!c),
     elements,
     modalities: {
       counts: modCounts,

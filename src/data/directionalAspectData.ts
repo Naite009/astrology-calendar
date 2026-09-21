@@ -127,11 +127,11 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     },
     
     personBExperience: {
-      romance: "You're magnetically drawn to their light and want to merge with it—or possess it. You see their hidden power and want to unlock it. You have X-ray vision into them, which creates intimacy but also tempts control. You must choose: empowerment or domination. This is your test.",
-      friendship: "You see through their persona to their true self. You can help them transform OR become obsessed with 'fixing' them. You're the depth to their light. You have tremendous power here—use it wisely or lose them.",
-      business: "You see their leadership potential and the blocks holding them back. You can be the catalyst for their success OR you can undermine them through jealousy or power plays. You control resources or information they need. Your shadow will show up here.",
+      romance: "You're magnetically drawn to their light and want to be close to it. You see their hidden power and want to unlock it. You have X-ray vision into them, which creates intimacy but also makes it tempting to steer them. The useful choice is support rather than steering.",
+      friendship: "You see through their persona to their true self. You can help them transform OR get caught up in trying to fix them. You're the depth to their light. You have tremendous power here—use it wisely or lose them.",
+      business: "You see their leadership potential and the blocks holding them back. You can be the catalyst for their success OR you can undermine them by competing instead of cooperating. You control resources or information they need. Your shadow will show up here.",
       creative: "You see the depth they're not accessing. You can mine the gold in their psyche for collaborative work. You're the depth psychologist of the partnership. Don't manipulate the process or steamroll their vision with your intensity.",
-      family: "You may unconsciously try to remake them in your image or control their path. You see their potential but confuse it with your projection. Your own unhealed wounds around power and control will surface. You're the transformative force—make sure it's empowerment, not domination."
+      family: "You may unconsciously try to remake them in your image or control their path. You see their potential but confuse it with your projection. Your own sensitivities about influence and control can surface. You're the transformative force—aim for support rather than steering."
     },
     
     mutualWork: "Sun must maintain identity while allowing transformation. Pluto must empower without controlling. Both learning healthy use of power. This aspect creates profound change—both people are reborn through this connection if handled consciously.",
@@ -142,7 +142,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     evolutionTimeline: {
       romance: {
-        year1_3: "Intense fascination and power struggles. Sun feels both empowered and controlled. Pluto is obsessed. Everything is heightened. Jealousy, possessiveness, and transformation all at once.",
+        year1_3: "Strong fascination and some tug-of-war. The Sun person can feel both lifted and pressed. The Pluto person is very focused. Reassurance, intensity and change all show up together.",
         year4_7: "Crisis point: evolve or implode. Either Pluto learns to release control and Sun learns to own their power, OR the relationship becomes destructive. Major tests around control, trust, and autonomy.",
         year7_plus: "If survived consciously, becomes a profoundly transformative partnership. Both are changed forever. Deep trust, mutual empowerment, and the ability to weather any storm together. Unshakeable bond forged through crisis."
       },
@@ -183,7 +183,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     },
     
     personBExperience: {
-      romance: "You're powerfully drawn to their light, their confidence, their presence. You want to merge with them—or possess them. The opposition creates magnetic attraction but also constant tension. You see their potential and want to unlock it, but must resist the urge to control or dominate.",
+      romance: "You're powerfully drawn to their light, their confidence, their presence. You want to be close to them. The opposition creates magnetic attraction but also constant tension. You see their potential and want to unlock it, but it helps to resist steering them.",
       friendship: "You're the intense one in this dynamic. You see through their persona and may feel compelled to 'fix' or transform them. Your depth challenges their identity. Learn to empower rather than overpower.",
       business: "You hold strategic insight they lack. The temptation is to control from behind the scenes. But the opposition means your power plays will be noticed and resisted. True success comes from transparent collaboration.",
       creative: "You bring psychological depth and transformative vision. But the opposition means your intensity can overpower their contribution. Balance is key—let their light shine while you provide the shadow and depth.",
@@ -260,7 +260,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
       },
       friendship: {
         year1_3: "Instant emotional recognition. You 'get' each other without explanation. Easy, comfortable connection.",
-        year4_7: "Deep emotional intimacy and trust. May rely on each other heavily. Risk of enmeshment if no other friends provide contrast.",
+        year4_7: "Deep emotional intimacy and trust. May rely on each other heavily. Without other friendships for contrast, there can be little separate space.",
         year7_plus: "Lifelong emotional support. This friend knows you at your core. Beautiful safety if not codependent."
       },
       business: {
@@ -274,7 +274,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
         year7_plus: "Beautiful emotional foundation for creative work, but needs challenge from other sources to stay vital."
       },
       family: {
-        childhood: "Deep emotional attunement between family members. Understanding without words. Beautiful nurturing if both are healthy. Risk of enmeshment if one has unhealthy patterns.",
+        childhood: "Deep emotional attunement between family members. Understanding without words. Beautiful nurturing if both are healthy. Closeness can leave little separate space.",
         adolescence: "Continued emotional closeness. May struggle to differentiate. Need outside relationships to develop individual emotional identity.",
         adulthood: "Lifelong emotional understanding and support. Beautiful if both have individuated. Codependent if boundaries were never established."
       }
@@ -287,7 +287,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     personBRole: "Person B",
     
     personAExperience: {
-      romance: "Your desires, timing, and action styles clash. When you want to go, they want to stop. Your anger triggers theirs. Sexual rhythms may be off. Exciting friction OR constant irritation. Passionate fights and passionate makeup sex. Never boring but exhausting.",
+      romance: "Your desires, timing, and action styles clash. When you want to go, they want to stop. Your anger triggers theirs. Timing can feel out of step. Friction can be energising or simply wearing. Arguments run hot and resolve fast. Rarely boring, often tiring.",
       friendship: "Competitive energy. You may butt heads or push each other in healthy ways. Need to choose: friendly competition or ego battles. Can bring out each other's warrior spirit OR just fight.",
       business: "Conflicting approaches to action and strategy. One wants to charge ahead; the other wants a different direction. Power struggles over WHO drives the process. Can be productive tension if channeled into complementary roles (one leads sales, other leads operations).",
       creative: "Competing creative visions. Different ideas about timing, execution, and approach. Can create innovative fusion OR just conflict. Need a third party to mediate or clear role divisions.",
@@ -310,7 +310,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     evolutionTimeline: {
       romance: {
-        year1_3: "Hot and exciting OR fighting constantly. Sexual chemistry high but fights are also intense. Testing boundaries and power dynamics. May be addictive chaos.",
+        year1_3: "Hot and exciting OR fighting constantly. Attraction runs high and so do arguments. Boundaries and who leads get tested. It can feel hard to step back from.",
         year4_7: "Either learned to work with the friction (exciting, productive) OR exhausted from constant conflict. Breakup common at this stage if no progress made. If surviving: developed dance of who leads when.",
         year7_plus: "If still together, you've mastered the art of productive tension. Respect for different approaches. Still passionate but not destructive. You've learned each other's triggers and how to de-escalate. The square keeps life interesting without destroying it."
       },
@@ -351,7 +351,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     },
     
     personBExperience: {
-      romance: "You're drawn to their beauty and want to pursue/conquer. You bring the chase, the passion, the sexual initiative. You want action; they want romance. You need to learn that attraction isn't just about pursuit—it's about receptivity too. You're learning about desire versus connection.",
+      romance: "You're drawn to their beauty and want to pursue/conquer. You bring the pursuit and the enthusiasm. You want action; they want romance. You need to learn that attraction is not only pursuit, it is also being open to what comes back. You're learning about desire versus connection.",
       friendship: "You bring energy and action; they bring harmony and social skill. You initiate; they refine. You want to compete/challenge; they want to connect. You're learning about relationship, not just achievement.",
       business: "You're the executor, the one who makes things happen. They're the one who makes it beautiful and marketable. You need them to sell what you create. You're learning that force alone doesn't build lasting success.",
       creative: "You're the bold visionary who executes fearlessly. They're the one who refines it into something people actually want. You need each other—you provide the courage; they provide the taste. You're learning about balance between force and finesse.",
@@ -366,7 +366,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     evolutionTimeline: {
       romance: {
-        year1_3: "Electric attraction. Opposites attract phase. Exciting, passionate, magnetic. You're fascinated by how different you are. Sexual chemistry is high.",
+        year1_3: "Electric attraction. Opposites attract phase. Exciting, passionate, magnetic. You're fascinated by how different you are. Attraction runs high.",
         year4_7: "Either learning to appreciate differences (strength phase) OR frustrated by them (conflict phase). Mars may feel rejected; Venus may feel pressured. Both learning to give what the other needs, not what they would need.",
         year7_plus: "At its best: beautifully integrated partnership where both have developed the other's qualities. Venus is more assertive; Mars is more receptive. You complete each other without losing yourselves. Lasting attraction AND deep respect."
       },
@@ -511,11 +511,11 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     personBRole: "Neptune Person",
     
     personAExperience: {
-      romance: "They seem like your soulmate, your dream come true. Magical, spiritual, romantic beyond belief. You feel you've found divine love. WARNING: You may be in love with a fantasy, not the real person. Are you seeing them clearly or projecting your ideal? Beautiful OR devastating, depending on their integrity and your clarity.",
-      friendship: "Compassionate, empathetic, spiritually connected. You feel understood at a soul level. They seem to 'get' you. Risk: boundaries dissolve, you enable each other's avoidance of reality, or one is in a fantasy about the friendship.",
+      romance: "They can seem like an ideal match. Magical, spiritual, romantic beyond belief. You feel you've found divine love. WARNING: You may be in love with a fantasy, not the real person. Are you seeing them clearly or projecting your ideal? Beautiful OR devastating, depending on their integrity and your clarity.",
+      friendship: "Compassionate, empathetic, spiritually connected. You can feel deeply understood. They seem to 'get' you. Risk: boundaries get thin, and you can help each other avoid what is real, or one is in a fantasy about the friendship.",
       business: "DANGER: Neptune dissolves practical boundaries. Are they actually capable or just good at seeming capable? Are you seeing their potential or reality? Excellent for creative/spiritual businesses but terrible for anything requiring clarity, contracts, or accountability.",
       creative: "Inspired, transcendent creative collaboration. Shared artistic or spiritual vision. You access higher realms of creativity together. Beautiful for art, music, film, or spiritual work. Risk: lack of discipline or practical follow-through.",
-      family: "Compassionate, empathetic connection. You want to save or help them (or vice versa). Risk: codependency, victim/savior dynamics, enabling addiction or avoidance. Beautiful spiritual bond OR devastating enmeshment."
+      family: "Compassionate, empathetic connection. You want to save or help them (or vice versa). Risk: leaning on each other too heavily, rescuing instead of relating, or avoiding what is real. A warm bond, or one with very little separate space."
     },
     
     personBExperience: {
@@ -534,13 +534,13 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     evolutionTimeline: {
       romance: {
-        year1_3: "Enchanted, magical, perfect. Living in a dream. You feel you've found your soulmate. Everything is romantic, spiritual, transcendent. WARNING: You may not be seeing reality at all.",
+        year1_3: "Enchanted, magical, perfect. Living in a dream. It can feel like an ideal match. Everything is romantic, spiritual, transcendent. WARNING: You may not be seeing reality at all.",
         year4_7: "Reality check. The fog lifts. You start to see who they actually are (Venus person) or who you actually are (Neptune person). Disillusionment is common. May discover deception (theirs, yours, or mutual). Crisis point: can you love the real person or were you only in love with the fantasy?",
         year7_plus: "If still together, you've integrated the spiritual with the real. Conscious spiritual partnership where both people are committed to truth AND transcendence. Rare but beautiful. More commonly: painful breakup when illusions shatter. Neptune-Venus requires exceptional maturity and honesty to succeed long-term."
       },
       friendship: {
-        year1_3: "Magical, spiritual connection. You feel understood at soul level. Beautiful empathy and compassion.",
-        year4_7: "Either boundaries have been established or enmeshment has occurred. Reality testing: is this friendship healthy or enabling?",
+        year1_3: "Magical, spiritual connection. You can feel deeply understood. Beautiful empathy and compassion.",
+        year4_7: "Either boundaries got established, or separate space got thin. Reality testing: is this friendship healthy or enabling?",
         year7_plus: "If healthy: deep spiritual friendship with maintained boundaries. If not: codependency or painful awakening when illusions shatter."
       },
       business: {
@@ -555,7 +555,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
       },
       family: {
         childhood: "Magical, spiritual bond with this family member. May idealize them or feel spiritually connected. Risk of boundaries being dissolved or codependency developing.",
-        adolescence: "Either healthy compassion or unhealthy enmeshment. Need reality testing: am I seeing them clearly? Am I losing myself in their needs?",
+        adolescence: "Either warm compassion, or closeness with little separate space. Need reality testing: am I seeing them clearly? Am I losing myself in their needs?",
         adulthood: "If healthy: beautiful spiritual connection with maintained boundaries. If not: codependency, enabling, or painful disillusionment. Requires conscious boundary work."
       }
     }
@@ -578,7 +578,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
       romance: "You're the wounded healer in this relationship. You've been hurt in similar ways and can help them heal—but you must be far enough along in your own healing. If not, you'll wound each other. You see their pain because it mirrors yours. You can be the medicine OR the poison.",
       friendship: "You understand their worthiness wounds because you have similar ones. You can help them heal OR trigger them depending on your awareness. You're the teacher here—are you conscious enough?",
       business: "Your wounds around value and money are activated too. You can teach them what you've learned OR compete in scarcity mindset. You have the gift of seeing value (yours and theirs) but must be healed enough to share it.",
-      creative: "You've been wounded around creativity and can help them avoid your mistakes OR traumatize them with your unhealed shame. You're the teacher of creative worthiness. Teach consciously.",
+      creative: "You have your own sensitive history around creative work. You can spare them some of your mistakes, or pass your own discouragement along. Teach with that in mind.",
       family: "You carry family wounds around love and acceptance. You can help them heal family patterns OR perpetuate them. You're likely the older soul or the one further along the healing path. Use that wisely."
     },
     
@@ -590,7 +590,7 @@ export const directionalAspectDatabase: DirectionalAspectInterpretation[] = [
     
     evolutionTimeline: {
       romance: {
-        year1_3: "Old love wounds resurface intensely. You're triggering each other's deepest insecurities around worthiness and lovability. Painful but illuminating. You're being shown exactly what needs healing.",
+        year1_3: "Old love wounds resurface intensely. You touch each other's sore spots about worth and being liked. Painful but illuminating. You're being shown exactly what needs healing.",
         year4_7: "Crisis and breakthrough. Either both people are doing healing work and the relationship becomes medicine, OR one or both retraumatize and the relationship becomes destructive. Make or break period.",
         year7_plus: "If survived consciously: profound healing and teaching relationship. Both people have healed love wounds through this connection. You can now help others heal similar wounds. If not survived: was a painful but necessary teacher showing you what needs healing before you try again."
       },

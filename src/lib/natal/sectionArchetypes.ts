@@ -10,12 +10,28 @@
 import type { NatalChart } from '@/hooks/useNatalChart';
 import type { NatalPortrait } from '@/lib/natalPortraitEngine';
 import { getReliableAscendant } from '@/lib/chartDataValidation';
+import {
+  bigThreeCard,
+  blendCard,
+  emphasisCard,
+  FACTOR_JOB,
+  type Element,
+  type ShorthandCard,
+} from '@/lib/interpretation/shorthandDescriptor';
 
 export interface SectionArchetype {
   /** One or two words. */
   label: string;
   /** Plain sentence naming the placements the label came from. */
   why: string;
+  /**
+   * Shared shorthand-descriptor standard (src/lib/interpretation/shorthandDescriptor.ts):
+   * the eight-part card behind the label — factors, what each contributes, the
+   * blend, what to say out loud, how it may show up, growth edge, reasoning.
+   */
+  card?: ShorthandCard | null;
+  /** Extra "so what?" cards, e.g. element plus modality emphasis. */
+  extraCards?: ShorthandCard[];
 }
 
 const SIGN_ADJ: Record<string, string> = {
@@ -131,9 +147,34 @@ const domainLabel = (
   const d = portrait[domain] as { keyPlanets?: { name: string; sign: string; house: number }[] } | undefined;
   const key = d?.keyPlanets?.[0];
   if (!key?.sign) return null;
+  const second = d?.keyPlanets?.[1];
+  const card = blendCard({
+    factors: [
+      {
+        label: `${key.name} in ${key.sign}${key.house ? `, house ${key.house}` : ''}`,
+        contributes: FACTOR_JOB[key.name] ?? 'what this area of the chart is working with',
+        sign: key.sign,
+        body: key.name,
+        house: key.house ?? null,
+      },
+      ...(second?.sign
+        ? [
+            {
+              label: `${second.name} in ${second.sign}${second.house ? `, house ${second.house}` : ''}`,
+              contributes: FACTOR_JOB[second.name] ?? 'a second factor shaping the same area',
+              sign: second.sign,
+              body: second.name,
+              house: second.house ?? null,
+            },
+          ]
+        : []),
+    ],
+    fallbackNoun: sectionNoun,
+  });
   return {
-    label: pair(adj(key.sign), sectionNoun, sectionNoun),
+    label: card?.label ?? pair(adj(key.sign), sectionNoun, sectionNoun),
     why: `From ${key.name} in ${key.sign}${key.house ? ` (house ${key.house})` : ''}.`,
+    card,
   };
 };
 
@@ -152,9 +193,15 @@ export function buildSectionArchetypes(
   // 1. Life Purpose — the Big Three combined.
   if (lp?.sunSign && lp.sunSign !== 'unknown' && lp.moonSign && lp.moonSign !== 'unknown') {
     const risingPart = lp.risingSign && lp.risingSign !== 'unknown' ? `, ${lp.risingSign} rising` : '';
+    const big = bigThreeCard({
+      sunSign: lp.sunSign,
+      moonSign: lp.moonSign,
+      risingSign: lp.risingSign && lp.risingSign !== 'unknown' ? lp.risingSign : (asc?.sign ?? null),
+    });
     out.lifePurpose = {
-      label: pair(adj(lp.sunSign), noun(lp.moonSign), 'Core Blend'),
+      label: big?.label ?? pair(adj(lp.sunSign), noun(lp.moonSign), `${noun(lp.sunSign)} Core`),
       why: `Sun in ${lp.sunSign} + Moon in ${lp.moonSign}${risingPart}.`,
+      card: big,
     };
   }
 
@@ -162,9 +209,33 @@ export function buildSectionArchetypes(
   const el = topKey(lp?.elementBreakdown);
   const mod = topKey(lp?.modalityBreakdown);
   if (el || mod) {
+    const total = Object.values(lp?.elementBreakdown ?? {}).reduce((a, b) => a + b, 0) || 10;
+    const elCard = el
+      ? emphasisCard({
+          kind: 'element',
+          value: el,
+          count: lp?.elementBreakdown?.[el] ?? 0,
+          total,
+          secondary:
+            Object.keys(lp?.elementBreakdown ?? {})
+              .filter((e) => e !== el)
+              .sort((a, b) => (lp?.elementBreakdown?.[b] ?? 0) - (lp?.elementBreakdown?.[a] ?? 0))[0] ?? null,
+        })
+      : null;
+    const modCard = mod
+      ? emphasisCard({
+          kind: 'modality',
+          value: mod,
+          count: lp?.modalityBreakdown?.[mod] ?? 0,
+          total: Object.values(lp?.modalityBreakdown ?? {}).reduce((a, b) => a + b, 0) || total,
+        })
+      : null;
     out.topThemes = {
-      label: pair(ELEMENT_ADJ[el] || '', MODALITY_NOUN[mod] || '', 'Mixed Weight'),
+      label:
+        elCard?.label ?? pair(ELEMENT_ADJ[el] || '', MODALITY_NOUN[mod] || '', `${MODALITY_NOUN[mod] || 'Even'} Weight`),
       why: `Most-weighted element ${el || 'even'}, most-weighted modality ${mod || 'even'} (ten major planets).`,
+      card: elCard,
+      extraCards: [modCard].filter((c): c is ShorthandCard => !!c),
     };
   }
 

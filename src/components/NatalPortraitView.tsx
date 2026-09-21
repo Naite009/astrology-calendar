@@ -11,6 +11,7 @@ import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { SoulAgreementsSection } from '@/components/SoulAgreementsSection';
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { buildSectionArchetypes, type SectionArchetype } from '@/lib/natal/sectionArchetypes';
+import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
@@ -50,6 +51,19 @@ const ArchetypeWhy = ({ archetype }: { archetype?: SectionArchetype }) => {
   );
 };
 
+/** Label first, then the eight-part explanation behind it. */
+const ArchetypeCards = ({ archetype }: { archetype?: SectionArchetype }) => {
+  if (!archetype?.card && !archetype?.extraCards?.length) return null;
+  return (
+    <div className="space-y-3 mb-4">
+      <ShorthandCardBlock card={archetype.card} />
+      {archetype.extraCards?.map((c, i) => (
+        <ShorthandCardBlock key={i} card={c} />
+      ))}
+    </div>
+  );
+};
+
 const SectionWrapper = ({ 
   title, emoji, children, defaultOpen = true, archetype
 }: { 
@@ -72,6 +86,7 @@ const SectionWrapper = ({
       {open && (
         <div className="p-5">
           <ArchetypeWhy archetype={archetype} />
+          <ArchetypeCards archetype={archetype} />
           {children}
         </div>
       )}
