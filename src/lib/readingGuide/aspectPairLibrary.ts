@@ -184,7 +184,7 @@ const FN: Record<string, { does: string; style: string; much: string; gift: stri
 type Fam = {
   headline: string;
   how: [string, string];
-  show: [string, string, string];
+  show: string[];
   care: string;
   say?: string;
 };
@@ -1075,7 +1075,6 @@ const PAIRS: Record<string, PairEntry> = {
         'Little patience with slow explanations, repetition or padding.',
         'Genuinely enjoying argument as a way of thinking, which not everyone else experiences as enjoyable.',
       ],
-      show_extra: '',
       care: 'The thing to work on is not the speed but the delay: a decided reply written now and sent in ten minutes keeps the sharpness and loses the damage. Directness and effectiveness are not the same thing here.',
       say: 'Your mind is quick and it is wired straight to your drive, so the answer is usually there before you have decided whether to give it. That makes you sharp in a debate, and it means annoyance can leave your mouth already pointed.',
     },
@@ -2122,7 +2121,7 @@ function compose(a: string, b: string, family: AspectFamily): Fam {
         `${la} covers ${'\u2014'} ${la}, and ${lb} covers ${lb}.`,
         'Read them together rather than separately.',
       ],
-      show: ['Look for both themes appearing in the same situations.', '', ''].filter(Boolean) as [string, string, string],
+      show: ['Look for both themes appearing in the same situations.'],
       care: 'Check this against the person’s own experience before relying on it.',
     };
   }
