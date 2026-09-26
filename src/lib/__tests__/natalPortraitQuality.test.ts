@@ -187,6 +187,11 @@ describe("Ava Kravitz natal portrait regression", () => {
     const advice = rel.advice || '';
     expect(advice).toMatch(/Venus/);
     expect(advice).toMatch(/Mars|7th house/);
+    expect(advice).toMatch(/Moon/);
+    expect(rel.summary).toMatch(/Moon/);
+    expect(rel.summary).toMatch(/Venus/);
+    expect(rel.summary).toMatch(/Mars/);
+    expect(rel.evidence?.some(line => /ruler of the 7th/.test(line))).toBe(true);
     expect(advice.toLowerCase()).not.toContain("that's where love shows up most naturally");
   });
 

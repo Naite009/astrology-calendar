@@ -233,6 +233,16 @@ describe('Reading Guide — Ava Kravitz', () => {
     // Teen framing: no adult career/marriage/finance claims, no medical claims.
     expect(guide.story).not.toMatch(/\bcareer\b|\bmarriage\b|\bspouse\b|\bfinances\b|\bdiagnos/i);
     expect(guide.story).toMatch(/not.*fixed|tendencies/i);
+    expect(guide.story).not.toMatch(/who you is|you tends\b|you comes\b/i);
+  });
+
+  it('uses distinct psychological mechanisms for unrelated top connections', () => {
+    const fingerprints = guide.coreInnerDynamics.map(d => `${d.title}|${d.aspectDynamic}|${d.watchFor}`);
+    expect(new Set(fingerprints).size).toBe(fingerprints.length);
+    guide.coreInnerDynamics.forEach(d => {
+      expect(d.howThisCanShowUp.length).toBeGreaterThanOrEqual(2);
+      expect(d.evidence).toMatch(/° orb/);
+    });
   });
 
   it('passes the shared interpretation language policy everywhere', () => {

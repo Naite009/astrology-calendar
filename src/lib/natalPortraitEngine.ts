@@ -95,6 +95,7 @@ export interface DomainDeepDive {
   strengths: string[];
   challenges: string[];
   advice: string;
+  evidence?: string[];
 }
 
 export interface DomainPlanet {
@@ -219,6 +220,48 @@ const SIGN_STYLE: Record<string, string> = {
   Pisces: 'with intuitive, compassionate, boundary-dissolving sensitivity',
 };
 
+const ELEMENT_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
+  Fire: {
+    automatic: 'moves toward action, momentum, and the next live possibility',
+    strength: 'starting, recovering enthusiasm, and giving other people a clear signal',
+    need: 'a goal that feels alive and enough freedom to act',
+    overuse: 'acting before the slower information has arrived',
+  },
+  Earth: {
+    automatic: 'looks for what is workable, proven, and possible to sustain',
+    strength: 'turning an idea into steps, noticing practical limits, and following through',
+    need: 'time, a concrete plan, and results that can be checked',
+    overuse: 'staying with the familiar because it is reliable, even after a change is needed',
+  },
+  Air: {
+    automatic: 'sorts experience through words, comparison, questions, and other viewpoints',
+    strength: 'making connections, explaining a pattern, and seeing more than one side',
+    need: 'conversation, mental room, and an explanation that makes sense',
+    overuse: 'explaining a feeling instead of pausing long enough to feel it',
+  },
+  Water: {
+    automatic: 'reads mood, tone, trust, and what is happening underneath the words',
+    strength: 'noticing what is unsaid, remembering emotional meaning, and responding with care',
+    need: 'privacy, emotional honesty, and time to let a reaction settle',
+    overuse: 'treating the atmosphere around them as if it were entirely theirs to carry',
+  },
+};
+
+const MODALITY_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
+  Cardinal: {
+    automatic: 'opens the next phase and makes the first move', strength: 'creating momentum when nothing has started',
+    need: 'a meaningful direction and some say in how it begins', overuse: 'opening another path before the current one has a chance to develop',
+  },
+  Fixed: {
+    automatic: 'holds a position, promise, or process steady', strength: 'stamina, loyalty, and carrying work through the middle',
+    need: 'a sound reason for change and time to adjust', overuse: 'protecting consistency after flexibility would be more useful',
+  },
+  Mutable: {
+    automatic: 'revises the approach as new information arrives', strength: 'adapting quickly and finding another workable route',
+    need: 'variety and permission to refine the plan', overuse: 'changing direction before one approach has been tested long enough',
+  },
+};
+
 function contextualRole(planetName: string, sign: string, house: number | null, domainHint: string): string {
   const style = SIGN_STYLE[sign] || `through ${sign} energy`;
   const area = house ? HOUSE_LIFE_AREA[house] || `house ${house}` : 'your chart';
@@ -235,11 +278,11 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   // Relationship domain
   if (domainHint === 'relationship') {
     if (planetName === 'Venus') return `You love and attract ${style}, most active in ${area}`;
-    if (planetName === 'Mars') return `You pursue desire ${style}, asserting through ${area}`;
+    if (planetName === 'Mars') return `You pursue what you want ${style}, and defend boundaries through ${area}`;
     if (planetName === 'Juno') return `Your committed partnership expresses ${style} in ${area}`;
-    if (planetName === 'Eros') return `Your erotic magnetism operates ${style}, activated through ${area}`;
+    if (planetName === 'Eros') return `Your pull toward closeness operates ${style}, activated through ${area}`;
     if (planetName === 'Amor') return `Your unconditional love expresses ${style} in ${area}`;
-    if (planetName === 'Lilith') return `Your raw feminine power emerges ${style} through ${area}`;
+    if (planetName === 'Lilith') return `Your refusal to be over-managed emerges ${style} through ${area}`;
   }
 
   // Career domain
@@ -254,7 +297,7 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   // Emotional domain
   if (domainHint === 'emotional') {
     if (planetName === 'Moon') return `Your emotional core processes ${style}, most tender around ${area}`;
-    if (planetName === 'Neptune') return `Your spiritual sensitivity dissolves boundaries ${style} in ${area}`;
+    if (planetName === 'Neptune') return `Your imagination and sensitivity work ${style} in ${area}, where clear limits may need conscious attention`;
     if (planetName === 'Pluto') return `Your emotional intensity transforms ${style} through ${area}`;
     if (planetName === 'Chiron') return `A tender, sensitive area sits ${style} in ${area}, and it can become a source of real insight`;
     if (planetName === 'Ceres') return `Your nurturing instinct expresses ${style}, centered on ${area}`;
@@ -262,20 +305,20 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
 
   // Shadow domain
   if (domainHint === 'shadow') {
-    if (planetName === 'Pluto') return `Your power and compulsions operate ${style}, concentrated in ${area}`;
-    if (planetName === 'Saturn') return `Your fear and mastery lesson works ${style} through ${area}`;
-    if (planetName === 'Chiron') return `Your wound-to-wisdom path unfolds ${style} in ${area}`;
-    if (planetName === 'Lilith') return `Your rejected wildness emerges ${style} through ${area}`;
-    if (planetName === 'Nessus') return `Power misuse patterns surface ${style} in ${area}`;
+    if (planetName === 'Pluto') return `Your need for depth and influence works ${style}, concentrated in ${area}`;
+    if (planetName === 'Saturn') return `Your internal standards and developing mastery work ${style} through ${area}`;
+    if (planetName === 'Chiron') return `A sensitivity that can become understanding unfolds ${style} in ${area}`;
+    if (planetName === 'Lilith') return `Your refusal to be over-managed emerges ${style} through ${area}`;
+    if (planetName === 'Nessus') return `Questions about responsible use of influence surface ${style} in ${area}`;
     if (planetName === 'Orcus') return `Your accountability lesson operates ${style} through ${area}`;
   }
 
   // Spiritual domain
   if (domainHint === 'spiritual') {
     if (planetName === 'Neptune') return `Your spiritual connection opens ${style}, most permeable in ${area}`;
-    if (planetName === 'NorthNode') return `Your soul's growth direction points ${style} toward ${area}`;
+    if (planetName === 'NorthNode') return `A less-practiced developmental direction points ${style} toward ${area}`;
     if (planetName === 'SouthNode') return `Your long-standing strengths operate ${style} through ${area}`;
-    if (planetName === 'Chiron') return `Your healing journey unfolds ${style} in ${area}`;
+    if (planetName === 'Chiron') return `A sensitive area can become practical insight ${style} in ${area}`;
     if (planetName === 'Sedna') return `Your surrender lesson lives ${style} in ${area}`;
     if (planetName === 'Vesta') return `Your sacred devotion burns ${style}, consecrated to ${area}`;
   }
@@ -299,17 +342,10 @@ function processingSummary(kind: 'element' | 'modality', counts: Record<string, 
   const max = ordered[0]?.[1] ?? 0;
   const leaders = ordered.filter(([, count]) => count === max).map(([name]) => name);
   const lows = ordered.filter(([, count]) => count < max && count <= 2).map(([name]) => name);
-  const elementJobs: Record<string, string> = {
-    Fire: 'activation, instinct, and initiative', Earth: 'grounding, realism, and material processing',
-    Air: 'conceptual and social processing', Water: 'emotional and intuitive processing',
-  };
-  const modalityJobs: Record<string, string> = {
-    Cardinal: 'initiating and opening a new phase', Fixed: 'sustaining and consolidating', Mutable: 'adapting and revising',
-  };
-  const jobs = kind === 'element' ? elementJobs : modalityJobs;
+  const jobs = kind === 'element' ? ELEMENT_PROCESSING : MODALITY_PROCESSING;
   const lead = leaders.length === 1
-    ? `${leaders[0]} is the most automatic channel here: ${jobs[leaders[0]]}.`
-    : `${leaders.join(' and ')} are tied, so behavior alternates between ${leaders.map((x) => jobs[x]).join(' and ')} rather than following one default.`;
+    ? `${leaders[0]} is the most automatic channel. This person first ${jobs[leaders[0]].automatic}. The strength is ${jobs[leaders[0]].strength}. They tend to need ${jobs[leaders[0]].need}. Under pressure, the possible overuse is ${jobs[leaders[0]].overuse}.`
+    : `${leaders.join(' and ')} are tied, so there is no single default. The person may move between ${leaders.map((x) => jobs[x].automatic).join(' and ')} depending on the situation.`;
   const low = lows.length
     ? ` ${lows.join(' and ')} ${lows.length === 1 ? 'is' : 'are'} less automatic, not absent, and may need more deliberate use.`
     : '';
@@ -494,16 +530,38 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
 
   const venus = bodies.find(b => b.name === 'Venus');
   const mars = bodies.find(b => b.name === 'Mars');
+  const moon = bodies.find(b => b.name === 'Moon');
+  const seventhRuler = seventhRulerName ? bodies.find(b => b.name === seventhRulerName) : undefined;
+  const seventhBodies = bodies.filter(b => b.house === 7 && MAJOR_PLANETS.includes(b.name));
+  const saturn = saturnIsTight ? bodies.find(b => b.name === 'Saturn') : undefined;
+  const relationshipEvidence = [
+    moon && `Moon in ${moon.sign}, ${ordinalHouse(moon.house)}`,
+    venus && `Venus in ${venus.sign}, ${ordinalHouse(venus.house)}`,
+    mars && `Mars in ${mars.sign}, ${ordinalHouse(mars.house)}`,
+    seventhRuler && `${seventhRuler.name}, ruler of the 7th, in ${seventhRuler.sign}, ${ordinalHouse(seventhRuler.house)}`,
+    seventhBodies.length ? `${seventhBodies.map(b => b.name).join(' and ')} in the 7th house` : null,
+    saturn && `Saturn tightly linked to Moon, Venus, or Mars`,
+  ].filter((line): line is string => Boolean(line));
+
+  const relationshipSummary = [
+    moon && `The ${moon.sign} Moon shows what helps closeness feel emotionally safe: ${getSignStyle(moon.sign)} responses, worked out through ${getHouseArena(moon.house)}.`,
+    venus && `Venus in ${venus.sign} describes what feels worth choosing and receiving, with bonding shaped by a ${getSignStyle(venus.sign)} style.`,
+    mars && `Mars in ${mars.sign} shows how wants, irritation, initiative, and boundaries become visible: ${getSignStyle(mars.sign)}.`,
+    seventhRuler && `The 7th-house ruler, ${seventhRuler.name} in ${seventhRuler.sign}, modifies the whole pattern by bringing ${getPsychologicalFunction(seventhRuler.name)?.shortFunction.toLowerCase() ?? 'its function'} into ${getHouseArena(seventhRuler.house)}.`,
+    seventhBodies.length ? `Planets in the 7th make one-to-one relating a direct life arena rather than only a preference.` : null,
+    saturn ? `Because Saturn is tightly involved, affection or emotional need may be checked against reliability, rules, approval, or what feels earned. This can echo authority or parenting models, but it does not identify a parent or event.` : null,
+  ].filter((line): line is string => Boolean(line));
 
   return {
     title: 'Relationship Blueprint',
     emoji: '💕',
-    summary: `Your relationship style is shaped by Venus in ${venus?.sign || 'unknown'} (how you love) and Mars in ${mars?.sign || 'unknown'} (how you pursue). ${venus?.isRetrograde ? 'Venus retrograde suggests you re-evaluate what you value in love and may attract past-life connections.' : ''} ${mars?.isRetrograde ? 'Mars retrograde means your desire nature works internally first — you strategize before acting.' : ''}`.trim(),
+    summary: relationshipSummary.join(' '),
     keyPlanets,
     houseActivations,
     strengths: generateDomainStrengths('relationship', keyPlanets),
     challenges: generateDomainChallenges('relationship', keyPlanets),
     advice: buildRelationshipAdvice(chart, bodies),
+    evidence: relationshipEvidence,
   };
 }
 
@@ -514,6 +572,7 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
 function buildRelationshipAdvice(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): string {
   const venus = bodies.find(b => b.name === 'Venus');
   const mars = bodies.find(b => b.name === 'Mars');
+  const moon = bodies.find(b => b.name === 'Moon');
   const juno = bodies.find(b => b.name === 'Juno');
   const seventh = bodies.filter(b => b.house === 7 && MAJOR_PLANETS.includes(b.name));
   const fifth = bodies.filter(b => b.house === 5 && MAJOR_PLANETS.includes(b.name));
@@ -522,13 +581,14 @@ function buildRelationshipAdvice(chart: NatalChart, bodies: ReturnType<typeof ge
   const factors: string[] = [];
   if (venus) factors.push(`Venus in ${venus.sign}${venus.house ? ` (${ordinalHouse(venus.house, 'house')})` : ''}`);
   if (mars) factors.push(`Mars in ${mars.sign}${mars.house ? ` (${ordinalHouse(mars.house, 'house')})` : ''}`);
+  if (moon) factors.push(`Moon in ${moon.sign}${moon.house ? ` (${ordinalHouse(moon.house, 'house')})` : ''}`);
   if (seventhRuler) factors.push(`${seventhRuler.ruler} as ruler of your 7th house${seventhRuler.house ? ` (sitting in your ${ordinalHouse(seventhRuler.house, 'house')})` : ''}`);
   if (seventh.length) factors.push(`${seventh.map(b => b.name).join(' and ')} in the 7th`);
   if (fifth.length) factors.push(`${fifth.map(b => b.name).join(' and ')} in the 5th`);
   if (juno) factors.push(`Juno in ${juno.sign} (an optional, interpretive marker for commitment style)`);
 
   const listed = factors.length ? factors.join(', ') : 'the relationship houses in your chart';
-  return `No single placement defines how you relate. Reading ${listed} together says more than any one of them alone: Venus describes what you value and enjoy, Mars how you pursue and assert, the 5th house how you play and flirt, and the 7th house with its ruler what you look for in a committed partner. Where these agree, the pattern is likely to be strong; where they pull in different directions, closeness may ask you to do two things at once, and that tension is normal rather than a flaw.`;
+  return `Read ${listed} together. The Moon describes what must feel safe, Venus what feels worth choosing and receiving, Mars how wants and boundaries are expressed, and the 7th house with its ruler shows the kind of one-to-one exchange that keeps recurring. Agreement makes a response automatic. Conflict means closeness may ask for two different things at once, such as reassurance and room, or harmony and directness.`;
 }
 
 function getSeventhHouseRuler(chart: NatalChart): { ruler: string; house: number | null } | null {
