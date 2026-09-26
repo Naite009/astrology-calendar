@@ -691,10 +691,14 @@ function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
   }));
 
   const pluto = bodies.find(b => b.name === 'Pluto');
+  const plutoFunction = pluto ? getPsychologicalFunction('Pluto') : null;
+  const plutoContext = pluto ? describeFunctionInPlacement('Pluto', pluto.sign, pluto.house) : null;
   return {
     title: 'Shadow & Growth Edges',
     emoji: '🌑',
-    summary: `Pluto in ${pluto?.sign || 'unknown'} (House ${pluto?.house || '?'}) marks the area where you tend to keep digging until something makes real sense. One expression of this is depth and staying power; another, under strain, is holding on longer than is useful.`,
+    summary: pluto && plutoFunction && plutoContext
+      ? `${plutoContext.oneLine} Psychologically, this describes how ${plutoFunction.shortFunction.toLowerCase()} is expressed through ${plutoContext.signStyle.toLowerCase()} in ${plutoContext.houseArena.toLowerCase()}. It may support depth and staying power; under strain, the same investment can make it harder to release an approach that has stopped helping.`
+      : `Pluto can describe how a person handles intensity, agency, and renewal. A valid sign and house are needed for a chart-specific reading.`,
     keyPlanets,
     houseActivations,
     strengths: generateDomainStrengths('shadow', keyPlanets),
@@ -715,10 +719,13 @@ function buildSpiritualDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
   }));
 
   const nn = bodies.find(b => b.name === 'NorthNode');
+  const nodeContext = nn ? describeFunctionInPlacement('NorthNode', nn.sign, nn.house) : null;
   return {
     title: 'Spiritual & Karmic Path',
     emoji: '✨',
-    summary: `Your North Node in ${nn?.sign || 'unknown'} (House ${nn?.house || '?'}) is your soul's compass — pointing toward the qualities you're meant to develop this lifetime, even though they feel uncomfortable at first.`,
+    summary: nn && nodeContext
+      ? `${nodeContext.oneLine} In developmental astrology, this is a symbolic stretch toward ${nodeContext.signStyle.toLowerCase()} in ${nodeContext.houseArena.toLowerCase()}, not a destiny claim or a demand to abandon familiar strengths.`
+      : `The North Node is sometimes used as a symbolic developmental stretch. A valid sign and house are needed for a chart-specific reading.`,
     keyPlanets,
     houseActivations,
     strengths: generateDomainStrengths('spiritual', keyPlanets),

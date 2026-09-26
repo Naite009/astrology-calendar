@@ -23,7 +23,7 @@ describe('shorthand descriptor standard', () => {
 
   it('carries the tension in the label when two factors conflict', () => {
     const card = bigThreeCard({ sunSign: 'Scorpio', moonSign: 'Leo', risingSign: 'Aquarius' })!;
-    expect(card.label).toBe('Magnetic Leader');
+    expect(card.label).toBe('Trust Meets Recognition');
     const conflicted = shorthandLabel(
       { label: 'Moon in Aquarius', contributes: '', sign: 'Aquarius' },
       { label: 'Sun in Taurus', contributes: '', sign: 'Taurus' }
