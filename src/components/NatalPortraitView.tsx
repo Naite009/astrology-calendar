@@ -16,6 +16,7 @@ import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
 import type { ExportMeta } from '@/lib/pdfDocEngine';
+import { getPsychologicalFunction, getSignStyle, getHouseArena, type PsychologicalAspectSynthesis } from '@/lib/interpretation/psychologicalFunctions';
 import {
   Sun, Moon, Star, Sparkles, ChevronDown, ChevronUp,
   Heart, Briefcase, Waves, Shield, Flame, Compass,
@@ -155,34 +156,48 @@ const LifePurposeSection = ({ portrait, archetype }: { portrait: NatalPortrait; 
           <div className="p-4 bg-primary/5 rounded-sm border border-primary/20">
             <div className="flex items-center gap-2 mb-2">
               <Sun size={16} className="text-primary" />
-              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Sun — Identity</span>
+              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Sun — Identity & Will</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.sunSign}</p>
-            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getSunCoreLine(lp.sunSign, lp.sunHouse)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5">Function: {getPsychologicalFunction('Sun')?.psychologicalFunction}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">Style: {getSignStyle(lp.sunSign)}. Arena: {getHouseArena(lp.sunHouse)}. So this can look like: {getSunCoreLine(lp.sunSign, lp.sunHouse)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">House {lp.sunHouse} • {lp.sunDecan}</p>
             {lp.sunSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.sunSabian}"</p>}
           </div>
           <div className="p-4 bg-primary/5 rounded-sm border border-primary/20">
             <div className="flex items-center gap-2 mb-2">
               <Moon size={16} className="text-primary" />
-              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Moon — Emotions</span>
+              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Moon — Emotional Safety & Attachment</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.moonSign}</p>
-            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getMoonCoreLine(lp.moonSign, lp.moonHouse)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5">Function: {getPsychologicalFunction('Moon')?.psychologicalFunction}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">Style: {getSignStyle(lp.moonSign)}. Arena: {getHouseArena(lp.moonHouse)}. So this can look like: {getMoonCoreLine(lp.moonSign, lp.moonHouse)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">House {lp.moonHouse} • {lp.moonDecan}</p>
             {lp.moonSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.moonSabian}"</p>}
           </div>
           <div className="p-4 bg-primary/5 rounded-sm border border-primary/20">
             <div className="flex items-center gap-2 mb-2">
               <Star size={16} className="text-primary" />
-              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Rising — Mask</span>
+              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Rising — Interface With Life</span>
             </div>
             <p className="text-lg font-serif text-foreground">{lp.risingSign}</p>
-            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">{getRisingCoreLine(lp.risingSign)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5">Function: {getPsychologicalFunction('Ascendant')?.psychologicalFunction}</p>
+            <p className="text-[11px] text-foreground/80 mt-1.5 leading-relaxed">Style: {getSignStyle(lp.risingSign)}. So this can look like: {getRisingCoreLine(lp.risingSign)}</p>
             <p className="text-[11px] text-muted-foreground mt-1">{lp.risingDecan}</p>
             {lp.risingSabian && <p className="text-[10px] text-muted-foreground mt-1 italic">"{lp.risingSabian}"</p>}
           </div>
         </div>
+
+        {lp.bigThreePsychology && (
+          <div className="border border-primary/25 bg-primary/5 rounded-sm p-4 space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-primary">Big Three Psychological Blend</p>
+            <h3 className="text-lg font-serif text-foreground">{lp.bigThreePsychology.label}</h3>
+            <div className="space-y-1">{lp.bigThreePsychology.functions.map((line) => <p key={line} className="text-xs text-muted-foreground">{line}</p>)}</div>
+            <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">How they work together</p><p className="text-sm text-foreground">{lp.bigThreePsychology.howTheyWorkTogether}</p></div>
+            <div><p className="text-[10px] uppercase tracking-widest text-muted-foreground">What people meet first vs. what you need</p><p className="text-sm text-foreground">{lp.bigThreePsychology.firstVsNeed}</p></div>
+            <p className="text-xs text-muted-foreground">Why: {lp.bigThreePsychology.evidence}</p>
+          </div>
+        )}
 
         {/* Sect Badge */}
         <div className="flex items-center gap-3 px-4 py-2 bg-secondary/50 rounded-sm">
@@ -227,6 +242,7 @@ const LifePurposeSection = ({ portrait, archetype }: { portrait: NatalPortrait; 
               ))}
             </div>
             <p className="text-[10px] text-primary mt-2">{lp.dominantElement?.includes('evenly') ? lp.dominantElement : `Dominant: ${lp.dominantElement}`} (10 major planets)</p>
+            <p className="text-xs text-foreground mt-2"><span className="font-medium">What this does psychologically:</span> {lp.elementPsychology}</p>
           </div>
           <div className="p-3 bg-secondary/30 rounded-sm">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">Modality Balance</p>
@@ -242,6 +258,7 @@ const LifePurposeSection = ({ portrait, archetype }: { portrait: NatalPortrait; 
               ))}
             </div>
             <p className="text-[10px] text-primary mt-2">{lp.dominantModality?.includes('evenly') ? lp.dominantModality : `Dominant: ${lp.dominantModality}`} (10 major planets)</p>
+            <p className="text-xs text-foreground mt-2"><span className="font-medium">What this does psychologically:</span> {lp.modalityPsychology}</p>
           </div>
         </div>
       </div>
@@ -297,7 +314,10 @@ const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; me
                     {p.sign} • H{p.house} {p.isRetrograde ? '℞' : ''}
                   </span>
                 </div>
-                <div className="flex-1 text-muted-foreground">{p.role}</div>
+                <div className="flex-1 text-muted-foreground">
+                  <span className="block text-[10px] text-primary mb-1">{p.name} function: {p.psychologicalJob}</span>
+                  {p.role}
+                </div>
               </div>
             ))}
           </div>
@@ -365,6 +385,28 @@ const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; me
     </SectionWrapper>
   );
 };
+
+const ImportantAspectsSection = ({ aspects }: { aspects: PsychologicalAspectSynthesis[] }) => (
+  <SectionWrapper title="Important Psychological Dynamics" emoji="↔" defaultOpen={true}>
+    <div className="space-y-2">
+      {aspects.map((a, i) => (
+        <details key={`${a.evidence}-${i}`} className="rounded-sm border border-border bg-background/40 p-3">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">{a.title}<span className="block text-xs font-normal text-muted-foreground">{a.evidence}</span></summary>
+          <div className="mt-3 space-y-2 text-xs leading-relaxed">
+            <p><span className="font-medium">Function A:</span> {a.functionA}</p>
+            <p><span className="font-medium">Function B:</span> {a.functionB}</p>
+            <p><span className="font-medium">Psychological dynamic:</span> {a.aspectDynamic}</p>
+            {a.signHouseContext && <p><span className="font-medium">Sign and house context:</span> {a.signHouseContext}</p>}
+            <ul className="list-disc pl-4">{a.howThisCanShowUp.map((line) => <li key={line}>{line}</li>)}</ul>
+            <p><span className="font-medium">When integrated:</span> {a.whenIntegrated}</p>
+            <p><span className="font-medium">Watch for:</span> {a.watchFor}</p>
+            <p><span className="font-medium">Reflect:</span> {a.reflectionQuestion}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </SectionWrapper>
+);
 
 // ─── House Emphasis Grid ────────────────────────────────────────────
 
@@ -704,6 +746,8 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
 
       {/* 1. Life Purpose & Core Identity */}
       <LifePurposeSection portrait={portrait} archetype={archetypes.lifePurpose} />
+
+      {portrait.importantAspects.length > 0 && <ImportantAspectsSection aspects={portrait.importantAspects} />}
 
       {/* 2. Top 5 Life Themes */}
       <TopThemesSection themes={portrait.topThemes} archetype={archetypes.topThemes} />

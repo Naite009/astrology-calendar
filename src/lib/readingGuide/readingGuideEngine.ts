@@ -47,6 +47,14 @@ import {
   bodyLabel, factorChip,
 } from './factorMeanings';
 import { pairAspectReading, type AspectPairReading } from './aspectPairLibrary';
+import {
+  getHouseArena,
+  getPsychologicalFunction,
+  getSignStyle,
+  synthesizePsychologicalAspect,
+  type PsychologicalAspectSynthesis,
+  type PsychologicalMapRow,
+} from '@/lib/interpretation/psychologicalFunctions';
 
 
 const ZODIAC = [
@@ -174,6 +182,8 @@ export interface ReadingGuide {
   nodes: BlendCard | null;
   chiron: BlendCard | null;
   topConnections: RankedConnection[];
+  psychologicalMap: PsychologicalMapRow[];
+  coreInnerDynamics: PsychologicalAspectSynthesis[];
   story: string;
 }
 
@@ -1185,6 +1195,36 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     nodes,
     chiron,
     topConnections,
+    psychologicalMap: placements
+      .filter(p => getPsychologicalFunction(p.body))
+      .map(p => ({
+        body: p.label,
+        psychologicalJob: getPsychologicalFunction(p.body)?.shortFunction ?? '',
+        placementStyle: `${p.sign}: ${getSignStyle(p.sign)}`,
+        lifeArena: p.house ? `${ordinalHouse(p.house)}: ${getHouseArena(p.house)}` : 'Life arena not available',
+        strongestAspects: topConnections
+          .filter(c => c.bodyA === p.body || c.bodyB === p.body)
+          .slice(0, 2)
+          .map(c => `${c.bodyA === p.body ? c.b : c.a} ${c.aspect} (${c.orb}°)`),
+      })),
+    coreInnerDynamics: topConnections
+      .filter(c => getPsychologicalFunction(c.bodyA) && getPsychologicalFunction(c.bodyB))
+      .slice(0, 5)
+      .map(c => {
+        const a = byBody.get(c.bodyA);
+        const b = byBody.get(c.bodyB);
+        return synthesizePsychologicalAspect({
+          bodyA: c.bodyA,
+          bodyB: c.bodyB,
+          aspect: c.aspect,
+          orb: c.orb,
+          signA: a?.sign,
+          signB: b?.sign,
+          houseA: a?.house,
+          houseB: b?.house,
+          stage,
+        });
+      }),
     story: storyParts.filter(Boolean).join(' '),
   };
 

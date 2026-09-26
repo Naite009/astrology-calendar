@@ -32,6 +32,7 @@ import {
   getAspectsForPlanet,
   generateSummaryNarrative
 } from '@/lib/chartDecoderLogic';
+import { getHouseArena, getPsychologicalFunction, getSignStyle, synthesizePsychologicalAspect } from '@/lib/interpretation/psychologicalFunctions';
 
 interface ChartDecoderViewProps {
   natalChart: NatalChart | null;
@@ -203,6 +204,19 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
   // Computed values
   const aspects = useMemo(() => computeAspects(planets, aspectOrbs), [planets, aspectOrbs]);
   const summaryNarrative = useMemo(() => generateSummaryNarrative(planets, useTraditional), [planets, useTraditional]);
+  const psychologicalDynamics = useMemo(() => aspects
+    .filter(a => getPsychologicalFunction(a.planet1) && getPsychologicalFunction(a.planet2))
+    .sort((a, b) => a.orb - b.orb)
+    .slice(0, 5)
+    .map(a => {
+      const p1 = planets.find(p => p.name === a.planet1);
+      const p2 = planets.find(p => p.name === a.planet2);
+      return synthesizePsychologicalAspect({
+        bodyA: a.planet1, bodyB: a.planet2, aspect: a.aspectType, orb: a.orb,
+        signA: p1?.sign, signB: p2?.sign, houseA: p1?.house, houseB: p2?.house,
+        stage: calculatedAge < 12 ? 'child' : calculatedAge < 20 ? 'teen' : 'adult',
+      });
+    }), [aspects, planets, calculatedAge]);
 
   // Get selected planet data
   const selectedPlanetData = useMemo(() => {
@@ -334,6 +348,37 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             selectedPlanet={selectedPlanet}
             useTraditional={useTraditional}
           />
+
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Core Inner Dynamics</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {psychologicalDynamics.map((dynamic) => (
+                <div key={dynamic.evidence} className="border-l-2 border-primary pl-3">
+                  <p className="text-sm font-medium text-foreground">{dynamic.title}</p>
+                  <p className="text-xs text-muted-foreground">{dynamic.aspectDynamic}</p>
+                  <p className="text-[11px] text-primary mt-1">Why: {dynamic.evidence}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Psychological Map</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">Life arena</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
+                <tbody>{planets.filter(p => getPsychologicalFunction(p.name)).map(p => (
+                  <tr key={p.name} className="border-b border-border/50 align-top">
+                    <td className="py-2 pr-3 font-medium text-foreground">{p.name}</td>
+                    <td className="py-2 pr-3">{getPsychologicalFunction(p.name)?.shortFunction}</td>
+                    <td className="py-2 pr-3">{p.sign}: {getSignStyle(p.sign)}</td>
+                    <td className="py-2 pr-3">{p.house ? `House ${p.house}: ${getHouseArena(p.house)}` : 'Not available'}</td>
+                    <td className="py-2">{aspects.filter(a => a.planet1 === p.name || a.planet2 === p.name).sort((a, b) => a.orb - b.orb).slice(0, 2).map(a => `${a.planet1 === p.name ? a.planet2 : a.planet1} ${a.aspectType} (${a.orb.toFixed(1)}°)`).join(', ') || 'No major aspect shown'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </CardContent>
+          </Card>
           
           {/* Quick Summary */}
           <Card className="bg-primary/5 border-primary/20">

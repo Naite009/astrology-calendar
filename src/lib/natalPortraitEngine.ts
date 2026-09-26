@@ -16,6 +16,15 @@ import { calculateNatalDominantPlanets, DominantPlanetsReport } from './dominant
 import { ordinal, ordinalHouse } from '@/lib/interpretation/ordinals';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import { describeBodyCount, isStellium, splitBodies, MAJOR_PLANETS as SHARED_MAJOR_PLANETS } from '@/lib/interpretation/bodyTaxonomy';
+import { computeRankedAspects } from '@/lib/aspectRanking';
+import {
+  getPsychologicalFunction,
+  getSignStyle,
+  getHouseArena,
+  synthesisFromRankedAspect,
+  type PsychologicalAspectSynthesis,
+} from '@/lib/interpretation/psychologicalFunctions';
+import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
 
 export interface NatalPortrait {
   lifePurpose: LifePurposeSummary;
@@ -32,6 +41,7 @@ export interface NatalPortrait {
   patterns: ChartPattern[];
   minorBodyPatterns: ChartPattern[];
   lifetimeWisdom: LifetimeWisdom;
+  importantAspects: PsychologicalAspectSynthesis[];
 }
 
 export interface LifePurposeSummary {
@@ -55,6 +65,17 @@ export interface LifePurposeSummary {
   dominantModality: string;
   elementBreakdown: Record<string, number>;
   modalityBreakdown: Record<string, number>;
+  bigThreePsychology: BigThreePsychology | null;
+  elementPsychology: string;
+  modalityPsychology: string;
+}
+
+export interface BigThreePsychology {
+  label: string;
+  functions: string[];
+  howTheyWorkTogether: string;
+  firstVsNeed: string;
+  evidence: string;
 }
 
 export interface RankedTheme {
@@ -82,6 +103,7 @@ export interface DomainPlanet {
   house: number;
   isRetrograde: boolean;
   role: string;
+  psychologicalJob: string;
 }
 
 export interface HouseEmphasis {
@@ -261,6 +283,55 @@ function contextualRole(planetName: string, sign: string, house: number | null, 
   return `Operates ${style} through ${area}`;
 }
 
+function domainPlanet(b: ReturnType<typeof getBodyData>[number], domainHint: string): DomainPlanet {
+  return {
+    name: b.name,
+    sign: b.sign,
+    house: b.house,
+    isRetrograde: b.isRetrograde,
+    role: contextualRole(b.name, b.sign, b.house, domainHint),
+    psychologicalJob: getPsychologicalFunction(b.name)?.shortFunction ?? 'Supporting symbolic function',
+  };
+}
+
+function processingSummary(kind: 'element' | 'modality', counts: Record<string, number>): string {
+  const ordered = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = ordered[0]?.[1] ?? 0;
+  const leaders = ordered.filter(([, count]) => count === max).map(([name]) => name);
+  const lows = ordered.filter(([, count]) => count < max && count <= 2).map(([name]) => name);
+  const elementJobs: Record<string, string> = {
+    Fire: 'activation, instinct, and initiative', Earth: 'grounding, realism, and material processing',
+    Air: 'conceptual and social processing', Water: 'emotional and intuitive processing',
+  };
+  const modalityJobs: Record<string, string> = {
+    Cardinal: 'initiating and opening a new phase', Fixed: 'sustaining and consolidating', Mutable: 'adapting and revising',
+  };
+  const jobs = kind === 'element' ? elementJobs : modalityJobs;
+  const lead = leaders.length === 1
+    ? `${leaders[0]} is the most automatic channel here: ${jobs[leaders[0]]}.`
+    : `${leaders.join(' and ')} are tied, so behavior alternates between ${leaders.map((x) => jobs[x]).join(' and ')} rather than following one default.`;
+  const low = lows.length
+    ? ` ${lows.join(' and ')} ${lows.length === 1 ? 'is' : 'are'} less automatic, not absent, and may need more deliberate use.`
+    : '';
+  return `${lead}${low}`;
+}
+
+function buildBigThreePsychology(life: Pick<LifePurposeSummary, 'sunSign' | 'moonSign' | 'risingSign' | 'sunHouse' | 'moonHouse'>): BigThreePsychology | null {
+  const card: ShorthandCard | null = bigThreeCard(life);
+  if (!card) return null;
+  return {
+    label: card.label,
+    functions: [
+      `Sun: ${getPsychologicalFunction('Sun')?.psychologicalFunction}`,
+      `Moon: ${getPsychologicalFunction('Moon')?.psychologicalFunction}`,
+      `Ascendant: ${getPsychologicalFunction('Ascendant')?.psychologicalFunction}`,
+    ],
+    howTheyWorkTogether: card.blend,
+    firstVsNeed: `People first meet the ${life.risingSign} approach (${getSignStyle(life.risingSign)}). What actually settles the person is the ${life.moonSign} Moon style (${getSignStyle(life.moonSign)}).`,
+    evidence: card.why,
+  };
+}
+
 const ALL_BODIES = [
   ...MAJOR_PLANETS, 'Chiron','NorthNode','SouthNode','Lilith','PartOfFortune','Vertex',
   'Ceres','Pallas','Juno','Vesta','Psyche','Eros','Amor','Hygiea',
@@ -402,12 +473,18 @@ const RISING_MASK: Record<string, string> = {
 
 function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantHouses = [5, 7, 8];
-  const relevantPlanets = ['Venus', 'Mars', 'Juno', 'Eros', 'Amor', 'Lilith'];
+  const seventhRulerName = getSeventhHouseRuler(chart)?.ruler;
+  const relationshipAspects = computeRankedAspects(chart);
+  const saturnIsTight = relationshipAspects.some(a =>
+    (a.a === 'Saturn' || a.b === 'Saturn') &&
+    ['Venus', 'Mars', 'Moon'].includes(a.a === 'Saturn' ? a.b : a.a) && a.orb <= 3
+  );
+  const relevantPlanets = new Set(
+    ['Venus', 'Mars', 'Moon', seventhRulerName, saturnIsTight ? 'Saturn' : null]
+      .filter((name): name is string => Boolean(name))
+  );
   
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'relationship'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.has(b.name)).map(b => domainPlanet(b, 'relationship'));
 
   const houseActivations = relevantHouses.map(h => ({
     house: h,
@@ -471,10 +548,7 @@ function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
   const relevantHouses = [2, 6, 10];
   const relevantPlanets = ['Sun', 'Saturn', 'Jupiter', 'Mars', 'Pallas'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'career'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'career'));
 
   const houseActivations = relevantHouses.map(h => ({
     house: h,
@@ -500,10 +574,7 @@ function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 function buildEmotionalDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantPlanets = ['Moon', 'Neptune', 'Pluto', 'Chiron', 'Ceres'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'emotional'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'emotional'));
 
   const moon = bodies.find(b => b.name === 'Moon');
   const houseActivations = [4, 8, 12].map(h => ({
@@ -527,10 +598,7 @@ function buildEmotionalDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
 function buildHealthDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantPlanets = ['Mars', 'Chiron', 'Hygiea', 'Ceres', 'Sun'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'health'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'health'));
 
   const houseActivations = [1, 6].map(h => ({
     house: h,
@@ -554,10 +622,7 @@ function buildHealthDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantPlanets = ['Pluto', 'Saturn', 'Chiron', 'Lilith', 'Nessus', 'Orcus'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'shadow'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'shadow'));
 
   const houseActivations = [8, 12].map(h => ({
     house: h,
@@ -581,10 +646,7 @@ function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 function buildSpiritualDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantPlanets = ['Neptune', 'NorthNode', 'SouthNode', 'Chiron', 'Sedna', 'Vesta'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'spiritual'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'spiritual'));
 
   const houseActivations = [9, 12].map(h => ({
     house: h,
@@ -927,7 +989,17 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     dominantModality: getDominant(modalities),
     elementBreakdown: elements,
     modalityBreakdown: modalities,
+    bigThreePsychology: null,
+    elementPsychology: processingSummary('element', elements),
+    modalityPsychology: processingSummary('modality', modalities),
   };
+  lifePurpose.bigThreePsychology = buildBigThreePsychology(lifePurpose);
+
+  const importantAspects = computeRankedAspects(chart)
+    .filter(a => ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron'].includes(a.a)
+      && ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron'].includes(a.b))
+    .slice(0, 8)
+    .map(a => synthesisFromRankedAspect(a));
 
   return sanitizeInterpretiveDeep<NatalPortrait>({
     lifePurpose,
@@ -944,5 +1016,6 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     patterns: detectChartPatterns(chart),
     minorBodyPatterns: detectMinorBodyPatterns(chart),
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
+    importantAspects,
   });
 }

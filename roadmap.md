@@ -37,8 +37,8 @@
 - Regression suite: src/lib/__tests__/readingGuide.test.ts (Ava 2011-05-19, teen framing, low Water, Earth/6th blend, reasoning chain).
 - Future option: advanced toggle for asteroids/extra points (deliberately excluded from the core flow).
 
-## In progress: psychological-function interpretation layer
-- [ ] Add one shared planet-function, sign-style, house-arena, and aspect-synthesis source of truth.
-- [ ] Upgrade Natal Portrait Big Three, element/modality, domains, and important-aspect explanations.
-- [ ] Upgrade Story of Self cast, planet details, aspect chemistry, psychological map, and core dynamics.
-- [ ] Preserve age-aware and interpretation-safety rules; add focused regressions and run the full checks.
+## Done: psychological-function interpretation layer
+- [x] Added one shared planet-function, sign-style, house-arena, and aspect-synthesis source of truth.
+- [x] Upgraded Natal Portrait Big Three, element/modality, domains, and important-aspect explanations.
+- [x] Upgraded Story of Self and Chart Walkthrough with psychological jobs, maps, and core dynamics.
+- [x] Preserved age-aware and interpretation-safety rules; 416 tests, typecheck, and production build pass.

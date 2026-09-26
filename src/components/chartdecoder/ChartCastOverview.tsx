@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChartPlanet, getPlanetSymbol, getSignSymbol, computeDignity } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
 import { generateCharacterProfile, CharacterProfile, PLANET_ROLES, HOUSE_STAGES } from '@/lib/cinematicNarrative';
+import { getPsychologicalFunction } from '@/lib/interpretation/psychologicalFunctions';
 
 // Traditional rulers for determining chart ruler
 const SIGN_RULERS: Record<string, string> = {
@@ -245,6 +246,9 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
 
       {/* Name & Role */}
       <h4 className="font-medium text-sm text-foreground">{planet.name}</h4>
+      {getPsychologicalFunction(planet.name) && (
+        <p className="text-[10px] text-foreground mt-0.5">{getPsychologicalFunction(planet.name)?.shortFunction}</p>
+      )}
       <p className="text-[10px] text-primary font-medium">{who.role}</p>
 
       {/* WHO / HOW / WHERE */}
