@@ -22,6 +22,7 @@ import {
 import { getDignityStatus } from '@/lib/planetDignities';
 import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
 import { synthesizePlanet } from '@/lib/planetSynthesis';
+import { getPsychologicalFunction, synthesizePsychologicalAspect } from '@/lib/interpretation/psychologicalFunctions';
 
 interface PlanetDetailCardProps {
   planet: ChartPlanet;
@@ -44,6 +45,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
   const meaning = PLANET_MEANINGS[planet.name] || 'Symbolic point in the chart.';
   const dignityExplainer = DIGNITY_EXPLAINERS[dignity];
   const synthesis = synthesizePlanet(planet, aspects, dignity);
+  const psychologicalFunction = getPsychologicalFunction(planet.name);
 
   const getOtherPlanet = (aspect: ChartAspect): ChartPlanet | undefined => {
     const otherName = aspect.planet1 === planet.name ? aspect.planet2 : aspect.planet1;
@@ -60,6 +62,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
             </span>
             <div>
               <h2 className="text-xl font-serif">{planet.name}</h2>
+              {psychologicalFunction && <p className="text-xs text-primary font-medium">{psychologicalFunction.shortFunction}</p>}
               <p className="text-sm text-muted-foreground font-normal">
                 in {getSignSymbol(planet.sign)} {planet.sign} at {planet.degree.toFixed(1)}°
                 {planet.retrograde && <span className="ml-1 text-amber-500">℞ Retrograde</span>}
@@ -83,7 +86,13 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
           <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">
             What {planet.name} Represents
           </h3>
-          <p className="text-foreground">{meaning}</p>
+          <p className="text-foreground">{psychologicalFunction?.psychologicalFunction ?? meaning}</p>
+          {psychologicalFunction && (
+            <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+              <p><span className="text-foreground">Healthy expression:</span> {psychologicalFunction.healthyExpression}</p>
+              <p><span className="text-foreground">Protective expression:</span> {psychologicalFunction.protectiveOrShadowExpression}</p>
+            </div>
+          )}
         </section>
 
         <Separator />
@@ -165,6 +174,16 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                 const isWide = aspect.orb > 5;
                 const strengthLabel = isTight ? 'EXACT' : isWide ? 'WIDE' : null;
                 const strengthColor = isTight ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground bg-muted/30';
+                const psychological = other ? synthesizePsychologicalAspect({
+                  bodyA: planet.name,
+                  bodyB: other.name,
+                  aspect: aspect.aspectType,
+                  orb: aspect.orb,
+                  signA: planet.sign,
+                  signB: other.sign,
+                  houseA: planet.house,
+                  houseB: other.house,
+                }) : null;
                 
                 return (
                   <Collapsible key={i}>
@@ -215,6 +234,18 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                       
                       {/* Expanded contextual explanation */}
                       <CollapsibleContent className="mt-3 pt-3 border-t border-current/10 space-y-3">
+                        {psychological && (
+                          <div className="space-y-2">
+                            <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium">Psychological Dynamic</h4>
+                            <p className="text-xs text-foreground/80"><span className="font-medium">{planet.name}:</span> {psychological.functionA}</p>
+                            <p className="text-xs text-foreground/80"><span className="font-medium">{other?.name}:</span> {psychological.functionB}</p>
+                            <p className="text-xs text-foreground/80">{psychological.aspectDynamic}</p>
+                            <p className="text-xs text-foreground/80">{psychological.signHouseContext}</p>
+                            <ul className="list-disc pl-4">{psychological.howThisCanShowUp.map(line => <li key={line} className="text-xs text-foreground/80">{line}</li>)}</ul>
+                            <p className="text-xs text-foreground/80"><span className="font-medium">When integrated:</span> {psychological.whenIntegrated}</p>
+                            <p className="text-xs text-muted-foreground"><span className="font-medium">Reflect:</span> {psychological.reflectionQuestion}</p>
+                          </div>
+                        )}
                         {contextualExplanation && (
                           <>
                             <div>
