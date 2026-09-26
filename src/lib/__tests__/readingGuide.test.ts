@@ -118,6 +118,18 @@ describe('Reading Guide — Ava Kravitz', () => {
     }
   });
 
+  it('uses function-first labels and explanations for the strongest house and aspect evidence', () => {
+    const items = [...guide.startHere, ...guide.startHereDeeper];
+    const cluster = items.find((i) => i.id === 'cluster');
+    const aspect = items.find((i) => i.id === 'top-aspect');
+    if (cluster) expect(cluster.shorthandLabel).toMatch(/Takes|Builds|Leads|Runs|Expands|Shapes|Root|Active/);
+    if (aspect) {
+      expect(aspect.shorthandLabel?.split(/\s+/)).toHaveLength(3);
+      expect(aspect.note).not.toMatch(/work as one unit|What it adds/i);
+      expect(aspect.note.length).toBeGreaterThan(45);
+    }
+  });
+
   it('calls a triple-sign Big Three a clear signature of that sign', () => {
     const card = bigThreeCard({ sunSign: 'Libra', moonSign: 'Libra', risingSign: 'Libra' })!;
     expect(card.label).toBe('Harmony as Compass');

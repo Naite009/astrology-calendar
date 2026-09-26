@@ -173,6 +173,38 @@ export const FACTOR_JOB: Record<string, string> = {
   NorthNode: 'the direction that stretches them',
 };
 
+const FUNCTION_LABEL: Record<string, string> = {
+  Sun: 'Identity', Moon: 'Needs', Ascendant: 'Approach', Mercury: 'Thinking',
+  Venus: 'Relating', Mars: 'Drive', Jupiter: 'Belief', Saturn: 'Standards',
+  Uranus: 'Freedom', Neptune: 'Imagination', Pluto: 'Intensity',
+  Chiron: 'Sensitivity', NorthNode: 'Growth', SouthNode: 'Familiarity',
+};
+
+const ASPECT_LABEL_VERB: Record<string, string> = {
+  conjunction: 'Fuses', opposition: 'Opposes', square: 'Presses',
+  trine: 'Supports', sextile: 'Enables', quincunx: 'Adjusts',
+};
+
+/** A compact, function-first title for a real aspect, never an adjective blend. */
+export function aspectFunctionLabel(bodyA: string, bodyB: string, aspect: string): string {
+  const a = FUNCTION_LABEL[bodyA] ?? bodyA;
+  const b = FUNCTION_LABEL[bodyB] ?? bodyB;
+  const verb = ASPECT_LABEL_VERB[aspect.toLowerCase()] ?? 'Meets';
+  return `${a} ${verb} ${b}`;
+}
+
+const HOUSE_FOCUS_LABEL: Record<number, string> = {
+  1: 'Identity Takes Lead', 2: 'Values Take Root', 3: 'Ideas Stay Active',
+  4: 'Private Life Leads', 5: 'Expression Takes Lead', 6: 'Practice Builds Skill',
+  7: 'Relationships Take Lead', 8: 'Trust Runs Deep', 9: 'Meaning Expands',
+  10: 'Public Direction Leads', 11: 'Community Shapes Goals', 12: 'Inner Life Leads',
+};
+
+/** A concrete 1-3 word title for a real house concentration. */
+export function houseConcentrationLabel(house: number): string {
+  return HOUSE_FOCUS_LABEL[house] ?? 'Shared Life Focus';
+}
+
 export const VAGUE_LABELS = [
   'complex person', 'unique energy', 'balanced individual', 'interesting mix',
   'special soul', 'well rounded', 'well-rounded', 'mixed energy', 'core blend',

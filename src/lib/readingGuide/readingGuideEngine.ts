@@ -22,6 +22,8 @@ import {
   blendCard,
   emphasisCard,
   signSignature,
+  aspectFunctionLabel,
+  houseConcentrationLabel,
   FACTOR_JOB,
   type Element,
   type ShorthandCard,
@@ -384,7 +386,7 @@ const IMPORTANCE_WEIGHT: Record<string, number> = {
 };
 
 const ASPECT_ADDS: Record<string, string> = {
-  conjunction: 'these two work as one unit — you rarely get one without the other',
+  conjunction: 'one function tends to activate the other, so thought, feeling, or action can arrive in the same moment',
   opposition: 'these two pull in different directions and need a working balance',
   square: 'these two create friction that usually pushes real effort',
   trine: 'these two support each other easily, often without being noticed',
@@ -975,7 +977,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     startHere.push({
       id: 'cluster',
       label: 'Strongest house concentration',
-      shorthandLabel: clusterCard?.label ?? null,
+      shorthandLabel: houseConcentrationLabel(c.house),
       value: `${ordinalHouse(c.house)} — ${c.bodies.join(', ')}`,
       note: c.theme,
       importance: 92,
@@ -1090,9 +1092,9 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     startHere.push({
       id: 'top-aspect',
       label: 'Tightest major connection',
-      shorthandLabel: pairCard?.label ?? null,
+      shorthandLabel: aspectFunctionLabel(t.bodyA, t.bodyB, t.aspect),
       value: `${t.a} ${t.symbol} ${t.b} (${t.orb}°)`,
-      note: `What it adds: ${t.adds}.`,
+      note: `${t.reading.headline}. ${t.reading.howItWorks[0] ?? t.adds}`,
       importance: 86,
     });
   }
