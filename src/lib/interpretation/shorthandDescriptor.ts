@@ -342,6 +342,7 @@ export function bigThreeCard(input: {
     { label: `Sun in ${modifierSign}`, contributes: FACTOR_JOB.Sun, sign: modifierSign },
     SIGN_NOUN[sunSign]
   );
+  const sameSign = moonSign === sunSign;
   const sunAim = SIGN_AIM[sunSign] ?? SIGN_NOUN[sunSign];
   const moonAim = moonSign ? SIGN_AIM[moonSign] ?? SIGN_NOUN[moonSign] : null;
   const label = moonAim
@@ -351,8 +352,6 @@ export function bigThreeCard(input: {
         ? `${sunAim} Meets ${moonAim}`
         : `${moonAim} Grounds ${sunAim}`
     : `${sunAim} in Motion`;
-
-  const sameSign = moonSign === sunSign;
   const blendParts: string[] = [];
   if (moonSign) {
     blendParts.push(
