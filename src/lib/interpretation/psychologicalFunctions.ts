@@ -220,6 +220,7 @@ const TITLE_OBJECT: Partial<Record<PsychologicalBody, string>> = {
 };
 
 export function getPsychologicalFunction(body: string): PsychologicalFunctionDefinition | null {
+  if (body === 'Midheaven') return FUNCTIONS.MC;
   return FUNCTIONS[body as PsychologicalBody] ?? null;
 }
 
