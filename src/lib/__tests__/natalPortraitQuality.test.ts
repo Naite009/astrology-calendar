@@ -204,6 +204,13 @@ describe("Ava Kravitz natal portrait regression", () => {
     const text = collectStrings(report).join('\n');
     expect(findForbiddenPhrases(text)).toEqual([]);
   });
+
+  it('uses a psychological Big Three label rather than adjective soup', () => {
+    const portrait = generateNatalPortrait(chart);
+    const label = portrait.lifePurpose.bigThreePsychology?.label ?? '';
+    expect(label).toMatch(/grounds|meets|compass|motion/i);
+    expect(label).not.toMatch(/balanced harmonizer|magnetic leader|complex person|unique energy/i);
+  });
 });
 
 describe('language policy sanitizer', () => {

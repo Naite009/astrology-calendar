@@ -120,7 +120,7 @@ describe('Reading Guide — Ava Kravitz', () => {
 
   it('calls a triple-sign Big Three a clear signature of that sign', () => {
     const card = bigThreeCard({ sunSign: 'Libra', moonSign: 'Libra', risingSign: 'Libra' })!;
-    expect(card.label).toBe('Diplomatic Harmonizer');
+    expect(card.label).toBe('Harmony as Compass');
     const base = buildAvaChart();
     const synthetic = {
       ...base,
@@ -135,7 +135,7 @@ describe('Reading Guide — Ava Kravitz', () => {
     } as NatalChart;
     const tripleGuide = buildReadingGuide(synthetic, { now: NOW });
     const bt = tripleGuide.startHere.find((i) => i.id === 'big-three')!;
-    expect(bt.shorthandLabel).toBe('Diplomatic Harmonizer');
+    expect(bt.shorthandLabel).toBe('Harmony as Compass');
     expect(bt.note).toMatch(/clear Libra signature/i);
   });
 

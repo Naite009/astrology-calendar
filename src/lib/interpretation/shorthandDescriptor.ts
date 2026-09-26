@@ -85,6 +85,13 @@ const SIGN_APPROACH: Record<string, string> = {
   Pisces: 'feels the atmosphere and moves gently',
 };
 
+/** Concrete psychological aim used in synthesis labels, not a personality adjective. */
+const SIGN_AIM: Record<string, string> = {
+  Aries: 'Action', Taurus: 'Stability', Gemini: 'Understanding', Cancer: 'Belonging',
+  Leo: 'Recognition', Virgo: 'Usefulness', Libra: 'Harmony', Scorpio: 'Trust',
+  Sagittarius: 'Freedom', Capricorn: 'Competence', Aquarius: 'Independence', Pisces: 'Meaning',
+};
+
 const ELEMENT_ADJ: Record<Element, string> = {
   Fire: 'Momentum-Driven', Earth: 'Grounded', Air: 'Idea-Driven', Water: 'Feeling-Led',
 };
@@ -330,11 +337,20 @@ export function bigThreeCard(input: {
   // the Ascendant takes the noun slot.
   const roleSign = moonSign && SIGN_NOUN[moonSign] ? moonSign : (risingSign && SIGN_NOUN[risingSign] ? risingSign : sunSign);
   const modifierSign = sunSign;
-  const { label, tension } = shorthandLabel(
+  const { tension } = shorthandLabel(
     { label: `Moon in ${roleSign}`, contributes: FACTOR_JOB.Moon, sign: roleSign },
     { label: `Sun in ${modifierSign}`, contributes: FACTOR_JOB.Sun, sign: modifierSign },
     SIGN_NOUN[sunSign]
   );
+  const sunAim = SIGN_AIM[sunSign] ?? SIGN_NOUN[sunSign];
+  const moonAim = moonSign ? SIGN_AIM[moonSign] ?? SIGN_NOUN[moonSign] : null;
+  const label = moonAim
+    ? sameSign
+      ? `${sunAim} as Compass`
+      : tension
+        ? `${sunAim} Meets ${moonAim}`
+        : `${moonAim} Grounds ${sunAim}`
+    : `${sunAim} in Motion`;
 
   const sameSign = moonSign === sunSign;
   const blendParts: string[] = [];
