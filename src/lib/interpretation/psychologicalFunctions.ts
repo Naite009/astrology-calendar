@@ -1,5 +1,6 @@
 import type { RankedAspect, AspectName } from '@/lib/aspectRanking';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
+import { pairAspectReading } from '@/lib/readingGuide/aspectPairLibrary';
 
 export type PsychologicalBody =
   | 'Sun' | 'Moon' | 'Mercury' | 'Venus' | 'Mars' | 'Jupiter' | 'Saturn'
@@ -212,13 +213,6 @@ const ASPECT_DYNAMICS: Record<string, string> = {
   sesquisquare: 'The functions create recurring pressure that asks for course correction. This carries less weight than a major aspect.',
 };
 
-const TITLE_OBJECT: Partial<Record<PsychologicalBody, string>> = {
-  Sun: 'identity', Moon: 'emotional safety', Mercury: 'the mind', Venus: 'bonding', Mars: 'drive',
-  Jupiter: 'meaning', Saturn: 'the internal rule-maker', Uranus: 'freedom', Neptune: 'imagination',
-  Pluto: 'power and renewal', Chiron: 'sensitivity', NorthNode: 'developmental stretch',
-  SouthNode: 'familiar pattern', Ascendant: 'first response', MC: 'public direction',
-};
-
 export function getPsychologicalFunction(body: string): PsychologicalFunctionDefinition | null {
   if (body === 'Midheaven') return FUNCTIONS.MC;
   return FUNCTIONS[body as PsychologicalBody] ?? null;
@@ -237,6 +231,20 @@ function stageFunction(body: string, text: string, stage: DevelopmentalStage): s
   if (body === 'Mars') return text.replace(/desire, assertion, anger, pursuit, drive/g, 'motivation, assertion, anger, pursuit, and drive').replace(/attraction when age-appropriate, /g, '');
   if (body === 'Venus') return text.replace(/relating, attraction, receptivity/g, 'relating, preference, receptivity');
   return text;
+}
+
+function stageText(text: string, stage: DevelopmentalStage): string {
+  if (stage === 'adult') return text;
+  return text
+    .replace(/fast intimacy/gi, 'fast closeness')
+    .replace(/intimacy/gi, 'closeness')
+    .replace(/romantic imagination/gi, 'idealized closeness')
+    .replace(/romantic/gi, 'relationship')
+    .replace(/love,/gi, 'care,')
+    .replace(/dating/gi, 'relationships')
+    .replace(/career/gi, 'long-term direction')
+    .replace(/professional/gi, 'school or project')
+    .replace(/money/gi, 'resources');
 }
 
 function functionClause(body: string, stage: DevelopmentalStage): string {
@@ -263,40 +271,38 @@ function reflectionForPair(a: string, b: string, aspect: string): string {
   return fa ?? fb ?? 'Where do you notice these two functions helping or interrupting one another in ordinary life?';
 }
 
+function pairIntegration(bodyA: string, bodyB: string, headline: string): string {
+  const a = getPsychologicalFunction(bodyA)?.shortFunction.toLowerCase() ?? bodyA.toLowerCase();
+  const b = getPsychologicalFunction(bodyB)?.shortFunction.toLowerCase() ?? bodyB.toLowerCase();
+  return `When integrated, ${headline.toLowerCase()}: ${a} can respond to ${b} without either function having to disappear or take over.`;
+}
+
 export function synthesizePsychologicalAspect(input: PsychologicalAspectContext): PsychologicalAspectSynthesis {
   const stage = input.stage ?? 'adult';
-  const fa = getPsychologicalFunction(input.bodyA);
-  const fb = getPsychologicalFunction(input.bodyB);
   const aspect = input.aspect.toLowerCase();
-  const dynamic = ASPECT_DYNAMICS[aspect] ?? 'The functions are linked, but this minor contact should stay secondary to tighter major aspects.';
-  const titleA = TITLE_OBJECT[input.bodyA as PsychologicalBody] ?? input.bodyA.toLowerCase();
-  const titleB = TITLE_OBJECT[input.bodyB as PsychologicalBody] ?? input.bodyB.toLowerCase();
+  const pair = pairAspectReading(input.bodyA, input.bodyB, aspect, input.orb ?? 0);
+  const dynamic = pair.howItWorks.join(' ')
+    || ASPECT_DYNAMICS[aspect]
+    || 'The functions are linked, but this minor contact should stay secondary to tighter major aspects.';
   const signContext = [
     placementClause(input.bodyA, input.signA, input.houseA),
     placementClause(input.bodyB, input.signB, input.houseB),
   ].filter(Boolean).join(' ');
-  const polarity = aspect === 'opposition' ? 'alternate between the two needs or notice one side first in other people'
-    : aspect === 'square' ? 'feel one function interrupt the other at decision points'
-    : aspect === 'conjunction' ? 'experience both functions arriving together'
-    : aspect === 'trine' ? 'use both functions together with little preparation'
-    : aspect === 'sextile' ? 'discover that one function gives the other a useful opening when practiced'
-    : 'need to adjust the timing and expectations of each function';
   const authorityNote = input.bodyA === 'Saturn' || input.bodyB === 'Saturn'
     ? ' In some lives this can echo authority, parenting, or internalized rules, but the chart alone cannot identify a person or event.'
     : '';
   const result: PsychologicalAspectSynthesis = {
-    title: `${capitalize(titleA)} meets ${titleB}`,
+    title: stageText(pair.headline, stage),
     functionA: functionClause(input.bodyA, stage),
     functionB: functionClause(input.bodyB, stage),
-    aspectDynamic: `${dynamic}${authorityNote}`,
+    aspectDynamic: `${stageText(dynamic, stage)}${authorityNote}`,
     signHouseContext: signContext,
-    howThisCanShowUp: [
-      `A person may ${polarity}, especially when both functions are needed at once.`,
-      `${fa?.shortFunction ?? input.bodyA} and ${fb?.shortFunction ?? input.bodyB} become part of the same recurring decision pattern.`,
-    ],
-    whenIntegrated: `When integrated, ${titleA} can make room for ${titleB}, and ${titleB} can answer without canceling the first function.`,
-    watchFor: `Watch for treating ${titleA} and ${titleB} as an either-or choice. This aspect describes a tendency to work with, not a fixed outcome.`,
-    reflectionQuestion: reflectionForPair(input.bodyA, input.bodyB, aspect),
+    howThisCanShowUp: pair.mayShowUp.map(line => stageText(line, stage)),
+    whenIntegrated: stageText(pairIntegration(input.bodyA, input.bodyB, pair.headline), stage),
+    watchFor: stageText(pair.watchFor, stage),
+    reflectionQuestion: ['Jupiter|Mercury', 'Moon|Saturn', 'Saturn|Venus'].includes([input.bodyA, input.bodyB].sort().join('|'))
+      ? reflectionForPair(input.bodyA, input.bodyB, aspect)
+      : stageText(pair.askThis, stage),
     evidence: `${input.bodyA}${input.signA ? ` in ${input.signA}` : ''}${input.houseA ? `, House ${input.houseA}` : ''} ${aspect} ${input.bodyB}${input.signB ? ` in ${input.signB}` : ''}${input.houseB ? `, House ${input.houseB}` : ''}${typeof input.orb === 'number' ? `, ${input.orb.toFixed(1)}° orb` : ''}.`,
   };
   return sanitizeInterpretiveDeep(result);
@@ -307,10 +313,6 @@ export function synthesisFromRankedAspect(aspect: RankedAspect, stage: Developme
     bodyA: aspect.a, bodyB: aspect.b, aspect: aspect.aspect, orb: aspect.orb,
     signA: aspect.aSign, signB: aspect.bSign, houseA: aspect.aHouse, houseB: aspect.bHouse, stage,
   });
-}
-
-function capitalize(value: string): string {
-  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
 export function isPsychologicalBody(body: string): body is PsychologicalBody {

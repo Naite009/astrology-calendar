@@ -120,7 +120,7 @@ describe('Reading Guide — Ava Kravitz', () => {
 
   it('calls a triple-sign Big Three a clear signature of that sign', () => {
     const card = bigThreeCard({ sunSign: 'Libra', moonSign: 'Libra', risingSign: 'Libra' })!;
-    expect(card.label).toBe('Diplomatic Harmonizer');
+    expect(card.label).toBe('Harmony as Compass');
     const base = buildAvaChart();
     const synthetic = {
       ...base,
@@ -135,7 +135,7 @@ describe('Reading Guide — Ava Kravitz', () => {
     } as NatalChart;
     const tripleGuide = buildReadingGuide(synthetic, { now: NOW });
     const bt = tripleGuide.startHere.find((i) => i.id === 'big-three')!;
-    expect(bt.shorthandLabel).toBe('Diplomatic Harmonizer');
+    expect(bt.shorthandLabel).toBe('Harmony as Compass');
     expect(bt.note).toMatch(/clear Libra signature/i);
   });
 
@@ -233,6 +233,16 @@ describe('Reading Guide — Ava Kravitz', () => {
     // Teen framing: no adult career/marriage/finance claims, no medical claims.
     expect(guide.story).not.toMatch(/\bcareer\b|\bmarriage\b|\bspouse\b|\bfinances\b|\bdiagnos/i);
     expect(guide.story).toMatch(/not.*fixed|tendencies/i);
+    expect(guide.story).not.toMatch(/who you is|you tends\b|you comes\b/i);
+  });
+
+  it('uses distinct psychological mechanisms for unrelated top connections', () => {
+    const fingerprints = guide.coreInnerDynamics.map(d => `${d.title}|${d.aspectDynamic}|${d.watchFor}`);
+    expect(new Set(fingerprints).size).toBe(fingerprints.length);
+    guide.coreInnerDynamics.forEach(d => {
+      expect(d.howThisCanShowUp.length).toBeGreaterThanOrEqual(2);
+      expect(d.evidence).toMatch(/° orb/);
+    });
   });
 
   it('passes the shared interpretation language policy everywhere', () => {

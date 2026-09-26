@@ -271,7 +271,7 @@ const SIGN_ACTION: Record<string, string> = {
 const BODY_FRAME: Record<string, { name: (n: string) => string; say: (a: string) => string; ask: string }> = {
   Sun: {
     name: (n) => `${n} as identity`,
-    say: (a) => `A lot of who ${'{sub}'} is shows up when ${a}`,
+    say: (a) => `${'{Sub}'} feel most like ${'{yourself}'} when ${a}`,
     ask: 'When do you feel most like yourself?',
   },
   Moon: {
@@ -291,7 +291,7 @@ const BODY_FRAME: Record<string, { name: (n: string) => string; say: (a: string)
   },
   Mars: {
     name: (n) => `Effort powered by ${n.toLowerCase()}`,
-    say: (a) => `${'{Sub}'} tends to put real energy in when ${a}`,
+    say: (a) => `${'{Sub}'} put${'{verbS}'} real energy in when ${a}`,
     ask: 'What kind of thing gets you moving without anyone pushing?',
   },
   Ascendant: {
@@ -328,17 +328,19 @@ const BODY_FRAME: Record<string, { name: (n: string) => string; say: (a: string)
 
 function subjectWords(stage: AgeStage) {
   return voiceFor(stage) === 'you'
-    ? { sub: 'you', Sub: 'You', your: 'your', Your: 'Your' }
-    : { sub: 'they', Sub: 'They', your: 'their', Your: 'Their' };
+    ? { sub: 'you', Sub: 'You', your: 'your', Your: 'Your', yourself: 'yourself', verbS: '' }
+    : { sub: 'they', Sub: 'They', your: 'their', Your: 'Their', yourself: 'themselves', verbS: 's' };
 }
 
 function speak(template: string, stage: AgeStage): string {
-  const { sub, Sub, your, Your } = subjectWords(stage);
+  const { sub, Sub, your, Your, yourself, verbS } = subjectWords(stage);
   let out = template
     .replace(/\{sub\}/g, sub)
     .replace(/\{Sub\}/g, Sub)
     .replace(/\{your\}/g, your)
-    .replace(/\{Your\}/g, Your);
+    .replace(/\{Your\}/g, Your)
+    .replace(/\{yourself\}/g, yourself)
+    .replace(/\{verbS\}/g, verbS);
   out = applyStageVocabulary(out, stage);
   if (!/[.!?]$/.test(out)) out += '.';
   return out.charAt(0).toUpperCase() + out.slice(1);
@@ -1106,7 +1108,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   if (sun && moon && asc) {
     storyParts.push(
       speak(
-        `Reading this as a whole: ${'{sub}'} comes across as ${SIGN_MEANINGS[asc.sign].split(',')[0]}, ${'{your}'} sense of self runs on ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and what settles ${'{sub}'} is ${SIGN_MEANINGS[moon.sign].split(',')[0]}`,
+        `Reading this as a whole: people first meet ${'{your}'} ${SIGN_MEANINGS[asc.sign].split(',')[0]} approach, ${'{your}'} sense of self reaches for ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and ${SIGN_MEANINGS[moon.sign].split(',')[0]} is what helps ${'{sub}'} settle`,
         stage
       )
     );

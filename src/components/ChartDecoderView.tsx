@@ -217,6 +217,16 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         stage: calculatedAge < 12 ? 'child' : calculatedAge < 20 ? 'teen' : 'adult',
       });
     }), [aspects, planets, calculatedAge]);
+  const psychologicalForAspect = (aspect: typeof aspects[number]) => {
+    const p1 = planets.find(p => p.name === aspect.planet1);
+    const p2 = planets.find(p => p.name === aspect.planet2);
+    if (!p1 || !p2 || !getPsychologicalFunction(p1.name) || !getPsychologicalFunction(p2.name)) return null;
+    return synthesizePsychologicalAspect({
+      bodyA: p1.name, bodyB: p2.name, aspect: aspect.aspectType, orb: aspect.orb,
+      signA: p1.sign, signB: p2.sign, houseA: p1.house, houseB: p2.house,
+      stage: calculatedAge < 12 ? 'child' : calculatedAge < 20 ? 'teen' : 'adult',
+    });
+  };
 
   // Get selected planet data
   const selectedPlanetData = useMemo(() => {
@@ -353,11 +363,17 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Core Inner Dynamics</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {psychologicalDynamics.map((dynamic) => (
-                <div key={dynamic.evidence} className="border-l-2 border-primary pl-3">
-                  <p className="text-sm font-medium text-foreground">{dynamic.title}</p>
-                  <p className="text-xs text-muted-foreground">{dynamic.aspectDynamic}</p>
-                  <p className="text-[11px] text-primary mt-1">Why: {dynamic.evidence}</p>
-                </div>
+                <details key={dynamic.evidence} className="border-l-2 border-primary pl-3">
+                  <summary className="cursor-pointer text-sm font-medium text-foreground">{dynamic.title}<span className="block text-[11px] font-normal text-primary">{dynamic.evidence}</span></summary>
+                  <div className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+                    <p>{dynamic.aspectDynamic}</p>
+                    {dynamic.signHouseContext && <p>{dynamic.signHouseContext}</p>}
+                    <ul className="list-disc pl-4">{dynamic.howThisCanShowUp.map(line => <li key={line}>{line}</li>)}</ul>
+                    <p><span className="font-medium text-foreground">When integrated:</span> {dynamic.whenIntegrated}</p>
+                    <p><span className="font-medium text-foreground">Watch for:</span> {dynamic.watchFor}</p>
+                    <p><span className="font-medium text-foreground">Ask:</span> {dynamic.reflectionQuestion}</p>
+                  </div>
+                </details>
               ))}
             </CardContent>
           </Card>
@@ -431,6 +447,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
                   aspects={selectedPlanetData.aspects}
                   dispositorChain={selectedPlanetData.dispositorChain}
                   allPlanets={planets}
+                  stage={calculatedAge < 12 ? 'child' : calculatedAge < 20 ? 'teen' : 'adult'}
                 />
               )}
 
@@ -478,33 +495,30 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
                   <div>
                     <h4 className="text-xs text-emerald-500 font-medium mb-2">Allies (Flowing)</h4>
                     <div className="flex flex-wrap gap-2">
-                      {aspects.filter(a => ['trine', 'sextile'].includes(a.aspectType)).slice(0, 8).map((a, i) => (
-                        <span key={i} className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded">
-                          {a.planet1} {a.aspectType === 'trine' ? '△' : '✱'} {a.planet2}
-                        </span>
-                      ))}
+                      {aspects.filter(a => ['trine', 'sextile'].includes(a.aspectType)).slice(0, 8).map((a, i) => {
+                        const dynamic = psychologicalForAspect(a);
+                        return <details key={i} className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded"><summary className="cursor-pointer">{a.planet1} {a.aspectType === 'trine' ? '△' : '✱'} {a.planet2}</summary>{dynamic && <p className="mt-2 max-w-sm text-foreground">{dynamic.title}. {dynamic.aspectDynamic}</p>}</details>;
+                      })}
                     </div>
                   </div>
                   
                   <div>
                     <h4 className="text-xs text-amber-500 font-medium mb-2">Rivals (Productive Tension)</h4>
                     <div className="flex flex-wrap gap-2">
-                      {aspects.filter(a => ['square', 'opposition'].includes(a.aspectType)).slice(0, 8).map((a, i) => (
-                        <span key={i} className="text-xs bg-amber-500/10 text-amber-600 px-2 py-1 rounded">
-                          {a.planet1} {a.aspectType === 'square' ? '□' : '☍'} {a.planet2}
-                        </span>
-                      ))}
+                      {aspects.filter(a => ['square', 'opposition'].includes(a.aspectType)).slice(0, 8).map((a, i) => {
+                        const dynamic = psychologicalForAspect(a);
+                        return <details key={i} className="text-xs bg-amber-500/10 text-amber-600 px-2 py-1 rounded"><summary className="cursor-pointer">{a.planet1} {a.aspectType === 'square' ? '□' : '☍'} {a.planet2}</summary>{dynamic && <p className="mt-2 max-w-sm text-foreground">{dynamic.title}. {dynamic.aspectDynamic}</p>}</details>;
+                      })}
                     </div>
                   </div>
                   
                   <div>
                     <h4 className="text-xs text-primary font-medium mb-2">Merged (Conjunctions)</h4>
                     <div className="flex flex-wrap gap-2">
-                      {aspects.filter(a => a.aspectType === 'conjunction').slice(0, 6).map((a, i) => (
-                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                          {a.planet1} ☌ {a.planet2}
-                        </span>
-                      ))}
+                      {aspects.filter(a => a.aspectType === 'conjunction').slice(0, 6).map((a, i) => {
+                        const dynamic = psychologicalForAspect(a);
+                        return <details key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"><summary className="cursor-pointer">{a.planet1} ☌ {a.planet2}</summary>{dynamic && <p className="mt-2 max-w-sm text-foreground">{dynamic.title}. {dynamic.aspectDynamic}</p>}</details>;
+                      })}
                     </div>
                   </div>
                 </div>

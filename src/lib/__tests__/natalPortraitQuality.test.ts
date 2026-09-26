@@ -187,6 +187,11 @@ describe("Ava Kravitz natal portrait regression", () => {
     const advice = rel.advice || '';
     expect(advice).toMatch(/Venus/);
     expect(advice).toMatch(/Mars|7th house/);
+    expect(advice).toMatch(/Moon/);
+    expect(rel.summary).toMatch(/Moon/);
+    expect(rel.summary).toMatch(/Venus/);
+    expect(rel.summary).toMatch(/Mars/);
+    expect(rel.evidence?.some(line => /ruler of the 7th/.test(line))).toBe(true);
     expect(advice.toLowerCase()).not.toContain("that's where love shows up most naturally");
   });
 
@@ -198,6 +203,13 @@ describe("Ava Kravitz natal portrait regression", () => {
     expect(report.indexExplainer?.toLowerCase()).toContain('relative');
     const text = collectStrings(report).join('\n');
     expect(findForbiddenPhrases(text)).toEqual([]);
+  });
+
+  it('uses a psychological Big Three label rather than adjective soup', () => {
+    const portrait = generateNatalPortrait(chart);
+    const label = portrait.lifePurpose.bigThreePsychology?.label ?? '';
+    expect(label).toMatch(/grounds|meets|compass|motion/i);
+    expect(label).not.toMatch(/balanced harmonizer|magnetic leader|complex person|unique energy/i);
   });
 });
 

@@ -42,8 +42,8 @@ describe('psychological function library', () => {
   it('distinguishes Mercury trine Jupiter from Mercury square Jupiter', () => {
     const trine = synthesizePsychologicalAspect({ bodyA: 'Mercury', bodyB: 'Jupiter', aspect: 'trine' });
     const square = synthesizePsychologicalAspect({ bodyA: 'Mercury', bodyB: 'Jupiter', aspect: 'square' });
-    expect(trine.aspectDynamic).toMatch(/cooperate easily/i);
-    expect(square.aspectDynamic).toMatch(/friction|problem-solving/i);
+    expect(trine.aspectDynamic).toMatch(/cooperate|without much resistance/i);
+    expect(square.aspectDynamic).toMatch(/disagree|friction|pressure|problem-solving/i);
     expect(trine.reflectionQuestion).not.toBe(square.reflectionQuestion);
   });
 
@@ -62,6 +62,42 @@ describe('psychological function library', () => {
     for (const stage of ['child', 'teen'] as const) {
       const reading = synthesizePsychologicalAspect({ bodyA: 'Venus', bodyB: 'Mars', aspect: 'square', stage });
       expect(JSON.stringify(reading)).not.toMatch(/sexual|erotic|libido/i);
+    }
+  });
+
+  it('gives the requested high-value pairs distinct function-derived narratives', () => {
+    const cases = [
+      ['Venus', 'Saturn', 'opposition'],
+      ['Moon', 'Saturn', 'square'],
+      ['Mercury', 'Jupiter', 'trine'],
+      ['Mars', 'Pluto', 'square'],
+      ['Venus', 'Neptune', 'opposition'],
+      ['Moon', 'Uranus', 'square'],
+    ] as const;
+    const readings = cases.map(([bodyA, bodyB, aspect]) => synthesizePsychologicalAspect({ bodyA, bodyB, aspect, orb: 1.5 }));
+    expect(new Set(readings.map(r => r.title)).size).toBe(readings.length);
+    expect(new Set(readings.map(r => r.aspectDynamic)).size).toBe(readings.length);
+    expect(new Set(readings.map(r => r.watchFor)).size).toBe(readings.length);
+    expect(readings[3].aspectDynamic).toMatch(/drive|intensity|power/i);
+    expect(readings[4].aspectDynamic).toMatch(/pleasure|affection|ideal|blur/i);
+    expect(readings[5].aspectDynamic).toMatch(/comfort|security|freedom|disruption/i);
+  });
+
+  it('does not reuse one generic square narrative across unrelated pairs', () => {
+    const marsPluto = synthesizePsychologicalAspect({ bodyA: 'Mars', bodyB: 'Pluto', aspect: 'square' });
+    const moonSaturn = synthesizePsychologicalAspect({ bodyA: 'Moon', bodyB: 'Saturn', aspect: 'square' });
+    expect(marsPluto.title).not.toBe(moonSaturn.title);
+    expect(marsPluto.aspectDynamic).not.toBe(moonSaturn.aspectDynamic);
+    expect(marsPluto.howThisCanShowUp).not.toEqual(moonSaturn.howThisCanShowUp);
+  });
+
+  it('keeps every child and teen pairing free of adult-only language', () => {
+    for (const stage of ['child', 'teen'] as const) {
+      for (const body of PSYCHOLOGICAL_BODIES) {
+        if (body === 'Saturn') continue;
+        const reading = synthesizePsychologicalAspect({ bodyA: body, bodyB: 'Saturn', aspect: 'square', stage });
+        expect(JSON.stringify(reading)).not.toMatch(/sexual|erotic|libido|spouse|marriage|mortgage|salary|dating history/i);
+      }
     }
   });
 });

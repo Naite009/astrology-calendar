@@ -21,6 +21,8 @@ interface Rule {
 }
 
 const RULES: Rule[] = [
+  // User-facing prose uses commas, periods, or parentheses instead of em dashes.
+  { id: 'style-no-em-dash', pattern: /\s*—\s*/g, replace: ', ' },
   // ── Chiron / wounding ──────────────────────────────────────────────
   { id: 'chiron-deepest-wound-possessive', pattern: /\byour deepest wounds?\b/gi, replace: 'an area of deep sensitivity for you' },
   { id: 'chiron-deepest-wound', pattern: /\bthe deepest wounds?\b/gi, replace: 'a tender, sensitive area' },

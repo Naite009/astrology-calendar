@@ -301,6 +301,9 @@ const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; me
     <SectionWrapper title={domain.title} emoji={domain.emoji} archetype={archetype}>
       <div className="space-y-4">
         <p className="text-[12px] text-foreground leading-relaxed">{domain.summary}</p>
+        {domain.evidence?.length ? (
+          <p className="text-[11px] text-muted-foreground"><span className="font-medium text-foreground">Why:</span> {domain.evidence.join(' • ')}</p>
+        ) : null}
 
         {/* Key Planets */}
         {domain.keyPlanets.length > 0 && (

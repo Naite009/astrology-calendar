@@ -1,7 +1,7 @@
 /**
  * Section Archetypes — short "what does this mean" labels for the Natal Portrait.
  *
- * Every label is one or two words (e.g. "Magnetic Leader") and is always paired
+ * Every label is concise (for example, "Trust Meets Recognition") and is always paired
  * with the exact placement it came from, so nothing reads as a verdict or a
  * personality type. Labels are shorthand for the section below them, never a
  * replacement for the evidence.
@@ -41,7 +41,7 @@ const SIGN_ADJ: Record<string, string> = {
   Cancer: 'Protective',
   Leo: 'Radiant',
   Virgo: 'Precise',
-  Libra: 'Balanced',
+  Libra: 'Diplomatic',
   Scorpio: 'Magnetic',
   Sagittarius: 'Far-Seeing',
   Capricorn: 'Strategic',
@@ -173,7 +173,9 @@ const domainLabel = (
   });
   return {
     label: card?.label ?? pair(adj(key.sign), sectionNoun, sectionNoun),
-    why: `From ${key.name} in ${key.sign}${key.house ? ` (house ${key.house})` : ''}.`,
+    why: second?.sign
+      ? `From ${key.name} in ${key.sign}${key.house ? ` (house ${key.house})` : ''} working with ${second.name} in ${second.sign}${second.house ? ` (house ${second.house})` : ''}.`
+      : `From ${key.name} in ${key.sign}${key.house ? ` (house ${key.house})` : ''}.`,
     card,
   };
 };

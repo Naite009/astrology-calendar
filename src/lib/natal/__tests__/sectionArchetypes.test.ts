@@ -33,8 +33,8 @@ describe('natal portrait section archetypes', () => {
   const portrait = generateNatalPortrait(chart);
   const archetypes = buildSectionArchetypes(portrait, chart);
 
-  it('combines the Big Three into a one-or-two-word label', () => {
-    expect(archetypes.lifePurpose.label).toBe('Magnetic Leader');
+  it('combines the Big Three into a concise psychological tension label', () => {
+    expect(archetypes.lifePurpose.label).toBe('Trust Meets Recognition');
     expect(archetypes.lifePurpose.why).toContain('Sun in Scorpio');
     expect(archetypes.lifePurpose.why).toContain('Moon in Leo');
   });
@@ -46,7 +46,7 @@ describe('natal portrait section archetypes', () => {
       'powerPortrait', 'dominantPlanets', 'patterns', 'lifetimeWisdom',
     ]) {
       expect(archetypes[key], `missing archetype for ${key}`).toBeTruthy();
-      expect(archetypes[key].label.trim().split(/\s+/).length).toBeLessThanOrEqual(2);
+      expect(archetypes[key].label.trim().split(/\s+/).length).toBeLessThanOrEqual(3);
       expect(archetypes[key].why.length).toBeGreaterThan(5);
     }
   });
@@ -68,7 +68,7 @@ describe('natal portrait section archetypes', () => {
     const thin = { ...chart, planets: { Sun: { sign: 'Scorpio', degree: 1, minutes: 0 }, Moon: { sign: 'Leo', degree: 1, minutes: 0 } } } as unknown as NatalChart;
     const thinPortrait = generateNatalPortrait(thin);
     const thinArchetypes = buildSectionArchetypes(thinPortrait, thin);
-    expect(thinArchetypes.lifePurpose.label).toBe('Magnetic Leader');
+    expect(thinArchetypes.lifePurpose.label).toBe('Trust Meets Recognition');
     expect(thinArchetypes.patterns.label).toBe('Open Weave');
   });
 });
