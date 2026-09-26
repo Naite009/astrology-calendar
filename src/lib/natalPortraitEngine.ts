@@ -19,6 +19,7 @@ import { describeBodyCount, isStellium, splitBodies, MAJOR_PLANETS as SHARED_MAJ
 import { computeRankedAspects } from '@/lib/aspectRanking';
 import {
   getPsychologicalFunction,
+  describeFunctionInPlacement,
   getSignStyle,
   getHouseArena,
   synthesisFromRankedAspect,
