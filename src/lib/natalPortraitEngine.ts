@@ -19,7 +19,6 @@ import { describeBodyCount, isStellium, splitBodies, MAJOR_PLANETS as SHARED_MAJ
 import { computeRankedAspects } from '@/lib/aspectRanking';
 import {
   getPsychologicalFunction,
-  describeFunctionInPlacement,
   getSignStyle,
   getHouseArena,
   synthesisFromRankedAspect,
@@ -693,7 +692,11 @@ function buildShadowDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 
   const pluto = bodies.find(b => b.name === 'Pluto');
   const plutoFunction = pluto ? getPsychologicalFunction('Pluto') : null;
-  const plutoContext = pluto ? describeFunctionInPlacement('Pluto', pluto.sign, pluto.house) : null;
+  const plutoContext = pluto ? {
+    signStyle: getSignStyle(pluto.sign),
+    houseArena: getHouseArena(pluto.house),
+    oneLine: `Pluto in ${pluto.sign}${pluto.house ? ` in House ${pluto.house}` : ''} places intensity, agency, and renewal in a ${getSignStyle(pluto.sign)} style${pluto.house ? `, focused through ${getHouseArena(pluto.house)}` : ''}.`,
+  } : null;
   return {
     title: 'Shadow & Growth Edges',
     emoji: '🌑',
@@ -720,7 +723,11 @@ function buildSpiritualDomain(chart: NatalChart, bodies: ReturnType<typeof getBo
   }));
 
   const nn = bodies.find(b => b.name === 'NorthNode');
-  const nodeContext = nn ? describeFunctionInPlacement('NorthNode', nn.sign, nn.house) : null;
+  const nodeContext = nn ? {
+    signStyle: getSignStyle(nn.sign),
+    houseArena: getHouseArena(nn.house),
+    oneLine: `North Node in ${nn.sign}${nn.house ? ` in House ${nn.house}` : ''} describes a developmental stretch toward a ${getSignStyle(nn.sign)} style${nn.house ? `, practiced through ${getHouseArena(nn.house)}` : ''}.`,
+  } : null;
   return {
     title: 'Spiritual & Karmic Path',
     emoji: '✨',
