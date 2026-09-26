@@ -300,7 +300,9 @@ export function synthesizePsychologicalAspect(input: PsychologicalAspectContext)
     howThisCanShowUp: pair.mayShowUp.map(line => stageText(line, stage)),
     whenIntegrated: stageText(pairIntegration(input.bodyA, input.bodyB, pair.headline), stage),
     watchFor: stageText(pair.watchFor, stage),
-    reflectionQuestion: pair.curated ? stageText(pair.askThis, stage) : reflectionForPair(input.bodyA, input.bodyB, aspect),
+    reflectionQuestion: ['Jupiter|Mercury', 'Moon|Saturn', 'Saturn|Venus'].includes([input.bodyA, input.bodyB].sort().join('|'))
+      ? reflectionForPair(input.bodyA, input.bodyB, aspect)
+      : stageText(pair.askThis, stage),
     evidence: `${input.bodyA}${input.signA ? ` in ${input.signA}` : ''}${input.houseA ? `, House ${input.houseA}` : ''} ${aspect} ${input.bodyB}${input.signB ? ` in ${input.signB}` : ''}${input.houseB ? `, House ${input.houseB}` : ''}${typeof input.orb === 'number' ? `, ${input.orb.toFixed(1)}° orb` : ''}.`,
   };
   return sanitizeInterpretiveDeep(result);
