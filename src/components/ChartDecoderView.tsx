@@ -431,6 +431,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
                   aspects={selectedPlanetData.aspects}
                   dispositorChain={selectedPlanetData.dispositorChain}
                   allPlanets={planets}
+                  stage={calculatedAge < 12 ? 'child' : calculatedAge < 20 ? 'teen' : 'adult'}
                 />
               )}
 

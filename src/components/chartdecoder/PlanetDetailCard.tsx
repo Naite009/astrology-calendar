@@ -14,15 +14,13 @@ import {
   getSignSymbol,
   getAspectSymbol,
   getAspectNature,
-  getAspectMeaning,
   PLANET_MEANINGS,
   DIGNITY_EXPLAINERS,
   generateDispositorExperience
 } from '@/lib/chartDecoderLogic';
 import { getDignityStatus } from '@/lib/planetDignities';
-import { getContextualAspectExplanation } from '@/lib/aspectContextInterpreter';
 import { synthesizePlanet } from '@/lib/planetSynthesis';
-import { getPsychologicalFunction, synthesizePsychologicalAspect } from '@/lib/interpretation/psychologicalFunctions';
+import { getPsychologicalFunction, synthesizePsychologicalAspect, type DevelopmentalStage } from '@/lib/interpretation/psychologicalFunctions';
 
 interface PlanetDetailCardProps {
   planet: ChartPlanet;
@@ -30,6 +28,7 @@ interface PlanetDetailCardProps {
   aspects: ChartAspect[];
   dispositorChain: DispositorChainResult;
   allPlanets: ChartPlanet[];
+  stage?: DevelopmentalStage;
   onViewInPhaseWheel?: (planetName: string) => void;
 }
 
@@ -39,6 +38,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
   aspects,
   dispositorChain,
   allPlanets,
+  stage = 'adult',
   onViewInPhaseWheel
 }) => {
   const status = getDignityStatus(planet.name, planet.sign);
@@ -156,19 +156,6 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
               {aspects.slice(0, 6).map((aspect, i) => {
                 const other = getOtherPlanet(aspect);
                 const nature = getAspectNature(aspect.aspectType);
-                const aspectMeaning = getAspectMeaning(planet.name, other?.name || '', aspect.aspectType);
-                
-                // Get contextual explanation with sign/house details
-                const contextualExplanation = other ? getContextualAspectExplanation(
-                  planet.name,
-                  planet.sign,
-                  planet.house || 1,
-                  other.name,
-                  other.sign,
-                  other.house || 1,
-                  aspect.aspectType
-                ) : null;
-                
                 // Determine aspect strength
                 const isTight = aspect.orb < 3;
                 const isWide = aspect.orb > 5;
@@ -183,6 +170,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                   signB: other.sign,
                   houseA: planet.house,
                   houseB: other.house,
+                  stage,
                 }) : null;
                 
                 return (
@@ -223,9 +211,7 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                         </div>
                       </CollapsibleTrigger>
                       
-                      {aspectMeaning && (
-                        <p className="text-xs text-muted-foreground mt-1">{aspectMeaning}</p>
-                      )}
+                      {psychological && <p className="text-xs text-primary mt-1">{psychological.title}</p>}
                       {isTight && (
                         <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">
                           ✦ This is a tight aspect — you feel it strongly and consistently.
@@ -243,52 +229,9 @@ export const PlanetDetailCard: React.FC<PlanetDetailCardProps> = ({
                             <p className="text-xs text-foreground/80">{psychological.signHouseContext}</p>
                             <ul className="list-disc pl-4">{psychological.howThisCanShowUp.map(line => <li key={line} className="text-xs text-foreground/80">{line}</li>)}</ul>
                             <p className="text-xs text-foreground/80"><span className="font-medium">When integrated:</span> {psychological.whenIntegrated}</p>
+                            <p className="text-xs text-foreground/80"><span className="font-medium">Watch for:</span> {psychological.watchFor}</p>
                             <p className="text-xs text-muted-foreground"><span className="font-medium">Reflect:</span> {psychological.reflectionQuestion}</p>
                           </div>
-                        )}
-                        {contextualExplanation && (
-                          <>
-                            <div>
-                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
-                                Why This Tension Exists
-                              </h4>
-                              <p className="text-xs text-foreground/80 leading-relaxed">
-                                {contextualExplanation.whyTensionExists}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
-                                How It Manifests
-                              </h4>
-                              <p className="text-xs text-foreground/80 leading-relaxed">
-                                {contextualExplanation.howItManifests}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <h4 className="text-[10px] uppercase tracking-wider text-primary font-medium mb-1">
-                                How Others Respond to You
-                              </h4>
-                              <p className="text-xs text-foreground/80 leading-relaxed">
-                                {contextualExplanation.othersPerceive}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <h4 className="text-[10px] uppercase tracking-wider text-emerald-600 font-medium mb-1">
-                                What Helps Ease the Tension
-                              </h4>
-                              <ul className="space-y-1">
-                                {contextualExplanation.whatHelps.slice(0, 3).map((tip, idx) => (
-                                  <li key={idx} className="text-xs text-foreground/80 flex items-start gap-1.5">
-                                    <span className="text-emerald-500 mt-0.5">•</span>
-                                    <span>{tip}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </>
                         )}
                       </CollapsibleContent>
                     </div>
