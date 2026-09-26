@@ -1,7 +1,7 @@
 /**
  * Section Archetypes — short "what does this mean" labels for the Natal Portrait.
  *
- * Every label is one or two words (e.g. "Magnetic Leader") and is always paired
+ * Every label is concise (for example, "Trust Meets Recognition") and is always paired
  * with the exact placement it came from, so nothing reads as a verdict or a
  * personality type. Labels are shorthand for the section below them, never a
  * replacement for the evidence.
