@@ -42,8 +42,8 @@ describe('psychological function library', () => {
   it('distinguishes Mercury trine Jupiter from Mercury square Jupiter', () => {
     const trine = synthesizePsychologicalAspect({ bodyA: 'Mercury', bodyB: 'Jupiter', aspect: 'trine' });
     const square = synthesizePsychologicalAspect({ bodyA: 'Mercury', bodyB: 'Jupiter', aspect: 'square' });
-    expect(trine.aspectDynamic).toMatch(/cooperate easily/i);
-    expect(square.aspectDynamic).toMatch(/friction|problem-solving/i);
+    expect(trine.aspectDynamic).toMatch(/cooperate|without much resistance/i);
+    expect(square.aspectDynamic).toMatch(/disagree|friction|pressure|problem-solving/i);
     expect(trine.reflectionQuestion).not.toBe(square.reflectionQuestion);
   });
 

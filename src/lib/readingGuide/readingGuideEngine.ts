@@ -1108,7 +1108,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   if (sun && moon && asc) {
     storyParts.push(
       speak(
-        `Reading this as a whole: ${'{sub}'} comes across as ${SIGN_MEANINGS[asc.sign].split(',')[0]}, ${'{your}'} sense of self runs on ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and what settles ${'{sub}'} is ${SIGN_MEANINGS[moon.sign].split(',')[0]}`,
+        `Reading this as a whole: people first meet ${'{your}'} ${SIGN_MEANINGS[asc.sign].split(',')[0]} approach, ${'{your}'} sense of self reaches for ${SIGN_MEANINGS[sun.sign].split(',')[0]}, and ${SIGN_MEANINGS[moon.sign].split(',')[0]} is what helps ${'{sub}'} settle`,
         stage
       )
     );
