@@ -5,6 +5,8 @@ import {
   emphasisCard,
   isVagueLabel,
   shorthandLabel,
+  aspectFunctionLabel,
+  houseConcentrationLabel,
 } from '@/lib/interpretation/shorthandDescriptor';
 
 describe('shorthand descriptor standard', () => {
@@ -57,5 +59,12 @@ describe('shorthand descriptor standard', () => {
       expect(isVagueLabel(l)).toBe(true)
     );
     expect(isVagueLabel('Grounded Rebel')).toBe(false);
+  });
+
+  it('uses function and life-area labels instead of adjective soup', () => {
+    expect(aspectFunctionLabel('Sun', 'Ascendant', 'conjunction')).toBe('Identity Fuses Approach');
+    expect(aspectFunctionLabel('Moon', 'Saturn', 'opposition')).toBe('Needs Opposes Standards');
+    expect(houseConcentrationLabel(1)).toBe('Identity Takes Lead');
+    expect(houseConcentrationLabel(7)).toBe('Relationships Take Lead');
   });
 });
