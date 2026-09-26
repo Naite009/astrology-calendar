@@ -41,4 +41,5 @@
 - [x] Added one shared planet-function, sign-style, house-arena, and aspect-synthesis source of truth.
 - [x] Upgraded Natal Portrait Big Three, element/modality, domains, and important-aspect explanations.
 - [x] Upgraded Story of Self and Chart Walkthrough with psychological jobs, maps, and core dynamics.
-- [x] Preserved age-aware and interpretation-safety rules; 416 tests, typecheck, and production build pass.
+- [x] Audited saved-chart output in the rendered Natal Portrait and Chart Walkthrough; removed malformed grammar, generic labels, and repeated aspect geometry.
+- [x] Preserved age-aware and interpretation-safety rules; 423 tests, typecheck, and production build pass.
