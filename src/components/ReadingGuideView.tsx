@@ -319,6 +319,39 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
       </Section>
 
 
+
+      {guide.coreInnerDynamics.length > 0 && (
+        <Section title="Core inner dynamics" subtitle="strongest function relationships first">
+          {guide.coreInnerDynamics.map((dynamic) => (
+            <details key={dynamic.evidence} className="rounded-sm border border-border bg-background/40 p-3">
+              <summary className="cursor-pointer text-sm font-medium text-foreground">{dynamic.title}<span className="block text-xs font-normal text-muted-foreground">{dynamic.evidence}</span></summary>
+              <div className="mt-3 space-y-2 text-xs leading-relaxed text-foreground">
+                <p><span className="font-medium">Function A:</span> {dynamic.functionA}</p>
+                <p><span className="font-medium">Function B:</span> {dynamic.functionB}</p>
+                <p><span className="font-medium">What the aspect does:</span> {dynamic.aspectDynamic}</p>
+                {dynamic.signHouseContext && <p><span className="font-medium">Sign and house context:</span> {dynamic.signHouseContext}</p>}
+                <ul className="list-disc pl-4">{dynamic.howThisCanShowUp.map(line => <li key={line}>{line}</li>)}</ul>
+                <p><span className="font-medium">When integrated:</span> {dynamic.whenIntegrated}</p>
+                <p><span className="font-medium">Reflect:</span> {dynamic.reflectionQuestion}</p>
+              </div>
+            </details>
+          ))}
+        </Section>
+      )}
+
+      <Section title="Psychological map" subtitle="planet, job, style, arena, modifying aspects" defaultOpen={false}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">Life arena</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
+            <tbody>{guide.psychologicalMap.map(row => (
+              <tr key={row.body} className="border-b border-border/50 align-top">
+                <td className="py-2 pr-3 font-medium text-foreground">{row.body}</td><td className="py-2 pr-3">{row.psychologicalJob}</td><td className="py-2 pr-3">{row.placementStyle}</td><td className="py-2 pr-3">{row.lifeArena}</td><td className="py-2">{row.strongestAspects.join(', ') || 'No major aspect shown'}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      </Section>
+
       {/* 2. Blended characteristics */}
       <Section title="Blended characteristics" icon={<Link2 size={14} className="text-primary" />} subtitle="the heart of the reading">
         {guide.blends.map((card) => <BlendCardView key={card.id} card={card} />)}
