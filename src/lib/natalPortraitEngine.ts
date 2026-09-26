@@ -473,12 +473,15 @@ const RISING_MASK: Record<string, string> = {
 
 function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantHouses = [5, 7, 8];
-  const relevantPlanets = ['Venus', 'Mars', 'Juno', 'Eros', 'Amor', 'Lilith'];
+  const seventhRulerName = getSeventhHouseRuler(chart)?.ruler;
+  const relationshipAspects = computeRankedAspects(chart);
+  const saturnIsTight = relationshipAspects.some(a =>
+    (a.a === 'Saturn' || a.b === 'Saturn') &&
+    ['Venus', 'Mars', 'Moon'].includes(a.a === 'Saturn' ? a.b : a.a) && a.orb <= 3
+  );
+  const relevantPlanets = new Set(['Venus', 'Mars', 'Moon', seventhRulerName, saturnIsTight ? 'Saturn' : null].filter(Boolean));
   
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'relationship'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.has(b.name)).map(b => domainPlanet(b, 'relationship'));
 
   const houseActivations = relevantHouses.map(h => ({
     house: h,
@@ -542,10 +545,7 @@ function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
   const relevantHouses = [2, 6, 10];
   const relevantPlanets = ['Sun', 'Saturn', 'Jupiter', 'Mars', 'Pallas'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'career'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'career'));
 
   const houseActivations = relevantHouses.map(h => ({
     house: h,
@@ -571,10 +571,7 @@ function buildCareerDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyD
 function buildEmotionalDomain(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): DomainDeepDive {
   const relevantPlanets = ['Moon', 'Neptune', 'Pluto', 'Chiron', 'Ceres'];
 
-  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => ({
-    name: b.name, sign: b.sign, house: b.house, isRetrograde: b.isRetrograde,
-    role: contextualRole(b.name, b.sign, b.house, 'emotional'),
-  }));
+  const keyPlanets = bodies.filter(b => relevantPlanets.includes(b.name)).map(b => domainPlanet(b, 'emotional'));
 
   const moon = bodies.find(b => b.name === 'Moon');
   const houseActivations = [4, 8, 12].map(h => ({
