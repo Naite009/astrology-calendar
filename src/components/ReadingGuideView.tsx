@@ -342,7 +342,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
       <Section title="Psychological map" subtitle="planet, job, style, arena, modifying aspects" defaultOpen={false}>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">Life arena</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
+            <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">What this affects</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
             <tbody>{guide.psychologicalMap.map(row => (
               <tr key={row.body} className="border-b border-border/50 align-top">
                 <td className="py-2 pr-3 font-medium text-foreground">{row.body}</td><td className="py-2 pr-3">{row.psychologicalJob}</td><td className="py-2 pr-3">{row.placementStyle}</td><td className="py-2 pr-3">{row.lifeArena}</td><td className="py-2">{row.strongestAspects.join(', ') || 'No major aspect shown'}</td>
@@ -366,7 +366,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
                 <span className="text-sm font-medium text-foreground">{ordinalHouse(c.house)}</span>
                 {c.bodies.map((b) => <Chip key={b} tone="accent">{b}</Chip>)}
               </div>
-              <p className="text-xs text-muted-foreground">Region of life: {c.arena}</p>
+              <p className="text-xs text-muted-foreground">What this affects: {c.arena}</p>
               <p className="text-sm text-foreground">{c.theme}</p>
             </div>
           ))}

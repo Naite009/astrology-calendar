@@ -52,6 +52,14 @@ export interface PsychologicalMapRow {
   strongestAspects: string[];
 }
 
+export interface HouseLivedInterpretation {
+  focus: string;
+  attention: string;
+  repeatingPattern: string;
+  othersNotice: string;
+  question: string;
+}
+
 const FUNCTIONS: Record<PsychologicalBody, PsychologicalFunctionDefinition> = {
   Sun: {
     shortFunction: 'Identity, vitality & will',
@@ -192,13 +200,105 @@ const SIGN_STYLE: Record<string, string> = {
 };
 
 const HOUSE_ARENA: Record<number, string> = {
-  1: 'identity, embodiment, and first responses', 2: 'values, resources, and self-support',
-  3: 'learning, language, siblings, and daily exchange', 4: 'home, roots, privacy, and emotional foundations',
-  5: 'creativity, play, enjoyment, and self-expression', 6: 'daily work, routines, practice, and care of the body',
-  7: 'one-to-one relationships, agreements, and what is met through others',
-  8: 'trust, privacy, shared resources, and difficult-to-name inner material',
-  9: 'beliefs, study, perspective, travel, and meaning', 10: 'public direction, responsibility, and visible contribution',
-  11: 'friendship, groups, community, and future plans', 12: 'solitude, inner processing, retreat, and what operates outside immediate awareness',
+  1: 'self-definition, confidence, appearance, independence, and first reactions',
+  2: 'money, possessions, self-worth, stability, and what creates security',
+  3: 'learning, speaking, questions, siblings or peers, and everyday mental stimulation',
+  4: 'privacy, home, family patterns, emotional roots, and what makes a place feel safe',
+  5: 'joy, creativity, romance, play, risk, and being seen for something personal',
+  6: 'routines, work habits, usefulness, health habits, standards, and daily maintenance',
+  7: 'partnership, compromise, expectations of others, and close one-to-one relationships',
+  8: 'trust, vulnerability, shared money, control, privacy, and emotional depth',
+  9: 'beliefs, education, travel, big-picture meaning, and changes in worldview',
+  10: 'ambition, reputation, responsibility, career direction, and public evaluation',
+  11: 'friendship, belonging, groups, community, and future plans',
+  12: 'solitude, hidden habits, retreat, private coping, and feelings processed alone',
+};
+
+const HOUSE_LIVED: Record<number, HouseLivedInterpretation> = {
+  1: {
+    focus: 'becoming fully yourself',
+    attention: 'how you come across, how much space you take up, and whether your choices feel true to you',
+    repeatingPattern: 'choosing between acting independently and adjusting yourself to other people',
+    othersNotice: 'your personality, appearance, reactions, or confidence quickly, even when you are not trying to stand out',
+    question: 'Who am I when I am not reacting to everyone else?',
+  },
+  2: {
+    focus: 'building a solid sense of worth and security',
+    attention: 'money, possessions, practical stability, and what makes you feel capable or valuable',
+    repeatingPattern: 'deciding what is worth keeping, spending, earning, or refusing, especially when security and self-respect pull differently',
+    othersNotice: 'what you protect, what you invest in, and whether you rely on your own values or outside approval',
+    question: 'What helps me feel secure without making my worth depend on what I own or produce?',
+  },
+  3: {
+    focus: 'finding your way of learning and making yourself understood',
+    attention: 'questions, words, school or everyday information, siblings or peers, and the details people exchange each day',
+    repeatingPattern: 'working out when to speak, listen, ask for clarity, or change your mind after learning something new',
+    othersNotice: 'your voice, curiosity, humor, questions, or the speed and style of your thinking',
+    question: 'How do I learn best, and what helps other people understand what I mean?',
+  },
+  4: {
+    focus: 'creating a private base that feels emotionally safe',
+    attention: 'home, family patterns, privacy, memories, and what helps you settle after being out in the world',
+    repeatingPattern: 'deciding what to carry forward from family life and what kind of home or boundaries you need now',
+    othersNotice: 'your protective side, your need for privacy, or how strongly the atmosphere at home affects you',
+    question: 'What makes a place, a relationship, or a routine feel like home to me?',
+  },
+  5: {
+    focus: 'expressing something personal and enjoying being alive',
+    attention: 'creativity, hobbies, romance, play, risk, and moments when you are seen for something that came from you',
+    repeatingPattern: 'choosing between safe approval and the risk of showing what you genuinely enjoy, make, or care about',
+    othersNotice: 'your humor, creative style, enthusiasm, playfulness, or wish to be appreciated personally',
+    question: 'What do I create or enjoy when I am not doing it to earn approval?',
+  },
+  6: {
+    focus: 'making everyday life work well',
+    attention: 'routines, work or school habits, usefulness, health habits, skill-building, and the tasks that keep life running',
+    repeatingPattern: 'deciding when improvement is helpful and when high standards have turned into overwork or constant correction',
+    othersNotice: 'what you reliably handle, what details you catch, and how quickly you step in to fix or organize something',
+    question: 'Which routines support me, and which ones keep me busy without making life better?',
+  },
+  7: {
+    focus: 'learning how to share decisions and build fair partnerships',
+    attention: 'close relationships, compromise, promises, conflict, and what you expect other people to bring',
+    repeatingPattern: 'balancing your own position with another person’s needs without disappearing or expecting them to complete you',
+    othersNotice: 'how strongly you respond to one-to-one connection, disagreement, fairness, or another person’s point of view',
+    question: 'What do I ask from a partner, and what part of that do I also need to develop in myself?',
+  },
+  8: {
+    focus: 'handling trust, vulnerability, and what is shared',
+    attention: 'privacy, emotional exposure, shared money, dependence, control, and what happens when another person has real influence',
+    repeatingPattern: 'deciding what to reveal, what to protect, and how to share power or resources without losing your footing',
+    othersNotice: 'your seriousness about trust, your privacy, or your ability to stay present when a subject becomes emotionally charged',
+    question: 'What helps me share honestly without giving away control of myself?',
+  },
+  9: {
+    focus: 'building a worldview large enough to guide your choices',
+    attention: 'beliefs, education, travel, culture, ethics, and ideas that change how you understand the wider world',
+    repeatingPattern: 'testing what you were taught against direct experience and deciding which beliefs still deserve your trust',
+    othersNotice: 'your convictions, questions about meaning, appetite for learning, or willingness to explore beyond what is familiar',
+    question: 'What do I believe because I have examined it, rather than because I inherited it?',
+  },
+  10: {
+    focus: 'deciding what you want to be known and trusted for',
+    attention: 'ambition, career direction, reputation, responsibility, achievement, and how your work is evaluated publicly',
+    repeatingPattern: 'choosing between outside definitions of success and the responsibilities or goals you genuinely want to claim',
+    othersNotice: 'your competence, ambition, reliability, authority, or concern about how your efforts will be judged',
+    question: 'What do I want my name to stand for, and whose standard of success am I using?',
+  },
+  11: {
+    focus: 'finding where you belong and what future you want to help create',
+    attention: 'friends, groups, community, shared causes, social networks, and plans that reach beyond the present',
+    repeatingPattern: 'deciding when to adapt to a group, when to challenge it, and which friendships support the person you are becoming',
+    othersNotice: 'the people you connect, the communities you choose, and the hopes or causes that keep pulling your attention forward',
+    question: 'Where do I belong without having to edit out an important part of myself?',
+  },
+  12: {
+    focus: 'understanding what you process in private',
+    attention: 'solitude, rest, imagination, hidden habits, private fears, and feelings that need time before they can be named',
+    repeatingPattern: 'deciding when retreat is restorative and when it has become a way to postpone a feeling, conversation, or practical step',
+    othersNotice: 'that you need more private recovery time than they expect, or that some reactions become clear only after you have been alone',
+    question: 'What do I do automatically when no one is watching, and does it restore me or keep me stuck?',
+  },
 };
 
 const ASPECT_DYNAMICS: Record<string, string> = {
@@ -223,7 +323,31 @@ export function getSignStyle(sign?: string | null): string {
 }
 
 export function getHouseArena(house?: number | null): string {
-  return house ? HOUSE_ARENA[house] ?? `the ${house}th-house area of life` : 'life arena not available';
+  return house ? HOUSE_ARENA[house] ?? `House ${house}` : 'House not available';
+}
+
+export function getHouseLivedInterpretation(house?: number | null): HouseLivedInterpretation | null {
+  return house ? HOUSE_LIVED[house] ?? null : null;
+}
+
+export function describeHouseEmphasis(
+  house: number,
+  majorPlanets: string[],
+  options: { stage?: DevelopmentalStage; isStellium?: boolean } = {},
+): string {
+  const lived = getHouseLivedInterpretation(house);
+  if (!lived || majorPlanets.length === 0) return '';
+  const stage = options.stage ?? 'adult';
+  const subject = stage === 'child' ? 'they' : 'you';
+  const possessive = stage === 'child' ? 'their' : 'your';
+  const be = stage === 'child' ? 'are' : 'are';
+  const count = majorPlanets.length;
+  const evidence = `${count} major planet${count === 1 ? '' : 's'} (${majorPlanets.join(', ')}) in ${possessive} ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house`;
+  const weight = options.isStellium
+    ? ` Because three or more major planets are gathered here, this is a stellium: several psychological needs keep returning to the same set of real-life concerns, which gives this house extra weight in the chart.`
+    : '';
+  const text = `With ${evidence}, a noticeable amount of attention may go toward ${lived.focus}. ${subject === 'you' ? 'You' : 'They'} may pay close attention to ${lived.attention}. A repeating choice can involve ${lived.repeatingPattern}. Other people may notice ${lived.othersNotice}. The question this house keeps asking is, “${lived.question}”${weight}`;
+  return stageText(text, stage).replace(` ${be} `, ` ${be} `);
 }
 
 function stageFunction(body: string, text: string, stage: DevelopmentalStage): string {
@@ -255,7 +379,7 @@ function functionClause(body: string, stage: DevelopmentalStage): string {
 function placementClause(body: string, sign?: string | null, house?: number | null): string {
   const bits: string[] = [];
   if (sign) bits.push(`${body} in ${sign} gives this function a ${getSignStyle(sign)} style`);
-  if (house) bits.push(`in House ${house}, it is worked out through ${getHouseArena(house)}`);
+  if (house) bits.push(`in House ${house}, it affects ${getHouseArena(house)}`);
   return bits.length ? `${bits.join('; ')}.` : '';
 }
 

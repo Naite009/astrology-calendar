@@ -43,3 +43,8 @@
 - [x] Upgraded Story of Self and Chart Walkthrough with psychological jobs, maps, and core dynamics.
 - [x] Audited saved-chart output in the rendered Natal Portrait and Chart Walkthrough; removed malformed grammar, generic labels, and repeated aspect geometry.
 - [x] Preserved age-aware and interpretation-safety rules; 423 tests, typecheck, and production build pass.
+
+## Done: concrete natal house language
+- [x] Replaced vague house emphasis with shared lived descriptions for all twelve houses: attention, repeated choices, what others notice, and a recurring question.
+- [x] Kept exact house, planet count, named planets, and stellium evidence visible across Natal Portrait and Chart Walkthrough.
+- [x] Added regression guards against vague house phrases without changing chart calculations.

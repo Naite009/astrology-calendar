@@ -51,6 +51,7 @@ import {
 import { pairAspectReading, type AspectPairReading } from './aspectPairLibrary';
 import {
   getHouseArena,
+  describeHouseEmphasis,
   getPsychologicalFunction,
   getSignStyle,
   synthesizePsychologicalAspect,
@@ -527,10 +528,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       bodies,
       keywords: HOUSE_KEYWORDS[house] ?? '',
       arena: houseArena(house, stage),
-      theme: applyStageVocabulary(
-        `With ${bodies.length} planets here, a lot of the chart's attention lands on ${houseArena(house, stage)}. Expect this region of life to come up in the conversation on its own.`,
-        stage
-      ),
+      theme: describeHouseEmphasis(house, bodies, { stage, isStellium: true }),
     }));
 
   // chart ruler
@@ -1205,7 +1203,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         body: p.label,
         psychologicalJob: getPsychologicalFunction(p.body)?.shortFunction ?? '',
         placementStyle: `${p.sign}: ${getSignStyle(p.sign)}`,
-        lifeArena: p.house ? `${ordinalHouse(p.house)}: ${getHouseArena(p.house)}` : 'Life arena not available',
+        lifeArena: p.house ? `${ordinalHouse(p.house)}: ${getHouseArena(p.house)}` : 'House not available',
         strongestAspects: topConnections
           .filter(c => c.bodyA === p.body || c.bodyB === p.body)
           .slice(0, 2)

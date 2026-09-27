@@ -2,10 +2,33 @@ import { describe, expect, it } from 'vitest';
 import {
   PSYCHOLOGICAL_BODIES,
   getPsychologicalFunction,
+  describeHouseEmphasis,
+  getHouseArena,
   synthesizePsychologicalAspect,
 } from '../psychologicalFunctions';
 
 describe('psychological function library', () => {
+  const vagueHousePhrases = /how you meet the world|region of life|life arena|comes up naturally|comes up in conversation|where this energy plays out|this part of life|activated|shows up strongly|themes around/i;
+
+  it('gives all twelve houses concrete attention, conflict, outward signs, and a question', () => {
+    for (let house = 1; house <= 12; house += 1) {
+      const text = describeHouseEmphasis(house, ['Sun', 'Mercury', 'Venus'], { isStellium: true });
+      expect(text).toMatch(/pay close attention/i);
+      expect(text).toMatch(/repeating choice/i);
+      expect(text).toMatch(/other people may notice/i);
+      expect(text).toMatch(/question this house keeps asking/i);
+      expect(text).toMatch(/Sun, Mercury, Venus/);
+      expect(text).toMatch(/stellium/i);
+      expect(text).not.toMatch(vagueHousePhrases);
+      expect(getHouseArena(house)).not.toMatch(vagueHousePhrases);
+    }
+  });
+
+  it('makes different houses describe materially different lived concerns', () => {
+    expect(describeHouseEmphasis(1, ['Sun', 'Moon', 'Mercury'])).toMatch(/confidence|appearance|independent/i);
+    expect(describeHouseEmphasis(6, ['Sun', 'Moon', 'Mercury'])).toMatch(/routines|work|standards|overwork/i);
+    expect(describeHouseEmphasis(12, ['Sun', 'Moon', 'Mercury'])).toMatch(/solitude|hidden habits|private|alone/i);
+  });
   it('covers every required body and angle', () => {
     expect(PSYCHOLOGICAL_BODIES).toEqual(expect.arrayContaining([
       'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus',

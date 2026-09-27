@@ -70,7 +70,7 @@ export const HOUSE_BY_STAGE: Record<number, Record<AgeStage, string>> = {
   1: {
     child: 'how they come across, first impressions, how they enter a new room',
     teen: 'how you come across, your look and style, how you start things',
-    adult: 'identity, presence, how you meet the world',
+    adult: 'self-definition, confidence, appearance, independence, and first reactions',
   },
   2: {
     child: 'feeling secure, what they treasure, doing things by themselves',

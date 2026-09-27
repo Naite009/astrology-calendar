@@ -177,6 +177,10 @@ describe("Ava Kravitz natal portrait regression", () => {
       expect(h.additionalBodies ?? split.additional).toEqual(split.additional);
       if (h.isStellium) expect(split.major.length).toBeGreaterThanOrEqual(3);
       if (h.additionalBodies?.length) expect(h.countLabel).toContain(h.additionalBodies[0]);
+      if ((h.majorPlanets?.length ?? 0) > 0) {
+        expect(h.description).toMatch(/pay close attention|repeating choice|other people may notice/i);
+        expect(h.description).not.toMatch(/how you meet the world|region of life|life arena|comes up naturally|comes up in conversation|where this energy plays out|this part of life|activated|shows up strongly|themes around/i);
+      }
     });
   });
 
