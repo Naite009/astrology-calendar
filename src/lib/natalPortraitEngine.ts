@@ -549,7 +549,7 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
     venus && `Venus in ${venus.sign} describes what feels worth choosing and receiving, with bonding shaped by a ${getSignStyle(venus.sign)} style.`,
     mars && `Mars in ${mars.sign} shows how wants, irritation, initiative, and boundaries become visible: ${getSignStyle(mars.sign)}.`,
     seventhRuler && `The 7th-house ruler, ${seventhRuler.name} in ${seventhRuler.sign}, modifies the whole pattern by bringing ${getPsychologicalFunction(seventhRuler.name)?.shortFunction.toLowerCase() ?? 'its function'} into ${getHouseArena(seventhRuler.house)}.`,
-    seventhBodies.length ? `Planets in the 7th make one-to-one relating a direct life arena rather than only a preference.` : null,
+    seventhBodies.length ? `Planets in the 7th make close relationships, compromise, and expectations of other people recurring concerns rather than background preferences.` : null,
     saturn ? `Because Saturn is tightly involved, affection or emotional need may be checked against reliability, rules, approval, or what feels earned. This can echo authority or parenting models, but it does not identify a parent or event.` : null,
   ].filter((line): line is string => Boolean(line));
 

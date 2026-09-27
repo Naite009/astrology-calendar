@@ -340,14 +340,13 @@ export function describeHouseEmphasis(
   const stage = options.stage ?? 'adult';
   const subject = stage === 'child' ? 'they' : 'you';
   const possessive = stage === 'child' ? 'their' : 'your';
-  const be = stage === 'child' ? 'are' : 'are';
   const count = majorPlanets.length;
   const evidence = `${count} major planet${count === 1 ? '' : 's'} (${majorPlanets.join(', ')}) in ${possessive} ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house`;
   const weight = options.isStellium
     ? ` Because three or more major planets are gathered here, this is a stellium: several psychological needs keep returning to the same set of real-life concerns, which gives this house extra weight in the chart.`
     : '';
   const text = `With ${evidence}, a noticeable amount of attention may go toward ${lived.focus}. ${subject === 'you' ? 'You' : 'They'} may pay close attention to ${lived.attention}. A repeating choice can involve ${lived.repeatingPattern}. Other people may notice ${lived.othersNotice}. The question this house keeps asking is, “${lived.question}”${weight}`;
-  return stageText(text, stage).replace(` ${be} `, ` ${be} `);
+  return stageText(text, stage);
 }
 
 function stageFunction(body: string, text: string, stage: DevelopmentalStage): string {
