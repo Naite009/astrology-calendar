@@ -166,6 +166,9 @@ describe('Reading Guide — Ava Kravitz', () => {
     expect(cluster).toBeTruthy();
     expect(cluster!.bodies.length).toBeGreaterThanOrEqual(3);
     expect(cluster!.arena).toMatch(/routine|practice|skill-building/i);
+    expect(cluster!.theme).toMatch(/pay close attention|repeating choice|other people may notice/i);
+    expect(cluster!.theme).toMatch(/Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto/);
+    expect(cluster!.theme).not.toMatch(/how you meet the world|region of life|life arena|comes up naturally|comes up in conversation|where this energy plays out|this part of life|activated|shows up strongly|themes around/i);
 
     const earthBlend = guide.blends.find((b) =>
       b.factors.some((f) => /Earth emphasis/.test(f.label))

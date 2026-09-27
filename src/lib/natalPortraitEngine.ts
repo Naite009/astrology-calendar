@@ -21,6 +21,7 @@ import {
   getPsychologicalFunction,
   getSignStyle,
   getHouseArena,
+  describeHouseEmphasis,
   synthesisFromRankedAspect,
   type PsychologicalAspectSynthesis,
 } from '@/lib/interpretation/psychologicalFunctions';
@@ -548,7 +549,7 @@ function buildRelationshipDomain(chart: NatalChart, bodies: ReturnType<typeof ge
     venus && `Venus in ${venus.sign} describes what feels worth choosing and receiving, with bonding shaped by a ${getSignStyle(venus.sign)} style.`,
     mars && `Mars in ${mars.sign} shows how wants, irritation, initiative, and boundaries become visible: ${getSignStyle(mars.sign)}.`,
     seventhRuler && `The 7th-house ruler, ${seventhRuler.name} in ${seventhRuler.sign}, modifies the whole pattern by bringing ${getPsychologicalFunction(seventhRuler.name)?.shortFunction.toLowerCase() ?? 'its function'} into ${getHouseArena(seventhRuler.house)}.`,
-    seventhBodies.length ? `Planets in the 7th make one-to-one relating a direct life arena rather than only a preference.` : null,
+    seventhBodies.length ? `Planets in the 7th make close relationships, compromise, and expectations of other people recurring concerns rather than background preferences.` : null,
     saturn ? `Because Saturn is tightly involved, affection or emotional need may be checked against reliability, rules, approval, or what feels earned. This can echo authority or parenting models, but it does not identify a parent or event.` : null,
   ].filter((line): line is string => Boolean(line));
 
@@ -886,7 +887,7 @@ function rankTopThemes(chart: NatalChart, bodies: ReturnType<typeof getBodyData>
     themes.push({
       title: HOUSE_THEMES[h] || `House ${h}`,
       score,
-      description: `${describeBodyCount(planets)} in your ${ordinalHouse(h, 'house')} (${planets.join(', ')}) — a recurring area of focus. Counts here use major planets only; additional bodies and points are listed separately.`,
+      description: `${describeHouseEmphasis(h, planets)} Counts here use major planets only; additional bodies and points are listed separately.`,
       drivers: planets.map(p => {
         const bd = bodies.find(b => b.name === p);
         return bd ? `${p} in ${bd.sign}` : p;
@@ -950,8 +951,8 @@ function buildHouseEmphasis(bodies: ReturnType<typeof getBodyData>): HouseEmphas
       isStellium: stellium,
       countLabel: countLine,
       intensity,
-      description: stellium ? `Stellium (${countLine}) — a major life focus on ${HOUSE_THEMES[h].toLowerCase()}. A stellium in this app means three or more major planets in the same house.`
-        : inHouse.length >= 1 ? `Active — ${countLine} here (${names.join(', ')})`
+      description: stellium ? `${describeHouseEmphasis(h, inHouse.map(b => b.name), { isStellium: true })} Evidence: ${countLine}.`
+        : inHouse.length >= 1 ? `${describeHouseEmphasis(h, inHouse.map(b => b.name))} Evidence: ${countLine}.`
         : allInHouse.length > 0 ? `${countLine} — additional bodies only, so this reads as colour rather than a main focus`
         : 'No planets — this area is read through the sign on the cusp',
     };

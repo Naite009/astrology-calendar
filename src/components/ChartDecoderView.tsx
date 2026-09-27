@@ -382,7 +382,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Psychological Map</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">Life arena</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
+                <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">What this affects</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
                 <tbody>{planets.filter(p => getPsychologicalFunction(p.name)).map(p => (
                   <tr key={p.name} className="border-b border-border/50 align-top">
                     <td className="py-2 pr-3 font-medium text-foreground">{p.name}</td>
