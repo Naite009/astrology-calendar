@@ -89,7 +89,7 @@ const NODE_AXIS_DATA: Record<string, NodeAxisData> = {
     southGift: "You come in with extraordinary gifts in ACHIEVEMENT, STRUCTURE, and AUTHORITY. You naturally know how to build, manage, and take responsibility. But you've used accomplishment as armor against feeling.",
     soulQuestion: "Can I let myself be held? Can I admit that I need someone?",
     northKeywords: ["Vulnerability", "Nurturing", "Home", "Family", "Emotional honesty", "Belonging"],
-    southKeywords: ["Over-achieving", "Emotional control", "Workaholism", "Coldness", "Status intense preoccupation"],
+    southKeywords: ["Over-achieving", "Emotional control", "Workaholism", "Coldness", "Status fixation"],
     practicalSteps: [
       "Create a home environment that feels safe and nourishing",
       "Practice asking for help—actually receiving it",
@@ -201,7 +201,7 @@ const NODE_AXIS_DATA: Record<string, NodeAxisData> = {
     southGift: "You come in with extraordinary gifts in SELF-EXPRESSION, CREATIVITY, and PERSONAL MAGNETISM. You naturally draw attention, create from the heart, and inspire loyalty. But you've become addicted to being the center of the story.",
     soulQuestion: "Can I let go of needing to be special and instead be USEFUL to the collective?",
     northKeywords: ["Innovation", "Humanitarianism", "Friendship", "Objectivity", "Progress", "Originality"],
-    southKeywords: ["Ego attachment", "Drama", "Need for approval", "Self-centeredness", "Romantic intense preoccupation"],
+    southKeywords: ["Ego attachment", "Drama", "Need for approval", "Self-centeredness", "Romantic fixation"],
     practicalSteps: [
       "Join a group or cause that's bigger than your personal story",
       "Practice friendship—equal, non-hierarchical relationships",
