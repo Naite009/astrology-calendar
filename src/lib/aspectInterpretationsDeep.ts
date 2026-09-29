@@ -1020,7 +1020,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
 
   'Moon-Pluto': {
     conjunction: {
-      whatItFeelsLike: "Emotions don't just pass through you—they CLAIM you. Feelings are volcanic, consuming, transformative. You can't do 'light' emotions. Joy is ecstatic, grief is annihilating, love is obsessive.",
+      whatItFeelsLike: "Emotions don't just pass through you—they CLAIM you. Feelings are volcanic, consuming, transformative. You can't do 'light' emotions. Joy is ecstatic, grief is annihilating, love is all-consuming.",
       howItManifests: "Intensity in all emotional bonds. Mother relationship likely complex—either enmeshed or painful or both. You sense undercurrents others miss. Jealousy, possessiveness, or fear of abandonment may appear.",
       realLifeExamples: [
         "Loving someone so intensely it scares you",
