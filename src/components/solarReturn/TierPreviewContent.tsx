@@ -99,7 +99,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
             'All SR-to-natal aspects (full set)',
             'Planet-by-planet spotlight (Mercury–Pluto)',
             'Hemispheric emphasis + angular planets',
-            'Vertex — fated encounters',
+            'Vertex — significant-feeling encounters',
             'Moon sign shift narrative',
             'Metonic cycle echoes',
             'Natal chart ruler full breakdown',

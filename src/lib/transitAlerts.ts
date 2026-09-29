@@ -176,7 +176,7 @@ const TRANSIT_MESSAGES: Record<string, Record<string, { title: string; desc: str
     },
     'Venus': { 
       title: 'Intense Love', 
-      desc: 'Obsessive or transformative relationships. Power dynamics surface.',
+      desc: 'All-consuming or transformative relationships. Power dynamics surface.',
       advice: 'Examine relationship patterns. Transform through love.'
     },
     'default': { 

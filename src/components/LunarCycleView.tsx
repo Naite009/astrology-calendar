@@ -740,7 +740,7 @@ Keep the tone deep, insightful, and practically applicable.`
     Pallas: 'The asteroid of strategic wisdom — how you see PATTERNS, solve problems, and fight for justice.',
     Lilith: 'Black Moon Lilith — your wild, untamed power that refuses to be domesticated. Raw feminine rage and honesty.',
     PartOfFortune: 'An Arabic Part showing where worldly luck and material abundance flow most naturally.',
-    Vertex: 'A fated point — encounters and events here feel destined, as if the universe arranged them.',
+    Vertex: 'A significant-feeling point — encounters and events here feel destined, as if the universe arranged them.',
   };
 
   // Aspect type explanations — what does this geometric relationship DO?

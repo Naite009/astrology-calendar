@@ -271,14 +271,14 @@ export class RelationshipTimelineCalculator {
         'opposition': 'exposes illusions or creates spiritual crisis. See the relationship clearly.'
       },
       'Pluto': {
-        'conjunction': 'triggers intense transformation, power dynamics, or obsession. Deep changes are inevitable.',
+        'conjunction': 'triggers intense transformation, power dynamics, or intense preoccupation. Deep changes are inevitable.',
         'trine': 'empowers the relationship and facilitates positive transformation. Growth through depth.',
         'square': 'creates power struggles, control issues, or crisis. Transformation through challenge.',
         'opposition': 'forces confrontation with shadow issues. Death and rebirth of relationship patterns.'
       },
       'Mars': {
         'conjunction': 'energizes passion, desire, and action—or conflict and aggression. High intensity period.',
-        'trine': 'boosts sexual chemistry and motivation. Good energy for doing things together.',
+        'trine': 'boosts romantic chemistry and motivation. Good energy for doing things together.',
         'square': 'increases conflict, irritation, or sexual tension. Arguments likely.',
         'opposition': 'creates tension between different desires or approaches. Passion or conflict.'
       },

@@ -1842,12 +1842,12 @@ export async function generateBirthdayGiftPDF(
     ctx.checkPage(200);
     if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
     ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
-    ctx.sectionTitle(doc, 'VERTEX -- FATED ENCOUNTERS');
+    ctx.sectionTitle(doc, 'VERTEX -- SIGNIFICANT-FEELING ENCOUNTERS');
     ctx.drawCard(doc, () => {
       ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
       const vSign = vertexInSign[analysis.vertex!.sign];
       if (vSign) {
-        ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme);
+        ctx.writeCardSection(doc, 'Significant-feeling Theme', vSign.fatedTheme);
         ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters);
       }
     });
@@ -2636,12 +2636,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         ctx.checkPage(200);
         if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
         ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'VERTEX — FATED ENCOUNTERS');
+        ctx.sectionTitle(doc, 'VERTEX — SIGNIFICANT-FEELING ENCOUNTERS');
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
           const vSign = vertexInSign[analysis.vertex!.sign];
           if (vSign) {
-            ctx.writeCardSection(doc, 'Fated Theme', vSign.fatedTheme);
+            ctx.writeCardSection(doc, 'Significant-feeling Theme', vSign.fatedTheme);
             ctx.writeCardSection(doc, 'Who May Appear', vSign.encounters);
           }
         });

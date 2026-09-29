@@ -190,7 +190,7 @@ const PLANET_INFO: Record<string, {
           feltSense: "This feels like calm surface water over a powerful undertow. There's an intensity that doesn't show on the outside. You're watching, calculating, feeling everything at maximum depth. When you act, it's decisive and devastating. The feeling is more 'loaded weapon' than 'wild charge.' Power comes from restraint until the perfect moment.",
           psychology: "Mars in Scorpio is Mars as psychologist-warrior. Every action has emotional depth and strategic purpose. Anger isn't expressed — it's wielded. Sexuality is intense, bonding, and transformative. This Mars never forgets a slight, but also never forgets a kindness. When retrograde, the question becomes: 'Am I using my power to control or to transform? Where am I holding grudges that are poisoning me?'",
           gifts: ["Unmatched determination and follow-through", "Psychological insight — knowing others' motivations", "Emotional courage to face what others avoid", "Strategic brilliance in conflict", "Deep, transformative sexuality"],
-          challenges: ["Holding grudges and plotting revenge", "Manipulating through emotional intensity", "Obsessive fixation on perceived enemies", "Difficulty letting go of control", "Self-destructive tendencies when anger turns inward"],
+          challenges: ["Holding grudges and plotting revenge", "Manipulating through emotional intensity", "All-consuming fixation on perceived enemies", "Difficulty letting go of control", "Self-destructive tendencies when anger turns inward"],
           bodyFeeling: "Intensity in the lower belly and reproductive organs. A coiled, ready-to-strike tension. Jaw tight. Eyes focused. When blocked, the energy turns into resentment you can feel as a heavy weight in your gut."
         },
       ],
@@ -459,7 +459,7 @@ const PLANET_INFO: Record<string, {
         feltSense: "This feels like an earthquake that starts underground. Nothing visible changes at first, but the foundations are shifting. There's an intensity to the need for change — not just reform, but complete transformation. Secrets must come out. Power must be redistributed. The old must die for the new to be born.",
         psychology: "Uranus in Scorpio transforms at the root level — psychology, sexuality, power, death itself are all subjects of revolution. This generation dismantles taboos. When retrograde: 'Am I transforming myself, or just destroying what scares me?'",
         gifts: ["Fearless investigation of hidden truths", "Revolutionary approach to psychology and healing", "Transforming shame into power", "Breaking taboos that genuinely harm", "Deep, honest courage"],
-        challenges: ["Destructiveness mistaken for liberation", "Obsession with exposing others", "Using shock as a weapon", "Difficulty with stability and peace", "Intensity addiction"],
+        challenges: ["Destructiveness mistaken for liberation", "Intense preoccupation with exposing others", "Using shock as a weapon", "Difficulty with stability and peace", "Intensity addiction"],
         bodyFeeling: "Deep pelvic tension. Energy moves in surges from below. An almost volcanic quality — periods of stillness followed by eruption."
       }],
       detriment: [{
@@ -559,7 +559,7 @@ const PLANET_INFO: Record<string, {
     frequency: "Pluto retrogrades once a year for approximately 5-6 months — retrograde about 44% of the time, the most of any planet.",
     duration: "~5-6 months retrograde. Pluto is retrograde so often that nearly half of all people have natal Pluto retrograde.",
     themes: ["Deep psychological transformation processing", "Power dynamics reviewed internally", "Control issues surfacing for release", "Past traumas processing at a deep level", "Shadow work and hidden material surfacing", "Generational and ancestral healing"],
-    keywords: ["Transformation", "Power", "Death/Rebirth", "Shadow", "Depth", "Intensity", "Control", "Obsession", "Phoenix", "Underworld", "Taboo", "Wealth", "Regeneration", "Evolution"],
+    keywords: ["Transformation", "Power", "Death/Rebirth", "Shadow", "Depth", "Intensity", "Control", "Intense preoccupation", "Phoenix", "Underworld", "Taboo", "Wealth", "Regeneration", "Evolution"],
     dignity: { domicile: "Scorpio", exaltation: "Leo (modern)", detriment: "Taurus", fall: "Aquarius (modern)" },
     dignityTeaching: {
       intro: "Pluto was discovered in 1930 and given modern rulership of Scorpio. With an orbit of ~248 years, Pluto spends 12–31 years in each sign (the orbit is elliptical). Pluto's sign placement defines how an entire generation processes power, death, transformation, and the shadow.",
@@ -570,7 +570,7 @@ const PLANET_INFO: Record<string, {
         feltSense: "This feels like staring into the abyss and watching it stare back — and not flinching. There's a generation-wide capacity to face death, taboo, and the darkest corners of the psyche without turning away. Sex, death, power, and money are not subjects to avoid but forces to master. The intensity is not a phase — it's an identity.",
         psychology: "Pluto in Scorpio (1983–1995) is Pluto at maximum transformative power. This generation naturally understands psychology, trauma, power dynamics, and the necessity of destruction for rebirth. When retrograde: 'Am I transforming or self-destructing? Is my intensity honest or armor?'",
         gifts: ["Fearless psychological depth", "Capacity to heal generational trauma", "Understanding power without being corrupted by it", "Authentic relationship with death and impermanence", "Emotional honesty that transforms everyone around them"],
-        challenges: ["Self-destructive intensity", "Obsession with darkness for its own sake", "Trust issues at the deepest level", "Power struggles in every relationship", "Difficulty with lightness and play"],
+        challenges: ["Self-destructive intensity", "Intense preoccupation with darkness for its own sake", "Trust issues at the deepest level", "Power struggles in every relationship", "Difficulty with lightness and play"],
         bodyFeeling: "Deep pelvic intensity (Scorpio body part). Energy moves from the base upward like kundalini. A sense of something always churning beneath the surface."
       }],
       exaltation: [{
@@ -588,7 +588,7 @@ const PLANET_INFO: Record<string, {
         feltSense: "This feels like watching the most solid, reliable things in your world slowly crack. Land, money, food, the body — everything you assumed was permanent reveals itself as impermanent. The transformation is slow, grinding, and often resisted with everything the bull can muster.",
         psychology: "Pluto in Taurus (detriment) transforms at the material level. Last transit: 1851–1884 (Industrial Revolution transforming land, labor, and material wealth). When retrograde: 'What am I clinging to that needs to die? Can I find power in releasing possessions rather than hoarding them?'",
         gifts: ["Transforming relationship to material security", "Finding power in simplicity", "Building wealth through destruction of old financial systems", "Deep connection to the earth and body", "Patience with slow, thorough transformation"],
-        challenges: ["Extreme resistance to material change", "Hoarding as a response to transformation anxiety", "Body fixation — cosmetic and health obsessions", "Financial power struggles", "Stubbornness in the face of necessary evolution"],
+        challenges: ["Extreme resistance to material change", "Hoarding as a response to transformation anxiety", "Body fixation — cosmetic and health intense preoccupations", "Financial power struggles", "Stubbornness in the face of necessary evolution"],
         bodyFeeling: "Throat constriction (Taurus body part). A sense of the ground shifting. Physical holding — clenched hands, tight jaw — resisting what's being asked to change."
       }],
       fall: [{

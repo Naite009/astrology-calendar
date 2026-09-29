@@ -45,7 +45,7 @@ export const CENTERS_DATA: Record<string, HDCenterData> = {
         "Clear sense of what questions matter to you"
       ],
       howToUse: "Trust your own inspiration. When you feel mental pressure to explore or understand something, follow that thread. Your questions are meant to inspire others, not necessarily be answered by you personally. Share your inspirations without attachment to whether others take them up.",
-      shadow: "When overused, defined Head energy can become obsessive thinking or putting too much pressure on yourself to 'figure everything out.' You might feel like you should have all the answers to your own questions."
+      shadow: "When overused, defined Head energy can become all-consuming thinking or putting too much pressure on yourself to 'figure everything out.' You might feel like you should have all the answers to your own questions."
     },
     undefined: {
       header: "Your Head Center is Open",

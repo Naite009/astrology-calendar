@@ -231,7 +231,7 @@ function snapshotSection(chart: VedicChart): VedicSectionData {
       : [];
     paras.push(
       `${PLANET_PLAIN.Sun}. In this system the Sun is never read as a personality label on its own, so the sign is only the first of several inputs. ` +
-      `Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, and the house matters more than the sign here: it says the area of life where you are meant to be visible and to carry responsibility. ` +
+      `Yours is in ${sun.sign}${sun.house ? `, in the house of ${housePlain(sun.house)}` : ''}, and the house matters more than the sign here: it says the area of life where you may thrive being visible and to carry responsibility. ` +
       (rp ? `${rp}, so those departments answer to the same planet and tend to rise and fall together. ` : '') +
       (nkSun ? `Inside ${sun.sign} the Sun sits in the lunar segment ${sun.nakshatra.name} pada ${sun.nakshatra.pada}, which narrows the flavor to something specific: ${nkSun.essence}. ` : '') +
       (sun.dignity !== 'neutral' ? `By sign condition the Sun is ${sun.dignity}. ${dignityPlain('Sun', sun.sign, sun.dignity) || ''} ` : '') +

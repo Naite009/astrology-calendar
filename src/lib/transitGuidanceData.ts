@@ -151,7 +151,7 @@ export const RETROGRADE_GUIDANCE: Record<string, RetrogradGuidance> = {
       'Psychological and physical healing',
       'Cleansing and purging — physical and emotional',
       'Breaking addictive habits',
-      'Addressing phobias, fears, and obsessive tendencies',
+      'Addressing phobias, fears, and all-consuming tendencies',
       'Controlling and empowering yourself',
     ],
     avoidThis: [

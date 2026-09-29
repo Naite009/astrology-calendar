@@ -157,7 +157,7 @@ export const srMercuryInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'The Year of Research and Investigation',
     overview: 'Mercury in the 8th house brings deep, investigative thinking. Financial negotiations involving other people\'s resources, therapeutic conversations, and research into hidden matters dominate.',
     practical: 'Tax planning, estate management, insurance negotiations. Psychological therapy is especially effective with Mercury here — you can articulate what is normally hidden. Research into occult, psychological, or taboo subjects. Forensic or investigative work thrives.',
-    caution: 'Obsessive thinking about dark subjects. Mental fixation on worst-case scenarios. Paranoia about what others are hiding.',
+    caution: 'All-consuming thinking about dark subjects. Mental fixation on worst-case scenarios. Paranoia about what others are hiding.',
     source: 'Mary Fortier Shea',
   },
   9: {
@@ -246,7 +246,7 @@ export const srVenusInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'The Year of Intimate Depth',
     overview: 'Venus in the 8th house deepens intimacy and brings financial benefits through a partner or shared resources. The experience of love involves vulnerability, surrender, and transformation.',
     practical: 'Physical intimacy reaches new depth and meaning. Financial benefits through a partner, inheritance, or insurance. Love that transforms your understanding of yourself. Art or beauty connected to themes of death, rebirth, and the hidden. Therapy that heals through the beauty of being truly seen.',
-    caution: 'Love that borders on obsession. Financial dependency on a partner. Confusing intensity with intimacy. Power dynamics in relationships need conscious management.',
+    caution: 'Love that borders on intense preoccupation. Financial dependency on a partner. Confusing intensity with intimacy. Power dynamics in relationships need conscious management.',
     source: 'Mary Fortier Shea',
   },
   9: {
@@ -314,7 +314,7 @@ export const srMarsInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'The Year of Passionate Pursuit',
     overview: 'Mars in the 5th house creates passionate romance, bold creative expression, and competitive hobbies. Risk-taking in love and art is heightened.',
     practical: 'Intense romantic attraction — pursuing someone with vigor and determination. Competitive sports and physical hobbies. Bold creative projects that take risks. High energy with children — sports coaching, active play. Performance arts with physical intensity.',
-    caution: 'Romantic aggression that crosses boundaries. Gambling with too much at stake. Conflicts with children. Creative ego battles. Sexual intensity that confuses passion with compatibility.',
+    caution: 'Romantic aggression that crosses boundaries. Gambling with too much at stake. Conflicts with children. Creative ego battles. Romantic intensity that confuses passion with compatibility.',
     source: 'Mary Fortier Shea',
   },
   6: {
@@ -334,8 +334,8 @@ export const srMarsInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   8: {
     title: 'The Year of Psychological Warfare',
     overview: 'Mars in the 8th house intensifies power struggles, financial conflicts involving others, and deep psychological processing. Surgical procedures and crisis management are common themes.',
-    practical: 'Financial negotiations with intensity — inheritance disputes, insurance claims, tax battles. Psychological therapy with a confrontational edge. Surgical procedures. Sexual intensity and power dynamics in intimate relationships. Facing death or endings with courage.',
-    caution: 'Manipulation and control in intimate relationships. Obsessive behavior around power and resources. Rage that has been buried and surfaces destructively. Financial vendettas.',
+    practical: 'Financial negotiations with intensity — inheritance disputes, insurance claims, tax battles. Psychological therapy with a confrontational edge. Surgical procedures. Romantic intensity and power dynamics in intimate relationships. Facing death or endings with courage.',
+    caution: 'Manipulation and control in intimate relationships. All-consuming behavior around power and resources. Rage that has been buried and surfaces destructively. Financial vendettas.',
     source: 'Mary Fortier Shea',
   },
   9: {
@@ -489,7 +489,7 @@ export const srUranusInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   5: {
     title: 'Unexpected Romance & Creative Breakthroughs',
     overview: 'Uranus in the 5th house brings surprise in love, creativity, and children. Romance starts or ends suddenly. Creative inspiration strikes like lightning. Your relationship with fun, play, and self-expression becomes wildly unpredictable.',
-    practical: 'Love at first sight or sudden breakups. Creative experimentation in new mediums. Unexpected pregnancy or surprising developments with children. Hobbies that become obsessions overnight. Risk-taking in speculation (usually ill-advised).',
+    practical: 'Love at first sight or sudden breakups. Creative experimentation in new mediums. Unexpected pregnancy or surprising developments with children. Hobbies that become intense preoccupations overnight. Risk-taking in speculation (usually ill-advised).',
     caution: 'Enjoy the excitement but don\'t mistake adrenaline for love. Creative impulses are genuine — follow them. But don\'t gamble your savings on a "sure thing."',
     source: 'Mary Fortier Shea',
   },
@@ -645,7 +645,7 @@ export const srPlutoInHouseDeep: Record<number, SRPlanetHouseDeep> = {
     title: 'Financial Power Shift',
     overview: 'Pluto in the 2nd house transforms your relationship with money, possessions, and self-worth. Financial power struggles — with employers, partners, or institutions — force you to claim your value. You may accumulate or lose significant resources.',
     practical: 'Negotiating for what you\'re worth. Purging possessions. Financial power plays — insurance battles, salary negotiations, inheritance disputes. Your values undergo a complete overhaul. You discover what you\'re truly willing to fight for.',
-    caution: 'Don\'t let financial obsession consume you. The transformation is about WORTH, not just wealth. Let go of possessions that hold toxic energy.',
+    caution: 'Don\'t let financial intense preoccupation consume you. The transformation is about WORTH, not just wealth. Let go of possessions that hold toxic energy.',
     source: 'Mary Fortier Shea',
   },
   3: {
@@ -664,8 +664,8 @@ export const srPlutoInHouseDeep: Record<number, SRPlanetHouseDeep> = {
   },
   5: {
     title: 'Passionate Creation & Intense Love',
-    overview: 'Pluto in the 5th house brings obsessive creative energy and all-or-nothing romance. Love affairs are intense, transformative, and potentially consuming. Creative work comes from the deepest places within you.',
-    practical: 'Art that comes from pain or transformation. Love that feels fated and consuming. Power struggles with children. Creative projects that demand everything you have. Sexual intensity in romance. Performing or creating with raw honesty.',
+    overview: 'Pluto in the 5th house brings all-consuming creative energy and all-or-nothing romance. Love affairs are intense, transformative, and potentially consuming. Creative work comes from the deepest places within you.',
+    practical: 'Art that comes from pain or transformation. Love that feels especially significant and consuming. Power struggles with children. Creative projects that demand everything you have. Romantic intensity in romance. Performing or creating with raw honesty.',
     caution: 'Obsessive love is not healthy love — learn the difference. Don\'t try to control children or creative outcomes. Let the intensity flow through you into your art rather than directing it at other people.',
     source: 'Mary Fortier Shea',
   },

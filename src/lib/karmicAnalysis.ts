@@ -83,7 +83,7 @@ export interface KarmicIndicator {
    * Internal grouping key kept for existing consumers. These are interpretive
    * traditions, not detected facts; the UI must lead with `technicalCategory`.
    */
-  theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'fated';
+  theme: 'past_life' | 'soul_growth' | 'karmic_debt' | 'transformation' | 'healing' | 'significant-feeling';
   familyAdvice?: {
     forUser: string;
     forOther: string;
@@ -135,7 +135,7 @@ const THEME_BY_TYPE: Record<KarmicIndicatorType, KarmicIndicator['theme']> = {
   chiron: 'healing',
   twelfth_house: 'past_life',
   eighth_house: 'transformation',
-  vertex: 'fated',
+  vertex: 'significant-feeling',
 };
 
 /** Ranking tier: tighter, major-planet contacts must outrank overlays and points. */

@@ -49,7 +49,7 @@ const PLANET_LEAN_IN: Record<string, string> = {
 };
 
 const PLANET_CAREFUL: Record<string, string> = {
-  Saturn: 'overwork and rigidity — structure is good, obsession is not',
+  Saturn: 'overwork and rigidity — structure is good, intense preoccupation is not',
   Pluto: 'control issues — let transformation happen instead of forcing it',
   Neptune: 'escapism and self-deception — stay grounded in reality',
   Uranus: 'impulsive changes — not every urge to blow things up is wisdom',

@@ -1648,7 +1648,7 @@ export const FIXED_STARS: Record<string, { name: string; longitude: number; orb:
     longitude: 249.0, // 9° Sagittarius
     orb: 2.0,
     magnitude: 1.09,
-    meaning: "Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion. Guardian of the West."
+    meaning: "Rival of Mars. Warrior spirit, intense preoccupation, intensity. Success through persistence. Heart of the Scorpion. Guardian of the West."
   },
   aldebaran: {
     name: 'Aldebaran',

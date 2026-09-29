@@ -61,7 +61,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   if (a.saturnFocus || a.nodesFocus) sections.push({ title: 'Saturn & North Node', desc: 'Where you are being tested and growing' });
   if (a.srToNatalAspects.length > 0) sections.push({ title: 'Key Aspects', desc: 'Planet-to-planet contacts between SR and natal charts' });
   
-  if (a.vertex) sections.push({ title: 'Vertex', desc: 'Fated encounters and destined meetings' });
+  if (a.vertex) sections.push({ title: 'Vertex', desc: 'Significant-feeling encounters and destined meetings' });
   sections.push({ title: 'Planet Spotlight', desc: 'Deep dive into key planets by house placement' });
   sections.push({ title: 'Best Months & Highlights', desc: 'Peak months for love, luck, and action' });
   sections.push({ title: 'Your Year in Four Seasons', desc: 'Key themes for each quarter' });

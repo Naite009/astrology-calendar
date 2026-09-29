@@ -169,7 +169,7 @@ function getNorthNodePathForPlanet(point: NatalPointKey, aspect: AspectType, ecl
     },
     NorthNode: {
       release: "This is a direct call to your growth path. Everything about this eclipse is pointing you forward.",
-      grow: "Lean into the discomfort of your North Node territory. This eclipse is accelerating your soul curriculum — say yes to it.",
+      grow: "Lean into the discomfort of your North Node territory. This eclipse is accelerating your growth focus — say yes to it.",
     },
     SouthNode: {
       release: "The past is completing. Thank it, honor what it taught you, and stop returning to it.",

@@ -117,7 +117,7 @@ const FIXED_STARS: StarData[] = [
   // ── Royal Stars (the Big Four) ──
   { name: 'Aldebaran', longitude2000: 69.78, magnitude: 0.85, nature: 'Mars', interpretation: 'The "Eye of the Bull" — one of the four Royal Stars. Integrity, honor, and success through moral courage. A year of standing firm in your values and being tested for honesty. Success comes when you refuse to compromise your principles.' },
   { name: 'Regulus', longitude2000: 149.83, magnitude: 1.35, nature: 'Jupiter-Mars', interpretation: 'The "Heart of the Lion" — one of the four Royal Stars. Leadership, authority, and success through generosity. A year of commanding respect and stepping into power. The warning: success is lost through revenge or petty behavior.' },
-  { name: 'Antares', longitude2000: 249.77, magnitude: 1.09, nature: 'Mars-Jupiter', interpretation: 'The "Heart of the Scorpion" — one of the four Royal Stars. Intensity, obsession, and strategic power. A year of high stakes, deep passion, and potential confrontation. Success through fearless engagement with what is difficult.' },
+  { name: 'Antares', longitude2000: 249.77, magnitude: 1.09, nature: 'Mars-Jupiter', interpretation: 'The "Heart of the Scorpion" — one of the four Royal Stars. Intensity, intense preoccupation, and strategic power. A year of high stakes, deep passion, and potential confrontation. Success through fearless engagement with what is difficult.' },
   { name: 'Fomalhaut', longitude2000: 333.87, magnitude: 1.16, nature: 'Venus-Mercury', interpretation: 'The "Mouth of the Fish" — one of the four Royal Stars. Dreams, idealism, and following a high vision. A year of pursuing something meaningful, but success only holds if you stay honest. Associated with fame, creativity, and following your conscience.' },
 
   // ── First-magnitude & classically essential ──
@@ -508,7 +508,7 @@ function getFirdariaLordMeaning(lord: string): string {
     Mars: 'A period of action, ambition, and assertive drive. Competition, courage, and physical energy are heightened. Conflicts may arise but so does achievement.',
     Jupiter: 'A period of expansion, opportunity, and spiritual growth. Travel, education, and generosity define these years. Faith in the process is rewarded.',
     Saturn: 'A period of discipline, responsibility, and structural building. Hard work pays off but the burden is real. Maturity is earned, not given.',
-    'North Node': 'A brief period of karmic acceleration — fated encounters and growth opportunities appear rapidly.',
+    'North Node': 'A brief period of karmic acceleration — significant-feeling encounters and growth opportunities appear rapidly.',
     'South Node': 'A brief period of karmic release — letting go of old patterns and completing unfinished business.',
   };
   return meanings[lord] || `${lord} themes are active.`;
@@ -942,7 +942,7 @@ const MIDPOINT_INTERPS: Record<string, string> = {
   'Sun/Pluto': 'Your identity meets deep change — activation brings power dynamics, ego transformations, and the need to claim your honest self.',
   'Mercury/Saturn': 'Your thinking meets structure — activation brings serious study, important documents, or decisions requiring careful thought.',
   'Venus/Mars': 'Desire meets attraction — activation heightens romantic and creative energy, bringing passionate encounters or artistic breakthroughs.',
-  'Venus/Pluto': 'Love meets transformation — activation brings obsessive attraction, relationship power shifts, or deep creative breakthroughs.',
+  'Venus/Pluto': 'Love meets transformation — activation brings all-consuming attraction, relationship power shifts, or deep creative breakthroughs.',
   'Moon/Mars': 'Emotions meet action — activation brings emotional assertiveness, impulsive reactions, or the courage to fight for what you need.',
   'Moon/Jupiter': 'Feelings meet faith — activation brings emotional generosity, optimism, and a sense of emotional abundance.',
 };

@@ -351,7 +351,7 @@ export const HUMAN_DESIGN_GATES: HDGate[] = [
     consciousExpression: "Your mind returns to ideas repeatedly. You rationalize and review until clarity comes.",
     unconsciousExpression: "Others experience your mental processing. They may notice you circling back to topics.",
     gifts: ["Deep processing", "Rationalization", "Thorough understanding", "Mental persistence"],
-    challenges: ["Mental loops", "Over-thinking", "Obsessive revisiting"],
+    challenges: ["Mental loops", "Over-thinking", "All-consuming revisiting"],
     biologicalCorrelation: "Brain, neocortex",
     circuit: "Individual - Knowing"
   },

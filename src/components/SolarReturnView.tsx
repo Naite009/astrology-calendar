@@ -2200,15 +2200,15 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
         )}
       </div>
 
-      {/* ── Vertex — Fated Encounters ── */}
+      {/* ── Vertex — Significant-feeling Encounters ── */}
       {analysis.vertex && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-1 flex items-center gap-2">
             <Zap size={16} className="text-primary" />
-            Vertex — Fated Encounters This Year
+            Vertex — Significant-feeling Encounters This Year
           </h3>
           <p className="text-[10px] text-muted-foreground italic">
-            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, fated encounters, and events beyond conscious control enter your life.
+            The Vertex is the intersection of the Prime Vertical with the Ecliptic — it marks where destiny, significant-feeling encounters, and events beyond conscious control enter your life.
           </p>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -2241,7 +2241,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
             <div className="border-t border-border pt-3 space-y-2">
               <h4 className="text-xs font-semibold text-foreground">{vertexInHouse[analysis.vertex.house].title} (House {analysis.vertex.house})</h4>
               <p className="text-sm text-muted-foreground leading-relaxed">{vertexInHouse[analysis.vertex.house].description}</p>
-              <p className="text-[10px] text-muted-foreground"><strong>Fated Areas:</strong> {vertexInHouse[analysis.vertex.house].fatedArea}</p>
+              <p className="text-[10px] text-muted-foreground"><strong>Significant-feeling Areas:</strong> {vertexInHouse[analysis.vertex.house].fatedArea}</p>
             </div>
           )}
 

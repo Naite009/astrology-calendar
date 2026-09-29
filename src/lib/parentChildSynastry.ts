@@ -457,7 +457,7 @@ const MOON_PROFILES: Record<string, Omit<ChildMoonProfile, "sign" | "house">> = 
     stressSignals: [
       "testing you with small provocations to see if you'll stay",
       "going completely silent and unreachable",
-      "obsessive thinking about a perceived betrayal",
+      "all-consuming thinking about a perceived betrayal",
     ],
     parentTip: "Half-truths feel like betrayal to this Moon. If they sense you're managing them, trust breaks fast and rebuilds slowly.",
   },

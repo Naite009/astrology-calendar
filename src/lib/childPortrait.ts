@@ -675,7 +675,7 @@ const MOON_PHASE_PROFILE: Record<MoonPhaseName, { label: string; instinct: strin
   },
   Gibbous: {
     label: "Refiner / Perfecter",
-    instinct: "edits, adjusts, and pressure-tests almost obsessively before reveal",
+    instinct: "edits, adjusts, and pressure-tests almost with intense focus before reveal",
     banTold: "Don't tell them they are 'picky', the refinement IS the contribution",
     trueWork: "Their work is to perfect the offering before sharing it",
   },

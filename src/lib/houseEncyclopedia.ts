@@ -29,7 +29,7 @@ export interface HouseData {
   teaching: string;
   // Sourced perspectives from published authors
   perspectives?: {
-    esoteric?: SourcedInsight;      // Soul-level / spiritual dimension
+    esoteric?: SourcedInsight;      // Deep / spiritual dimension
     relational?: SourcedInsight;    // Intimate / relationship dimension
     shadow?: SourcedInsight;        // Danger / pitfall dimension
     soulQuestion?: SourcedInsight;  // The deep question this house asks
@@ -313,7 +313,7 @@ export const HOUSES_DATA: HouseData[] = [
     perspectives: {
       esoteric: { text: 'The 8th house is the alchemical crucible — where the lead of ego is transformed into spiritual gold. Every crisis, every loss, every "death" in your life is an initiation. The soul specifically seeks 8th house experiences to burn away what is false and reveal what is eternal.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       relational: { text: 'The 8th house is where true intimacy lives — not the romance of the 5th but the raw vulnerability of merging with another person psychologically, sexually, and financially. This house reveals your capacity for trust, your relationship with power, and whether you can surrender control without losing yourself.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
-      shadow: { text: 'The shadow of the 8th house is manipulation — using intimacy, money, sex, or psychological insight as tools of control. Obsession. Power struggles. Refusing to let go of what has died. Or the opposite: self-destructive behavior as an attempt to force transformation before you\'re ready.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
+      shadow: { text: 'The shadow of the 8th house is manipulation — using intimacy, money, sex, or psychological insight as tools of control. Intense preoccupation. Power struggles. Refusing to let go of what has died. Or the opposite: self-destructive behavior as an attempt to force transformation before you\'re ready.', source: 'Moses Siregar III, Secrets of the 12 Houses' },
       soulQuestion: { text: 'What must I allow to die so something new can be born? Can I trust another person with my vulnerability?', source: 'Moses Siregar III, Secrets of the 12 Houses' },
     },
   },

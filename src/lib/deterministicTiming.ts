@@ -384,14 +384,14 @@ const RELATIONSHIP_OPENERS: Record<string, string> = {
   'Jupiter_square_Mercury': 'Jupiter squaring your Mercury opens unexpected doors through conversation and connection — say yes to introductions you would normally decline',
   // Neptune
   'Neptune_conjunction_Moon': 'Neptune on your Moon softens the boundary between what you feel and what is actually there — this is a period where emotional clarity is genuinely harder to find, and idealization is a real risk',
-  'Neptune_conjunction_Venus': 'Neptune conjuncting your Venus is beautiful and blurring at the same time — connections that arrive now can feel fated or soulmate-level, but require careful reality-checking over time',
+  'Neptune_conjunction_Venus': 'Neptune conjuncting your Venus is beautiful and blurring at the same time — connections that arrive now can feel especially significant or soulmate-level, but require careful reality-checking over time',
   'Neptune_opposition_Moon': 'Neptune opposing your Moon means your emotional read on relationships is softer and less reliable than usual — do not make permanent decisions at the peak of this transit',
   'Neptune_square_Moon': 'Neptune squaring your Moon means the clarity you normally rely on to assess people is running softer than usual — you may feel certain about someone before you actually know them well enough to be certain',
   'Neptune_square_Venus': 'Neptune squaring your Venus blurs what you want and who you are drawn to — this is a window for idealization, and what feels like the right person may need more time to reveal itself clearly',
   'Neptune_sextile_Mars': 'Neptune sextiling your Mars softens how desire works — you may feel drawn toward someone in a searching, intuitive way rather than with clear intention, which can be genuinely opening if you stay grounded',
   // Pluto
   'Pluto_conjunction_Moon': 'Pluto conjuncting your Moon is a slow and deep transformation of your emotional world — how you handle closeness, vulnerability, and what you need from a relationship is being fundamentally reorganized',
-  'Pluto_conjunction_Venus': 'Pluto on your Venus intensifies everything about attraction and love — connections that arrive now are not casual, and this period can produce either deep transformation or obsessive dynamics depending on awareness',
+  'Pluto_conjunction_Venus': 'Pluto on your Venus intensifies everything about attraction and love — connections that arrive now are not casual, and this period can produce either deep transformation or all-consuming dynamics depending on awareness',
   'Pluto_trine_Moon': 'Pluto trining your Moon is a quieter but powerful invitation to emotional depth — this window supports genuine intimacy, real vulnerability, and conversations that actually change something',
   'Pluto_trine_Venus': 'Pluto trining your Venus deepens what is possible in love — this is not a dramatic transit but a slow one, and the relationships that develop or deepen now have real staying power',
   'Pluto_trine_Mars': 'Pluto trining your Mars is gradually loosening old patterns around desire and pursuit — you may find yourself more willing to act on what you want, more direct than usual, and more aware of what you have been keeping private',
@@ -467,7 +467,7 @@ const SPIRITUAL_OPENERS: Record<string, string> = {
   'Jupiter_trine_Sun': 'Jupiter trining your Sun expands meaning and faith — your sense of larger purpose grows in a way that feels grounded',
   'Neptune_conjunction_Moon': 'Neptune on your Moon dissolves the boundary between self and source — porousness is high, dreams are vivid, and discernment matters',
   'Neptune_trine_Sun': 'Neptune trining your Sun softens defenses in a genuinely opening way — the felt sense of something larger than self becomes more available',
-  'Pluto_conjunction_Sun': 'Pluto on your Sun is a soul-level identity transformation — what you believe at the root is being reorganized',
+  'Pluto_conjunction_Sun': 'Pluto on your Sun is a deep identity transformation — what you believe at the root is being reorganized',
   'Pluto_trine_Moon': 'Pluto trining your Moon supports deep inner work — what surfaces from the depths can be integrated rather than dragging you under',
   'Uranus_trine_Sun': 'Uranus trining your Sun brings sudden insight — old beliefs loosen and something truer can come through',
 };

@@ -130,9 +130,9 @@ const HOUSE_FOCUS_INTERPRETATIONS: Record<RelationshipFocus, Record<number, Reco
     },
     8: {
       Sun: { interpretation: "Intense, transformative love. Deep psychological bonding.", relevance: 'high', keyInsight: 'Transformative intimacy' },
-      Moon: { interpretation: "Deep emotional and physical intimacy. Soul-level connection.", relevance: 'high', keyInsight: 'Soul intimacy' },
+      Moon: { interpretation: "Deep emotional and physical intimacy. Deep connection.", relevance: 'high', keyInsight: 'Soul intimacy' },
       Venus: { interpretation: "Intense, passionate love. Magnetic attraction and deep bonding.", relevance: 'high', keyInsight: 'Magnetic passion' },
-      Mars: { interpretation: "Powerful sexual chemistry. Intense desire.", relevance: 'high', keyInsight: 'Sexual intensity' },
+      Mars: { interpretation: "Powerful romantic chemistry. Intense desire.", relevance: 'high', keyInsight: 'Romantic intensity' },
       Pluto: { interpretation: "Transformative, all-consuming passion. Life-changing love.", relevance: 'high', keyInsight: 'Transformative passion' }
     }
   },
@@ -197,19 +197,19 @@ const HOUSE_FOCUS_INTERPRETATIONS: Record<RelationshipFocus, Record<number, Reco
 
 const KARMIC_FOCUS_INTERPRETATIONS: Record<RelationshipFocus, Record<string, { relevance: 'high' | 'medium' | 'low'; focusedInterpretation: string }>> = {
   business: {
-    'NorthNode-Sun': { relevance: 'high', focusedInterpretation: 'Fated professional partnership. This person represents your business destiny path—they show you who you can become professionally.' },
+    'NorthNode-Sun': { relevance: 'high', focusedInterpretation: 'Significant-feeling professional partnership. This person represents your business destiny path—they show you who you can become professionally.' },
     'NorthNode-Saturn': { relevance: 'high', focusedInterpretation: 'Karmic business mentor. They teach you the structures and disciplines needed for professional success.' },
     'Saturn-Venus': { relevance: 'medium', focusedInterpretation: 'Lessons around value and worth in professional contexts. Learning to balance what you appreciate with what is practical.' },
     'Chiron-Mercury': { relevance: 'high', focusedInterpretation: 'Healing around professional communication and ideas. They help you overcome imposter syndrome or speaking up in business contexts.' }
   },
   friendship: {
-    'NorthNode-Moon': { relevance: 'high', focusedInterpretation: 'Fated emotional connection. This friendship is meant to nurture your soul growth and emotional development.' },
+    'NorthNode-Moon': { relevance: 'high', focusedInterpretation: 'Significant-feeling emotional connection. This friendship is meant to nurture your soul growth and emotional development.' },
     'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'well placed to appreciate each other. This friendship brings joy and helps you understand what you truly value.' },
     'Chiron-Moon': { relevance: 'high', focusedInterpretation: 'Healing old emotional wounds through friendship. They help you feel safe to be vulnerable.' },
     'Chiron-Sun': { relevance: 'high', focusedInterpretation: 'They see your wounds but also your potential. A healing friendship that helps you become more yourself.' }
   },
   romantic: {
-    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'FATED LOVE. This is one of the strongest indicators that you are meant to experience this love as part of your soul evolution.' },
+    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'SIGNIFICANT-FEELING LOVE. This is one of the strongest indicators that you are meant to experience this love as part of your soul evolution.' },
     'NorthNode-Moon': { relevance: 'high', focusedInterpretation: 'Emotionally destined connection. This relationship nurtures your deepest soul needs.' },
     'Chiron-Venus': { relevance: 'high', focusedInterpretation: 'Healing love wounds. This relationship helps you overcome past romantic trauma and learn to receive love.' },
     'Saturn-Venus': { relevance: 'high', focusedInterpretation: 'Karmic love lessons. Learning about commitment, worthiness, and mature love together.' },
@@ -217,7 +217,7 @@ const KARMIC_FOCUS_INTERPRETATIONS: Record<RelationshipFocus, Record<string, { r
   },
   creative: {
     'NorthNode-Neptune': { relevance: 'high', focusedInterpretation: 'Destined creative inspiration. This connection awakens your artistic and spiritual potential.' },
-    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'Fated aesthetic and creative partnership. You help each other discover beauty and artistic expression.' },
+    'NorthNode-Venus': { relevance: 'high', focusedInterpretation: 'Significant-feeling aesthetic and creative partnership. You help each other discover beauty and artistic expression.' },
     'Chiron-Venus': { relevance: 'high', focusedInterpretation: 'Healing through creative expression together. Art as medicine for old wounds.' },
     'Neptune-Venus': { relevance: 'high', focusedInterpretation: 'Spiritual and artistic union. Creating beauty that transcends the ordinary.' }
   },

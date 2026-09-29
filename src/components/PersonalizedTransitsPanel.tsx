@@ -225,7 +225,7 @@ const getTransitInHouseInterpretation = (planet: string, house: number | null): 
   const interpretations: Record<string, Record<number, { meaning: string; feeling: string }>> = {
     Pluto: {
       1: { meaning: "Deep identity transformation is underway - who you are is evolving at the core.", feeling: "You feel compelled to shed old versions of yourself, sometimes uncomfortably." },
-      2: { meaning: "Your relationship with money, possessions, and self-worth is being transformed.", feeling: "You may feel obsessed with financial security or purging what you own." },
+      2: { meaning: "Your relationship with money, possessions, and self-worth is being transformed.", feeling: "You may feel intensely preoccupied with financial security or purging what you own." },
       3: { meaning: "Your thinking patterns and communication style are undergoing profound change.", feeling: "Conversations feel heavier; you are drawn to deeper truths and uncomfortable topics." },
       4: { meaning: "Family dynamics, home life, and emotional roots are being transformed.", feeling: "You feel like you are excavating your past - old family patterns demand attention." },
       5: { meaning: "Your creative expression, romance, and relationship with joy are intensifying.", feeling: "Creative projects feel all-consuming; love affairs are transformative, not casual." },

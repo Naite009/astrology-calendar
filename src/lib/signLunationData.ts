@@ -101,7 +101,7 @@ export const SIGN_LUNATION_DATA: Record<string, SignLunationData> = {
   },
   Scorpio: {
     expressions: ['transformation', 'depth', 'intimacy', 'power', 'healing', 'passion', 'investigation', 'regeneration', 'truth', 'intensity', 'commitment', 'psychological insight'],
-    shadow: ['obsession', 'jealousy', 'control', 'manipulation', 'vengefulness', 'secrecy', 'fear of vulnerability', 'holding grudges', 'power struggles'],
+    shadow: ['intense preoccupation', 'jealousy', 'control', 'manipulation', 'vengefulness', 'secrecy', 'fear of vulnerability', 'holding grudges', 'power struggles'],
     overview: 'This Scorpio New Moon invites deep transformation and emotional truth. It marks a reset around power, intimacy, and what lies beneath the surface.',
     seedGuidance: 'As a fixed water New Moon, it asks for profound intention and willingness to go deep. Seeds planted now transform through death and rebirth cycles.',
     themes: [

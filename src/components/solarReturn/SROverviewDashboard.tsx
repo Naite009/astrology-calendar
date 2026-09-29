@@ -468,7 +468,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             Saturn: 'discipline, responsibility, fear, and where you must earn through effort',
             Uranus: 'disruption, innovation, sudden change, and where you break free',
             Neptune: 'imagination, spiritual longing, confusion, and where boundaries dissolve',
-            Pluto: 'power, transformation, obsession, and where you undergo psychological death and rebirth',
+            Pluto: 'power, transformation, intense preoccupation, and where you undergo psychological death and rebirth',
           };
           const SIGN_STYLE: Record<string, string> = {
             Aries: 'impulsively, directly, and with raw courage — acting before thinking',

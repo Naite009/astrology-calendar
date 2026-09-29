@@ -31,7 +31,7 @@ const SIGN_SHADOW_THEMES: Record<string, string[]> = {
   Leo: ['ego inflation', 'needing validation', 'drama', 'performance over honesty'],
   Virgo: ['perfectionism', 'self-criticism', 'over-analyzing', 'controlling through detail'],
   Libra: ['people-pleasing', 'indecision', 'codependency', 'conflict avoidance'],
-  Scorpio: ['power games', 'emotional intensity as control', 'obsession', 'suspicion'],
+  Scorpio: ['power games', 'emotional intensity as control', 'intense preoccupation', 'suspicion'],
   Sagittarius: ['preachiness', 'restlessness', 'over-promising', 'truth as weapon'],
   Capricorn: ['workaholism', 'emotional coldness', 'status-seeking', 'rigidity'],
   Aquarius: ['emotional detachment', 'contrarianism', 'hiding in group identity', 'intellectualizing feelings'],

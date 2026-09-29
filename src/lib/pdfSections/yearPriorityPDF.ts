@@ -172,7 +172,7 @@ const PLANET_HOUSE_FELT: Record<string, Record<number, string>> = {
     2: 'Your relationship with money and possessions undergoes deep change. Control issues around resources surface and demand resolution.',
     3: 'Your words become more penetrating. You uncover hidden information. Communication has a quality of exposure and revelation.',
     4: 'Family secrets surface. Home undergoes deep transformation — demolition and rebuilding, literally or psychologically.',
-    5: 'Creative obsession, intense romance, or power dynamics with children. Whatever you create this year comes from your depths.',
+    5: 'Creative intense preoccupation, intense romance, or power dynamics with children. Whatever you create this year comes from your depths.',
     6: 'Work becomes a crucible. Health crises may force radical lifestyle changes. You cannot maintain routines that don\'t serve you.',
     7: 'Relationships undergo power transformation. You confront control dynamics, jealousy, or deep mutual evolution with a partner.',
     8: 'The most intense placement — death, rebirth, inheritance, sexuality, and psychological excavation are all activated simultaneously.',

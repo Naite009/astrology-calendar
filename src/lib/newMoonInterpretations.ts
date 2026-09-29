@@ -27,7 +27,7 @@ const PLANET_MEANINGS: Record<string, { symbol: string; energy: string; gift: st
   Saturn: { symbol: '♄', energy: 'structure, discipline, time', gift: 'lasting foundations' },
   Uranus: { symbol: '♅', energy: 'change, awakening, freedom', gift: 'breakthrough insights' },
   Neptune: { symbol: '♆', energy: 'dreams, intuition, transcendence', gift: 'spiritual connection' },
-  Pluto: { symbol: '♇', energy: 'transformation, power, depth', gift: 'soul-level intention' },
+  Pluto: { symbol: '♇', energy: 'transformation, power, depth', gift: 'deep intention' },
 };
 
 // Felt-sense descriptions for each planet conjunct the New Moon
@@ -89,7 +89,7 @@ const CONJUNCTION_PAIR_SYNTHESIS: Record<string, string> = {
 
   'Neptune+Venus': '♀♆ Venus–Neptune conjunction at this New Moon: romantic idealism and creative transcendence. You may feel achingly tender, artistically inspired, or longing for a love that\'s almost mythical. Beauty moves you to tears. The felt-sense is bittersweet — exquisitely open. Intentions around art, spiritual love, or healing through beauty are elevated. Watch for idealizing partners or financial confusion.',
 
-  'Pluto+Venus': '♀♇ Venus–Pluto conjunction at this New Moon: desire goes to the depths. You may feel magnetically attracted or repelled, financially obsessive, or aware of power dynamics in love. The felt-sense is possessive intensity — wanting to merge completely or cut away completely. Intentions around transforming relationships, confronting jealousy, or finding beauty in darkness are potent.',
+  'Pluto+Venus': '♀♇ Venus–Pluto conjunction at this New Moon: desire goes to the depths. You may feel magnetically attracted or repelled, financially all-consuming, or aware of power dynamics in love. The felt-sense is possessive intensity — wanting to merge completely or cut away completely. Intentions around transforming relationships, confronting jealousy, or finding beauty in darkness are potent.',
 
   'Uranus+Venus': '♀♅ Venus–Uranus conjunction at this New Moon: love disrupted. You may feel suddenly attracted to unusual people, restless in stable partnerships, or ready to completely reinvent your aesthetic. The felt-sense is exciting instability — thrilling but unpredictable. Intentions around unconventional relationships, financial innovation, or artistic experimentation carry electric charge.',
 
@@ -122,7 +122,7 @@ const CONJUNCTION_PAIR_SYNTHESIS: Record<string, string> = {
   'Chiron+Uranus': '⚷♅ Chiron–Uranus conjunction at this New Moon: healing through breakthrough. You may suddenly see your wound from a completely new angle — the reframe itself is the medicine. The felt-sense is liberating insight. Intentions around alternative healing, radical self-acceptance, or helping others through innovation are sparked.',
 
   // Node combinations
-  'NorthNode+Saturn': '☊♄ North Node–Saturn conjunction at this New Moon: karmic duty crystallizes. Your soul\'s growth direction and your earthly responsibilities align — what you MUST do and what you\'re MEANT to do converge. This is rare and heavy. Intentions around your life purpose, career calling, or stepping into authority carry fated weight.',
+  'NorthNode+Saturn': '☊♄ North Node–Saturn conjunction at this New Moon: karmic duty crystallizes. Your soul\'s growth direction and your earthly responsibilities align — what you MUST do and what you\'re MEANT to do converge. This is rare and heavy. Intentions around your life purpose, career calling, or stepping into authority carry significant-feeling weight.',
 
   'NorthNode+Neptune': '☊♆ North Node–Neptune conjunction at this New Moon: spiritual destiny activates. Your soul direction points toward compassion, surrender, or creative/spiritual service. You may feel called to something you can\'t logically explain. Intentions aligned with intuitive guidance, healing work, or artistic devotion feel destined.',
 
@@ -439,7 +439,7 @@ const generateWhatToSet = (
   
   // Add conjunction influence on what to set
   if (conjunctions.some(c => c.name === 'Pluto')) {
-    advice += 'With Pluto present, set soul-level intentions — what does your deepest self truly want? ';
+    advice += 'With Pluto present, set deep intentions — what does your deepest self truly want? ';
   }
   if (conjunctions.some(c => c.name === 'Saturn')) {
     advice += 'Saturn helps crystallize intentions into concrete, achievable plans. ';

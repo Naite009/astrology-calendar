@@ -309,7 +309,7 @@ export class RelationshipTransitCalculator {
       } else if (moonSun) {
         return `An instinctive emotional understanding exists between you. One of you naturally provides what the other needs emotionally - this is the gift of family.`;
       } else if (factorCount > 0) {
-        return `Multiple connections create a complex family bond. Your charts show why you're meant to be in each other's lives.`;
+        return `Multiple connections create a complex family bond. Your charts show why you may matter in each other's lives.`;
       } else {
         return `Your family bond may be based more on circumstance and choice than overwhelming astrological connections. This can actually create a more conscious, intentional relationship.`;
       }
@@ -355,7 +355,7 @@ export class RelationshipTransitCalculator {
     if (venusMars) {
       return `The raw attraction between you is undeniable. ${person1Name}'s ${venusMars.person1Planet} ${venusMars.aspectType}s ${person2Name}'s ${venusMars.person2Planet}, creating a classic lover's configuration. When you're near each other, there's an almost gravitational pull.`;
     } else if (moonSun) {
-      return `The connection feels fated and emotionally deep. One of you unconsciously fills what the other needs - it feels like coming home.`;
+      return `The connection feels especially significant and emotionally deep. One of you unconsciously fills what the other needs - it feels like coming home.`;
     } else if (factorCount > 0) {
       return `Your attraction operates on subtle but powerful levels. Multiple connections between your charts create a complex, layered draw toward each other.`;
     } else {
@@ -385,7 +385,7 @@ export class RelationshipTransitCalculator {
         if (hasSomeFactors) return `Creative synergy exists. Your collaboration is supported by genuine astrological connection.`;
         return `Your creative partnership is based on skill and conscious collaboration. This creates professional, sustainable results.`;
       default:
-        if (hasManyFactors) return `Multiple powerful connections create a relationship that feels "meant to be." ${person1Name} and ${person2Name} are drawn together on physical, emotional, and identity levels. This is a multi-layered attraction that's hard to walk away from.`;
+        if (hasManyFactors) return `Multiple powerful connections create a relationship that feels unusually significant. ${person1Name} and ${person2Name} are drawn together on physical, emotional, and identity levels. This is a multi-layered attraction that's hard to walk away from.`;
         if (hasSomeFactors) return `Clear attraction signatures exist between you. The connection isn't just random - your charts show specific reasons why you're drawn to each other.`;
         return `Your connection may be based more on compatibility than chemistry. This can actually lead to a more stable long-term relationship, though initial sparks may be subtler.`;
     }
@@ -535,7 +535,7 @@ export class RelationshipTransitCalculator {
       finalStraw = `One or both of you decided the work wasn't worth it, or that the problems couldn't be fixed.`;
     } else if (hasPluto) {
       primaryCause = `Pluto - the destroyer and transformer - demanded something die. The relationship as it was couldn't survive.`;
-      buildUp = `Power struggles, control issues, jealousy, or obsessive patterns intensified. Something toxic needed to end.`;
+      buildUp = `Power struggles, control issues, jealousy, or all-consuming patterns intensified. Something toxic needed to end.`;
       finalStraw = `A crisis, betrayal, or transformation made continuing impossible. The old form had to die.`;
     } else if (hasNeptune) {
       primaryCause = `Neptune - the dissolver - slowly eroded the connection. Disillusionment or confusion made the bond impossible to maintain.`;
@@ -579,8 +579,8 @@ export class RelationshipTransitCalculator {
       'Uranus-Venus': `Uranus ${aspectType} ${personName}'s Venus - love revolution, sudden change in what they want`,
       'Uranus-Mars': `Uranus ${aspectType} ${personName}'s Mars - erratic actions, breaking free of constraints`,
       'Pluto-Sun': `Pluto ${aspectType} ${personName}'s Sun - ego death and transformation, power crisis`,
-      'Pluto-Moon': `Pluto ${aspectType} ${personName}'s Moon - emotional obsession or destruction, deep wounds surfacing`,
-      'Pluto-Venus': `Pluto ${aspectType} ${personName}'s Venus - love obsession, jealousy, relationship power struggle`,
+      'Pluto-Moon': `Pluto ${aspectType} ${personName}'s Moon - emotional intense preoccupation or destruction, deep wounds surfacing`,
+      'Pluto-Venus': `Pluto ${aspectType} ${personName}'s Venus - love intense preoccupation, jealousy, relationship power struggle`,
       'Pluto-Mars': `Pluto ${aspectType} ${personName}'s Mars - rage, power battles, destructive actions`,
       'Neptune-Sun': `Neptune ${aspectType} ${personName}'s Sun - confusion about identity, escapism, disillusionment`,
       'Neptune-Moon': `Neptune ${aspectType} ${personName}'s Moon - emotional confusion, feeling lost or deceived`,
@@ -964,10 +964,10 @@ export class RelationshipTransitCalculator {
       
       // Pluto transits
       'Pluto_conjunction_Sun': `Pluto has arrived at ${personName}'s Sun. This is death and rebirth of identity. They're going through hell to come out transformed. The person on the other side won't be the same. ${partnerName}, witness this but don't try to control it.`,
-      'Pluto_square_Sun': `Pluto squaring ${personName}'s Sun is a power crisis. They're being forced to claim their power or have it stripped away. Watch for control issues, manipulation, or obsessive behavior.`,
+      'Pluto_square_Sun': `Pluto squaring ${personName}'s Sun is a power crisis. They're being forced to claim their power or have it stripped away. Watch for control issues, manipulation, or all-consuming behavior.`,
       'Pluto_conjunction_Moon': `Pluto on ${personName}'s Moon is emotional transformation at the deepest level. Old wounds surface. Childhood pain emerges. The relationship may become the container for this healing - or the casualty.`,
       'Pluto_square_Moon': `Pluto squaring ${personName}'s Moon brings intense, sometimes frightening emotions. Jealousy, possessiveness, or emotional manipulation may appear. Deep therapy is recommended.`,
-      'Pluto_conjunction_Venus': `Pluto has merged with ${personName}'s Venus. Love becomes obsessive, consuming, transformative. They may become possessive or attract intense situations. The relationship can't stay the same.`,
+      'Pluto_conjunction_Venus': `Pluto has merged with ${personName}'s Venus. Love becomes all-consuming, consuming, transformative. They may become possessive or attract intense situations. The relationship can't stay the same.`,
       'Pluto_square_Venus': `Pluto squaring ${personName}'s Venus creates love crisis. Power struggles, jealousy, and intensity. The shadows of relating are exposed. This is make-or-break territory.`,
       
       // Jupiter transits
@@ -986,7 +986,7 @@ export class RelationshipTransitCalculator {
       // Mars transits
       'Mars_conjunction_Sun': `Mars is energizing ${personName}'s Sun. High energy, drive, possibly aggression. They're ready to take action. Channel this into shared projects or passion.`,
       'Mars_square_Sun': `Mars squaring ${personName}'s Sun creates friction. They're frustrated, irritable, ready to fight. Pick your battles - or help them release energy constructively.`,
-      'Mars_conjunction_Venus': `Mars conjunct ${personName}'s Venus is pure desire. Sexual chemistry is high. They're feeling attractive and attracted. Great time for passion.`,
+      'Mars_conjunction_Venus': `Mars conjunct ${personName}'s Venus is pure desire. Romantic chemistry is high. They're feeling attractive and attracted. Great time for passion.`,
       'Mars_square_Venus': `Mars squaring ${personName}'s Venus is frustrated desire. They want connection but it's not flowing. Sexual tension with no release. Arguments about intimacy possible.`,
       'Mars_conjunction_Moon': `Mars is hitting ${personName}'s Moon. Emotions run hot. They may be irritable, defensive, or passionately expressive. Handle with care.`,
       'Mars_square_Moon': `Mars squaring ${personName}'s Moon creates emotional volatility. Quick to anger, easily hurt. Arguments flare up fast. Cooling-off periods help.`,
@@ -1089,15 +1089,15 @@ export class RelationshipTransitCalculator {
       
       // Pluto transits
       'Pluto_conjunction_Venus': {
-        transited: 'You\'re obsessed or consumed by love. Power and control issues surface. You can\'t love casually - it\'s all or nothing. Transformation through relationship.',
-        other: 'They\'re intensely focused on you or the relationship - for better or worse. They may be obsessive or controlling. Powerful stuff.'
+        transited: 'You\'re intensely preoccupied or consumed by love. Power and control issues surface. You can\'t love casually - it\'s all or nothing. Transformation through relationship.',
+        other: 'They\'re intensely focused on you or the relationship - for better or worse. They may be all-consuming or controlling. Powerful stuff.'
       },
       'Pluto_square_Venus': {
         transited: 'Power struggles over love. You feel controlled or you\'re trying to control. Jealousy and possessiveness emerge. This is crisis territory.',
         other: 'They\'re being controlling or are in relationship crisis. Jealousy or power issues are active. The relationship feels dangerous or consuming.'
       },
       'Pluto_conjunction_Mars': {
-        transited: 'Sexual obsession or power. You want to dominate or be dominated. Intense transformation of desire and will. Dangerous but powerful.',
+        transited: 'Sexual intense preoccupation or power. You want to dominate or be dominated. Intense transformation of desire and will. Dangerous but powerful.',
         other: 'Their desire is overwhelming or intimidating. Power and sex are mixed. Be careful but don\'t be afraid.'
       },
       'Pluto_square_Mars': {
@@ -1197,7 +1197,7 @@ export class RelationshipTransitCalculator {
       
       // Mars transits
       'Mars_conjunction_Venus': {
-        transited: 'Sexual chemistry is very high. You feel desired and desiring. Passion, attraction, action. Hot times.',
+        transited: 'Romantic chemistry is very high. You feel desired and desiring. Passion, attraction, action. Hot times.',
         other: 'They\'re pursuing you intensely. Sexual energy is high. Passionate period - enjoy it.'
       },
       'Mars_square_Venus': {

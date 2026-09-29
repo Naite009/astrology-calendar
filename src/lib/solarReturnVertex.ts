@@ -5,7 +5,7 @@
  *
  * The Vertex is the intersection of the Prime Vertical with the Ecliptic in the west.
  * In moderate latitudes it typically falls in houses 5-8.
- * It represents fated encounters, destined events, and experiences beyond conscious control.
+ * It represents significant-feeling encounters, destined events, and experiences beyond conscious control.
  */
 
 import { NatalPlanetPosition } from '@/hooks/useNatalChart';
@@ -148,76 +148,76 @@ export const vertexInSign: Record<string, {
   lesson: string;
 }> = {
   Aries: {
-    title: 'Fated Self-Assertion',
-    fatedTheme: 'This year, destiny pushes you toward courage, independence, and taking the initiative. Fated events require you to stand on your own, fight for yourself, and claim your personal power — even when you would prefer to defer.',
+    title: 'Significant-feeling Self-Assertion',
+    fatedTheme: 'This year, destiny pushes you toward courage, independence, and taking the initiative. Significant-feeling events require you to stand on your own, fight for yourself, and claim your personal power — even when you would prefer to defer.',
     encounters: 'You may encounter bold, pioneering individuals who catalyze your own assertiveness. A warrior figure, entrepreneur, or someone who forces you to compete may appear at a turning point.',
     lesson: 'The universe is teaching you that waiting for permission is no longer an option. The fated encounters of this year demand that you ACT, even imperfectly, rather than deliberate endlessly.',
   },
   Taurus: {
-    title: 'Fated Grounding',
-    fatedTheme: 'Destiny draws you toward matters of material security, beauty, and sensual experience. Fated events connect you to the physical world — land, money, the body, art, and what endures.',
-    encounters: 'You may meet someone who embodies stability, sensuality, or artistic mastery. A business partner, artisan, or someone connected to the earth (farming, real estate, crafts) may appear as a fated figure.',
+    title: 'Significant-feeling Grounding',
+    fatedTheme: 'Destiny draws you toward matters of material security, beauty, and sensual experience. Significant-feeling events connect you to the physical world — land, money, the body, art, and what endures.',
+    encounters: 'You may meet someone who embodies stability, sensuality, or artistic mastery. A business partner, artisan, or someone connected to the earth (farming, real estate, crafts) may appear as a significant-feeling figure.',
     lesson: 'The lesson is permanence — building something that lasts rather than chasing what is exciting but ephemeral. Value what is real and tangible.',
   },
   Gemini: {
-    title: 'Fated Connection',
+    title: 'Significant-feeling Connection',
     fatedTheme: 'Destiny works through communication, ideas, and unexpected information this year. A single conversation, letter, email, or piece of news may change the course of your year.',
     encounters: 'A messenger figure — a writer, teacher, sibling, neighbor, or communicator — appears at a pivotal moment. Twins, duality, and choosing between two paths are themes.',
-    lesson: 'The universe is teaching you to listen, learn, and remain curious. The fated path runs through information and exchange, not isolation.',
+    lesson: 'The universe is teaching you to listen, learn, and remain curious. The significant-feeling path runs through information and exchange, not isolation.',
   },
   Cancer: {
-    title: 'Fated Belonging',
-    fatedTheme: 'Destiny pulls you toward home, family, and emotional roots. A fated event may involve a parent, your living situation, or the creation of a family structure.',
+    title: 'Significant-feeling Belonging',
+    fatedTheme: 'Destiny pulls you toward home, family, and emotional roots. A significant-feeling event may involve a parent, your living situation, or the creation of a family structure.',
     encounters: 'A maternal or nurturing figure may appear with uncanny timing. Family members you did not expect to reconnect with may become central. Real estate transactions have a "meant to be" quality.',
     lesson: 'The lesson is about belonging — not just having a house, but having a HOME. Emotional safety is the foundation from which everything else grows.',
   },
   Leo: {
-    title: 'Fated Self-Expression',
-    fatedTheme: 'Destiny demands that you be SEEN this year. Creative expression, performance, romance, and leadership are the arenas where fated encounters occur.',
-    encounters: 'A lover, creative collaborator, or someone who reflects your magnificence back to you may appear at a crucial moment. Children may be central to the fated narrative.',
+    title: 'Significant-feeling Self-Expression',
+    fatedTheme: 'Destiny demands that you be SEEN this year. Creative expression, performance, romance, and leadership are the arenas where significant-feeling encounters occur.',
+    encounters: 'A lover, creative collaborator, or someone who reflects your magnificence back to you may appear at a crucial moment. Children may be central to the significant-feeling narrative.',
     lesson: 'You are being taught that your light is not optional — hiding it serves no one. The fated events of this year push you onto the stage of your own life.',
   },
   Virgo: {
-    title: 'Fated Service',
-    fatedTheme: 'Destiny connects you to health, healing, and meaningful work. A fated event may involve a health crisis, a work opportunity, or a call to service that you cannot refuse.',
+    title: 'Significant-feeling Service',
+    fatedTheme: 'Destiny connects you to health, healing, and meaningful work. A significant-feeling event may involve a health crisis, a work opportunity, or a call to service that you cannot refuse.',
     encounters: 'A healer, mentor, or master craftsperson may appear with perfect timing. Someone who needs your specific skills may cross your path in a way that feels orchestrated by fate.',
-    lesson: 'The lesson is that your gifts are not just for you — they are meant to serve something larger. Precision, humility, and devotion to craft are the fated curriculum.',
+    lesson: 'The lesson is that your gifts are not just for you — they are meant to serve something larger. Precision, humility, and devotion to craft are the significant-feeling curriculum.',
   },
   Libra: {
-    title: 'Fated Partnership',
-    fatedTheme: 'Destiny works through relationships this year. A fated encounter with a significant other — romantic, business, or artistic — is one of the strongest possibilities of the entire Solar Return.',
-    encounters: 'A partner, collaborator, or even an adversary appears at the exact moment when balance in your life is most needed. Marriage, contracts, and legal agreements carry a fated quality.',
-    lesson: 'The lesson is that you cannot do this year alone. Relationship IS the curriculum. Fairness, beauty, and the courage to truly partner define the fated path.',
+    title: 'Significant-feeling Partnership',
+    fatedTheme: 'Destiny works through relationships this year. A significant-feeling encounter with a significant other — romantic, business, or artistic — is one of the strongest possibilities of the entire Solar Return.',
+    encounters: 'A partner, collaborator, or even an adversary appears at the exact moment when balance in your life is most needed. Marriage, contracts, and legal agreements carry a significant-feeling quality.',
+    lesson: 'The lesson is that you cannot do this year alone. Relationship IS the curriculum. Fairness, beauty, and the courage to truly partner define the significant-feeling path.',
   },
   Scorpio: {
-    title: 'Fated Transformation',
-    fatedTheme: 'Destiny demands psychological death and rebirth. Fated events strip away what is no longer honest, forcing transformation through crisis, intimacy, or confrontation with power.',
+    title: 'Significant-feeling Transformation',
+    fatedTheme: 'Destiny demands psychological death and rebirth. Significant-feeling events strip away what is no longer honest, forcing transformation through crisis, intimacy, or confrontation with power.',
     encounters: 'An intensely transformative individual — a therapist, lover, financial partner, or power figure — enters your life at a pivotal moment. The encounter is unforgettable and irreversible.',
     lesson: 'The universe is teaching you about surrender. What must die cannot be saved, and what is being born cannot be stopped. Trust the process of destruction and renewal.',
   },
   Sagittarius: {
-    title: 'Fated Expansion',
-    fatedTheme: 'Destiny works through travel, education, and encounters with foreign cultures or philosophies. A fated journey — physical or intellectual — changes your worldview permanently.',
+    title: 'Significant-feeling Expansion',
+    fatedTheme: 'Destiny works through travel, education, and encounters with foreign cultures or philosophies. A significant-feeling journey — physical or intellectual — changes your worldview permanently.',
     encounters: 'A teacher, guru, foreign national, or philosopher appears at the perfect moment. A travel experience or academic opportunity arrives as if orchestrated by fate.',
-    lesson: 'The lesson is that your current worldview is too small. The fated events of this year stretch you beyond comfortable beliefs into a broader understanding of truth.',
+    lesson: 'The lesson is that your current worldview is too small. The significant-feeling events of this year stretch you beyond comfortable beliefs into a broader understanding of truth.',
   },
   Capricorn: {
-    title: 'Fated Responsibility',
-    fatedTheme: 'Destiny connects you to authority, career, and the assumption of serious responsibility. A fated event involves your professional life, public reputation, or relationship with institutions.',
-    encounters: 'A boss, mentor, authority figure, or institution becomes the catalyst for fated developments. Promotions, demotions, or career turning points arrive with a sense of inevitability.',
-    lesson: 'The lesson is about mastery and accountability. The fated path runs through accepting the weight of responsibility and building something that matters in the real world.',
+    title: 'Significant-feeling Responsibility',
+    fatedTheme: 'Destiny connects you to authority, career, and the assumption of serious responsibility. A significant-feeling event involves your professional life, public reputation, or relationship with institutions.',
+    encounters: 'A boss, mentor, authority figure, or institution becomes the catalyst for significant-feeling developments. Promotions, demotions, or career turning points arrive with a sense of inevitability.',
+    lesson: 'The lesson is about mastery and accountability. The significant-feeling path runs through accepting the weight of responsibility and building something that matters in the real world.',
   },
   Aquarius: {
-    title: 'Fated Liberation',
-    fatedTheme: 'Destiny works through sudden breaks, innovations, and encounters with unconventional people or groups. A fated event disrupts the status quo and forces evolution.',
-    encounters: 'A revolutionary, iconoclast, or visionary enters your life at a turning point. Technology, science, or progressive social movements may be the vehicle for fated change.',
-    lesson: 'The universe is teaching you that freedom IS the path. The fated events of this year liberate you from structures, beliefs, or relationships that have become prisons.',
+    title: 'Significant-feeling Liberation',
+    fatedTheme: 'Destiny works through sudden breaks, innovations, and encounters with unconventional people or groups. A significant-feeling event disrupts the status quo and forces evolution.',
+    encounters: 'A revolutionary, iconoclast, or visionary enters your life at a turning point. Technology, science, or progressive social movements may be the vehicle for significant-feeling change.',
+    lesson: 'The universe is teaching you that freedom IS the path. The significant-feeling events of this year liberate you from structures, beliefs, or relationships that have become prisons.',
   },
   Pisces: {
-    title: 'Fated Surrender',
-    fatedTheme: 'Destiny works through spiritual experience, artistic inspiration, and compassionate service. Fated events dissolve boundaries and connect you to something transcendent.',
+    title: 'Significant-feeling Surrender',
+    fatedTheme: 'Destiny works through spiritual experience, artistic inspiration, and compassionate service. Significant-feeling events dissolve boundaries and connect you to something transcendent.',
     encounters: 'A spiritual teacher, artist, healer, or someone in need of compassion appears at a crucial moment. The encounter may feel mystical, dreamlike, or beyond rational explanation.',
-    lesson: 'The lesson is that control is an illusion. The fated events of this year teach you to trust the flow, serve without expectation, and find meaning in surrender.',
+    lesson: 'The lesson is that control is an illusion. The significant-feeling events of this year teach you to trust the flow, serve without expectation, and find meaning in surrender.',
   },
 };
 
@@ -229,23 +229,23 @@ export const vertexInHouse: Record<number, {
   fatedArea: string;
 }> = {
   5: {
-    title: 'Fated Creativity & Romance',
-    description: 'The Vertex in the 5th house is one of the most common and powerful placements for fated romantic encounters, creative breakthroughs, and significant events involving children. Love that arrives this year may carry a "destined" quality — you feel compelled toward someone or something creative without understanding why.',
+    title: 'Significant-feeling Creativity & Romance',
+    description: 'The Vertex in the 5th house is one of the most common and powerful placements for significant-feeling romantic encounters, creative breakthroughs, and significant events involving children. Love that arrives this year may carry a "destined" quality — you feel compelled toward someone or something creative without understanding why.',
     fatedArea: 'Romance, children, creative projects, self-expression, performance',
   },
   6: {
-    title: 'Fated Work & Health Turning Points',
-    description: 'The Vertex in the 6th house brings fated events through daily work, health matters, or service encounters. A job opportunity, health crisis, or someone you serve may change your trajectory. The "ordinary" becomes the vehicle for the notable.',
+    title: 'Significant-feeling Work & Health Turning Points',
+    description: 'The Vertex in the 6th house brings significant-feeling events through daily work, health matters, or service encounters. A job opportunity, health crisis, or someone you serve may change your trajectory. The "ordinary" becomes the vehicle for the notable.',
     fatedArea: 'Work opportunities, health events, service encounters, daily routine changes',
   },
   7: {
-    title: 'Fated Partnerships & Contracts',
-    description: 'The Vertex in the 7th house is the most classically "fated" placement for relationships. Significant others — romantic partners, business partners, or even open adversaries — appear with uncanny timing. Marriage, contracts, and legal agreements carry a destined quality.',
+    title: 'Significant-feeling Partnerships & Contracts',
+    description: 'The Vertex in the 7th house is the most classically "significant-feeling" placement for relationships. Significant others — romantic partners, business partners, or even open adversaries — appear with uncanny timing. Marriage, contracts, and legal agreements carry a destined quality.',
     fatedArea: 'Marriage, partnerships, contracts, legal matters, significant one-on-one encounters',
   },
   8: {
-    title: 'Fated Transformation & Crisis',
-    description: 'The Vertex in the 8th house brings fated encounters through crisis, intimacy, shared resources, or psychological transformation. Events involving death, inheritance, sexuality, or deep psychological change feel orchestrated by forces beyond your control.',
+    title: 'Significant-feeling Transformation & Crisis',
+    description: 'The Vertex in the 8th house brings significant-feeling encounters through crisis, intimacy, shared resources, or psychological transformation. Events involving death, inheritance, sexuality, or deep psychological change feel orchestrated by forces beyond your control.',
     fatedArea: 'Intimacy, shared finances, inheritance, crisis events, psychological transformation',
   },
 };
@@ -253,17 +253,17 @@ export const vertexInHouse: Record<number, {
 // ─── Vertex Aspects ─────────────────────────────────────────────────
 
 export const vertexAspectMeanings: Record<string, string> = {
-  Sun: 'A fated encounter with an authority figure, leader, or someone who illuminates your identity. Meeting your "other self" — someone who reflects who you are meant to become.',
-  Moon: 'A fated emotional connection — someone who instinctively understands your needs. A woman or nurturing figure appears at a pivotal moment. Family events carry a destined quality.',
-  Mercury: 'A fated message, conversation, or piece of information changes everything. A sibling, writer, or communicator is the catalyst. Words heard at the right moment alter your path.',
-  Venus: 'One of the strongest indicators of a fated love encounter. Meeting someone who embodies beauty, love, or artistic inspiration. Financial windfalls through destined connections.',
-  Mars: 'A fated confrontation or passionate encounter. Someone pushes you into action you would not have taken alone. A competitor or lover appears with irresistible force.',
-  Jupiter: 'A fated opportunity or encounter with a benefactor, teacher, or generous soul. Luck arrives through someone else\'s intervention. Travel or education opens a destined door.',
-  Saturn: 'A fated encounter with responsibility, limitation, or an authority figure who shapes your maturity. A difficult but necessary lesson arrives through relationship.',
-  Uranus: 'A sudden, unexpected fated encounter that shatters the status quo. Someone or something disrupts your life in a way that ultimately liberates you. The most "electric" vertex contact.',
-  Neptune: 'A fated spiritual, artistic, or compassionate encounter. Meeting a soulmate or spiritual teacher. The danger of idealization — is this destiny or delusion?',
-  Pluto: 'The most transformative fated encounter possible. Meeting someone who permanently alters your psychological landscape. Power, death, rebirth, and irreversible change through another person.',
-  NorthNode: 'A supremely fated encounter — the Vertex and North Node together indicate a person or event that is directly connected to your soul\'s evolutionary purpose this year.',
+  Sun: 'A significant-feeling encounter with an authority figure, leader, or someone who illuminates your identity. Meeting your "other self" — someone who reflects who you are meant to become.',
+  Moon: 'A significant-feeling emotional connection — someone who instinctively understands your needs. A woman or nurturing figure appears at a pivotal moment. Family events carry a destined quality.',
+  Mercury: 'A significant-feeling message, conversation, or piece of information changes everything. A sibling, writer, or communicator is the catalyst. Words heard at the right moment alter your path.',
+  Venus: 'One of the strongest indicators of a significant-feeling love encounter. Meeting someone who embodies beauty, love, or artistic inspiration. Financial windfalls through destined connections.',
+  Mars: 'A significant-feeling confrontation or passionate encounter. Someone pushes you into action you would not have taken alone. A competitor or lover appears with irresistible force.',
+  Jupiter: 'A significant-feeling opportunity or encounter with a benefactor, teacher, or generous soul. Luck arrives through someone else\'s intervention. Travel or education opens a destined door.',
+  Saturn: 'A significant-feeling encounter with responsibility, limitation, or an authority figure who shapes your maturity. A difficult but necessary lesson arrives through relationship.',
+  Uranus: 'A sudden, unexpected significant-feeling encounter that shatters the status quo. Someone or something disrupts your life in a way that ultimately liberates you. The most "electric" vertex contact.',
+  Neptune: 'A significant-feeling spiritual, artistic, or compassionate encounter. Meeting a soulmate or spiritual teacher. The danger of idealization — is this destiny or delusion?',
+  Pluto: 'The most transformative significant-feeling encounter possible. Meeting someone who permanently alters your psychological landscape. Power, death, rebirth, and irreversible change through another person.',
+  NorthNode: 'A supremely significant-feeling encounter — the Vertex and North Node together indicate a person or event that is directly connected to your soul\'s evolutionary purpose this year.',
   Chiron: 'A fated encounter with a healing-through-understanding or a situation that triggers an area of deep sensitivity for you — but this time, for the purpose of healing rather than re-wounding.',
-  Ascendant: 'A fated encounter that changes how you see yourself and how others see you. Someone appears who mirrors your identity back to you in a new way.',
+  Ascendant: 'A significant-feeling encounter that changes how you see yourself and how others see you. Someone appears who mirrors your identity back to you in a new way.',
 };

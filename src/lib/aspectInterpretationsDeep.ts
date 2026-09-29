@@ -1431,22 +1431,22 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
   'Mercury-Pluto': {
     conjunction: {
       whatItFeelsLike: "Your mind goes DEEP. Surface thinking doesn't satisfy—you need to understand the hidden layers, the unconscious motives, the real truth under the presented one.",
-      howItManifests: "Penetrating insight. May become obsessed with ideas. Research or detective capacity. Can be mentally manipulative or brilliantly perceptive. Sees through lies.",
+      howItManifests: "Penetrating insight. May become intensely preoccupied with ideas. Research or detective capacity. Can be mentally manipulative or brilliantly perceptive. Sees through lies.",
       realLifeExamples: [
         "Knowing when people are lying",
         "Researching until you find the real answer",
-        "Obsessive thinking patterns",
+        "All-consuming thinking patterns",
         "Mental intensity that exhausts others"
       ],
       growthPath: "Your gift is psychological perception. Your growth is learning when to stop digging. Not every truth needs to be uncovered. Depth can become control."
     },
     square: {
-      whatItFeelsLike: "Friction between your mind and forces that feel threatening. Power struggles through communication. Thoughts that feel dangerous or obsessive.",
+      whatItFeelsLike: "Friction between your mind and forces that feel threatening. Power struggles through communication. Thoughts that feel dangerous or all-consuming.",
       howItManifests: "Mental power struggles. Paranoid thinking or brilliant perception. May have experienced intellectual trauma. Communication becomes a battle.",
       realLifeExamples: [
         "Words as weapons or protection",
         "Feeling like information is power",
-        "Obsessive thoughts that won't stop",
+        "All-consuming thoughts that won't stop",
         "Intellectual battles for survival"
       ],
       growthPath: "The friction is between knowing and controlling. You're learning that insight doesn't require power over others. See deeply without needing to dominate."
@@ -1782,8 +1782,8 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
 
   'Venus-Pluto': {
     conjunction: {
-      whatItFeelsLike: "Love is INTENSE. Not casual, not light. When you love, you love completely. Obsession, jealousy, and transformation through relationship.",
-      howItManifests: "Powerful attractions. May become obsessive or possessive. Transforms through love. Magnetic romantic presence.",
+      whatItFeelsLike: "Love is INTENSE. Not casual, not light. When you love, you love completely. Intense preoccupation, jealousy, and transformation through relationship.",
+      howItManifests: "Powerful attractions. May become all-consuming or possessive. Transforms through love. Magnetic romantic presence.",
       realLifeExamples: [
         "Love that takes over your life",
         "Jealousy you can't control",
@@ -1797,7 +1797,7 @@ export const DEEP_ASPECT_INTERPRETATIONS: Record<string, AspectInterpretationSet
       howItManifests: "Jealousy and possessiveness. Attractions to powerful or controlling people. Love that feels like survival. Transformation through crisis.",
       realLifeExamples: [
         "Relationships with power dynamics",
-        "Love that feels obsessive",
+        "Love that feels all-consuming",
         "Attractions you can't control",
         "Transformation through painful love"
       ],

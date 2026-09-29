@@ -258,7 +258,7 @@ const SUN_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpreta
     },
     square: {
       feeling: 'Your drive for power conflicts with your conscious identity. You may fear your own intensity.',
-      manifestation: 'Crisis, power struggles, obsessive patterns. Incredible transformation once you embrace your own depth.',
+      manifestation: 'Crisis, power struggles, all-consuming patterns. Incredible transformation once you embrace your own depth.',
       clientDescription: 'Sun square Pluto can correlate with heightened sensitivity to power, control and intensity, and with periods of significant personal reinvention. Owning your own intensity, rather than hiding it, tends to be what eases the pressure.',
     },
   },
@@ -392,7 +392,7 @@ const MOON_ASPECT_INTERPRETATIONS: Record<string, Record<string, AspectInterpret
     },
     square: {
       feeling: 'Deep emotions conflict with your sense of safety. You may fear your own intensity.',
-      manifestation: 'Emotional crisis, power struggles with mother/family, obsessive patterns. Great depth once integrated.',
+      manifestation: 'Emotional crisis, power struggles with mother/family, all-consuming patterns. Great depth once integrated.',
       clientDescription: 'Pluto squares your Moon—your emotions are powerful but may feel threatening. Embracing your own depth brings freedom.',
     },
   },

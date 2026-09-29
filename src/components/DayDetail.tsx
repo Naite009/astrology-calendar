@@ -136,7 +136,7 @@ const PLANET_FELT_SENSE: Record<string, { body: string; emotion: string; urge: s
   Saturn: { body: "heaviness in your shoulders, a tightness", emotion: "pressure to get it right, fear of falling short", urge: "to buckle down, set a boundary, or face hard truth" },
   Uranus: { body: "electric jolts, restless legs, can't sit still", emotion: "sudden clarity or rebellion against routine", urge: "to break free, change something drastically, shock yourself" },
   Neptune: { body: "brain fog, fatigue, or a dreamy floatiness", emotion: "longing for something you can't name", urge: "to escape into fantasy, music, sleep, or spirituality" },
-  Pluto: { body: "a deep gut clench, intensity you can't ignore", emotion: "obsessive focus or a sense that something must change", urge: "to dig deeper, confront what's hidden, transform or purge" },
+  Pluto: { body: "a deep gut clench, intensity you can't ignore", emotion: "all-consuming focus or a sense that something must change", urge: "to dig deeper, confront what's hidden, transform or purge" },
   Chiron: { body: "a dull ache in an old wound spot", emotion: "vulnerability and the memory of past hurt", urge: "to heal, help others, or finally face what you've avoided" },
   Ascendant: { body: "heightened self-awareness, noticing how you carry yourself", emotion: "feeling exposed or newly visible", urge: "to adjust your presentation or reclaim your identity" },
   MC: { body: "a pull toward your public role, career tension", emotion: "ambition mixed with 'am I on the right path?'", urge: "to make a move in your career or reputation" },

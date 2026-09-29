@@ -210,7 +210,7 @@ const TRANSIT_NARRATIVES: Record<TransitingPlanet, { phase: 'containment' | 'str
   },
   NorthNode: {
     phase: 'trigger',
-    narrative: (aspect, target) => `The North Node highlights your ${target} as part of your growth direction. Fated-feeling encounters or opportunities that align with your developmental path.`
+    narrative: (aspect, target) => `The North Node highlights your ${target} as part of your growth direction. Significant-feeling-feeling encounters or opportunities that align with your developmental path.`
   },
   SouthNode: {
     phase: 'trigger',

@@ -118,7 +118,7 @@ const detectGrandTrines = (planets: Array<{ name: string; degree: number }>): Ch
 const TSQUARE_APEX_MEANINGS: Record<string, { focus: string; overdrive: string; release: string }> = {
   Sun: {
     focus: "Identity and ego are the pressure point. You're driven to prove yourself, define who you are, and be recognized.",
-    overdrive: "Can become ego-obsessed, domineering, or exhausted from constant self-assertion.",
+    overdrive: "Can become ego-intensely preoccupied, domineering, or exhausted from constant self-assertion.",
     release: "Let go of needing to be seen. Find identity through being rather than proving."
   },
   Moon: {
@@ -133,7 +133,7 @@ const TSQUARE_APEX_MEANINGS: Record<string, { focus: string; overdrive: string; 
   },
   Venus: {
     focus: "Relationships and values are the pressure point. Driven to find love, beauty, harmony.",
-    overdrive: "People-pleasing, over-compromising, or becoming obsessed with appearances.",
+    overdrive: "People-pleasing, over-compromising, or becoming intensely preoccupied with appearances.",
     release: "Self-love first. Your values matter. Beauty comes in many forms."
   },
   Mars: {
@@ -556,7 +556,7 @@ const detectYods = (planets: Array<{ name: string; degree: number }>): ChartPatt
                 symbol: '⚲',
                 planets: [basePlanet1, basePlanet2, apexPlanet, ...apexConjunctions],
                 description: detailedDescription,
-                meaning: `A Yod with ${apexPlanet} at the apex indicates a FATED MISSION around ${apexPlanet} themes. The base planets (${basePlanet1} and ${basePlanet2}) provide talents and resources, but they must be constantly adjusted to serve ${apexPlanet}'s development. Life keeps redirecting you toward this purpose through events that feel "meant to be."`,
+                meaning: `A Yod with ${apexPlanet} at the apex indicates a RECURRING ADJUSTMENT THEME around ${apexPlanet} themes. The base planets (${basePlanet1} and ${basePlanet2}) provide talents and resources, but they must be constantly adjusted to serve ${apexPlanet}'s development. Life keeps redirecting you toward this purpose through events that feel "meant to be."`,
                 challenge: `The quincunx creates persistent tension—like an itch you can't scratch. ${apexPlanet} matters don't flow naturally; they require constant conscious adjustment. You may feel "off" until you engage this mission directly. Health, timing, and situational issues often manifest as the universe's way of forcing adjustment.`,
                 gift: `Once integrated, ${apexPlanet} becomes your SUPERPOWER—a unique gift no one else has in quite the same way. You become a specialist, a teacher, or a healer in ${apexPlanet} domains. The very challenges that frustrated you become your credibility.`,
               });

@@ -84,7 +84,7 @@ const getSaturnBurnout = (house: number | null, sign: string): string => {
     7: 'relationship sacrifice -- giving up your needs to keep partnerships stable',
     8: 'control and trust issues -- exhausting yourself managing other peoples crises or money',
     9: 'meaning burnout -- constantly searching for purpose without pausing to live',
-    10: 'career obsession -- defining your worth entirely through professional achievement',
+    10: 'career intense preoccupation -- defining your worth entirely through professional achievement',
     11: 'social exhaustion -- overcommitting to groups, causes, and friends at your own expense',
     12: 'invisible burnout -- silently carrying burdens nobody sees until you shut down completely',
   };

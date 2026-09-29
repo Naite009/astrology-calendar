@@ -419,7 +419,7 @@ const CHART_RULER_INTERPRETATIONS: Record<string, Record<string, string>> = {
   Sun: {
     house1: "Your life path centers on self-expression and personal identity. You lead through sheer presence and radiance.",
     house2: "Your life path centers on building value and resources. Success comes through developing talents and earning.",
-    house3: "Your life path centers on communication and learning. You're meant to be a messenger, writer, or teacher.",
+    house3: "Your life path centers on communication and learning. You may thrive being a messenger, writer, or teacher.",
     house4: "Your life path centers on home and family. Creating emotional foundations is your life's work.",
     house5: "Your life path centers on creativity and joy. You're here to create, play, and inspire others.",
     house6: "Your life path centers on service and health. Perfecting daily routines and helping others is your calling.",
@@ -551,7 +551,7 @@ const CHART_RULER_INTERPRETATIONS: Record<string, Record<string, string>> = {
     house6: "Your life path involves transforming through service. Healing, psychology, and deep systemic change call you.",
     house7: "Your life path involves transformative partnership. Relationships take you to your depths and remake you.",
     house8: "Your life path centers on death and rebirth. Psychology, occult, crisis, and regeneration are your realm.",
-    house9: "Your life path involves transforming beliefs. You destroy and rebuild worldviews; truth is your obsession.",
+    house9: "Your life path involves transforming beliefs. You destroy and rebuild worldviews; truth is your intense preoccupation.",
     house10: "Your life path involves powerful public role. You transform institutions and hold significant influence.",
     house11: "Your life path involves transforming groups. You empower movements and bring depth to community.",
     house12: "Your life path involves deep unconscious work. Hidden power, spiritual transformation, and shadow work are yours.",
@@ -826,7 +826,7 @@ const NATAL_ASPECT_INTERPRETATIONS: Record<string, Record<string, string>> = {
     square: "Disillusionment in love. May escape into fantasy or addiction. Learning discernment in relationships.",
   },
   'Venus-Pluto': {
-    conjunction: "Intense love nature. Obsessive attractions. You love deeply and transformatively.",
+    conjunction: "Intense love nature. All-consuming attractions. You love deeply and transformatively.",
     opposition: "Power struggles in love. Others trigger your deepest desires. Learning to love without controlling.",
     trine: "Magnetic attraction. Love transforms you positively. Deep, loyal connections.",
     sextile: "Transformation available through love relationships. Depth in intimacy.",

@@ -36,7 +36,7 @@ const PLANET_DATA: Record<string, { symbol: string; name: string; brief: string 
   juno: { symbol: '⚵', name: 'Juno', brief: 'Partnership, commitment, marriage needs' },
   vesta: { symbol: '⚶', name: 'Vesta', brief: 'Sacred focus, devotion, ritual dedication' },
   partoffortune: { symbol: '⊕', name: 'Part of Fortune', brief: 'Luck, abundance, worldly success' },
-  vertex: { symbol: 'Vx', name: 'Vertex', brief: 'Fated encounters, destiny points' },
+  vertex: { symbol: 'Vx', name: 'Vertex', brief: 'Significant-feeling encounters, destiny points' },
   
   // Dwarf planets / TNOs
   eris: { symbol: '⯰', name: 'Eris', brief: 'Soul purpose, feminine warrior, necessary discord' },

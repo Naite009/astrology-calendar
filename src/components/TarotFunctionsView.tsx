@@ -362,7 +362,7 @@ const COURT_CARD_PROFILES: Record<string, { personality: string; shadow: string;
   },
   "King of Pentacles": {
     personality: "You are the master builder — patience, discipline, and practical wisdom turned into tangible wealth and security. Not just money, but a life that works: stable relationships, good health, a home reflecting your values. Proof that slow, intentional effort creates lasting results.",
-    shadow: "You can become controlling, status-obsessed, or so attached to what you've built that you resist all change. Your empire may become your prison.",
+    shadow: "You can become controlling, status-intensely preoccupied, or so attached to what you've built that you resist all change. Your empire may become your prison.",
     advice: "You've built something remarkable — now make sure it serves life, not just legacy. The greatest wealth is the freedom to be generous.",
     symbols: "A prosperous figure surrounded by vines and bulls, holding a pentacle and a scepter. Material mastery complete."
   },

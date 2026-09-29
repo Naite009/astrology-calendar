@@ -169,7 +169,7 @@ export const HOUSE_DEEP_MEANINGS: Record<number, {
   1: {
     theme: 'Self, Identity, Physical Presence',
     lifePurpose: 'Your life purpose centers on self-discovery and personal development. You are here to become yourself fully.',
-    sunMeaning: 'With Sun in the 1st House, your very existence is your purpose. You shine through being honestly yourself. Your identity and ego development are front and center—you are meant to be seen. This is the placement of natural leaders and those who make an impact through personal presence alone.',
+    sunMeaning: 'With Sun in the 1st House, your very existence is your purpose. You shine through being honestly yourself. Your identity and ego development are front and center—you may thrive being seen. This is the placement of natural leaders and those who make an impact through personal presence alone.',
     moonMeaning: 'Moon in the 1st House makes your emotions visible. You wear your heart on your sleeve. Your moods affect your appearance, and you approach life with emotional immediacy.',
     workingWith: 'Develop your personality consciously. Your appearance and first impression are tools for your life mission.',
     shadow: 'Self-absorption, excessive focus on "me," difficulty seeing beyond personal perspective.',
@@ -228,7 +228,7 @@ export const HOUSE_DEEP_MEANINGS: Record<number, {
     sunMeaning: 'Sun in the 8th House means you shine through intensity and transformation. Surface living is not for you. You are drawn to psychology, research, investigation, and anything hidden. Inheritance, other people\'s money, and shared resources may be significant. Death and rebirth themes run through your life.',
     moonMeaning: 'Moon in the 8th House creates deep, intense emotional experiences. You feel everything at a profound level. Transformation is emotionally necessary. Trust is a central issue.',
     workingWith: 'Embrace intensity. Work with shadow material. Your depth is your gift.',
-    shadow: 'Control issues, manipulation, obsession, difficulty with trust and vulnerability.',
+    shadow: 'Control issues, manipulation, intense preoccupation, difficulty with trust and vulnerability.',
   },
   9: {
     theme: 'Expansion, Philosophy, Higher Learning',

@@ -57,7 +57,7 @@ export const srSunInHouse: Record<number, { title: string; overview: string; exp
     overview: 'The Sun in the 8th house brings a year of depth, intensity, and transformation. This house deals with shared resources (other people\'s money, inheritance, taxes, debt), intimacy, power dynamics, and psychological rebirth. Something in your life needs to die so something new can emerge.',
     experience: 'You may face financial matters involving others: loans, insurance, investments, inheritance, or divorce settlements. Intimacy deepens or becomes a source of conflict. Psychologically, you are excavating — digging into patterns, traumas, or truths you have been avoiding. This can be uncomfortable but is ultimately liberating.',
     focus: 'Address your relationship with power — who has it, who gives it away, and why. Handle financial entanglements proactively. If therapy or deep inner work has been calling you, answer it this year. Let go of what is dead — clinging to the old prevents the new from emerging.',
-    caution: 'This placement can bring obsession, control issues, or getting entangled in other people\'s crises. Maintain clear boundaries. Not every battle is yours to fight.',
+    caution: 'This placement can bring intense preoccupation, control issues, or getting entangled in other people\'s crises. Maintain clear boundaries. Not every battle is yours to fight.',
   },
   9: {
     title: 'A Year of Expansion, Travel & Higher Truth',
@@ -315,15 +315,15 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
   Pluto: {
     1: 'A year of personal transformation so deep others can see it in your eyes. You shed an old version of yourself. Power dynamics are personal — who controls your life? Intensity radiates from you.',
     2: 'Financial power plays — gaining or losing significant resources. Your relationship with money and possessions undergoes a complete transformation. What you once valued may become meaningless; new values emerge.',
-    3: 'Communication becomes a tool of power. Investigative thinking, research, and uncovering secrets. Words can heal or destroy. Relationships with siblings undergo transformation. Obsessive learning.',
+    3: 'Communication becomes a tool of power. Investigative thinking, research, and uncovering secrets. Words can heal or destroy. Relationships with siblings undergo transformation. All-consuming learning.',
     4: 'Deep family transformation — secrets unearthed, power dynamics with parents, or a complete restructuring of your home life. Psychological excavation of childhood patterns. Moving to transform your foundation.',
-    5: 'Intense creative power, obsessive romance, or transformative experiences through children. Your creative output has unusual depth and impact. Love affairs involve power, jealousy, or profound bonding.',
+    5: 'Intense creative power, all-consuming romance, or transformative experiences through children. Your creative output has unusual depth and impact. Love affairs involve power, jealousy, or profound bonding.',
     6: 'Work involves power dynamics — office politics, control struggles, or a complete transformation of your daily routine. Health crises that force lifestyle change. Healing through crisis.',
     7: 'A partnership undergoes deep transformation — or ends through power struggles. You attract intense, powerful people. Manipulation and control issues in relationships demand awareness. Deep bonding or deep conflict.',
     8: 'Expect major transformation, financial shifts involving others, and deep personal change. Something old is making room for something completely new. You emerge permanently changed. No going back.',
     9: 'Your worldview is evolving at a fundamental level. Travel to transformative places. Education that changes everything you believe. The risk is rigidity; the gift is wisdom.',
     10: 'Career transformation — you may gain or lose power professionally. Public reputation undergoes a major shift. Authority figures are either allies or adversaries. You climb or fall — nothing stays the same.',
-    11: 'Group dynamics involve power struggles. You may become a powerful leader in an organization or be pushed out. Friendships are tested by intensity. Your vision for the future becomes obsessive and transformative.',
+    11: 'Group dynamics involve power struggles. You may become a powerful leader in an organization or be pushed out. Friendships are tested by intensity. Your vision for the future becomes all-consuming and transformative.',
     12: 'Deep inner changes happening below the surface. You may not be able to explain what is shifting, but you feel it. Old fears, old anger, or old secrets come up to be dealt with. Therapy or serious journaling helps. You come out the other side feeling like a different person.',
   },
   Chiron: {

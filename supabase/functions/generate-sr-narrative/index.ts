@@ -246,7 +246,7 @@ Write 4 paragraphs:
 1. The single defining pattern of this year — name the profection house theme AND the Time Lord's conditions in one honest statement. What is this year actually about?
 2. The emotional landscape — what the SR Moon in ${srMoonSign} in House ${srMoonHouse} with a ${moonPhase} phase means for how this person will feel day to day.
 3. The central tension — what two energies are pulling against each other and what that friction is asking them to do.
-4. The soul-level ask — what this year wants from this person at the deepest level, named with specificity not generality.
+4. The deep ask — what this year wants from this person at the deepest level, named with specificity not generality.
 
 Voice: direct, warm, honest. If something is hard, say so with compassion. If something is a gift, name it precisely. No hedging. No generic affirmations. No invented placements.
 

@@ -94,7 +94,7 @@ export const FIXED_STARS: FixedStar[] = [
   { name: 'Agena',        j2000Lon:  23.82 + 210, theme: 'good health, high honors; moral position from a friend.' }, // 23°49' Sco
   { name: 'Bungula',      j2000Lon:  29.55 + 210, theme: 'Toliman; position of power and friendship, sometimes envied.' }, // 29°33' Sco
   // Sagittarius
-  { name: 'Antares',      j2000Lon:   9.77 + 240, theme: 'rival of Mars; high stakes, courage, sudden reversals; obsessive focus.' }, // 9°46' Sag
+  { name: 'Antares',      j2000Lon:   9.77 + 240, theme: 'rival of Mars; high stakes, courage, sudden reversals; all-consuming focus.' }, // 9°46' Sag
   { name: 'Rastaban',     j2000Lon:  11.97 + 240, theme: 'dragon\'s eye; loss through people, accidents, criminal influences if unconscious.' }, // 11°58' Sag
   { name: 'Sabik',        j2000Lon:  17.97 + 240, theme: 'wasted energy on lost causes; ethical struggles in love.' }, // 17°58' Sag
   { name: 'Ras Alhague',  j2000Lon:  22.50 + 240, theme: 'serpent bearer; healing, poison, addictive personalities and their cure.' }, // 22°30' Sag
@@ -475,7 +475,7 @@ const POINT_FLAVOR: Record<string, string> = {
   'South Node': 'the familiar setting you fall back into under stress',
   'Black Moon Lilith': 'what you refuse to apologize for',
   'Part of Fortune': 'where things go well when you stop forcing them',
-  Vertex: 'fated meetings and turning-point events',
+  Vertex: 'significant-feeling meetings and turning-point events',
 };
 
 /**

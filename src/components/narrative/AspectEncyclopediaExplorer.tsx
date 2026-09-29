@@ -245,7 +245,7 @@ function getPersonalizedDescription(p1: string, p2: string, aspect: AspectData):
       ? 'Identity finds structure — you mature early, take responsibility, and build authority over time.'
       : 'Identity meets limitation — self-doubt, father issues, or feeling like you must constantly prove your worth.',
     'Moon-Pluto': 'Emotional depth runs to the core — intense feelings, transformative emotional experiences, and a need for psychological truth.',
-    'Venus-Pluto': 'Love becomes obsession — passionate, transformative relationships that change you permanently.',
+    'Venus-Pluto': 'Love becomes intense preoccupation — passionate, transformative relationships that change you permanently.',
     'Mars-Pluto': 'Will meets power — tremendous force when channeled, but can become domineering or manipulative.',
     'Sun-Pluto': 'Identity undergoes constant transformation — you reinvent yourself, confront power dynamics, and seek psychological truth.',
   };

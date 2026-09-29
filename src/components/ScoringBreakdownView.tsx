@@ -19,7 +19,7 @@ export const ScoringBreakdownView = ({ analysis, chart1Name, chart2Name }: Scori
   const tier2Indicators = analysis.indicators.filter(i => i.tier === 2);
   const tier3Indicators = analysis.indicators.filter(i => i.tier === 3);
   const karmicIndicators = analysis.indicators.filter(i => 
-    i.name.includes('KARMIC') || i.name.includes('FATED') || i.name.includes('PROSPERITY')
+    i.name.includes('KARMIC') || i.name.includes('SIGNIFICANT-FEELING') || i.name.includes('PROSPERITY')
   );
   const houseIndicators = analysis.indicators.filter(i => 
     i.name.includes('House Overlay')
@@ -246,13 +246,13 @@ export const ScoringBreakdownView = ({ analysis, chart1Name, chart2Name }: Scori
             </div>
           )}
 
-          {/* Karmic/Fated Bonuses */}
+          {/* Karmic/Significant-feeling Bonuses */}
           {karmicIndicators.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-semibold flex items-center gap-2">
                   <Sparkles size={14} className="text-purple-500" />
-                  Karmic & Fated Bonuses
+                  Karmic & Significant-feeling Bonuses
                   <Badge variant="outline" className="text-[10px] ml-2 bg-purple-50 dark:bg-purple-950/30">
                     Flat bonus (not diluted)
                   </Badge>

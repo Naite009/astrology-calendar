@@ -227,7 +227,7 @@ CORE FUNCTION LENS:
 - Superior Function = comfort zone (effortless strength, can become a trap)
 - Inferior Function = blind spot / growth edge (where the real lesson lives)
 - Auxiliary Functions = supporting tools
-- Major Arcana = soul-level theme that overrides ordinary suit logic
+- Major Arcana = deep theme that overrides ordinary suit logic
 - Suit matching superior → familiar territory, ask whether it is a crutch
 - Suit matching inferior → the heart of the message; the discomfort IS the signal
 ${universalRules}
@@ -323,7 +323,7 @@ const ELEMENT_SUIT: Record<string, string> = {
 };
 
 function suitLens(suit: string, superiorSuit: string, inferiorSuit: string): string {
-  if (suit === "Major") return " — MAJOR ARCANA, soul-level theme";
+  if (suit === "Major") return " — MAJOR ARCANA, deep theme";
   if (suit === superiorSuit) return " — SUPERIOR / comfort zone";
   if (suit === inferiorSuit) return " — INFERIOR / growth edge";
   return " — auxiliary support";

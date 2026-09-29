@@ -114,7 +114,7 @@ export const SPILLER_NODE_DATA: Record<string, SpillerNodeData> = {
       'Financial entanglement used for control',
       'Refusing to enjoy life because suffering feels more "real"',
     ],
-    whatWorksAgainstYou: 'Seeking intensity, stirring up drama, obsessing over what\'s hidden, trying to control outcomes through emotional manipulation.',
+    whatWorksAgainstYou: 'Seeking intensity, stirring up drama, fixating over what\'s hidden, trying to control outcomes through emotional manipulation.',
     whatWorksForYou: 'Building things slowly, spending time in nature, developing your own money and talents, choosing comfort over chaos, practicing gratitude daily.',
   },
   Gemini: {
@@ -520,7 +520,7 @@ export const SPILLER_NODE_DATA: Record<string, SpillerNodeData> = {
     tendenciesToLeaveBehind: [
       'Needing to be the star of every show',
       'Drama and emotional manipulation for attention',
-      'Romantic obsession and ego-driven love affairs',
+      'Romantic intense preoccupation and ego-driven love affairs',
       'Taking things too personally',
       'Creating dependency through charm',
       'Pride that prevents learning from others',
@@ -546,7 +546,7 @@ export const SPILLER_NODE_DATA: Record<string, SpillerNodeData> = {
       'Using charm to manipulate rather than connect',
       'Refusing to be "just one of the group"',
     ],
-    whatWorksAgainstYou: 'Seeking the spotlight, dramatizing emotions, needing special treatment, romantic obsession, taking criticism personally, pride.',
+    whatWorksAgainstYou: 'Seeking the spotlight, dramatizing emotions, needing special treatment, romantic intense preoccupation, taking criticism personally, pride.',
     whatWorksForYou: 'Group involvement, humanitarian causes, innovation, treating everyone as equals, developing genuine friendships, thinking about the future, contributing to the collective.',
   },
   Pisces: {

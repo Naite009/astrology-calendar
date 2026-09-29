@@ -107,11 +107,11 @@ export const getAspectInterpretation = (
   const combos: Record<string, Record<string, Record<string, string>>> = {
     conjunction: {
       Pluto: {
-        Venus: 'Pluto conjunct Venus TRANSFORMS your love nature. Relationships intensify dramatically—obsessive attractions, power dynamics in love, or a complete metamorphosis of what you value. Old loves may die to make way for more honest connections.',
+        Venus: 'Pluto conjunct Venus TRANSFORMS your love nature. Relationships intensify dramatically—all-consuming attractions, power dynamics in love, or a complete metamorphosis of what you value. Old loves may die to make way for more honest connections.',
         Sun: 'Pluto conjunct Sun is a profound identity transformation. The person you were dissolves; who you\'re becoming emerges through crisis. Power issues, confrontations with authority, or a complete rebirth of purpose.',
         Moon: 'Pluto conjunct Moon excavates your emotional depths. Intense feelings surface that you may have buried for years. Family dynamics transform. Emotional purging and healing at the root level.',
         Mars: 'Pluto conjunct Mars is volcanic energy. Incredible power to act, but watch for power struggles, rage, or ruthless ambition. Used consciously, this is unstoppable transformative action.',
-        Mercury: 'Pluto conjunct Mercury transforms your thinking. Obsessive thoughts, deep research, or conversations that change everything. Words carry power—speak with awareness.',
+        Mercury: 'Pluto conjunct Mercury transforms your thinking. All-consuming thoughts, deep research, or conversations that change everything. Words carry power—speak with awareness.',
       },
       Saturn: {
         Venus: 'Saturn conjunct Venus tests love through reality. Relationships that aren\'t built to last may end. Those that survive become more committed. Learning the difference between love and fantasy.',
@@ -173,7 +173,7 @@ export const getAspectInterpretation = (
     },
     square: {
       Pluto: {
-        Venus: 'Pluto square Venus creates CRISIS in love. Power struggles, obsessive attractions, or the death of a relationship force transformation. What you value is being pressure-tested.',
+        Venus: 'Pluto square Venus creates CRISIS in love. Power struggles, all-consuming attractions, or the death of a relationship force transformation. What you value is being pressure-tested.',
         Sun: 'Pluto square Sun is an identity crisis through power confrontation. External forces challenge who you think you are. Ego death and breakthrough.',
         Moon: 'Pluto square Moon brings emotional crisis. Family dynamics may explode. Deep feelings demand expression. Intense but ultimately healing if you allow it.',
         Mars: 'Pluto square Mars is power struggle incarnate. Explosive anger, confrontations, or ruthless action. Dangerous if unconscious, transformative if channeled.',

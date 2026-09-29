@@ -446,7 +446,7 @@ const CONSCIOUS_WORK_GUIDANCE: Record<string, { detriment: string; fall: string;
     practices: ['Morning pages to capture wandering thoughts', 'Structured communication (outlines, lists) as scaffolding', 'Allow pauses in conversation']
   },
   Venus: {
-    detriment: 'In Aries or Scorpio, love feels like a battle or an obsession. Practice: cultivate pleasure for its own sake, without conquest or agenda. Let beauty exist without possessing it.',
+    detriment: 'In Aries or Scorpio, love feels like a battle or an intense preoccupation. Practice: cultivate pleasure for its own sake, without conquest or agenda. Let beauty exist without possessing it.',
     fall: 'In Virgo, you criticize what you love. Practice: appreciation lists. Find three beautiful things in every person and situation before any critique.',
     practices: ['Receive compliments without deflecting', 'Pursue beauty for no practical reason', 'Give without expecting return']
   },

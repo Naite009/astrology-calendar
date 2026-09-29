@@ -122,7 +122,7 @@ export const PLANET_IN_SIGN: Record<VedicPlanet, SignMap> = {
     Pisces: 'You carry a background sadness you rarely name. Boundaries, sleep and solitude are the practical medicine, and quiet service is where you find footing.',
   },
   Rahu: {
-    Aries: 'You are hungry to be first and you sometimes charge in without the backing. The obsession is independence, and the correction is finishing what you start.',
+    Aries: 'You are hungry to be first and you sometimes charge in without the backing. The intense preoccupation is independence, and the correction is finishing what you start.',
     Taurus: 'You chase security, comfort and things you can hold. It is never quite enough, and the fix is defining a number that counts as sufficient.',
     Gemini: 'You want to know everything and be in every conversation. Information overload is your trap, depth is the correction.',
     Cancer: 'You want a family or a home that matches an image in your head. Emotional intensity runs high and the correction is accepting the ordinary version.',
@@ -259,7 +259,7 @@ export const PLANET_IN_HOUSE: Record<VedicPlanet, HouseMap> = {
     4: 'Unusual home life, foreign residence, or a restless search for the place that feels right.',
     5: 'Big appetite for creativity, speculation and romance. Risk-taking needs a hard rule around it.',
     6: 'You go after competition, service and health with unusual force. Debt or litigation can spike, then resolve.',
-    7: 'You are drawn to unconventional or foreign partners. The relationship is where the obsession sits.',
+    7: 'You are drawn to unconventional or foreign partners. The relationship is where the intense preoccupation sits.',
     8: 'Sudden change, hidden matters and other people\u2019s money. Research and occult subjects pull hard.',
     9: 'You chase teachers, belief systems and foreign travel, and you may reject the tradition you were given.',
     10: 'Strong drive for status and public role. Career can rise fast and needs an ethical floor.',

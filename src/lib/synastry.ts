@@ -59,7 +59,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       category: 'emotional',
       significance: 'major',
       interpretations: {
-        conjunction: "Deep soul recognition. You feel instantly understood. This is a 'meant to be' connection where your core identities merge.",
+        conjunction: "Deep soul recognition. You feel instantly understood. This is a significant-feeling connection where your core identities merge.",
         opposition: "Magnetic attraction of opposites. You complete each other but must balance independence with togetherness.",
         trine: "Natural harmony between will and emotion. You support each other's goals while nurturing emotional needs.",
         square: "Creative tension. Your needs may clash, but this friction sparks growth and keeps the relationship dynamic.",
@@ -358,7 +358,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       category: 'karmic',
       significance: 'major',
       interpretations: {
-        conjunction: "Emotionally fated. Moon nurtures Node person's destiny.",
+        conjunction: "Emotionally significant-feeling. Moon nurtures Node person's destiny.",
         opposition: "Karmic emotional patterns to release.",
         trine: "Emotionally supportive of life path.",
         square: "Emotional growth through relationship challenges.",
@@ -371,7 +371,7 @@ const SYNASTRY_INTERPRETATIONS: Record<string, Record<string, { category: Synast
       category: 'karmic',
       significance: 'major',
       interpretations: {
-        conjunction: "Fated love. Venus represents the love Node person is meant to experience.",
+        conjunction: "Significant-feeling love. Venus represents the love Node person is meant to experience.",
         opposition: "Past life romantic karma to resolve.",
         trine: "Love supports life purpose. Harmonious destiny.",
         square: "Love challenges push growth.",
@@ -583,7 +583,7 @@ export function generateSynastryReport(chart1: NatalChart, chart2: NatalChart): 
   // Soul contract description
   let soulContract = '';
   if (karmicScore >= 70) {
-    soulContract = 'Strong karmic indicators suggest a fated connection. You likely have unfinished business from past lives to complete together.';
+    soulContract = 'Strong karmic indicators suggest a significant-feeling connection. You likely have unfinished business from past lives to complete together.';
   } else if (passionScore >= 80) {
     soulContract = 'This connection is primarily about passion and desire. The chemistry is undeniable and can be a catalyst for transformation.';
   } else if (emotionalScore >= 80) {

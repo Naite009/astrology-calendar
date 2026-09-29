@@ -1520,7 +1520,7 @@ export const crossTypeDescriptions = {
   'Left Angle': {
     percentage: 25,
     theme: "Transpersonal/Fixed Fate",
-    description: "Left Angle Crosses represent transpersonal karma and fixed fate. People with Left Angle crosses are here for others - their life purpose is intimately connected to specific people, relationships, and transpersonal connections. Their destiny unfolds through 'fated' meetings and relationships."
+    description: "Left Angle Crosses represent transpersonal karma and fixed fate. People with Left Angle crosses are here for others - their life purpose is intimately connected to specific people, relationships, and transpersonal connections. Their destiny unfolds through 'significant-feeling' meetings and relationships."
   },
   'Juxtaposition': {
     percentage: 5,

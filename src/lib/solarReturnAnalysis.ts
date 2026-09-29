@@ -517,7 +517,7 @@ export interface SolarReturnAnalysis {
   moonVOC: boolean;
   /** The 19-year Metonic cycle — ages when the SR Moon was in the same sign */
   moonMetonicAges: number[];
-  /** Vertex — fated encounters point */
+  /** Vertex — significant-feeling encounters point */
   vertex: SRVertexData | null;
   // Helper: map planet name → SR house for display
   planetSRHouses: Record<string, number | null>;
@@ -588,7 +588,7 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
   Saturn: { domain: 'discipline, limits, responsibility, and time', drive: 'to structure, earn through effort, and endure', body: 'bones, teeth, knees, and skin' },
   Uranus: { domain: 'disruption, liberation, innovation, and sudden change', drive: 'to break free, rebel, and reinvent', body: 'nervous system and circulation' },
   Neptune: { domain: 'imagination, sensitivity, confusion, and foggy boundaries', drive: 'to dissolve what is rigid and open to intuition', body: 'energy and recovery rhythm and lymphatic' },
-  Pluto: { domain: 'deep change, power dynamics, obsession, and therapy breakthroughs', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
+  Pluto: { domain: 'deep change, power dynamics, intense preoccupation, and therapy breakthroughs', drive: 'to transform, control, and regenerate from crisis', body: 'reproductive system and elimination' },
   Chiron: { domain: 'old sore spots, insecurity, and teaching from experience', drive: 'to heal others through your own pain', body: 'chronic conditions and sensitivity points' },
   NorthNode: { domain: 'soul growth direction, unfamiliar territory, and destiny', drive: 'to move toward unfamiliar growth', body: '' },
   Ascendant: { domain: 'your visible self, first impressions, and physical presence', drive: 'to project identity into the world', body: 'head and overall constitution' },
@@ -1690,7 +1690,7 @@ export const analyzeSolarReturn = (
             default: 'Neptune dissolves boundaries around this natal point — expect heightened intuition but also potential confusion.' },
           Pluto: { Sun: 'Pluto transforms your identity — a fundamental shift in who you are. The old self dies so the new self can emerge.',
             Moon: 'Pluto penetrates your emotional core — deep feelings surface, power dynamics in relationships become visible, catharsis.',
-            Venus: 'Pluto intensifies your love life — obsessive attractions, financial power plays, and relationships that change you permanently.',
+            Venus: 'Pluto intensifies your love life — all-consuming attractions, financial power plays, and relationships that change you permanently.',
             Mars: 'Pluto supercharges your drive — relentless willpower, but also power struggles and the temptation to control outcomes.',
             Saturn: 'Pluto meets your structure — institutional power shifts, career upheavals, or dismantling systems that no longer serve.',
             Mercury: 'Pluto deepens your thinking — research, investigation, and conversations that reveal hidden truths.',

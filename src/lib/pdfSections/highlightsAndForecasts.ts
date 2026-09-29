@@ -46,7 +46,7 @@ function getSignFeel(sign: string): string {
     Aries: 'urgency, independence, raw courage', Taurus: 'groundedness, sensuality, comfort-seeking',
     Gemini: 'curiosity, restlessness, quick connections', Cancer: 'deep nurturing, protectiveness',
     Leo: 'warmth, pride, generosity', Virgo: 'analytical processing, self-improvement',
-    Libra: 'harmony-seeking, romantic idealism', Scorpio: 'intensity, obsessive focus',
+    Libra: 'harmony-seeking, romantic idealism', Scorpio: 'intensity, all-consuming focus',
     Sagittarius: 'optimism, restless seeking', Capricorn: 'controlled emotions, ambition',
     Aquarius: 'detachment, unconventional processing', Pisces: 'boundless empathy, spiritual sensitivity',
   };

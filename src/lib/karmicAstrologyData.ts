@@ -24,7 +24,7 @@ export const TWELFTH_HOUSE_PAST_LIVES: Record<string, TwelfthHousePastLife> = {
     pastLifeDescription: 'In previous lives you were a craftsman, musician, farmer, or someone related to banking or finance. You are subconsciously attracted to material comfort and accumulation of goods.',
     subconscious: 'Your deep psyche revolves around good manners, tranquility, love of nature, sensory pleasures, and the need for emotional and material stabilization.',
     pastLifeOccupation: 'Craftsman, musician, farmer, banker, or artisan',
-    karmicAdvice: 'Moderate natural inclinations to adopt repetitive routines or become obsessive. Find balance between material comfort and spiritual growth.',
+    karmicAdvice: 'Moderate natural inclinations to adopt repetitive routines or become all-consuming. Find balance between material comfort and spiritual growth.',
   },
   Gemini: {
     sign: 'Gemini',

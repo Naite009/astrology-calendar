@@ -57,7 +57,7 @@ const QUADRANT_THEMES = {
   q4: {
     theme: 'Career & Legacy',
     description: 'Houses 10-12: Public role, community, and transcendence. This quadrant is about your CONTRIBUTION—what you leave behind, how you serve the collective.',
-    heavy: 'Your chart is weighted toward career and legacy. Your life journey centers on public achievement, community involvement, and spiritual transcendence. You\'re meant to be visible and to contribute to something larger than yourself. The challenge: don\'t neglect personal/private life for public success.',
+    heavy: 'Your chart is weighted toward career and legacy. Your life journey centers on public achievement, community involvement, and spiritual transcendence. You may thrive being visible and to contribute to something larger than yourself. The challenge: don\'t neglect personal/private life for public success.',
     light: 'Fewer planets in the career quadrant suggests your purpose is less about public achievement. Your work may be more private, personal, or relational.'
   }
 };
@@ -65,12 +65,12 @@ const QUADRANT_THEMES = {
 const HEMISPHERE_MEANINGS = {
   upper: {
     theme: 'Public & External',
-    heavy: 'Most of your planets are ABOVE the horizon (houses 7-12). You are meant to be visible, public-facing, and engaged with the outer world. Your purpose unfolds in relationships, career, and collective involvement. You may feel most alive when others are watching.',
+    heavy: 'Most of your planets are ABOVE the horizon (houses 7-12). You may thrive being visible, public-facing, and engaged with the outer world. Your purpose unfolds in relationships, career, and collective involvement. You may feel most alive when others are watching.',
     light: 'With fewer planets above the horizon, your work is more internal and private. You develop yourself before presenting to the world.'
   },
   lower: {
     theme: 'Private & Internal',
-    heavy: 'Most of your planets are BELOW the horizon (houses 1-6). You are meant to be more private, internal, and focused on personal development. Your purpose unfolds through self-discovery, building foundations, and perfecting your craft. The outer world receives the finished product.',
+    heavy: 'Most of your planets are BELOW the horizon (houses 1-6). You may thrive being more private, internal, and focused on personal development. Your purpose unfolds through self-discovery, building foundations, and perfecting your craft. The outer world receives the finished product.',
     light: 'With fewer planets below the horizon, your work is more public and external. You develop through engagement with others.'
   },
   eastern: {
