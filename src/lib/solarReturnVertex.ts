@@ -149,7 +149,7 @@ export const vertexInSign: Record<string, {
 }> = {
   Aries: {
     title: 'Significant-feeling Self-Assertion',
-    fatedTheme: 'This year, destiny pushes you toward courage, independence, and taking the initiative. Significant-feeling events require you to stand on your own, fight for yourself, and claim your personal power — even when you would prefer to defer.',
+    fatedTheme: 'This year's Vertex placement may point toward courage, independence, and taking the initiative. Significant-feeling events require you to stand on your own, fight for yourself, and claim your personal power — even when you would prefer to defer.',
     encounters: 'You may encounter bold, pioneering individuals who catalyze your own assertiveness. A warrior figure, entrepreneur, or someone who forces you to compete may appear at a turning point.',
     lesson: 'The universe is teaching you that waiting for permission is no longer an option. The fated encounters of this year demand that you ACT, even imperfectly, rather than deliberate endlessly.',
   },
