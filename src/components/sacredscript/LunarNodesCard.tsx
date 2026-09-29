@@ -248,8 +248,8 @@ const HOUSE_THEMES: Record<number, { area: string; description: string }> = {
 // Node Ruler technique — the ruling planet of the North Node sign shows HOW you approach soul growth
 const SIGN_RULERS: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
-  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
-  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
 };
 
 const getNodeRulerInsight = (nnSign: string, chart: NatalChart): { ruler: string; rulerSign: string; rulerHouse: number | null; interpretation: string } | null => {
