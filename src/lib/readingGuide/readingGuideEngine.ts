@@ -32,6 +32,8 @@ import { getHouseForLongitude } from '@/lib/houseCalculations';
 import { getReliableAscendant } from '@/lib/chartDataValidation';
 import { MAJOR_ASPECTS, getEffectiveOrb } from '@/lib/aspectOrbs';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
+import { getChartRulers, chartRulerNote } from '@/lib/interpretation/chartRuler';
+import { angularSeparation, classifyAspect } from '@/lib/aspects/classifyAspect';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import {
   contactTier, doesNotMeanFor, signalLevelFromCount, rankByEvidence, TOP_FACTOR_MAX,
@@ -173,7 +175,16 @@ export interface ReadingGuide {
   modalities: { counts: Record<string, number>; dominant: string[]; low: string[]; note: string };
   repeatedSigns: Array<{ sign: string; bodies: string[]; note: string }>;
   houseClusters: HouseCluster[];
-  chartRuler: { sign: string; ruler: string; placement?: CoreBodyPlacement; note: string } | null;
+  chartRuler: {
+    sign: string;
+    /** Traditional (primary) chart ruler. */
+    ruler: string;
+    /** Modern co-ruler for Scorpio/Aquarius/Pisces rising, else null. */
+    modernRuler: string | null;
+    placement?: CoreBodyPlacement;
+    modernPlacement?: CoreBodyPlacement;
+    note: string;
+  } | null;
   startHere: StartHereItem[];
   /** Lower-ranked "start here" detail, shown under Explore deeper. */
   startHereDeeper: StartHereItem[];
@@ -403,11 +414,11 @@ export function rankConnections(placements: CoreBodyPlacement[], limit = 5): Ran
       // The node axis opposition is automatic geometry, never a "top connection".
       const pair = [a.body, b.body].sort().join('|');
       if (pair === 'NorthNode|SouthNode') continue;
-      let sep = Math.abs(a.absDeg - b.absDeg);
-      if (sep > 180) sep = 360 - sep;
-      for (const asp of MAJOR_ASPECTS) {
-        const orb = Math.abs(sep - asp.angle);
-        if (orb > getEffectiveOrb(a.body, b.body, asp.name)) continue;
+      const sep = angularSeparation(a.absDeg, b.absDeg);
+      const asp0 = classifyAspect(sep, MAJOR_ASPECTS, (n) => getEffectiveOrb(a.body, b.body, n));
+      if (asp0) {
+        const asp = MAJOR_ASPECTS.find((m) => m.name === asp0.name)!;
+        const orb = asp0.orb;
         const weight = (IMPORTANCE_WEIGHT[a.body] ?? 3) + (IMPORTANCE_WEIGHT[b.body] ?? 3);
         const tightness = Math.max(0, 8 - orb);
         const rounded = Math.round(orb * 10) / 10;
@@ -423,8 +434,6 @@ export function rankConnections(placements: CoreBodyPlacement[], limit = 5): Ran
           adds: ASPECT_ADDS[asp.name] ?? 'these two are linked in the chart',
           reading: pairAspectReading(a.body, b.body, asp.name, rounded),
         });
-
-        break;
       }
     }
   }
@@ -437,15 +446,9 @@ function aspectsTo(body: string, placements: CoreBodyPlacement[]): Array<{ other
   const out: Array<{ other: CoreBodyPlacement; aspect: string; orb: number }> = [];
   for (const other of placements) {
     if (other.body === me.body) continue;
-    let sep = Math.abs(me.absDeg - other.absDeg);
-    if (sep > 180) sep = 360 - sep;
-    for (const asp of MAJOR_ASPECTS) {
-      const orb = Math.abs(sep - asp.angle);
-      if (orb <= getEffectiveOrb(me.body, other.body, asp.name)) {
-        out.push({ other, aspect: asp.name, orb: Math.round(orb * 10) / 10 });
-        break;
-      }
-    }
+    const sep = angularSeparation(me.absDeg, other.absDeg);
+    const asp = classifyAspect(sep, MAJOR_ASPECTS, (n) => getEffectiveOrb(me.body, other.body, n));
+    if (asp) out.push({ other, aspect: asp.name, orb: Math.round(asp.orb * 10) / 10 });
   }
   return out.sort((a, b) => a.orb - b.orb);
 }
@@ -531,19 +534,24 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       theme: describeHouseEmphasis(house, bodies, { stage, isStellium: true }),
     }));
 
-  // chart ruler
+  // chart ruler: traditional ruler first, modern co-ruler named separately
   const asc = byBody.get('Ascendant');
   let chartRuler: ReadingGuide['chartRuler'] = null;
-  if (asc) {
-    const rulerName = SIGN_RULER[asc.sign];
+  const rulers = asc ? getChartRulers(asc.sign) : null;
+  if (asc && rulers) {
+    const rulerName = rulers.traditional;
     const rulerPlacement = byBody.get(rulerName);
+    const modernPlacement = rulers.modern ? byBody.get(rulers.modern) : undefined;
     chartRuler = {
       sign: asc.sign,
       ruler: rulerName,
+      modernRuler: rulers.modern,
       placement: rulerPlacement,
-      note: rulerPlacement
-        ? `${asc.sign} rising makes ${bodyLabel(rulerName)} the chart ruler, and it sits in ${rulerPlacement.sign}${rulerPlacement.house ? `, ${ordinalHouse(rulerPlacement.house)}` : ''} — a good place to steer the reading early.`
-        : `${asc.sign} rising makes ${bodyLabel(rulerName)} the chart ruler.`,
+      modernPlacement,
+      note: chartRulerNote(asc.sign, {
+        traditional: rulerPlacement ? { sign: rulerPlacement.sign, house: rulerPlacement.house } : undefined,
+        modern: modernPlacement ? { sign: modernPlacement.sign, house: modernPlacement.house } : undefined,
+      }),
     };
   }
 
