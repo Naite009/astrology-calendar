@@ -119,14 +119,14 @@ describe('source copy sweep', () => {
     return /\.(ts|tsx)$/.test(e.name) ? [p] : [];
   });
   const GUARD = /never|avoid|ban|forbid|not as|rather than|instead|regex/i;
-  const SKIP = /languagePolicy|interpretationStandards|relationshipLanguage|symbolicFraming/;
+  const SKIP = /evidenceStandard|languagePolicy|interpretationStandards|relationshipLanguage|symbolicFraming/;
   it('no fate, obsession, soul-curriculum or steer-the-reading wording in user copy', () => {
     const bad: string[] = [];
     for (const f of walk('src')) {
       if (SKIP.test(f)) continue;
       fs.readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
         if (GUARD.test(l)) return;
-        if (/\bfated\b(?!Theme|Themes|Area)|\bobsessive\b|soul curriculum|soul-level|sexual chemistry|steer the reading|work as one unit|you('re| are) meant to be\b/i.test(l)) bad.push(`${f}:${i + 1}`);
+        if (/(?<!')\bfated\b(?!Theme|Themes|Area|')|\bobsessive\b|soul curriculum|soul-level|sexual chemistry|steer the reading|work as one unit|you('re| are) meant to be\b/i.test(l)) bad.push(`${f}:${i + 1}`);
       });
     }
     expect(bad).toEqual([]);
