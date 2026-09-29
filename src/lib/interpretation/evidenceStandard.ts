@@ -328,7 +328,7 @@ export const FORBIDDEN_PSEUDO_METRICS = [
   'twin flame',
   'soul contract probability',
   'soul growth focus',
-  'significant-feeling love',
+  'fated love',
   'compatibility probability',
 ];
 
