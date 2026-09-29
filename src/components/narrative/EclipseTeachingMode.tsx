@@ -1043,7 +1043,7 @@ export function EclipseTeachingMode({ eclipse, userNatalChart }: Props) {
                     <strong>⚡ Direct nodal activation:</strong>{' '}
                     {synthesis.sameSignAsNode === 'same-as-sn'
                       ? `This eclipse is in ${eclipse.sign} — the exact same sign as your natal South Node. Even if the degrees aren't conjunct, this is one of the most personally significant eclipses you can experience. Every ${eclipse.sign} theme this eclipse stirs IS your South Node material. The universe isn't being subtle here: the habits, the perfectionism, the default patterns you run in ${snSign} — this eclipse is shining a direct spotlight on all of it. This is a completion eclipse for your deepest comfort-zone patterns.`
-                      : `This eclipse is in ${eclipse.sign} — the exact same sign as your natal North Node. Even if the degrees aren't conjunct, this eclipse is directly activating your growth direction. Every ${eclipse.sign} theme is YOUR soul curriculum. The universe is amplifying your North Node — lean into the unfamiliar ${nnSign} qualities with everything you have. This is a growth acceleration moment.`
+                      : `This eclipse is in ${eclipse.sign} — the exact same sign as your natal North Node. Even if the degrees aren't conjunct, this eclipse is directly activating your growth direction. Every ${eclipse.sign} theme is YOUR growth focus. The universe is amplifying your North Node — lean into the unfamiliar ${nnSign} qualities with everything you have. This is a growth acceleration moment.`
                     }
                   </p>
                 )}

@@ -65,7 +65,7 @@ export const DEEP_HOUSE_INTERPRETATIONS: Record<number, HouseInterpretation> = {
     
     body: 'The 1st house rules the physical body, especially the head and face. Transits to the 1st house often coincide with appearance changes — weight gain or loss, new style, physical vitality shifts. Venus transits can enhance attractiveness. Saturn transits can cause weight gain, skin issues, or a more serious appearance. Mars can bring injuries to the head or increased physical energy.',
     
-    shadow: 'Excessive self-focus, difficulty seeing beyond your own perspective, using appearance as a shield, body obsession, or conversely, neglecting your physical vessel entirely.',
+    shadow: 'Excessive self-focus, difficulty seeing beyond your own perspective, using appearance as a shield, body intense preoccupation, or conversely, neglecting your physical vessel entirely.',
     
     growth: 'Conscious self-development — becoming who you are intentionally rather than just reacting. Learning that your appearance and energy affect others and taking responsibility for the impression you create.',
   },
@@ -197,7 +197,7 @@ export const DEEP_HOUSE_INTERPRETATIONS: Record<number, HouseInterpretation> = {
     
     shadow: 'Workaholism, perfectionism, hypochondria, martyrdom through service, using health issues for attention, controlling through details.',
     
-    growth: 'Service without martyrdom. Health as self-care, not obsession. Work as contribution. Finding meaning in the mundane. Sustainable routines.',
+    growth: 'Service without martyrdom. Health as self-care, not intense preoccupation. Work as contribution. Finding meaning in the mundane. Sustainable routines.',
   },
   
   7: {
@@ -247,7 +247,7 @@ export const DEEP_HOUSE_INTERPRETATIONS: Record<number, HouseInterpretation> = {
     
     othersPerceive: 'Most people don\'t see your 8th house — only those who go deep with you. Intimate partners, therapists, and those who share crisis with you know this energy.',
     
-    shadow: 'Power games, manipulation, obsession, controlling through intimacy, refusing to transform, using crisis for drama, financial enmeshment.',
+    shadow: 'Power games, manipulation, intense preoccupation, controlling through intimacy, refusing to transform, using crisis for drama, financial enmeshment.',
     
     growth: 'Transformation as spiritual practice. Healthy intimacy. Releasing control. Facing death consciously. Using power for healing. Psychological integration.',
   },
@@ -299,7 +299,7 @@ export const DEEP_HOUSE_INTERPRETATIONS: Record<number, HouseInterpretation> = {
     
     othersPerceive: 'Everyone sees your 10th house — it\'s your public image, your reputation, your professional identity. It\'s how you\'re known in the world beyond your personal circle.',
     
-    shadow: 'Workaholism, status obsession, sacrificing personal life for achievement, authoritarianism, empty ambition, defining yourself only by career.',
+    shadow: 'Workaholism, status intense preoccupation, sacrificing personal life for achievement, authoritarianism, empty ambition, defining yourself only by career.',
     
     growth: 'Achievement that serves. Authority earned through integrity. Building something that matters beyond ego. Balancing public and private life.',
   },

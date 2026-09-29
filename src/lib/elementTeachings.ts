@@ -344,7 +344,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
     
     themes: [
       'Manifest, money, job, getting things done, and values results',
-      'Must have security—obsessed with money; loves getting a good deal',
+      'Must have security—intensely preoccupied with money; loves getting a good deal',
       'Laws, practicality, government, rules, paperwork, and being on time',
       'Captains of worry wart team',
       'Always thinking of what needs to happen next; there is work to be done',
@@ -362,7 +362,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
       'Practical',
       'Nature lovers—love being outside',
       'Control freaks—they get off on checking things off of their lists',
-      'Obsessed with plants, herbs, natural medicine',
+      'Deeply absorbed in plants, herbs, natural medicine',
       'Physical',
       'Manifestor',
       'Substantial—designer labels, into high quality',
@@ -464,7 +464,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
   Fire: {
     element: 'Fire',
     signs: ['Aries', 'Leo', 'Sagittarius'],
-    story: 'Fire people are the athletes, the loud ones, and the inspirers who push, shout, and demand that we get into our bodies and get a life. They are bossy and full of Fire. If they get out of balance, they become obsessive athletes who need to stand out and demand to be noticed.',
+    story: 'Fire people are the athletes, the loud ones, and the inspirers who push, shout, and demand that we get into our bodies and get a life. They are bossy and full of Fire. If they get out of balance, they become all-consuming athletes who need to stand out and demand to be noticed.',
     quote: 'Fire is enthusiasm, inspiration, passion, and the driving force of will. It transforms everything it touches.',
     
     selfAssessment: [

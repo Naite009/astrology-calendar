@@ -555,7 +555,7 @@ function aspectItem(a: CompositeAspect, ctx: RelationshipContext): CompositeRead
       a.tone === 'flowing'
         ? ', and the link tends to run easily.'
         : a.tone === 'fusion'
-        ? ', and they work as one unit rather than separately.'
+        ? ', so each one tends to set the other off.'
         : ', and the link takes some managing.'
     }`,
     howItShowsUp: stageWord(

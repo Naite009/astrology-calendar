@@ -224,7 +224,7 @@ export function ThemesTab({ readingType, signals, hdChart }: Props) {
                   </div>
 
                   <p className="text-xs text-muted-foreground italic">
-                    {upperPct > 60 && 'Your chart is weighted above the horizon — you\'re meant to be visible and publicly engaged.'}
+                    {upperPct > 60 && 'Your chart is weighted above the horizon — you may thrive being visible and publicly engaged.'}
                     {upperPct < 40 && 'Your chart is weighted below the horizon — your work unfolds privately before the world sees it.'}
                     {easternPct > 60 && ' You initiate from your own will, leading rather than waiting.'}
                     {easternPct < 40 && ' You thrive through collaboration and response to others\' invitations.'}

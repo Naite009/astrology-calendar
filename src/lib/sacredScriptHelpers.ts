@@ -1404,7 +1404,7 @@ export const detectPsychicIndicators = (chart: NatalChart): PsychicIndicator[] =
         name: 'Neptune in 10th House',
         symbol: '♆ in 10H',
         description: 'Career and public role involve spirituality, intuition, or artistic/healing work. The mystic path IS the career path.',
-        clientDescription: 'You are meant to be publicly known for spiritual, intuitive, or artistic work. Your career path may involve healing, psychic work, art, music, or compassionate service. Don\'t try to fit into a "normal" career—your path is notable.',
+        clientDescription: 'You may thrive being publicly known for spiritual, intuitive, or artistic work. Your career path may involve healing, psychic work, art, music, or compassionate service. Don\'t try to fit into a "normal" career—your path is notable.',
         strength: 'strong',
         category: 'angular'
       });

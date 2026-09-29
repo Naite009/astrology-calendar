@@ -174,7 +174,7 @@ const SIGN_RELEASING: Record<string, string> = {
   Leo: 'needing external validation, performing instead of being honest, ego-driven choices',
   Virgo: 'perfectionism, anxiety disguised as productivity, self-criticism as a coping mechanism',
   Libra: 'people-pleasing, avoiding conflict at the cost of honesty, defining yourself through others',
-  Scorpio: 'controlling outcomes through emotional intensity, holding grudges, obsessive attachment',
+  Scorpio: 'controlling outcomes through emotional intensity, holding grudges, all-consuming attachment',
   Sagittarius: 'escapism through adventure, restlessness as avoidance, over-promising and under-delivering',
   Capricorn: 'emotional suppression in service of achievement, equating self-worth with status, rigid self-discipline',
   Aquarius: 'emotional detachment as self-protection, intellectual superiority, defining yourself by your social role',

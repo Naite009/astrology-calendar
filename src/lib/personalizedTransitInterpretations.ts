@@ -51,7 +51,7 @@ const NATAL_PLANET_MEANINGS: Record<string, { area: string; feels: string }> = {
   Saturn: { area: 'what you make yourself do, even when you do not feel like it', feels: 'the weight of your responsibilities and whether you trust yourself to carry them' },
   Uranus: { area: 'the part of you that cannot fake it anymore', feels: 'restlessness, the urge to quit, the urge to tell the truth out loud' },
   Neptune: { area: 'how you check out, daydream, and blur the lines', feels: 'how foggy, sensitive, tired, or escapist you are running' },
-  Pluto: { area: 'what you obsess over and what you have to rebuild from the ground up', feels: 'fixation, intensity, the sense that something has to die so you can move on' },
+  Pluto: { area: 'what you fixate over and what you have to rebuild from the ground up', feels: 'fixation, intensity, the sense that something has to die so you can move on' },
   NorthNode: { area: 'the unfamiliar move your life keeps asking you to make', feels: 'awkward, shaky, like a beginner on purpose' },
   SouthNode: { area: 'the role you can do in your sleep that has stopped feeding you', feels: 'easy, automatic, quietly draining' },
   Chiron: { area: 'the old wound you keep bumping into in this area', feels: 'a flinch, a numbness, a story you have told yourself a hundred times' },
@@ -218,7 +218,7 @@ export function getPlutoTransitFeeling(
       baseFeel = `Pluto deepens your ${natalPlanet} without the crisis. You can do hard inner work, end something cleanly, or reclaim power here without it blowing your life up. The change still happens, just with less wreckage`;
       break;
     case 'square':
-      baseFeel = `Pluto squeezes your ${natalPlanet}. Something you have been controlling, hiding, or refusing to look at gets forced into the open. You will obsess, fight to keep things the same, and lose that fight. The way out is to stop defending the old version`;
+      baseFeel = `Pluto squeezes your ${natalPlanet}. Something you have been controlling, hiding, or refusing to look at gets forced into the open. You will fixate, fight to keep things the same, and lose that fight. The way out is to stop defending the old version`;
       break;
     case 'opposition':
       baseFeel = `Pluto faces your ${natalPlanet} through one specific person who is acting out exactly the power dynamic you have not handled in yourself. A boss, partner, family member, or rival becomes the mirror. You cannot win by controlling them`;
@@ -257,7 +257,7 @@ function getPlutoPlanetSpecific(natalPlanet: string, aspect: string): string {
       soft: 'You step into more authority without having to fight for it. People listen when you talk. You stop apologizing for taking up space'
     },
     Mercury: {
-      hard: 'You will obsess over one conversation, one text, one fact. You might dig up information you cannot un-know. Your words land harder than you mean them to. People remember what you say right now',
+      hard: 'You will fixate over one conversation, one text, one fact. You might dig up information you cannot un-know. Your words land harder than you mean them to. People remember what you say right now',
       soft: 'You can research, investigate, write, or have the conversation that everyone has been avoiding. People will tell you things they have never told anyone'
     },
     Venus: {

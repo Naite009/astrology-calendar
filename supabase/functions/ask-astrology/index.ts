@@ -11495,7 +11495,7 @@ END UNIVERSAL READING TYPE BASE
      SIGNATURE ASPECTS TO FLAG (check all, report those within orb):
      - Venus-Saturn: fear of rejection, delayed love, high standards, deep loyalty once committed
      - Venus-Neptune: idealization, fantasy bonds, difficulty seeing partners clearly, rose-colored glasses
-     - Venus-Pluto: obsessive attraction, jealousy, transformative love, all-or-nothing intensity
+     - Venus-Pluto: all-consuming attraction, jealousy, transformative love, all-or-nothing intensity
      - Venus-Uranus: need for freedom, sudden attractions, unconventional relationship structures
      - Venus-Mars: how desire and love integrate or split — harmonious = unified, tense = "I want one thing but fall for another"
      - Moon-Pluto: emotional intensity, control in intimacy, deep bonding or enmeshment
@@ -11568,7 +11568,7 @@ END UNIVERSAL READING TYPE BASE
      - "aspect" (string): aspect type, e.g. "Conjunction", "Square", "Trine", "Opposition", "Sextile"
      - "natal_point" (string): what it aspects, e.g. "Natal Venus at 15°01' Cancer"
      - "date_range" (string): the active window, e.g. "June 1 to June 25, 2026"
-     - "tag" (string): one of "meeting", "attraction", "commitment", "test", "rupture", "healing", "turning_point", "fated"
+     - "tag" (string): one of "meeting", "attraction", "commitment", "test", "rupture", "healing", "turning_point", "significant_encounter"
      - "layer" (string): one of "background", "trigger", "turning_point"
      - "interpretation" (string): plain-language meaning, 1 to 3 sentences. MUST describe something the person can picture happening in real life. Do NOT write interpretations that only explain astrology.
 

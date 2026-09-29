@@ -150,8 +150,8 @@ const OUTER_PLANETS: TransitingPlanet[] = ['Saturn', 'Pluto', 'Uranus', 'Neptune
 
 const SIGN_RULERS: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
-  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
-  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune'
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter'
 };
 
 const AXIS_MAP: Record<number, string> = {
@@ -210,7 +210,7 @@ const TRANSIT_NARRATIVES: Record<TransitingPlanet, { phase: 'containment' | 'str
   },
   NorthNode: {
     phase: 'trigger',
-    narrative: (aspect, target) => `The North Node highlights your ${target} as part of your growth direction. Fated-feeling encounters or opportunities that align with your developmental path.`
+    narrative: (aspect, target) => `The North Node highlights your ${target} as part of your growth direction. Significant-feeling-feeling encounters or opportunities that align with your developmental path.`
   },
   SouthNode: {
     phase: 'trigger',

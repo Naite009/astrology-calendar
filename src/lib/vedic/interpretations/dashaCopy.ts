@@ -1,7 +1,7 @@
 /**
  * Felt-sense copy for the nine Vimshottari dasha lords.
  * Written as a life chapter: what the period asks for, what it gives back, and
- * the trap it tends to set. Conditional language only. No fated claims.
+ * the trap it tends to set. Conditional language only. No claims of fixed fate.
  */
 
 import { VedicPlanet } from '../nakshatras';

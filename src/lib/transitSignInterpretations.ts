@@ -131,7 +131,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   
   'Jupiter-Scorpio': {
     whatItFeelsLike: "Growth through depth, intensity, and transformation. The collective is drawn to secrets, psychology, and hidden truths. 'Surface level' doesn't satisfy.",
-    howItManifests: "Therapy, research, and investigation thrive. Sexual and financial matters in focus. Inheritances, joint resources. Also: obsession, power struggles, paranoia.",
+    howItManifests: "Therapy, research, and investigation thrive. Sexual and financial matters in focus. Inheritances, joint resources. Also: intense preoccupation, power struggles, paranoia.",
     whatToDo: "Go deep. Face what you've been avoiding. Transform through honest confrontation with shadows. But don't mistake intensity for truth—not everything hidden is gold."
   },
   
@@ -283,7 +283,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   
   'Uranus-Scorpio': {
     whatItFeelsLike: "Revolution in power, sexuality, and transformation. What was HIDDEN comes to light. Deep structures of control are exposed and challenged.",
-    howItManifests: "Power structures exposed, sexual revolution, death/dying transformed, financial systems disrupted. Also: power struggles, obsession, destructive impulses.",
+    howItManifests: "Power structures exposed, sexual revolution, death/dying transformed, financial systems disrupted. Also: power struggles, intense preoccupation, destructive impulses.",
     whatToDo: "Let go of controlling what can't be controlled. Embrace radical transformation. Face shadows that demand acknowledgment. Your power is in conscious surrender to change."
   },
   
@@ -359,7 +359,7 @@ export const TRANSIT_SIGN_INTERPRETATIONS: Record<string, TransitSignInterpretat
   
   'Neptune-Scorpio': {
     whatItFeelsLike: "Spiritualizing power and transformation. Death becomes transcendence. Sexuality becomes tantra. Deep psychology becomes shamanism.",
-    howItManifests: "Psychological/spiritual merging, transformative spirituality, occult fascination. Also: power confusion, sexual illusion, obsessive spirituality.",
+    howItManifests: "Psychological/spiritual merging, transformative spirituality, occult fascination. Also: power confusion, sexual illusion, all-consuming spirituality.",
     whatToDo: "Transform through surrender, not control. Explore depth with spiritual intention. But don't confuse intensity with truth."
   },
   

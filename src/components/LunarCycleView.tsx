@@ -740,7 +740,7 @@ Keep the tone deep, insightful, and practically applicable.`
     Pallas: 'The asteroid of strategic wisdom — how you see PATTERNS, solve problems, and fight for justice.',
     Lilith: 'Black Moon Lilith — your wild, untamed power that refuses to be domesticated. Raw feminine rage and honesty.',
     PartOfFortune: 'An Arabic Part showing where worldly luck and material abundance flow most naturally.',
-    Vertex: 'A fated point — encounters and events here feel destined, as if the universe arranged them.',
+    Vertex: 'A significant-feeling point — encounters and events here feel destined, as if the universe arranged them.',
   };
 
   // Aspect type explanations — what does this geometric relationship DO?
@@ -1926,7 +1926,7 @@ Keep the tone deep, insightful, and practically applicable.`
               
               <div>
                 <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-purple-500" /> Soul-Level Message
+                  <Sparkles className="h-4 w-4 text-purple-500" /> Deeper Message
                 </h4>
                 <p className="text-sm text-foreground/90 italic">{interpretation.soulLevel}</p>
               </div>

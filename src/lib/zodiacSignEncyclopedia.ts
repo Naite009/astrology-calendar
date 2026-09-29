@@ -317,7 +317,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     creativeExpression: 'Scorpio creates through intensity — psychology, surgery, investigation, taboo art. Their work goes where others are afraid to look.',
     keywords: ['Depth', 'Transformation', 'Intensity', 'Power'],
     highRoadKeywords: ['Intense', 'Perceptive', 'Passionate', 'Resourceful', 'Brave', 'Magnetic', 'Loyal', 'Strategic', 'Transformative', 'Resilient', 'Psychologically astute', 'Determined', 'Deep', 'Healing', 'Powerful'],
-    lowRoadKeywords: ['Jealous', 'Controlling', 'Manipulative', 'Vindictive', 'Obsessive', 'Secretive', 'Paranoid', 'Power-hungry', 'Grudge-holding', 'Destructive', 'Possessive', 'Suspicious', 'Ruthless'],
+    lowRoadKeywords: ['Jealous', 'Controlling', 'Manipulative', 'Vindictive', 'All-consuming', 'Secretive', 'Paranoid', 'Power-hungry', 'Grudge-holding', 'Destructive', 'Possessive', 'Suspicious', 'Ruthless'],
   },
   {
     name: 'Sagittarius',
@@ -373,7 +373,7 @@ export const ZODIAC_SIGNS_DATA: ZodiacSignData[] = [
     creativeExpression: 'Capricorn creates through mastery — architecture, business, classical music, strategic planning. Their art is built to endure and earns respect through craft.',
     keywords: ['Discipline', 'Ambition', 'Structure', 'Legacy'],
     highRoadKeywords: ['Disciplined', 'Ambitious', 'Responsible', 'Strategic', 'Patient', 'Wise', 'Authoritative', 'Hardworking', 'Mature', 'Dependable', 'Traditional', 'Masterful', 'Pragmatic', 'Resilient', 'Dignified'],
-    lowRoadKeywords: ['Workaholic', 'Cold', 'Pessimistic', 'Controlling', 'Status-obsessed', 'Emotionally repressed', 'Rigid', 'Ruthless', 'Condescending', 'Uses people', 'Melancholic', 'Fear-driven', 'Unforgiving'],
+    lowRoadKeywords: ['Workaholic', 'Cold', 'Pessimistic', 'Controlling', 'Status-intensely preoccupied', 'Emotionally repressed', 'Rigid', 'Ruthless', 'Condescending', 'Uses people', 'Melancholic', 'Fear-driven', 'Unforgiving'],
   },
   {
     name: 'Aquarius',

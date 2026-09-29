@@ -161,7 +161,7 @@ export const PlanetsHousesTab = ({ analysis, srChart, natalChart }: Props) => {
       {analysis.vertex && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
-            <Zap size={16} className="text-primary" /> Vertex — Fated Encounters
+            <Zap size={16} className="text-primary" /> Vertex — Significant-feeling Encounters
           </h3>
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-xl font-serif text-primary">Vx {SIGN_SYMBOLS[analysis.vertex.sign]} {analysis.vertex.sign} {analysis.vertex.degree}°{String(analysis.vertex.minutes).padStart(2, '0')}'</span>

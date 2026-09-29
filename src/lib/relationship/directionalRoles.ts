@@ -11,7 +11,7 @@
  *  - Wording is possibility-shaped ("may", "can"), never a verdict.
  *  - Teen / child stages get age-appropriate vocabulary (attraction, strong
  *    interest, intensity, pacing) and never sexualised, dominance/surrender or
- *    obsession language.
+ *    intense preoccupation language.
  */
 
 import type { CrossAspect } from './synastryEngine';

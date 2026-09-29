@@ -390,7 +390,7 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
     shadowExpressions: [
       'Possessiveness or jealousy',
       'Fear of abandonment or betrayal',
-      'Obsessive attachments',
+      'All-consuming attachments',
       'Using love as control',
     ],
     thematicTags: ['attachment', 'control-power', 'emotional-boundaries'],
@@ -474,7 +474,7 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
       'Words carry power and impact',
     ],
     shadowExpressions: [
-      'Obsessive thinking patterns',
+      'All-consuming thinking patterns',
       'Suspicion or paranoia',
       'Manipulative communication',
       'Difficulty with light conversation',
@@ -732,7 +732,7 @@ export const patternMirrorCombos: PatternMirrorCombo[] = [
       'Deep knowing that transformation is the path',
     ],
     shadowExpressions: [
-      'Obsessive rumination on painful experiences',
+      'All-consuming rumination on painful experiences',
       'Difficulty accepting surface-level interactions',
       'Being consumed by the intensity of one\'s own depths',
     ],

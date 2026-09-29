@@ -169,7 +169,7 @@ export const PLANET_ESSENCES: Record<string, { symbol: string; name: string; ess
     symbol: '♇',
     name: 'Pluto',
     essence: "Your power and transformation. Where you experience death, rebirth, and deep change.",
-    represents: "power, death/rebirth, obsession, depth, shadow, regeneration, control"
+    represents: "power, death/rebirth, intense preoccupation, depth, shadow, regeneration, control"
   },
   chiron: {
     symbol: '⚷',
@@ -383,7 +383,7 @@ const SIGN_EXPRESSIONS: Record<string, string> = {
   'Venus-Leo': "= Romantic love. You want to be adored and give grand gestures. Examples: appreciating public displays of affection, needing compliments, giving lavish gifts, wanting romance like in movies.",
   'Venus-Virgo': "= Practical love. You show love through acts of service. Examples: noticing and fixing things for partners, being critical when stressed, showing love by improving someone's life rather than saying sweet words.",
   'Venus-Libra': "= Harmonious love. You need partnership to feel complete. Examples: being uncomfortable alone for long, compromising to keep peace, having refined taste, wanting fairness and equality in relationships.",
-  'Venus-Scorpio': "= Intense love. You love obsessively and need complete loyalty. Examples: being all-in or all-out, sensing when partners aren't honest, jealousy issues, transformative relationships that change you.",
+  'Venus-Scorpio': "= Intense love. You love with intense focus and need complete loyalty. Examples: being all-in or all-out, sensing when partners aren't honest, jealousy issues, transformative relationships that change you.",
   'Venus-Sagittarius': "= Free love. You need adventure and space in relationships. Examples: being attracted to people from different backgrounds, needing a partner who doesn't cling, valuing shared adventures over routine.",
   'Venus-Capricorn': "= Committed love. You take love seriously and want long-term stability. Examples: being attracted to successful/ambitious people, not rushing into relationships, wanting partners who add to your status.",
   'Venus-Aquarius': "= Unconventional love. You need friendship first and value independence. Examples: being attracted to unique or unusual people, needing space in relationships, valuing intellectual connection over romance.",
@@ -445,7 +445,7 @@ const getSignExpression = (planet: string, sign: string): string => {
     'Leo': 'with dramatic confidence—creatively, generously, and with need for recognition.',
     'Virgo': 'through careful analysis and practical service—precisely, helpfully, and critically.',
     'Libra': 'through balance and partnership—diplomatically, aesthetically, and relationally.',
-    'Scorpio': 'with intense focus and transformative power—deeply, obsessively, and regeneratively.',
+    'Scorpio': 'with intense focus and transformative power—deeply, with intense focus, and regeneratively.',
     'Sagittarius': 'through adventure and meaning-seeking—expansively, philosophically, and restlessly.',
     'Capricorn': 'with disciplined ambition—strategically, patiently, and with long-term vision.',
     'Aquarius': 'through innovation and independence—unconventionally, collectively, and futuristically.',

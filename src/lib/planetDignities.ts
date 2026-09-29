@@ -478,7 +478,7 @@ Pluto's eccentric orbit creates dramatic speed variations:
 Pluto retrograde effects:
 • Transformation work becomes internal and psychological
 • Power dynamics you've been ignoring surface for review
-• Obsessive patterns are confronted from within
+• All-consuming patterns are confronted from within
 • Shadow work intensifies—what's buried demands attention
 
 Pluto won't return to its current zodiac position for 248 years. The "Pluto in Scorpio" generation (1983-1995) won't see Pluto in Scorpio again in their lifetimes.`,
@@ -559,8 +559,8 @@ Pluto won't return to its current zodiac position for 248 years. The "Pluto in S
     orbitalPeriod: 'N/A',
     orbitalYears: 0,
     timeInSign: 'Fixed in natal chart',
-    speedNote: 'The Vertex is a mathematically calculated point in the western hemisphere of the chart. It\'s called the "fated encounter" point.',
-    summary: 'Fated meetings and destined events. The Vertex shows where karmic connections and turning points enter your life through others.'
+    speedNote: 'The Vertex is a mathematically calculated point in the western hemisphere of the chart. It\'s called the "significant-feeling encounter" point.',
+    summary: 'Significant-feeling meetings and destined events. The Vertex shows where karmic connections and turning points enter your life through others.'
   },
   
   // ASTEROIDS

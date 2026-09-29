@@ -533,7 +533,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
       points,
       interpretation: isOpposition
         ? `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **PAST-LIFE PROFESSIONAL BOND.** Saturn opposing North Node (conjunct South Node) indicates you worked together before. Instant professional familiarity.`
-        : `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **MAJOR FATED BUSINESS CONNECTION.** Saturn provides the structure, lessons, and authority the North Node person needs for their professional destiny. ${isConjunction ? 'The CONJUNCTION is the strongest possible indicator of professional karma.' : 'This aspect indicates significant professional destiny together.'}`,
+        : `${saturnNorthNode.type} (${saturnNorthNode.orb}° orb): **MAJOR SIGNIFICANT-FEELING BUSINESS CONNECTION.** Saturn provides the structure, lessons, and authority the North Node person needs for their professional destiny. ${isConjunction ? 'The CONJUNCTION is the strongest possible indicator of professional karma.' : 'This aspect indicates significant professional destiny together.'}`,
       strength: 'strong'
     });
   }
@@ -580,24 +580,24 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   }
 
   // ============================================
-  // FATED POINTS: Vertex & Part of Fortune
+  // SIGNIFICANT-FEELING POINTS: Vertex & Part of Fortune
   // ============================================
   
-  // Sun-Vertex: Fated business meeting
+  // Sun-Vertex: Significant-feeling business meeting
   const sunVertex1 = checkAspect(chart1, 'Sun', chart2, 'Vertex');
   const sunVertex2 = checkAspect(chart2, 'Sun', chart1, 'Vertex');
   const sunVertex = sunVertex1 || sunVertex2;
   if (sunVertex && (chart1.planets.Vertex || chart2.planets.Vertex)) {
     karmicBonus += 8;
     indicators.push({
-      name: '★ FATED: Sun-Vertex',
+      name: '★ SIGNIFICANT-FEELING: Sun-Vertex',
       found: true,
       aspect: sunVertex,
       planet1: 'Sun',
       planet2: 'Vertex',
       tier: 0,
       points: 8,
-      interpretation: `${sunVertex.type} (${sunVertex.orb}° orb): **FATED MEETING.** The Vertex indicates destined encounters. Your meeting was meant to happen and has professional significance.`,
+      interpretation: `${sunVertex.type} (${sunVertex.orb}° orb): **SIGNIFICANT-FEELING MEETING.** The Vertex indicates destined encounters. Your meeting was meant to happen and has professional significance.`,
       strength: 'strong'
     });
   }
@@ -609,7 +609,7 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   if (saturnVertex && (chart1.planets.Vertex || chart2.planets.Vertex)) {
     karmicBonus += 6;
     indicators.push({
-      name: '★ FATED: Saturn-Vertex',
+      name: '★ SIGNIFICANT-FEELING: Saturn-Vertex',
       found: true,
       aspect: saturnVertex,
       planet1: 'Saturn',
@@ -788,13 +788,13 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
   overallStrength = Math.max(15, Math.min(92, overallStrength));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED') || i.name.includes('PROSPERITY'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('SIGNIFICANT-FEELING') || i.name.includes('PROSPERITY'));
   const challenges = indicators.filter(i => i.name.includes('⚠️'));
   
   // Generate summary based on score ranges
   let summary: string;
   if (overallStrength >= 78) {
-    summary = `Exceptional business partnership potential (${overallStrength}%). ${karmicIndicators.length > 0 ? `${karmicIndicators.length} karmic indicator(s) suggest a fated professional bond.` : 'Strong alignment across key business indicators.'} ${strongIndicators.length} major supportive aspects create a powerful foundation.`;
+    summary = `Exceptional business partnership potential (${overallStrength}%). ${karmicIndicators.length > 0 ? `${karmicIndicators.length} karmic indicator(s) suggest a significant-feeling professional bond.` : 'Strong alignment across key business indicators.'} ${strongIndicators.length} major supportive aspects create a powerful foundation.`;
   } else if (overallStrength >= 65) {
     summary = `Strong business partnership potential (${overallStrength}%). ${strongIndicators.length} key indicators support professional success together. ${karmicIndicators.length > 0 ? 'Karmic elements add depth and purpose.' : 'Solid foundations for shared ventures.'}`;
   } else if (overallStrength >= 50) {
@@ -815,8 +815,8 @@ function analyzeBusinessPartnership(chart1: NatalChart, chart2: NatalChart): Foc
     maxStandardPoints,
     earnedStandardPoints: Math.max(0, standardPoints),
     recommendations: [
-      ...(karmicIndicators.length > 0 ? [`★ ${karmicIndicators.length} karmic/fated indicator(s) suggest this partnership has deeper professional purpose.`] : []),
-      ...(saturnNorthNode ? ['★★ Your Saturn-North Node connection is a MAJOR indicator of fated professional relationship - this is rare and significant.'] : []),
+      ...(karmicIndicators.length > 0 ? [`★ ${karmicIndicators.length} karmic/significant-feeling indicator(s) suggest this partnership has deeper professional purpose.`] : []),
+      ...(saturnNorthNode ? ['★★ Your Saturn-North Node connection is a MAJOR indicator of significant-feeling professional relationship - this is rare and significant.'] : []),
       ...(marsJupiter ? ['★ Your Mars–Jupiter contact puts real energy behind ambitious plans.'] : []),
       ...(nodeJupiter ? ['★ Your Node-Jupiter brings growth and luck to shared ventures.'] : []),
       ...(saturnSun ? ['Leverage your Saturn-Sun dynamic for clear authority structures.'] : ['Establish explicit decision-making agreements.']),
@@ -1258,19 +1258,19 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
   });
   if (chironMoon) standardPoints += 5;
 
-  // Vertex for fated friendships
+  // Vertex for significant-feeling friendships
   const vertexSun = checkAspect(chart1, 'Vertex', chart2, 'Sun') || checkAspect(chart2, 'Vertex', chart1, 'Sun');
   if ((chart1.planets.Vertex || chart2.planets.Vertex) && vertexSun) {
     karmicBonus += vertexSun.type === 'conjunction' ? 8 : 5;
     indicators.push({
-      name: '★ FATED: Vertex-Sun Connection',
+      name: '★ SIGNIFICANT-FEELING: Vertex-Sun Connection',
       found: true,
       aspect: vertexSun,
       planet1: 'Vertex',
       planet2: 'Sun',
       tier: 0,
       points: vertexSun.type === 'conjunction' ? 8 : 5,
-      interpretation: `${vertexSun.type} (${vertexSun.orb}° orb): Vertex indicates fated encounters. This friendship was "meant to happen."`,
+      interpretation: `${vertexSun.type} (${vertexSun.orb}° orb): Vertex indicates significant-feeling encounters. This friendship was "meant to happen."`,
       strength: 'strong'
     });
   }
@@ -1293,7 +1293,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
       points: pts,
       interpretation: nodeVenus.type === 'opposition' 
         ? `${nodeVenus.type} (${nodeVenus.orb}° orb): Venus opposite North Node (conjunct South Node) indicates past-life affection. Instant familiarity and comfort.`
-        : `${nodeVenus.type} (${nodeVenus.orb}° orb): Fated connection bringing love and appreciation into each other's lives.`,
+        : `${nodeVenus.type} (${nodeVenus.orb}° orb): Significant-feeling connection bringing love and appreciation into each other's lives.`,
       strength: 'strong'
     });
   }
@@ -1367,7 +1367,7 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
   overallStrength = Math.max(15, Math.min(92, overallStrength));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('SIGNIFICANT-FEELING'));
   
   return {
     focus: 'friendship',
@@ -1378,12 +1378,12 @@ function analyzeFriendship(chart1: NatalChart, chart2: NatalChart): FocusAnalysi
     maxStandardPoints,
     earnedStandardPoints: Math.max(0, standardPoints),
     summary: overallStrength >= 70
-      ? `Strong friendship potential (${overallStrength}%)! ${strongIndicators.length} key connections support natural companionship.${karmicIndicators.length > 0 ? ' Karmic elements suggest a fated bond.' : ''}`
+      ? `Strong friendship potential (${overallStrength}%)! ${strongIndicators.length} key connections support natural companionship.${karmicIndicators.length > 0 ? ' Karmic elements suggest a significant-feeling bond.' : ''}`
       : overallStrength >= 50
       ? `Good friendship foundation (${overallStrength}%). Natural connection in key areas.`
       : `Friendship may require more conscious effort (${overallStrength}%). Focus on shared activities and experiences.`,
     recommendations: [
-      ...(karmicIndicators.length > 0 ? [`★ ${karmicIndicators.length} karmic indicator(s) suggest fated friendship.`] : []),
+      ...(karmicIndicators.length > 0 ? [`★ ${karmicIndicators.length} karmic indicator(s) suggest significant-feeling friendship.`] : []),
       ...(mercuryMercury ? ['Your Mercury connection makes conversation easy - lean into it'] : ['Schedule regular catch-ups to build communication comfort']),
       ...(jupiterMoon || jupiterSun ? ['Jupiter brings joy and encouragement - great for adventures'] : []),
       ...(moonMoon ? ['Your Moon-Moon connection provides emotional safety'] : []),
@@ -1409,7 +1409,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
   const venusMars = venusMars1 || venusMars2;
   maxStandardPoints += 10;
   indicators.push({
-    name: '★ Venus-Mars: Sexual Chemistry',
+    name: '★ Venus-Mars: Romantic Chemistry',
     found: !!venusMars,
     aspect: venusMars,
     planet1: 'Venus',
@@ -1417,7 +1417,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     tier: 1,
     points: venusMars ? 10 : 0,
     interpretation: venusMars
-      ? `${venusMars.type} (${venusMars.orb}° orb): Classic attraction! ${venusMars.quality === 'harmonious' ? 'Natural romantic and sexual chemistry.' : 'Intense attraction with exciting friction.'}`
+      ? `${venusMars.type} (${venusMars.orb}° orb): Classic attraction! ${venusMars.quality === 'harmonious' ? 'Natural romantic and romantic chemistry.' : 'Intense attraction with exciting friction.'}`
       : 'No Venus-Mars aspect. Attraction may build over time.',
     strength: venusMars ? 'strong' : 'weak'
   });
@@ -1434,7 +1434,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     tier: 1,
     points: sunMoon ? (sunMoon.quality === 'harmonious' ? 10 : 5) : 0,
     interpretation: sunMoon
-      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'Deep soul-level understanding.' : 'Intense connection with growth potential.'}`
+      ? `${sunMoon.type} (${sunMoon.orb}° orb): ${sunMoon.quality === 'harmonious' ? 'Deep deep understanding.' : 'Intense connection with growth potential.'}`
       : 'No Sun-Moon aspect. Soul connection develops through nurturing.',
     strength: sunMoon ? (sunMoon.quality === 'harmonious' ? 'strong' : 'moderate') : 'weak'
   });
@@ -1652,7 +1652,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     tier: 3,
     points: plutoVenus ? 6 : 0,
     interpretation: plutoVenus
-      ? `${plutoVenus.type} (${plutoVenus.orb}° orb): Intense, transformative attraction. ${plutoVenus.quality === 'harmonious' ? 'Deep soul bond.' : 'Obsessive or all-consuming - navigate with awareness.'}`
+      ? `${plutoVenus.type} (${plutoVenus.orb}° orb): Intense, transformative attraction. ${plutoVenus.quality === 'harmonious' ? 'Deep soul bond.' : 'All-consuming or all-consuming - navigate with awareness.'}`
       : 'No Pluto-Venus aspect.',
     strength: plutoVenus ? 'strong' : 'weak'
   });
@@ -1681,7 +1681,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     const points = nodeVenus.type === 'conjunction' ? 12 : nodeVenus.type === 'opposition' ? 10 : 8;
     karmicBonus += points;
     indicators.push({
-      name: '★★★ KARMIC: North Node-Venus - FATED LOVE',
+      name: '★★★ KARMIC: North Node-Venus - SIGNIFICANT-FEELING LOVE',
       found: true,
       aspect: nodeVenus,
       planet1: 'NorthNode',
@@ -1690,7 +1690,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
       points,
       interpretation: nodeVenus.type === 'opposition'
         ? `${nodeVenus.type} (${nodeVenus.orb}° orb): **PAST LIFE LOVE.** Venus opposite North Node (conjunct South Node) indicates deep past-life romantic connection. Instant soul recognition.`
-        : `${nodeVenus.type} (${nodeVenus.orb}° orb): **FATED ROMANTIC CONNECTION.** One of the strongest indicators of destined love. The Venus person embodies the love the Node person is meant to experience. Strong "meant to be" feeling.`,
+        : `${nodeVenus.type} (${nodeVenus.orb}° orb): **A ROMANTIC CONTACT MANY ASTROLOGERS WATCH CLOSELY.** One of the strongest indicators of significant-feeling love. The Venus person embodies the love the Node person is meant to experience. Strong "meant to be" feeling.`,
       strength: 'strong'
     });
   }
@@ -1712,19 +1712,19 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     });
   }
 
-  // Vertex for fated romance
+  // Vertex for significant-feeling romance
   const vertexVenus = checkAspect(chart1, 'Vertex', chart2, 'Venus') || checkAspect(chart2, 'Vertex', chart1, 'Venus');
   if ((chart1.planets.Vertex || chart2.planets.Vertex) && vertexVenus) {
     karmicBonus += 10;
     indicators.push({
-      name: '★★ FATED: Vertex-Venus',
+      name: '★★ SIGNIFICANT-FEELING: Vertex-Venus',
       found: true,
       aspect: vertexVenus,
       planet1: 'Vertex',
       planet2: 'Venus',
       tier: 0,
       points: 10,
-      interpretation: `${vertexVenus.type} (${vertexVenus.orb}° orb): **FATED LOVE ENCOUNTER.** Vertex on Venus indicates destined romantic meeting.`,
+      interpretation: `${vertexVenus.type} (${vertexVenus.orb}° orb): **SIGNIFICANT-FEELING LOVE ENCOUNTER.** Vertex on Venus indicates destined romantic meeting.`,
       strength: 'strong'
     });
   }
@@ -1785,7 +1785,7 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
   const junoIndicators = indicators.filter(i => i.name.includes('Juno'));
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('SIGNIFICANT-FEELING'));
   
   return {
     focus: 'romantic',
@@ -1796,15 +1796,15 @@ function analyzeRomantic(chart1: NatalChart, chart2: NatalChart): FocusAnalysis 
     maxStandardPoints,
     earnedStandardPoints: Math.max(0, standardPoints),
     summary: overallStrength >= 75
-      ? `High romantic potential (${overallStrength}%)! ${strongIndicators.length} love indicators suggest strong chemistry.${karmicIndicators.length > 0 ? ' Karmic elements suggest a fated love connection.' : ''}${junoIndicators.length > 0 ? ' Juno connections point to lasting commitment.' : ''}`
+      ? `High romantic potential (${overallStrength}%)! ${strongIndicators.length} love indicators suggest strong chemistry.${karmicIndicators.length > 0 ? ' Karmic elements suggest a significant-feeling love connection.' : ''}${junoIndicators.length > 0 ? ' Juno connections point to lasting commitment.' : ''}`
       : overallStrength >= 55
       ? `Solid romantic foundation (${overallStrength}%). Key connections support love with some areas needing nurturing.`
       : `Romance may develop gradually (${overallStrength}%). Build friendship first; attraction grows with understanding.`,
     recommendations: [
-      ...(karmicIndicators.length > 0 ? ['★ Karmic indicators suggest this is a fated love connection.'] : []),
+      ...(karmicIndicators.length > 0 ? ['★ Karmic indicators suggest this is a significant-feeling love connection.'] : []),
       ...(venusMars ? ['Your Venus-Mars chemistry is real - physical affection matters'] : ['Build attraction through shared experiences']),
       ...(sunMoon ? ['Honor your Sun-Moon soul connection'] : []),
-      ...(nodeVenus ? ['This feels fated - trust it while doing the work'] : []),
+      ...(nodeVenus ? ['This feels especially significant - trust it while doing the work'] : []),
       ...(junoVenus || junoSun ? ['★ Juno connections indicate strong marriage potential'] : []),
       ...(ceresMoon || ceresVenus ? ['Nurture each other through acts of care'] : []),
       'Communicate love languages explicitly'
@@ -2535,19 +2535,19 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   });
   if (chironSun) standardPoints += 5;
 
-  // Vertex for fated family
+  // Vertex for significant-feeling family
   const vertexMoon = checkAspect(chart1, 'Vertex', chart2, 'Moon') || checkAspect(chart2, 'Vertex', chart1, 'Moon');
   if ((chart1.planets.Vertex || chart2.planets.Vertex) && vertexMoon) {
     karmicBonus += vertexMoon.type === 'conjunction' ? 10 : 6;
     indicators.push({
-      name: '★★ FATED: Vertex-Moon Connection',
+      name: '★★ SIGNIFICANT-FEELING: Vertex-Moon Connection',
       found: true,
       aspect: vertexMoon,
       planet1: 'Vertex',
       planet2: 'Moon',
       tier: 0,
       points: vertexMoon.type === 'conjunction' ? 10 : 6,
-      interpretation: `${vertexMoon.type} (${vertexMoon.orb}° orb): Vertex on the Moon indicates fated emotional/family connection.`,
+      interpretation: `${vertexMoon.type} (${vertexMoon.orb}° orb): Vertex on the Moon indicates significant-feeling emotional/family connection.`,
       strength: 'strong'
     });
   }
@@ -2570,7 +2570,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
       points: pts,
       interpretation: nodeMoon.type === 'opposition'
         ? `${nodeMoon.type} (${nodeMoon.orb}° orb): **PAST LIFE FAMILY.** Moon opposite North Node (conjunct South Node) indicates deep past-life family bond. Instant familiarity - you were likely family before.`
-        : `${nodeMoon.type} (${nodeMoon.orb}° orb): Fated emotional/family connection. The Moon person provides the emotional foundation needed for soul growth.`,
+        : `${nodeMoon.type} (${nodeMoon.orb}° orb): Significant-feeling emotional/family connection. The Moon person provides the emotional foundation needed for soul growth.`,
       strength: 'strong'
     });
   }
@@ -2642,7 +2642,7 @@ function analyzeFamily(chart1: NatalChart, chart2: NatalChart): FocusAnalysis {
   overallStrength = Math.max(15, Math.min(92, overallStrength));
   
   const strongIndicators = indicators.filter(i => i.strength === 'strong');
-  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('FATED'));
+  const karmicIndicators = indicators.filter(i => i.name.includes('KARMIC') || i.name.includes('SIGNIFICANT-FEELING'));
   
   return {
     focus: 'family',

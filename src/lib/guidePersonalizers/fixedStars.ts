@@ -172,7 +172,7 @@ export interface FixedStarCard {
 export const FIXED_STAR_CARDS: FixedStarCard[] = [
   { key: "Aldebaran",  glyph: "⭐", name: "Aldebaran (Guardian of the East)",  blurb: "The Bull's Eye. Integrity, honor, eloquence. Success through integrity; military honors, courage, passion for truth." },
   { key: "Regulus",    glyph: "⭐", name: "Regulus (Guardian of the North)",    blurb: "Heart of the Lion. Royal power, leadership, fame — success if revenge is avoided. Nobility, positions of power." },
-  { key: "Antares",    glyph: "⭐", name: "Antares (Guardian of the West)",     blurb: "Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion." },
+  { key: "Antares",    glyph: "⭐", name: "Antares (Guardian of the West)",     blurb: "Rival of Mars. Warrior spirit, intense preoccupation, intensity. Success through persistence. Heart of the Scorpion." },
   { key: "Fomalhaut",  glyph: "⭐", name: "Fomalhaut (Guardian of the South)",  blurb: "The Mouth of the Fish. Idealism, mysticism, fame. The 'fallen angel' star — capable of both rise and fall." },
   { key: "Sirius",     glyph: "⭐", name: "Sirius (Brightest Star)",            blurb: "The Dog Star. Spiritual wisdom, success, fame. Ancient Egyptian sacred star. Divine downloads, kundalini awakening.", badge: "Brightest", badgeClass: "text-amber-600 dark:text-amber-400" },
   { key: "Algol",      glyph: "⭐", name: "Algol (Most Infamous)",              blurb: "Medusa's head. Transformation through facing the shadow. Feminine rage transmuted into power.", badge: "Most Infamous", badgeClass: "text-red-600 dark:text-red-400" },

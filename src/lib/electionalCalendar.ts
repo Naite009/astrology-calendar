@@ -244,7 +244,7 @@ const calculatePlanetaryAspects = (year: number): ElectionalDay[] => {
         rating: 'YELLOW',
         reason: 'Venus square Pluto',
         avoid: ['Relationship milestones', 'Declarations of love under pressure', 'Financial agreements'],
-        why: "Drama potential HIGH. Power-obsessed Pluto crashes Venus' party. Manipulation, jealousy.",
+        why: "Drama potential HIGH. Power-intensely preoccupied Pluto crashes Venus' party. Manipulation, jealousy.",
         workaround: "Resist urge to make mountains out of molehills. Don't force intensity.",
         category: 'venus-pluto'
       });

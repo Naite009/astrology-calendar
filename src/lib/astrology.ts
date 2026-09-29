@@ -791,7 +791,8 @@ export const findNearestMajorPhaseTime = (date: Date, phaseName: string): { date
 
 // Calculate aspects between two longitudes (degrees)
 const calculateAspect = (lon1: number, lon2: number) => {
-  const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+  let diff = Math.abs(lon2 - lon1) % 360;
+  if (diff > 180) diff = 360 - diff; // true shortest arc (old modulo form broke for negative differences)
 
   if (diff < 8) return { type: 'conjunction', symbol: '☌', orb: diff };
   if (Math.abs(diff - 60) < 6) return { type: 'sextile', symbol: '⚹', orb: Math.abs(diff - 60) };
@@ -1647,7 +1648,7 @@ export const FIXED_STARS: Record<string, { name: string; longitude: number; orb:
     longitude: 249.0, // 9° Sagittarius
     orb: 2.0,
     magnitude: 1.09,
-    meaning: "Rival of Mars. Warrior spirit, obsession, intensity. Success through persistence. Heart of the Scorpion. Guardian of the West."
+    meaning: "Rival of Mars. Warrior spirit, intense preoccupation, intensity. Success through persistence. Heart of the Scorpion. Guardian of the West."
   },
   aldebaran: {
     name: 'Aldebaran',
@@ -1849,7 +1850,8 @@ export const detectRareAspects = (planets: PlanetaryPositions): RareAspect[] => 
       if (outerPlanets.includes(p1Name) && outerPlanets.includes(p2Name)) {
         const lon1 = getLongitude(p1Pos);
         const lon2 = getLongitude(p2Pos);
-        const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+        let diff = Math.abs(lon2 - lon1) % 360;
+  if (diff > 180) diff = 360 - diff; // true shortest arc (old modulo form broke for negative differences)
         if (diff < 3) {
           rareAspects.push({
             planet1: p1Name,
@@ -1872,7 +1874,8 @@ export const detectRareAspects = (planets: PlanetaryPositions): RareAspect[] => 
       const lon1 = getLongitude(p1Pos);
       const lon2 = getLongitude(p2Pos);
       
-      const diff = Math.abs(((lon2 - lon1 + 180) % 360) - 180);
+      let diff = Math.abs(lon2 - lon1) % 360;
+  if (diff > 180) diff = 360 - diff; // true shortest arc (old modulo form broke for negative differences)
 
       // Sesquiquadrate (135°)
       if (Math.abs(diff - 135) < 3) {

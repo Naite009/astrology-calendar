@@ -156,7 +156,7 @@ export const RETROGRADE_PLANET_MODIFIERS: Record<string, {
       "Releasing hidden fears from within",
     ],
     coreChallenges: [
-      "Obsessive thought patterns may intensify",
+      "All-consuming thought patterns may intensify",
       "Power dynamics play out internally",
       "Difficulty sharing the transformation process",
       "Intense inner processing required",
@@ -524,7 +524,7 @@ export const RETROGRADE_SIGN_COMBOS: RetrogradeSignCombo[] = [
     ],
     challenges: [
       "Intensity can be isolating",
-      "Obsessive thought patterns",
+      "All-consuming thought patterns",
       "Difficulty sharing transformation journey",
       "Old traumas surface for healing",
     ],
@@ -691,7 +691,7 @@ export const RETROGRADE_SIGN_COMBOS: RetrogradeSignCombo[] = [
     challenges: [
       "Suspicious thought patterns",
       "Difficulty sharing mental process",
-      "Obsessive thinking when unbalanced",
+      "All-consuming thinking when unbalanced",
       "Trust issues in communication",
     ],
     internalExpression: "Your mind is a detective working the deep cases. You process psychological material that others avoid. Your insights into hidden dynamics are profound—share them with those who earn your trust.",

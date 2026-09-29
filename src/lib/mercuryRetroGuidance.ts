@@ -56,7 +56,7 @@ export const MERCURY_RETRO_BY_SIGN: Record<string, MercuryRetroSignGuidance> = {
   Scorpio: {
     headline: "Buried truths, shared money, and old intimacy patterns rise for review.",
     reviewing: "Debts, taxes, inheritances, a trust that got broken, what you never said out loud.",
-    watchFor: "Obsessive re-reading of old messages, jealousy replays, financial paperwork errors.",
+    watchFor: "All-consuming re-reading of old messages, jealousy replays, financial paperwork errors.",
     doThis: "Handle the paperwork you have been avoiding. Say the hard, true thing.",
   },
   Sagittarius: {

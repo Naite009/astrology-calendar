@@ -373,7 +373,7 @@ export function getFamilyQuestionFrameworks(context: FamilyRelationshipContext):
         ? 'What wisdom are you meant to pass on to this grandchild?'
         : 'What wisdom is this grandparent meant to share with you?',
       evolutionQuestion: 'How does skipping a generation create a unique, less pressured bond?',
-      karmicContext: 'Grandparent-grandchild bonds skip the intensity of direct parenting. There\'s often a soul-level recognition without the daily friction.'
+      karmicContext: 'Grandparent-grandchild bonds skip the intensity of direct parenting. There\'s often a deep recognition without the daily friction.'
     };
   }
 

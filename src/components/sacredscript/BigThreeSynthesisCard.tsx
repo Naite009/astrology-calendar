@@ -215,7 +215,7 @@ const generateUnifiedSynthesis = (
     // Night chart interpretation for 1st house Sun
     if (sect.isNightChart && sun.house === 1) {
       synthesis += `**THE PARADOX YOU FEEL:**\n`;
-      synthesis += `Your Sun is in the 1st house—traditionally the placement of someone who IS meant to be seen. But you were born before sunrise, making this a **Night Chart**.\n\n`;
+      synthesis += `Your Sun is in the 1st house—traditionally the placement of someone who may thrive being seen. But you were born before sunrise, making this a **Night Chart**.\n\n`;
       synthesis += `In night charts the Moon is the sect light, so your emotional, receptive nature carries extra emphasis while the Sun works more quietly. That is not the same thing as your chart ruler, which is whichever planet rules your Ascendant. So you may feel a tension: a 1st house Sun says "be seen," while a night chart puts more weight on what happens off stage.\n\n`;
       synthesis += `This is why you feel like hiding despite being "supposed to" shine. You're not wrong or broken—you're a Night Chart person with a daytime placement. Your visibility will come on YOUR terms: gradual, earned, honest rather than performed. Your gifts emerge in intimate settings, through written word, through influence that works best when you're not trying to be impressive.\n\n`;
     }

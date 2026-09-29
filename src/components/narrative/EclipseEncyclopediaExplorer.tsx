@@ -54,7 +54,7 @@ export const nodalEducation = {
       "The South Node represents where we've been — our comfort zone, our conditioning, and the well-worn grooves of habit. A South Node eclipse acts like a cosmic audit: it illuminates what we've been doing on autopilot and asks whether it's still serving us. This isn't punishment — it's clarity. Things end, patterns surface, and what was hidden in the background moves to the foreground so we can consciously evaluate it. South Node eclipses often bring a sense of 'I knew this was coming' — because on some level, we did.",
     howItFeels: [
       "Revelations about patterns you've been running unconsciously",
-      "Endings or culminations that feel fated or long overdue",
+      "Endings or culminations that feel especially significant or long overdue",
       "A sense of wrapping up, resolving, or releasing",
       "Old situations resurfacing for final resolution",
       "Clarity about what is no longer aligned with your growth",
@@ -76,7 +76,7 @@ export const nodalEducation = {
     shortMeaning:
       "A North Node eclipse opens a new chapter. It activates unfamiliar territory, pushing you toward growth, evolution, and a future that requires stepping beyond your comfort zone.",
     deeperMeaning:
-      "The North Node represents where we're headed — the edge of our growth, the direction of our evolution. A North Node eclipse accelerates that journey. It introduces new people, circumstances, or realizations that feel fated but forward-facing. There may be an element of the unknown, even discomfort — because growth requires stepping into unfamiliar terrain. These eclipses often bring opportunities disguised as disruptions.",
+      "The North Node represents where we're headed — the edge of our growth, the direction of our evolution. A North Node eclipse accelerates that journey. It introduces new people, circumstances, or realizations that feel especially significant but forward-facing. There may be an element of the unknown, even discomfort — because growth requires stepping into unfamiliar terrain. These eclipses often bring opportunities disguised as disruptions.",
     howItFeels: [
       "New beginnings that feel both exciting and uncertain",
       "People, opportunities, or circumstances arriving unexpectedly",
@@ -165,7 +165,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         date: '2024-04-08', timeUtc: '18:18', type: 'solar', subtype: 'total', sign: 'Aries', degree: 19, minutes: 24, nodal: 'north', series: 'Aries-Libra',
         title: 'Total Reset in Identity',
         description: 'The most powerful eclipse of this series — a total solar eclipse in Aries. A dramatic new chapter opens in themes of identity, independence, and personal direction. Events triggered here unfold for months.',
-        nodalTheme: 'North Node in Aries: A fated acceleration toward greater independence, personal courage, and honest self-expression. New people, opportunities, and chapters in identity arrive.',
+        nodalTheme: 'North Node in Aries: A significant-feeling acceleration toward greater independence, personal courage, and honest self-expression. New people, opportunities, and chapters in identity arrive.',
         releasingThemes: ['Patterns of self-abandonment in relationships', 'Identity built around others\' definitions of you'],
         buildingThemes: ['A new, more honest version of yourself', 'The courage to pursue what you want without constant consultation', 'New chapters in physical vitality, personal projects, and direction'],
         reflectionQuestions: ['Who am I becoming — separate from who others need me to be?', 'What would I begin right now if I knew it was supported by the universe?', 'Where has over-compromise kept me from my own growth?'],
@@ -249,7 +249,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         date: '2025-09-21', timeUtc: '19:54', type: 'solar', subtype: 'partial', sign: 'Virgo', degree: 29, minutes: 5, nodal: 'north', series: 'Virgo-Pisces',
         title: 'New Health & Work Chapter',
         description: 'A partial solar eclipse at the final degree of Virgo — urgent, liminal energy at the threshold of a sign. New chapters in health, daily life, work, and service open. Intentions set here carry powerful forward momentum.',
-        nodalTheme: 'North Node in Virgo: A fated opening to new chapters in physical wellbeing, daily practice, and meaningful work. The universe supports building systems that truly serve your health and genuine contribution.',
+        nodalTheme: 'North Node in Virgo: A significant-feeling opening to new chapters in physical wellbeing, daily practice, and meaningful work. The universe supports building systems that truly serve your health and genuine contribution.',
         releasingThemes: ['The final remnants of patterns identified in the 2025 lunar eclipses'],
         buildingThemes: ['New health protocols and body-honoring daily routines', 'Work and service aligned with your actual skills and values', 'The practical infrastructure for the life you want to be living'],
         reflectionQuestions: ['What one daily habit, if implemented consistently, would most change the trajectory of my health?', 'What kind of work would feel like genuine service — using my real skills?'],
@@ -350,7 +350,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         date: '2027-08-02', timeUtc: '10:22', type: 'solar', subtype: 'total', sign: 'Leo', degree: 9, minutes: 55, nodal: 'north', series: 'Leo-Aquarius',
         title: 'Heart in Full Expression',
         description: 'A second total solar eclipse in Leo — the creative, heart-centered chapter deepens. New directions in creative work, romantic love, play, and honest leadership consolidate and expand.',
-        nodalTheme: 'North Node in Leo: The fated acceleration of your creative and expressive life continues. Go further into what lights you up.',
+        nodalTheme: 'North Node in Leo: The significant-feeling acceleration of your creative and expressive life continues. Go further into what lights you up.',
         releasingThemes: ['Any remaining self-censorship in creative work or personal expression'],
         buildingThemes: ['Creative mastery and deeper expression of your unique gifts', 'Love and creative work that flows from genuine joy rather than approval-seeking'],
         reflectionQuestions: ['What has my creative life become since August 2026?', 'Where am I expressing myself most fully — and where am I still holding back?'],
@@ -414,7 +414,7 @@ const ECLIPSE_SERIES: Record<string, { label: string; glyphs: string; period: st
         date: '2028-07-22', timeUtc: '02:02', type: 'solar', subtype: 'total', sign: 'Cancer', degree: 29, minutes: 51, nodal: 'north', series: 'Cancer-Capricorn',
         title: 'Total Emotional Renewal',
         description: 'A total solar eclipse at the final degree of Cancer — the most powerful eclipse of this series. A dramatic new chapter in home, family, emotional foundation, and the question of where you truly belong.',
-        nodalTheme: 'North Node in Cancer: A fated new beginning in emotional life, home, family, and genuine belonging. The universe is activating what actually nourishes you.',
+        nodalTheme: 'North Node in Cancer: A significant-feeling new beginning in emotional life, home, family, and genuine belonging. The universe is activating what actually nourishes you.',
         releasingThemes: ['The armor that achievement has become', 'The version of home or family that was inherited rather than consciously chosen'],
         buildingThemes: ['A new emotional foundation — one that genuinely nourishes', 'Home as sanctuary, not just logistics', 'A career in true alignment with what you need to feel whole'],
         reflectionQuestions: ['What would home feel like if I built it entirely around what nourishes me?', 'Am I ready to let achievement serve my life — rather than be my life?'],

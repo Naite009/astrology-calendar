@@ -92,7 +92,7 @@ export const DATES_TO_AVOID_2026: ElectionalDayData[] = [
     warning: 'YELLOW',
     reason: 'Venus square Pluto',
     avoid: ['Relationship milestones', 'Declarations under pressure', 'Financial agreements with manipulation'],
-    why: 'Drama potential HIGH. Power-obsessed Pluto crashes Venus party. Jealousy, control.',
+    why: 'Drama potential HIGH. Power-intensely preoccupied Pluto crashes Venus party. Jealousy, control.',
     workaround: "Resist urge to make mountains out of molehills. Don't force intensity."
   },
 
@@ -237,7 +237,7 @@ export const BEST_DAYS_2026: ElectionalDayData[] = [
     date: '2026-02-17',
     rating: 'BLUE',
     reason: "Venus conjunct North Node (8°56' Pisces)",
-    best_for: ['Fated connections', 'Soulmate meetings', 'Destiny relationships'],
+    best_for: ['Significant-feeling connections', 'Soulmate meetings', 'Destiny relationships'],
     why: 'Love planet meets destiny point. Relationships that change life.',
     power: 'Pay attention to who you meet. This could be significant.'
   },

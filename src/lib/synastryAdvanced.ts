@@ -666,7 +666,7 @@ function calculateRelationshipTypes(chart1: NatalChart, chart2: NatalChart): Rel
   }
   if (hasAspect(chart1, 'NorthNode', chart2, 'Moon', ['conjunction'])) {
     scores.karmic.points += 20;
-    scores.karmic.indicators.push('North Node-Moon: Emotionally fated bond');
+    scores.karmic.indicators.push('North Node-Moon: Emotionally significant-feeling bond');
   }
   if (hasAspect(chart1, 'Chiron', chart2, 'Sun', ['conjunction', 'opposition'])) {
     scores.karmic.points += 20;

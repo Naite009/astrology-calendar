@@ -11,6 +11,9 @@ import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 import { getDeepAspectInterpretation, getFormattedAspectNarrative } from '@/lib/aspectInterpretationsDeep';
 import { getEffectiveOrb as getEffectiveOrbNarr } from '@/lib/aspectOrbs';
+import { classifyAspect } from '@/lib/aspects/classifyAspect';
+import { chartRulerNote } from '@/lib/interpretation/chartRuler';
+import { getHouseArena } from '@/lib/interpretation/psychologicalFunctions';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -416,7 +419,7 @@ const CHART_RULER_INTERPRETATIONS: Record<string, Record<string, string>> = {
   Sun: {
     house1: "Your life path centers on self-expression and personal identity. You lead through sheer presence and radiance.",
     house2: "Your life path centers on building value and resources. Success comes through developing talents and earning.",
-    house3: "Your life path centers on communication and learning. You're meant to be a messenger, writer, or teacher.",
+    house3: "Your life path centers on communication and learning. You may thrive being a messenger, writer, or teacher.",
     house4: "Your life path centers on home and family. Creating emotional foundations is your life's work.",
     house5: "Your life path centers on creativity and joy. You're here to create, play, and inspire others.",
     house6: "Your life path centers on service and health. Perfecting daily routines and helping others is your calling.",
@@ -548,7 +551,7 @@ const CHART_RULER_INTERPRETATIONS: Record<string, Record<string, string>> = {
     house6: "Your life path involves transforming through service. Healing, psychology, and deep systemic change call you.",
     house7: "Your life path involves transformative partnership. Relationships take you to your depths and remake you.",
     house8: "Your life path centers on death and rebirth. Psychology, occult, crisis, and regeneration are your realm.",
-    house9: "Your life path involves transforming beliefs. You destroy and rebuild worldviews; truth is your obsession.",
+    house9: "Your life path involves transforming beliefs. You destroy and rebuild worldviews; truth is your intense preoccupation.",
     house10: "Your life path involves powerful public role. You transform institutions and hold significant influence.",
     house11: "Your life path involves transforming groups. You empower movements and bring depth to community.",
     house12: "Your life path involves deep unconscious work. Hidden power, spiritual transformation, and shadow work are yours.",
@@ -572,57 +575,61 @@ const ChartRulerSection = ({
   const ruler = SIGN_RULERS[ascendantSign];
   if (!ruler) return null;
   
-  const rulerPlanet = ruler.modern || ruler.traditional;
-  const traditionalRuler = ruler.traditional;
-  const hasModernRuler = ruler.modern && ruler.modern !== ruler.traditional;
-  
-  // Get the ruler's placement
+  // Traditional ruler is the primary chart ruler; the modern ruler is a co-ruler.
+  const rulerPlanet = ruler.traditional;
+  const modernRuler = ruler.modern && ruler.modern !== ruler.traditional ? ruler.modern : null;
+  const hasModernRuler = !!modernRuler;
+
   const rulerData = natalChart.planets[rulerPlanet as keyof typeof natalChart.planets];
-  const traditionalRulerData = hasModernRuler 
-    ? natalChart.planets[traditionalRuler as keyof typeof natalChart.planets] 
+  const modernRulerData = modernRuler
+    ? natalChart.planets[modernRuler as keyof typeof natalChart.planets]
     : null;
-  
+
   if (!rulerData?.sign) return null;
-  
-  const rulerLon = signToLongitude(rulerData.sign, rulerData.degree);
+
+  const rulerLon = signToLongitude(rulerData.sign, rulerData.degree, rulerData.minutes ?? 0);
   const rulerHouse = getPlanetHouse(rulerLon, natalChart.houseCusps);
-  
-  const traditionalRulerHouse = traditionalRulerData?.sign
-    ? getPlanetHouse(signToLongitude(traditionalRulerData.sign, traditionalRulerData.degree), natalChart.houseCusps)
+
+  const modernRulerHouse = modernRulerData?.sign
+    ? getPlanetHouse(signToLongitude(modernRulerData.sign, modernRulerData.degree, modernRulerData.minutes ?? 0), natalChart.houseCusps)
     : null;
-  
+
+  const synthesis = chartRulerNote(ascendantSign, {
+    traditional: { sign: rulerData.sign, house: rulerHouse },
+    modern: modernRulerData?.sign ? { sign: modernRulerData.sign, house: modernRulerHouse } : undefined,
+  });
+
   const getHouseInterpretation = (planet: string, house: number | null): string => {
     if (!house) return '';
     const houseKey = `house${house}` as keyof typeof CHART_RULER_INTERPRETATIONS['Sun'];
-    return CHART_RULER_INTERPRETATIONS[planet]?.[houseKey] || 
-      `Your chart ruler in the ${house}${getOrdinal(house)} house brings themes of ${HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS]?.short || 'this area'} to the forefront of your life path.`;
+    return CHART_RULER_INTERPRETATIONS[planet]?.[houseKey] ||
+      `${planet} in the ${house}${getOrdinal(house)} house ties how you approach life to ${getHouseArena(house)}.`;
   };
-  
+
   return (
     <div className="mb-8 p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-lg border-2 border-purple-500/50">
       <h3 className="text-xl font-bold mb-5 text-purple-800 dark:text-purple-300">
         👑 Your Chart Ruler
       </h3>
-      
+
       <div className="p-5 bg-background/95 rounded-lg mb-4">
         <div className="text-sm text-muted-foreground mb-2">
           Your Ascendant is in <span className="font-bold text-foreground">{ascendantSign}</span>
           {hasModernRuler && (
-            <span> (Modern ruler: {rulerPlanet}, Traditional: {traditionalRuler})</span>
+            <span> (Traditional ruler: {rulerPlanet}, modern co-ruler: {modernRuler})</span>
           )}
         </div>
-        
+
         <div className="text-lg font-bold mb-3 text-purple-800 dark:text-purple-300">
           {getSymbol(rulerPlanet)} {rulerPlanet} in {rulerData.degree}° {rulerData.sign}
           {rulerHouse && ` • ${rulerHouse}${getOrdinal(rulerHouse)} House`}
           {rulerData.isRetrograde && ' ℞'}
         </div>
-        
+
         <div className="text-sm leading-relaxed text-foreground mb-3">
-          <strong>What this means:</strong> Your chart ruler is the planet that guides your entire life journey. 
-          It's like the captain of your ship, steering everything toward its themes.
+          <strong>What this means:</strong> {synthesis}
         </div>
-        
+
         <div className="p-4 bg-purple-50 dark:bg-purple-950/40 rounded border-l-4 border-purple-500">
           <div className="text-sm leading-relaxed text-foreground">
             {getHouseInterpretation(rulerPlanet, rulerHouse)}
@@ -632,15 +639,15 @@ const ChartRulerSection = ({
           </div>
         </div>
       </div>
-      
-      {hasModernRuler && traditionalRulerData?.sign && traditionalRulerHouse && (
+
+      {modernRuler && modernRulerData?.sign && (
         <div className="p-4 bg-background/80 rounded-lg">
           <div className="text-sm font-semibold mb-2 text-purple-700 dark:text-purple-400">
-            Traditional Ruler: {getSymbol(traditionalRuler)} {traditionalRuler} in {traditionalRulerData.degree}° {traditionalRulerData.sign}
-            {traditionalRulerHouse && ` • ${traditionalRulerHouse}${getOrdinal(traditionalRulerHouse)} House`}
+            Modern co-ruler: {getSymbol(modernRuler)} {modernRuler} in {modernRulerData.degree}° {modernRulerData.sign}
+            {modernRulerHouse && ` • ${modernRulerHouse}${getOrdinal(modernRulerHouse)} House`}
           </div>
           <div className="text-sm text-muted-foreground">
-            {getHouseInterpretation(traditionalRuler, traditionalRulerHouse)}
+            {getHouseInterpretation(modernRuler, modernRulerHouse)}
           </div>
         </div>
       )}
@@ -819,7 +826,7 @@ const NATAL_ASPECT_INTERPRETATIONS: Record<string, Record<string, string>> = {
     square: "Disillusionment in love. May escape into fantasy or addiction. Learning discernment in relationships.",
   },
   'Venus-Pluto': {
-    conjunction: "Intense love nature. Obsessive attractions. You love deeply and transformatively.",
+    conjunction: "Intense love nature. All-consuming attractions. You love deeply and transformatively.",
     opposition: "Power struggles in love. Others trigger your deepest desires. Learning to love without controlling.",
     trine: "Magnetic attraction. Love transforms you positively. Deep, loyal connections.",
     sextile: "Transformation available through love relationships. Depth in intimacy.",
@@ -931,16 +938,17 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
       
       if (!planet1?.sign || !planet2?.sign) continue;
       
-      const lon1 = signToLongitude(planet1.sign, planet1.degree);
-      const lon2 = signToLongitude(planet2.sign, planet2.degree);
+      const lon1 = signToLongitude(planet1.sign, planet1.degree, planet1.minutes ?? 0);
+      const lon2 = signToLongitude(planet2.sign, planet2.degree, planet2.minutes ?? 0);
       
       let diff = Math.abs(lon1 - lon2);
       if (diff > 180) diff = 360 - diff;
       
-      for (const aspectType of aspectTypes) {
+      // Tightest aspect by true degree geometry (never first-match, never by sign).
+      const best = classifyAspect(diff, aspectTypes, (n) => getEffectiveOrbNarr(planet1Key, planet2Key, n));
+      for (const aspectType of aspectTypes.filter((t) => t.name === best?.name)) {
         const orbValue = Math.abs(diff - aspectType.angle);
-        const effectiveOrb = getEffectiveOrbNarr(planet1Key, planet2Key, aspectType.name);
-        if (orbValue <= effectiveOrb) {
+        {
           // Try deep interpretation first, then fall back to original
           const deepInterp = getDeepAspectInterpretation(planet1Key, planet2Key, aspectType.name);
           
@@ -1401,7 +1409,7 @@ const PatternsAndTiming = ({
     
     if (transitData && natalPlanet?.sign) {
       const transitLon = signToLongitude(transitData.signName, transitData.degree);
-      const natalLon = signToLongitude(natalPlanet.sign, natalPlanet.degree);
+      const natalLon = signToLongitude(natalPlanet.sign, natalPlanet.degree, natalPlanet.minutes ?? 0);
       const diff = Math.abs(transitLon - natalLon);
       const normalizedDiff = diff > 180 ? 360 - diff : diff;
       if (normalizedDiff < 8) {

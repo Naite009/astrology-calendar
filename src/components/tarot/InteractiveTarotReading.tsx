@@ -359,7 +359,7 @@ function emptyDraw(spread: SpreadType): DrawnCard[] {
 }
 
 function lensFor(suit: TarotSuit, profile: FunctionProfile): string | null {
-  if (suit === "Major") return "Soul-level theme";
+  if (suit === "Major") return "Deep theme";
   if (suit === profile.superiorSuit) return "Comfort zone";
   if (suit === profile.inferiorSuit) return "Growth edge";
   return "Auxiliary support";

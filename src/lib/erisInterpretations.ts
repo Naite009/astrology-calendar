@@ -67,7 +67,7 @@ export const ERIS_HOUSE_INTERPRETATIONS: Record<number, {
     theme: "Deep Soul Transformation Through Crisis",
     core: "Intimacy, shared resources, death, rebirth—these Plutonian realms are where your Eris lives. You are no stranger to the underworld, and your soul purpose is forged in crisis.",
     soul_purpose: "To die and be reborn repeatedly, accumulating wisdom each time. To become a guide for others navigating the darkness.",
-    shadow: "You may become obsessed with power or control as a response to early experiences of powerlessness. Sexual or financial manipulation can be shadow expressions.",
+    shadow: "You may become intensely preoccupied with power or control as a response to early experiences of powerlessness. Sexual or financial manipulation can be shadow expressions.",
     evolved: "You become a midwife to transformation—for yourself and others. You understand that true power comes from surrendering to the death-rebirth cycle."
   },
   9: {
@@ -79,7 +79,7 @@ export const ERIS_HOUSE_INTERPRETATIONS: Record<number, {
   },
   10: {
     theme: "Public Role as Paradigm Shifter",
-    core: "Your career and public reputation are inseparable from your soul purpose. You are meant to be visible, to hold a position of influence that disrupts and transforms your field.",
+    core: "Your career and public reputation are inseparable from your soul purpose. You may thrive being visible, to hold a position of influence that disrupts and transforms your field.",
     soul_purpose: "To achieve mastery in a way that redefines what mastery means. To leave a legacy that changes how your profession or field operates.",
     shadow: "You may court controversy for its own sake or become so identified with your public role that you lose your private self. Fame can become addiction.",
     evolved: "You become an authority whose power comes from honest alignment with soul purpose. Your career is your calling."
@@ -343,7 +343,7 @@ export const ERIS_ASPECT_INTERPRETATIONS: Record<string, Record<string, {
     },
     square: {
       meaning: "Tension between control and soul alignment. May manipulate or be manipulated.",
-      manifestation: "Power struggles, obsession, attempts to control what can't be controlled.",
+      manifestation: "Power struggles, intense preoccupation, attempts to control what can't be controlled.",
       integration: "True power is letting go of control while staying aligned with purpose."
     },
     sextile: {

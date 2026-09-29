@@ -214,7 +214,7 @@ function getHorizontalDetail(east: number, west: number, total: number): { label
 
           'Extreme eastern years often correlate with major personal launches — new businesses, solo creative projects, geographic moves, or bold identity shifts. These are years when you don\'t consult committees; you act from your own authority. Eastern emphasis in Solar Returns is especially powerful when it echoes the natal chart\'s emphasis, amplifying a natural tendency toward independence.',
 
-          'Extreme eastern emphasis can manifest as loneliness or a feeling that nobody else understands your vision. Because you are so far ahead of the curve in terms of self-direction, others may lag behind, unable to keep up with your pace of change. This is not a rejection of relationship — it is a recognition that THIS year, you are meant to be the author, not the editor, of your story.',
+          'Extreme eastern emphasis can manifest as loneliness or a feeling that nobody else understands your vision. Because you are so far ahead of the curve in terms of self-direction, others may lag behind, unable to keep up with your pace of change. This is not a rejection of relationship — it is a recognition that THIS year, you may thrive being the author, not the editor, of your story.',
 
           'Solar Returns with strong eastern emphasis favor independent professional ventures, self-employment decisions, personal fitness transformations, solo travel, and any situation where the outcome depends primarily on individual effort rather than team consensus or market conditions.'
         ],

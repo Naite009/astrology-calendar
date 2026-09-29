@@ -70,7 +70,7 @@ describe('sign vs degree (out of sign) analysis', () => {
     });
     expect(a.isOutOfSign).toBe(true);
     expect(a.signAspect).toBe('semisextile');
-    expect(a.degreeLine).toMatch(/one unit/);
+    expect(a.degreeLine).toMatch(/activate each other by degree/);
   });
 
   it('detects out-of-sign sextile, square and opposition', () => {

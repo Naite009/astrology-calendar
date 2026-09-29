@@ -79,7 +79,7 @@ export const SR_SUN_ASPECTS: Record<string, SRSunAspectInterp> = {
     planet: 'Pluto',
     conjunction: 'Sun-Pluto conjunction brings transformation to your very identity. This is not a gentle year — you are being remade at a fundamental level. Power dynamics, psychological depth, and letting go of who you used to be are central. Death and rebirth of the ego.',
     opposition: 'Sun-Pluto opposition brings power struggles with others. Someone may attempt to control or manipulate you — or you may be projecting your ability to trust yourself issues onto others. Psychological awareness is essential. This aspect demands that you own your power.',
-    square: 'Sun-Pluto square creates intense internal pressure and external power conflicts. Obsession, control, and compulsive behavior are risks. The gift is psychological insight — what you excavate under this aspect heals at the deepest level.',
+    square: 'Sun-Pluto square creates intense internal pressure and external power conflicts. Intense preoccupation, control, and compulsive behavior are risks. The gift is psychological insight — what you excavate under this aspect heals at the deepest level.',
     trine: 'Sun-Pluto trine brings empowered transformation. Change feels natural and productive. Your personal power is enhanced without the drama of harder aspects. Psychological insight is acute. Leadership and influence increase.',
     sextile: 'Sun-Pluto sextile provides opportunities for personal growth through psychological insight. Small but meaningful transformations occur. You can influence situations subtly and effectively.',
   },

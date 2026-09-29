@@ -138,10 +138,10 @@ const PLANET_IN_SIGN_ENERGY: Record<string, Record<string, string>> = {
   Pluto: {
     Aries: 'intense power struggles around identity — who you are is being fundamentally transformed through confrontation',
     Taurus: 'deep transformation of values and resources — financial or material power dynamics demand reckoning',
-    Gemini: 'psychological depth in communication — words carry power, thinking becomes obsessive, mental transformation',
+    Gemini: 'psychological depth in communication — words carry power, thinking becomes all-consuming, mental transformation',
     Cancer: 'family power dynamics surface — emotional control patterns are exposed and must be transformed',
     Leo: 'creative and ego transformation — your relationship with power, attention, and self-expression fundamentally shifts',
-    Virgo: 'obsessive health or work focus — daily life undergoes deep restructuring, control issues surface around routine',
+    Virgo: 'all-consuming health or work focus — daily life undergoes deep restructuring, control issues surface around routine',
     Libra: 'relationship power dynamics exposed — partnerships undergo intense transformation, hidden resentments surface',
     Scorpio: 'maximum transformative intensity — death and rebirth themes dominate, nothing stays hidden, power is raw',
     Sagittarius: 'transformation of beliefs and worldview — philosophical or religious crisis leads to deeper truth',

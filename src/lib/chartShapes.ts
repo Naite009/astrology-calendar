@@ -74,21 +74,21 @@ const SHAPE_DATA: Record<ChartShapeType, ShapeInfo> = {
     description: 'All planets occupy 180° or less of the zodiac, leaving half the chart empty.',
     personality: 'You are a CONTAINER. Your energy is focused, directed, and purposeful. You carry a half of life within you that you\'ve mastered, while perpetually gazing at the empty half—the unlived life, the unexplored territory, the "other" you haven\'t integrated.',
     gift: 'Concentrated focus, clear purpose, ability to hold and contain energy, self-containment',
-    challenge: 'Obsession with what\'s missing, feeling incomplete, projection onto others who represent the empty half',
+    challenge: 'Intense preoccupation with what\'s missing, feeling incomplete, projection onto others who represent the empty half',
     teaching: 'The Bowl native carries a deep sense of purpose born from limitation. Half the zodiac is empty — and that emptiness is not lack, it is longing. You are here to master what you carry, and to learn what you don\'t through others. The rim planets (first and last in the occupied half) are your gatekeepers — they define how you engage with the unknown. Your life question is: "What am I here to hold, and what am I here to reach toward?"',
   },
   Bucket: {
     description: 'A Bowl pattern with one planet (the "handle") isolated on the opposite side.',
     personality: 'You have focused energy (the Bowl) with a SINGLE OUTLET (the handle planet). All your concentrated power flows through one channel. The handle planet is your point of release, your funnel for expression, your key to the world.',
     gift: 'Powerful focus with a clear outlet, ability to channel concentrated energy, distinctive impact point',
-    challenge: 'Over-reliance on the handle planet, if that area is blocked you feel stuck, potential for obsession',
+    challenge: 'Over-reliance on the handle planet, if that area is blocked you feel stuck, potential for intense preoccupation',
     teaching: 'The Bucket is one of the most dynamic chart shapes. You have concentrated energy (the Bowl portion) with a single release valve — the handle planet. ALL of your focused power eventually flows through this one channel. If you know someone with a Bucket, watch the handle planet: it\'s their key to the world, their point of maximum impact. When the handle is blocked, the entire system stalls. When it flows, they are unstoppable.',
   },
   Bundle: {
     description: 'All planets are concentrated within 120° or less (one-third of the zodiac).',
     personality: 'You are INTENSELY SPECIALIZED. Your entire being is focused on one area of life. You have laser focus, deep expertise, and powerful concentration—but a very narrow range of experience.',
     gift: 'Extreme specialization, mastery of a focused area, powerful concentration of energy',
-    challenge: 'Lack of perspective, difficulty with areas outside your focus, potential for obsession, missing whole life areas',
+    challenge: 'Lack of perspective, difficulty with areas outside your focus, potential for intense preoccupation, missing whole life areas',
     teaching: 'The Bundle is the rarest and most intensely focused chart shape. Everything you are lives in one-third of the zodiac. This creates notable specialization but also profound blind spots. You are a laser, not a floodlight. The teaching here is radical acceptance: you are not meant to do everything. You are meant to do one thing with terrifying depth.',
   },
   Locomotive: {
@@ -163,7 +163,7 @@ const SHAPE_DATA: Record<ChartShapeType, ShapeInfo> = {
   },
   Yod: {
     description: 'Two planets in sextile (60°), both forming quincunxes (150°) to a third planet — the "Finger of God."',
-    personality: 'You carry a sense of SPIRITUAL MISSION. The apex planet feels fated, pressured, and purposeful in ways you can\'t fully explain. Two supporting planets (the sextile base) provide the skills, but the apex is where destiny concentrates. You are being pointed somewhere.',
+    personality: 'You carry a sense of SPIRITUAL MISSION. The apex planet feels especially significant, pressured, and purposeful in ways you can\'t fully explain. Two supporting planets (the sextile base) provide the skills, but the apex is where destiny concentrates. You are being pointed somewhere.',
     gift: 'Sense of purpose and destiny, ability to channel diverse skills toward a singular mission, spiritual clarity',
     challenge: 'Health issues at the apex planet, feeling "chosen" in uncomfortable ways, constant need for adjustment, crisis at the apex',
     teaching: 'The Yod — the "Finger of God" — is an arrow of fate pointing at one planet (the apex). Two planets in sextile (60°) both quincunx (150°) a third, creating an isoceles triangle of spiritual pressure. The apex planet carries a sense of destiny, mission, and often crisis. Yod natives often feel "chosen" — not in an ego sense, but in a "there\'s something I must do and I can\'t explain why" sense. The quincunx is the aspect of necessary adjustment: you must constantly adapt to fulfill the Yod\'s purpose.',
@@ -565,7 +565,7 @@ export function detectChartShape(planets: ChartPlanet[]): ChartShape {
     addCandidate('Yod', 92, {
       leadPlanet: yod.apex,
       involvedPlanets: [...yod.basePlanets, yod.apex],
-      emptyArea: `${yod.basePlanets.join(' and ')} (sextile) both point to ${yod.apex} — the Finger of God, your point of fated mission.`
+      emptyArea: `${yod.basePlanets.join(' and ')} (sextile) both point to ${yod.apex} — the Finger of God, your point of significant-feeling mission.`
     });
   }
 

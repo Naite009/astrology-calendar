@@ -114,7 +114,7 @@ export const planetLifeMeanings: Record<string, {
   Pluto: {
     rules: 'Transformation, power, depth, rebirth',
     inYourLife: 'Pluto is the VOLCANO of your chart. It transforms things completely — endings that lead to new beginnings. It goes to the deepest, most hidden places.',
-    bodyFeeling: 'Pluto activation feels intense — a deep pull in your gut, obsessive focus, a sense that something underground is shifting. Powerful but not comfortable.',
+    bodyFeeling: 'Pluto activation feels intense — a deep pull in your gut, all-consuming focus, a sense that something underground is shifting. Powerful but not comfortable.',
   },
   Chiron: {
     rules: 'Wounds, healing, teaching through experience',
@@ -289,7 +289,7 @@ function getSRNatalPairInterp(srPlanet: string, natalPlanet: string, aspectType:
     },
     'Venus-Pluto-Square': {
       headline: 'Love Gets Intense & Transformative',
-      howItFeels: 'Obsessive, magnetic, consuming. Relationships (or financial matters) feel like they\'re pulling you into deep water. Jealousy, power struggles, or all-consuming attractions may surface. Nothing about love feels casual.',
+      howItFeels: 'All-consuming, magnetic, consuming. Relationships (or financial matters) feel like they\'re pulling you into deep water. Jealousy, power struggles, or all-consuming attractions may surface. Nothing about love feels casual.',
       whatItMeans: 'SR Venus square natal Pluto demands emotional honesty in relationships. Surface-level connections won\'t satisfy you — you want REAL, raw, deep. This can transform a relationship or end one that lacks depth. Money and values get a Plutonian audit too.',
       whatToDo: 'Be honest about what you really want in love and money. Let go of what\'s toxic. Don\'t try to control others — work on your own patterns of attachment. What you release makes room for something more honest.',
     },

@@ -429,7 +429,7 @@ function generateAspectExpressions(
       lightExpressions: [
         `${personAName} teaches ${personBName} about healthy love and values`,
         `${personBName} is learning what they truly value through this connection`,
-        'The relationship itself is part of soul curriculum',
+        'The relationship itself is part of growth focus',
         'Love as a path to evolution'
       ],
       shadowExpressions: [

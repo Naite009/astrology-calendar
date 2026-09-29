@@ -70,7 +70,7 @@ const getDignity = (planet: string, sign: string): { status: string; description
       Libra: { status: 'Domicile', description: 'Venus rules Libra — love expresses through harmony, partnership, and aesthetic grace.' },
       Pisces: { status: 'Exalted', description: 'Venus is exalted in Pisces — love becomes unconditional, boundless, transcendent.' },
       Aries: { status: 'Detriment', description: 'Venus in Aries loves passionately but impatiently — the chase excites.' },
-      Scorpio: { status: 'Detriment', description: 'Venus in Scorpio loves intensely — attraction becomes obsession.' },
+      Scorpio: { status: 'Detriment', description: 'Venus in Scorpio loves intensely — attraction becomes intense preoccupation.' },
       Virgo: { status: 'Fall', description: 'Venus falls in Virgo — love is analytical, perhaps too critical.' },
     },
     Mars: {

@@ -1944,13 +1944,13 @@ const JUPITER_URANUS: PlanetPairAspects = {
 };
 
 /**
- * Venus-Pluto: The Obsessive Heart
+ * Venus-Pluto: The All-consuming Heart
  */
 const VENUS_PLUTO: PlanetPairAspects = {
   planet1: 'Venus',
   planet2: 'Pluto',
   coreSignature: 'The Transformative Lover',
-  coreDescription: 'Venus + Pluto = love that transforms, obsesses, and regenerates. This combination experiences love at extremes—passionate, possessive, healing, or destructive. Relationships serve as vehicles for profound transformation. May have experienced early loss or betrayal in love.',
+  coreDescription: 'Venus + Pluto = love that transforms, fixates, and regenerates. This combination experiences love at extremes—passionate, possessive, healing, or destructive. Relationships serve as vehicles for profound transformation. May have experienced early loss or betrayal in love.',
   aspects: [
     {
       aspectType: 'Conjunction',
@@ -1965,7 +1965,7 @@ const VENUS_PLUTO: PlanetPairAspects = {
         'Intensity creates depth'
       ],
       challenges: [
-        'Obsessive attachments',
+        'All-consuming attachments',
         'May have experienced betrayal',
         'Jealousy and possession',
         'All-or-nothing in love'
@@ -1995,7 +1995,7 @@ const VENUS_PLUTO: PlanetPairAspects = {
       symbol: '☍',
       name: 'The Intensity Mirror',
       tone: '"Partners transform or destroy me."',
-      description: 'Projects intensity or obsession onto partners. May attract powerful, controlling, or transformative lovers. Through relationships, learns to own inner power.',
+      description: 'Projects intensity or intense preoccupation onto partners. May attract powerful, controlling, or transformative lovers. Through relationships, learns to own inner power.',
       gifts: [
         'Transformed through partnership',
         'Develops balanced power in love',
@@ -2005,7 +2005,7 @@ const VENUS_PLUTO: PlanetPairAspects = {
       challenges: [
         'Attracts controlling partners',
         'Power dynamics in relationships',
-        'Projects obsession onto others',
+        'Projects intense preoccupation onto others',
         'Must own inner intensity'
       ]
     },
@@ -2451,7 +2451,7 @@ const MERCURY_PLUTO: PlanetPairAspects = {
   planet1: 'Mercury',
   planet2: 'Pluto',
   coreSignature: 'The Depth Thinker',
-  coreDescription: 'Mercury + Pluto = mind that penetrates to the core. Thinking is investigative, obsessive, and transformative. Associated with research, psychology, detective work, and the capacity to uncover hidden truths.',
+  coreDescription: 'Mercury + Pluto = mind that penetrates to the core. Thinking is investigative, all-consuming, and transformative. Associated with research, psychology, detective work, and the capacity to uncover hidden truths.',
   aspects: [
     {
       aspectType: 'Conjunction',
@@ -2460,7 +2460,7 @@ const MERCURY_PLUTO: PlanetPairAspects = {
       tone: '"I think in depths."',
       description: 'Mind and transformative power are fused. Natural investigator who uncovers hidden truths. Thoughts are intense and penetrating. May have experienced early mental pressure or secrets.',
       gifts: ['Penetrating insight', 'Natural researcher', 'Uncovers hidden truths', 'Transformative communication'],
-      challenges: ['Obsessive thinking', 'Difficulty with light topics', 'May intimidate with intensity', 'Mental control issues']
+      challenges: ['All-consuming thinking', 'Difficulty with light topics', 'May intimidate with intensity', 'Mental control issues']
     },
     {
       aspectType: 'Square',
@@ -2469,7 +2469,7 @@ const MERCURY_PLUTO: PlanetPairAspects = {
       tone: '"My thoughts must go deep or nowhere."',
       description: 'Friction between surface communication and need for depth. May experience power struggles around ideas or information. Develops profound insight through mental challenges.',
       gifts: ['Develops profound insight', 'Transforms through understanding', 'Breaks through mental barriers', 'Powerful persuasion'],
-      challenges: ['Mental power struggles', 'Obsessive thought patterns', 'Difficulty trusting information', 'May manipulate with words']
+      challenges: ['Mental power struggles', 'All-consuming thought patterns', 'Difficulty trusting information', 'May manipulate with words']
     },
     {
       aspectType: 'Opposition',
@@ -2933,7 +2933,7 @@ const JUPITER_PLUTO: PlanetPairAspects = {
   coreSignature: 'The Power Magnifier',
   coreDescription: 'Jupiter + Pluto = expansion and transformation combined. Massive growth through intensity. The capacity to influence masses or achieve significant power.',
   aspects: [
-    { aspectType: 'Conjunction', symbol: '☌', name: 'The Transformative Expander', tone: '"My growth is profound and total."', description: 'Expansion and transformation are fused. Massive capacity for influence and wealth.', gifts: ['Profound growth capacity', 'Natural influence', 'Wealth potential', 'Transformative faith'], challenges: ['Obsessive ambition', 'May seek too much power', 'Difficulty with moderation'] },
+    { aspectType: 'Conjunction', symbol: '☌', name: 'The Transformative Expander', tone: '"My growth is profound and total."', description: 'Expansion and transformation are fused. Massive capacity for influence and wealth.', gifts: ['Profound growth capacity', 'Natural influence', 'Wealth potential', 'Transformative faith'], challenges: ['All-consuming ambition', 'May seek too much power', 'Difficulty with moderation'] },
     { aspectType: 'Square', symbol: '□', name: 'The Power Struggler', tone: '"My expansion meets resistance."', description: 'Friction between expansion and power. May experience power struggles.', gifts: ['Develops honest power', 'Learns from intensity', 'Grows through challenge'], challenges: ['Power struggles', 'May over-reach', 'Conflicts over beliefs'] },
     { aspectType: 'Opposition', symbol: '☍', name: 'The Powerful Partner', tone: '"Others bring transformation."', description: 'Projects power onto others. Relationships involve intense growth.', gifts: ['Learns power through others', 'Attracts transformers', 'Develops through intensity'], challenges: ['Attracts controlling types', 'Projects power onto others', 'Relationships feel intense'] },
     { aspectType: 'Trine', symbol: '△', name: 'The Natural Magnate', tone: '"Growth and power flow together."', description: 'Easy flow between expansion and transformation. Natural capacity for wealth.', gifts: ['Natural power and wealth', 'Effortless influence', 'Comfortable with depth'], challenges: ['May take power for granted', 'Could become complacent', 'May not examine motives'] },

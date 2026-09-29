@@ -75,7 +75,7 @@ const PLANET_WHY_EXPLANATIONS: Record<string, { role: string; whatItDoes: string
   },
   NorthNode: {
     role: "The Destiny Pointer",
-    whatItDoes: "North Node transits highlight growth edges and fated encounters. They pull you toward unfamiliar territory that serves your evolution. Discomfort here is often a sign you're moving in the right direction.",
+    whatItDoes: "North Node transits highlight growth edges and significant-feeling encounters. They pull you toward unfamiliar territory that serves your evolution. Discomfort here is often a sign you're moving in the right direction.",
     whatToAsk: "What unfamiliar direction is calling me? Who entered my life that matters?"
   },
   SouthNode: {

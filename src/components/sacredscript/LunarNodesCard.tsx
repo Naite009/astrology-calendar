@@ -57,7 +57,7 @@ const NODE_AXIS_DATA: Record<string, NodeAxisData> = {
     southGift: "You come in with extraordinary gifts in TRANSFORMATION, PSYCHOLOGY, and CRISIS MANAGEMENT. You naturally understand the depths of human nature, can handle emergencies, and aren't afraid of the dark. But you've become addicted to intensity.",
     soulQuestion: "Can I trust that peace is not boring—that stillness is not stagnation?",
     northKeywords: ["Simplicity", "Stability", "Self-worth", "Patience", "Sensuality", "Building"],
-    southKeywords: ["Crisis addiction", "Control", "Power struggles", "Obsession", "Emotional manipulation"],
+    southKeywords: ["Crisis addiction", "Control", "Power struggles", "Intense preoccupation", "Emotional manipulation"],
     practicalSteps: [
       "Spend time in nature without any agenda",
       "Build or create something tangible with your hands",
@@ -89,7 +89,7 @@ const NODE_AXIS_DATA: Record<string, NodeAxisData> = {
     southGift: "You come in with extraordinary gifts in ACHIEVEMENT, STRUCTURE, and AUTHORITY. You naturally know how to build, manage, and take responsibility. But you've used accomplishment as armor against feeling.",
     soulQuestion: "Can I let myself be held? Can I admit that I need someone?",
     northKeywords: ["Vulnerability", "Nurturing", "Home", "Family", "Emotional honesty", "Belonging"],
-    southKeywords: ["Over-achieving", "Emotional control", "Workaholism", "Coldness", "Status obsession"],
+    southKeywords: ["Over-achieving", "Emotional control", "Workaholism", "Coldness", "Status fixation"],
     practicalSteps: [
       "Create a home environment that feels safe and nourishing",
       "Practice asking for help—actually receiving it",
@@ -201,7 +201,7 @@ const NODE_AXIS_DATA: Record<string, NodeAxisData> = {
     southGift: "You come in with extraordinary gifts in SELF-EXPRESSION, CREATIVITY, and PERSONAL MAGNETISM. You naturally draw attention, create from the heart, and inspire loyalty. But you've become addicted to being the center of the story.",
     soulQuestion: "Can I let go of needing to be special and instead be USEFUL to the collective?",
     northKeywords: ["Innovation", "Humanitarianism", "Friendship", "Objectivity", "Progress", "Originality"],
-    southKeywords: ["Ego attachment", "Drama", "Need for approval", "Self-centeredness", "Romantic obsession"],
+    southKeywords: ["Ego attachment", "Drama", "Need for approval", "Self-centeredness", "Romantic fixation"],
     practicalSteps: [
       "Join a group or cause that's bigger than your personal story",
       "Practice friendship—equal, non-hierarchical relationships",
@@ -248,8 +248,8 @@ const HOUSE_THEMES: Record<number, { area: string; description: string }> = {
 // Node Ruler technique — the ruling planet of the North Node sign shows HOW you approach soul growth
 const SIGN_RULERS: Record<string, string> = {
   Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury', Cancer: 'Moon',
-  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Pluto',
-  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Uranus', Pisces: 'Neptune',
+  Leo: 'Sun', Virgo: 'Mercury', Libra: 'Venus', Scorpio: 'Mars',
+  Sagittarius: 'Jupiter', Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
 };
 
 const getNodeRulerInsight = (nnSign: string, chart: NatalChart): { ruler: string; rulerSign: string; rulerHouse: number | null; interpretation: string } | null => {

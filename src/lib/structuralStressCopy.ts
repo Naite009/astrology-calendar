@@ -373,9 +373,9 @@ export const LIFE_EVENT_LABELS: Record<string, string> = {
 export const LIFE_EVENT_INTERPRETATIONS: Record<string, Record<string, string>> = {
   relationship_began: {
     containment: "Saturn's containment energy often correlates with relationships that feel 'serious' from the start—binding, destined, or duty-laden. These connections can have longevity but may also come with heavy expectations or a sense of obligation from the beginning.",
-    stress: "Pluto's intensity at relationship beginnings can indicate powerful, transformative bonds—but also ones where power dynamics are present from the start. Early attraction may feel fated or obsessive. Consider: what drew you in, and what patterns were established?",
+    stress: "Pluto's intensity at relationship beginnings can indicate powerful, transformative bonds—but also ones where power dynamics are present from the start. Early attraction may feel especially significant or all-consuming. Consider: what drew you in, and what patterns were established?",
     release: "Uranus energy at relationship start suggests awakening, excitement, or a sudden 'this changes everything' quality. These beginnings often feel liberating but may also indicate instability or commitment resistance built into the foundation.",
-    trigger: "Mars or nodal activation at relationship start points to decisive action, fated timing, or external events that pushed the connection forward. The beginning was likely marked by urgency or clear directional momentum.",
+    trigger: "Mars or nodal activation at relationship start points to decisive action, significant-feeling timing, or external events that pushed the connection forward. The beginning was likely marked by urgency or clear directional momentum.",
     default: "This date carries transit significance that colored how the relationship began. The planetary themes active at the start often become themes that play out throughout the connection."
   },
   relationship_ended: {
@@ -389,7 +389,7 @@ export const LIFE_EVENT_INTERPRETATIONS: Record<string, Record<string, string>> 
     containment: "Saturn active at commitment ceremonies often indicates marriages built on duty, stability, or 'the right thing to do.' These unions can be lasting but may carry weight—the question is whether that weight feels grounding or constraining.",
     stress: "Pluto at marriage points to transformative union—but also to power dynamics being formalized. Consider what you were giving away or gaining access to through this commitment.",
     release: "Uranus at marriage is unusual—it suggests a commitment made to liberate rather than contain, or one that defied convention. The marriage itself may have felt like a break from the expected path.",
-    trigger: "Mars or nodal energy at marriage indicates decisive action, fated timing, or external pressure that accelerated the commitment. The 'why now?' is worth examining.",
+    trigger: "Mars or nodal energy at marriage indicates decisive action, significant-feeling timing, or external pressure that accelerated the commitment. The 'why now?' is worth examining.",
     default: "Commitments made under these transits carry their signature forward. The themes active at the ceremony often become themes of the marriage itself."
   },
   breakup: {
@@ -408,23 +408,23 @@ export const LIFE_EVENT_INTERPRETATIONS: Record<string, Record<string, string>> 
   },
   job_change: {
     containment: "Saturn career changes often involve restructuring toward sustainability—leaving something that wasn't working, or building something that can last. Responsibility themes are prominent.",
-    stress: "Pluto career changes involve power dynamics—being pushed out, seizing authority, or transforming your public role through intensity. These transitions often feel forced or fated.",
+    stress: "Pluto career changes involve power dynamics—being pushed out, seizing authority, or transforming your public role through intensity. These transitions often feel forced or significant-feeling.",
     release: "Uranus career changes carry awakening energy—suddenly knowing what you don't want, or liberating yourself from a role that constrained your honest expression.",
-    trigger: "Mars or nodal energy at job change points to decisive action or fated timing. The move was likely marked by urgency or clear external catalysts.",
+    trigger: "Mars or nodal energy at job change points to decisive action or significant-feeling timing. The move was likely marked by urgency or clear external catalysts.",
     default: "Career transitions under these transits are shaped by the planetary themes active. The reasons for leaving and what you're moving toward carry this signature."
   },
   relocation: {
     containment: "Saturn moves often involve necessity—building stability somewhere new, or leaving because the old structure couldn't hold. These relocations tend to be for practical reasons.",
     stress: "Pluto relocations are transformative—leaving behind something that can't continue, or moving toward something that will change you fundamentally. Power or survival themes may be present.",
     release: "Uranus moves carry liberation energy—escaping constraint, seeking freedom, or the restless urge for change manifesting as physical relocation.",
-    trigger: "Mars or nodal energy at relocation points to decisive action or fated timing. The move happened because something pushed or pulled with urgency.",
+    trigger: "Mars or nodal energy at relocation points to decisive action or significant-feeling timing. The move happened because something pushed or pulled with urgency.",
     default: "Relocations under these transits carry their signature. Where you went and why you left are connected to what was being restructured."
   },
   health_event: {
     containment: "Saturn health events often involve the body demanding attention to structure, limits, or sustainability. What was being pushed too hard? What needs better boundaries?",
     stress: "Pluto health events can be transformative crises—the body exposing what the mind avoided, or power over your own physical existence being tested.",
     release: "Uranus health events may come suddenly, as wake-up calls or unexpected shifts in physical reality. The body disrupts to liberate or to demand honesty.",
-    trigger: "Mars or eclipse energy at health events points to acute presentations, decisive interventions, or timing that felt fated.",
+    trigger: "Mars or eclipse energy at health events points to acute presentations, decisive interventions, or timing that felt significant-feeling.",
     default: "Health events under these transits are connected to the planetary themes active. The body often mirrors what's happening structurally in life."
   },
   identity_shift: {

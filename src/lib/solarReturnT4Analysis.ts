@@ -480,7 +480,7 @@ export function calculateEclipseSensitivity(
           sensitizedPlanet: planet,
           sensitizedPlanetSource: 'SR',
           orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls within ${Math.round(diff)}° of SR ${planet}. Eclipse activation of ${planet} brings sudden, fated shifts to ${planet}'s themes — events feel larger than ordinary life and may have lasting consequences.`,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls within ${Math.round(diff)}° of SR ${planet}. Eclipse activation of ${planet} brings sudden, significant-feeling shifts to ${planet}'s themes — events feel larger than ordinary life and may have lasting consequences.`,
         });
       }
     }

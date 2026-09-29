@@ -362,7 +362,7 @@ export function getTimeOfDayContext(birthTime: string): TimeOfDayData | null {
       description: 'Born at Midday',
       sunPosition: 'Sun at its highest point (Midheaven)',
       symbolism: 'Maximum visibility. The Sun at noon casts the shortest shadows—nothing is hidden. You carry the energy of FULL EXPRESSION and PUBLIC PRESENCE.',
-      lifeExpression: 'You are meant to be SEEN. Your chart pushes you toward visibility, achievement, and public recognition. Hiding feels wrong to you. You may feel most alive when you\'re in the spotlight or at the peak of achievement. Your shadows are minimal—what you see is what you get.'
+      lifeExpression: 'You may thrive being SEEN. Your chart pushes you toward visibility, achievement, and public recognition. Hiding feels wrong to you. You may feel most alive when you\'re in the spotlight or at the peak of achievement. Your shadows are minimal—what you see is what you get.'
     };
   } else if (timeInMinutes >= 780 && timeInMinutes < 1020) { // 1pm - 5pm
     return {

@@ -307,7 +307,7 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       inRelationships: "You show love through devoted attention — learning your partner's needs and meeting them precisely. Your challenge is stepping into equal partnership rather than always serving.",
       coreWound: "The wound of not-enough-ness — the perpetual sense that you need more training, more study, more preparation before you're qualified. The apprenticeship never ends because readiness feels dangerous.",
       healingPath: "Through teaching. When you must teach what you know, you discover how much you've actually learned. Healing comes through claiming your expertise, however imperfect.",
-      inTheBody: "The hands (skilled hands), the digestive system, the nervous system's fine motor pathways. Perfectionism may manifest as repetitive strain, digestive sensitivity, or obsessive-compulsive tendencies.",
+      inTheBody: "The hands (skilled hands), the digestive system, the nervous system's fine motor pathways. Perfectionism may manifest as repetitive strain, digestive sensitivity, or all-consuming-compulsive tendencies.",
       sacredPurpose: "To embody the sacred student — teaching the collective that humility and mastery are not opposites but married pairs.",
       shadowExpression: "When unconscious, the Apprentice becomes the eternal student who uses learning as a way to avoid doing, or the self-flagellating worker who can never acknowledge their own skill.",
       affirmation: "I am ready. My skill is real. I have earned the right to trust myself."
@@ -1221,7 +1221,7 @@ export const MOON_PHASE_SIGN_ARCHETYPES: Record<string, Record<string, MoonArche
       coreWound: "The wound of powerlessness — the devastating realization that some things cannot be fixed, no matter how precise, how dedicated, how perfect your effort.",
       healingPath: "Through surrender practice — meditation, prayer, letting-go rituals. Healing comes when you discover that acceptance is its own form of mastery.",
       sacredPurpose: "To teach the collective that some things are not meant to be fixed but WITNESSED — that compassionate acceptance heals what effort cannot.",
-      shadowExpression: "When unconscious, Fate's Moon swings between obsessive fixing and complete apathy — either trying to control everything or giving up entirely.",
+      shadowExpression: "When unconscious, Fate's Moon swings between all-consuming fixing and complete apathy — either trying to control everything or giving up entirely.",
       affirmation: "I accept what I cannot change. My acceptance IS the healing."
     },
     Libra: {
