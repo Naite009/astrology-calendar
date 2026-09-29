@@ -50,6 +50,13 @@ describe('saved chart identity', () => {
       .toBe(chartIdentityKey(chart({ name: 'Karina Client' })));
   });
 
+  it('treats a country tag on the birthplace as the same place', () => {
+    expect(dedupeChartsByIdentity([
+      chart({ id: 'a', birthLocation: 'West Hills, CA (US)' }),
+      chart({ id: 'b', birthLocation: 'West Hills, CA' }),
+    ])).toHaveLength(1);
+  });
+
   it('drops nameless records only', () => {
     expect(dedupeChartsByIdentity([chart({ name: '' }), chart()])).toHaveLength(1);
   });

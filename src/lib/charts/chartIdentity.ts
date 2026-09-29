@@ -26,6 +26,14 @@ export interface ChartLike {
 }
 
 const norm = (v: string | undefined) => (v || '').toLowerCase().trim().replace(/\s+/g, ' ');
+/** Place text ignoring cosmetic differences like "(US)" tags, punctuation, and trailing country names. */
+const normPlace = (v: string | undefined) =>
+  norm(v)
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/[.,;]+/g, ' ')
+    .replace(/\b(usa|us|united states( of america)?)\s*$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 /** Name only — used for display grouping, never for dropping records. */
 export const chartNameKey = (chart: ChartLike): string => normalizeName(chart.name || '');
@@ -36,7 +44,7 @@ export const chartIdentityKey = (chart: ChartLike): string =>
     chartNameKey(chart),
     norm(chart.birthDate),
     norm(chart.birthTime),
-    norm(chart.placeName || chart.birthLocation),
+    normPlace(chart.placeName || chart.birthLocation),
   ].join('|');
 
 const bodyCount = (chart: ChartLike): number =>
