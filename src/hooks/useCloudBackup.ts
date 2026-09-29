@@ -540,6 +540,17 @@ export const useCloudBackup = (
 
   // Sync whenever charts change
   useEffect(() => {
+    // A chart that just appeared is backed up to the account right away, even
+    // before the first cloud check has finished. Waiting on the debounced full
+    // sync let a new chart live only in this browser, where full storage or a
+    // restore could lose it.
+    if (authChecked) {
+      for (const c of savedCharts) {
+        if (!c?.id || !c.name || seenChartIdsRef.current.has(c.id)) continue;
+        seenChartIdsRef.current.add(c.id);
+        void syncChartToCloud(c);
+      }
+    }
     if (!initialCheckDoneRef.current) return;
     triggerSync();
     
@@ -548,7 +559,7 @@ export const useCloudBackup = (
         clearTimeout(syncTimeoutRef.current);
       }
     };
-  }, [userNatalChart, savedCharts, triggerSync]);
+  }, [userNatalChart, savedCharts, triggerSync, authChecked, syncChartToCloud]);
 
   // When user changes (login/logout), re-check cloud data - but only once per user
   const lastFetchedUserIdRef = useRef<string | null>(null);
