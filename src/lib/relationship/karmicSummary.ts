@@ -91,7 +91,7 @@ const THEME_TO_CATEGORY: Record<KarmicIndicator['theme'], KarmicCategoryKey> = {
   transformation: 'intensity',
   healing: 'healing',
   karmic_debt: 'structure',
-  significant-feeling: 'timing',
+  fated: 'timing',
 };
 
 const CATEGORY_ORDER: KarmicCategoryKey[] = [
