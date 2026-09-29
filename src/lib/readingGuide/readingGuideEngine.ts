@@ -995,11 +995,20 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
           factors: [
             {
               label: `${bodyLabel(chartRuler.ruler)} in ${chartRuler.placement.sign}${chartRuler.placement.house ? `, ${ordinalHouse(chartRuler.placement.house)}` : ''}`,
-              contributes: 'the chart ruler — the planet that steers the whole chart',
+              contributes: 'the traditional chart ruler: how they tend to act on the way they approach life',
               sign: chartRuler.placement.sign,
               body: chartRuler.ruler,
               house: chartRuler.placement.house ?? null,
             },
+            ...(chartRuler.modernRuler && chartRuler.modernPlacement
+              ? [{
+                  label: `${bodyLabel(chartRuler.modernRuler)} in ${chartRuler.modernPlacement.sign}${chartRuler.modernPlacement.house ? `, ${ordinalHouse(chartRuler.modernPlacement.house)}` : ''}`,
+                  contributes: 'the modern co-ruler: a second layer on how they approach life',
+                  sign: chartRuler.modernPlacement.sign,
+                  body: chartRuler.modernRuler,
+                  house: chartRuler.modernPlacement.house ?? null,
+                }]
+              : []),
             ...(asc
               ? [{
                   label: `${asc.sign} Ascendant`,
