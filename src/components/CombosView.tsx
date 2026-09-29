@@ -164,7 +164,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
         const p2 = planetData[j];
-        const aspect = calculateAspect(p1.sign, p1.degree, p2.sign, p2.degree);
+        const aspect = calculateAspect(p1.sign, p1.degree + ((p1 as { minutes?: number }).minutes ?? 0) / 60, p2.sign, p2.degree + ((p2 as { minutes?: number }).minutes ?? 0) / 60);
         if (aspect) {
           // Add both orderings so matching works either way
           factors.add(`${p1.name}|${p2.name}|${aspect}`);
@@ -201,7 +201,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
         const p2 = planetData[j];
-        const aspect = calculateAspect(p1.sign, p1.degree, p2.sign, p2.degree);
+        const aspect = calculateAspect(p1.sign, p1.degree + ((p1 as { minutes?: number }).minutes ?? 0) / 60, p2.sign, p2.degree + ((p2 as { minutes?: number }).minutes ?? 0) / 60);
         if (aspect) {
           if (!byType.has(aspect)) byType.set(aspect, []);
           byType.get(aspect)!.push(`${p1.name}-${p2.name}`);
@@ -625,7 +625,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         const p1Pos = getChartPos(p1);
         const p2Pos = getChartPos(p2);
         if (p1Pos && p2Pos) {
-          userAspectType = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+          userAspectType = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
         }
       }
       
@@ -1645,7 +1645,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     const p1Pos = getChartPos(p1);
                     const p2Pos = getChartPos(p2);
                     if (p1Pos && p2Pos) {
-                      const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                      const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
                       if (aspect && combo.aspectTypes.includes(aspect)) {
                         isMatch = true;
                         matchDetails.aspectType = aspect;
@@ -1682,7 +1682,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       const p1Pos = getChartPos(p1);
                       const p2Pos = getChartPos(p2);
                       if (p1Pos && p2Pos) {
-                        const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                        const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
                         if (aspect && combo.aspectTypes.includes(aspect)) {
                           isMatch = true;
                           matchDetails.aspectType = aspect;
@@ -1756,7 +1756,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 const p1Pos = getChartPos(p1);
                 const p2Pos = getChartPos(p2);
                 if (p1Pos && p2Pos) {
-                  const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                  const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
                   return aspect && combo.aspectTypes.includes(aspect);
                 }
               }
@@ -1775,7 +1775,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   const p1Pos = getChartPos(p1);
                   const p2Pos = getChartPos(p2);
                   if (p1Pos && p2Pos) {
-                    const aspect = calculateAspect(p1Pos.sign, p1Pos.degree, p2Pos.sign, p2Pos.degree);
+                    const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
                     if (aspect && combo.aspectTypes.includes(aspect)) return true;
                   }
                 }

@@ -390,24 +390,22 @@ export function computeAspects(
       let delta = Math.abs(deg1 - deg2);
       if (delta > 180) delta = 360 - delta;
 
+      // Tightest matching aspect by true angular separation (never first-match).
+      let best: { type: keyof typeof ASPECT_ANGLES; orb: number } | null = null;
       for (const aspectType of aspectTypes) {
-        const exactAngle = ASPECT_ANGLES[aspectType];
-        // Use tiered orbs based on planets involved
         const allowedOrb = getOrb(p1.name, p2.name, aspectType as keyof AspectOrbs, orbs);
-        const actualOrb = Math.abs(delta - exactAngle);
-        
-        if (actualOrb <= allowedOrb) {
-          aspects.push({
-            planet1: p1.name,
-            planet2: p2.name,
-            aspectType: aspectType as ChartAspect['aspectType'],
-            orb: Math.round(actualOrb * 100) / 100,
-            // Note: for natal charts, "applying" indicates the slower planet is ahead
-            // This is based on zodiacal degree order at birth (not motion)
-            applying: deg1 < deg2
-          });
-          break; // Only one aspect type per planet pair
-        }
+        const actualOrb = Math.abs(delta - ASPECT_ANGLES[aspectType]);
+        if (actualOrb <= allowedOrb && (!best || actualOrb < best.orb)) best = { type: aspectType, orb: actualOrb };
+      }
+      if (best) {
+        aspects.push({
+          planet1: p1.name,
+          planet2: p2.name,
+          aspectType: best.type as ChartAspect['aspectType'],
+          orb: Math.round(best.orb * 100) / 100,
+          // Note: for natal charts, "applying" indicates the slower planet is ahead
+          applying: deg1 < deg2
+        });
       }
     }
   }
