@@ -11,6 +11,8 @@ import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 import { getDeepAspectInterpretation, getFormattedAspectNarrative } from '@/lib/aspectInterpretationsDeep';
 import { getEffectiveOrb as getEffectiveOrbNarr } from '@/lib/aspectOrbs';
+import { chartRulerNote } from '@/lib/interpretation/chartRuler';
+import { getHouseArena } from '@/lib/interpretation/psychologicalFunctions';
 
 // ============================================================================
 // HELPER FUNCTIONS
