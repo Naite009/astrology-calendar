@@ -34,7 +34,7 @@ describe('aspect type comes from separation only', () => {
 
   it.each([
     ['Pisces', 29, 'Aries', 1, 'conjunction'],
-    ['Aries', 28, 'Gemini', 1, 'sextile'],
+    ['Aries', 29, 'Cancer', 1, 'sextile'],
     ['Gemini', 29, 'Libra', 1, 'square'],
     ['Aries', 29, 'Leo', 27, 'trine'],
     ['Aries', 2, 'Virgo', 1, 'quincunx'],
