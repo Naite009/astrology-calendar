@@ -71,6 +71,9 @@ export const useCloudBackup = (
   });
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialCheckDoneRef = useRef(false);
+  const savedChartsRef = useRef<NatalChart[]>(savedCharts);
+  savedChartsRef.current = savedCharts;
+  const seenChartIdsRef = useRef<Set<string>>(new Set(savedCharts.map(c => c.id)));
   const hasShownRestoreToastRef = useRef(false);
   const restorePendingRef = useRef(true);
   // Gate: don't run the initial cloud check until we've actually resolved
@@ -98,10 +101,12 @@ export const useCloudBackup = (
         setState(prev => ({ ...prev, isAuthenticated: !!recoveredSession?.user }));
         setAuthChecked(true);
 
-        // When user logs in, trigger a sync to fetch their charts
-        if (event === 'SIGNED_IN' && recoveredSession?.user) {
-          initialCheckDoneRef.current = false; // Reset to allow re-check
-        }
+        // Do NOT reset initialCheckDoneRef on SIGNED_IN. The auth client fires
+        // SIGNED_IN again on tab refocus and session refresh; resetting the flag
+        // here switched cloud backup off for the rest of the visit, so newly
+        // added charts were never saved to the account. Per-user re-fetch is
+        // handled by the user-change effect below.
+        void event;
       }
     );
 
@@ -353,12 +358,15 @@ export const useCloudBackup = (
       };
 
       // Seed with local saved charts first so they survive even if cloud
-      // dedup would otherwise drop them.
-      for (const lc of localCharts) {
+      // dedup would otherwise drop them. Include the charts currently on
+      // screen too: when browser storage is full the newest chart may exist
+      // only in memory, and a restore must never replace it away.
+      for (const lc of [...localCharts, ...savedChartsRef.current]) {
+        if (!lc?.name) continue;
         if ((lc as any).solarReturnYear) continue;
         if (lc.id?.startsWith('hd_')) continue;
         const key = chartIdentityKey(lc);
-        if (!key) continue;
+        if (!key || mergedByIdentity.has(key)) continue;
         mergedByIdentity.set(key, lc);
       }
 
@@ -532,6 +540,17 @@ export const useCloudBackup = (
 
   // Sync whenever charts change
   useEffect(() => {
+    // A chart that just appeared is backed up to the account right away, even
+    // before the first cloud check has finished. Waiting on the debounced full
+    // sync let a new chart live only in this browser, where full storage or a
+    // restore could lose it.
+    if (authChecked) {
+      for (const c of savedCharts) {
+        if (!c?.id || !c.name || seenChartIdsRef.current.has(c.id)) continue;
+        seenChartIdsRef.current.add(c.id);
+        void syncChartToCloud(c);
+      }
+    }
     if (!initialCheckDoneRef.current) return;
     triggerSync();
     
@@ -540,7 +559,7 @@ export const useCloudBackup = (
         clearTimeout(syncTimeoutRef.current);
       }
     };
-  }, [userNatalChart, savedCharts, triggerSync]);
+  }, [userNatalChart, savedCharts, triggerSync, authChecked, syncChartToCloud]);
 
   // When user changes (login/logout), re-check cloud data - but only once per user
   const lastFetchedUserIdRef = useRef<string | null>(null);
