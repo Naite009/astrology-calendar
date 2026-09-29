@@ -1926,7 +1926,7 @@ Keep the tone deep, insightful, and practically applicable.`
               
               <div>
                 <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-purple-500" /> Soul-Level Message
+                  <Sparkles className="h-4 w-4 text-purple-500" /> Deeper Message
                 </h4>
                 <p className="text-sm text-foreground/90 italic">{interpretation.soulLevel}</p>
               </div>

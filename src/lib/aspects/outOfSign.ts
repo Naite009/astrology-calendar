@@ -209,7 +209,7 @@ const SIGN_RELATION_STYLE: Record<string, string> = {
 };
 
 const DEGREE_TONE_NOTE: Record<string, string> = {
-  conjunction: 'the two work as one unit whether or not the signs match',
+  conjunction: 'the two functions activate each other by degree, even though the signs differ',
   sextile: 'there is a workable, low-effort channel between them',
   trine: 'the geometry supports ease and mutual appreciation',
   square: 'the geometry creates friction that asks for adjustment',

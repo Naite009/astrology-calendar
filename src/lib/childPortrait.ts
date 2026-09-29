@@ -458,7 +458,7 @@ const MERCURY_COGNITIVE_PROFILE: Record<string, {
     label: "Depth Processor",
     processing: "thinks by going all the way into one thing; surface coverage of many topics feels meaningless and gets discarded",
     blocker: "interruption, rotation between subjects, or being kept on the surface",
-    application: "let them obsess on one project, deeply, for an unusual length of time; that intensity is the learning, not a problem to manage",
+    application: "let them fixate on one project, deeply, for an unusual length of time; that intensity is the learning, not a problem to manage",
   },
   Sagittarius: {
     label: "Meaning-First Processor",

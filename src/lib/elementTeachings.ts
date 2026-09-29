@@ -362,7 +362,7 @@ export const ELEMENT_TEACHINGS: Record<string, ElementTeaching> = {
       'Practical',
       'Nature lovers—love being outside',
       'Control freaks—they get off on checking things off of their lists',
-      'Obsessed with plants, herbs, natural medicine',
+      'Deeply absorbed in plants, herbs, natural medicine',
       'Physical',
       'Manifestor',
       'Substantial—designer labels, into high quality',

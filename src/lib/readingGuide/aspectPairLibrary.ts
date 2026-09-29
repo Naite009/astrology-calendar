@@ -2,7 +2,7 @@
  * Aspect pair library — "what do I actually say about this contact?"
  *
  * The Reading Guide used to describe an aspect only by its geometry
- * ("these two work as one unit"). A reader already knows that. What they need
+ * ("these two are linked"). A reader already knows that. What they need
  * at the table is the *content* of the pair: what Mars with Mercury sounds
  * like, what Mercury with Jupiter does to the pace of thought, what Saturn
  * opposite the Moon tends to feel like in the early environment.

@@ -1950,7 +1950,7 @@ const VENUS_PLUTO: PlanetPairAspects = {
   planet1: 'Venus',
   planet2: 'Pluto',
   coreSignature: 'The Transformative Lover',
-  coreDescription: 'Venus + Pluto = love that transforms, obsesses, and regenerates. This combination experiences love at extremes—passionate, possessive, healing, or destructive. Relationships serve as vehicles for profound transformation. May have experienced early loss or betrayal in love.',
+  coreDescription: 'Venus + Pluto = love that transforms, fixates, and regenerates. This combination experiences love at extremes—passionate, possessive, healing, or destructive. Relationships serve as vehicles for profound transformation. May have experienced early loss or betrayal in love.',
   aspects: [
     {
       aspectType: 'Conjunction',
