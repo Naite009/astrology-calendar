@@ -841,7 +841,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
     category: 'point',
     archetype: 'The Destiny Gate / The Significant-feeling Encounter',
     tagline: 'The point where fate walks in the door — encounters you didn\'t seek but were meant to have',
-    myth: `The Vertex has no ancient mythology because it is a modern mathematical point — the intersection of the ecliptic and the prime vertical in the western hemisphere of the chart. But its experiential mythology is vivid: the Vertex marks fated encounters, people and events that arrive uninvited and change the course of your life. It is the point of "meant to be" — not the destiny you consciously pursue (that's the North Node), but the destiny that finds you. Transits and synastry contacts to the Vertex often coincide with meetings that feel electric, inevitable, and transformative.`,
+    myth: `The Vertex has no ancient mythology because it is a modern mathematical point — the intersection of the ecliptic and the prime vertical in the western hemisphere of the chart. But its experiential mythology is vivid: some astrologers read the Vertex as marking encounters that can feel significant, people and events that arrive uninvited and change the course of your life. It is sometimes described as a point of encounters that feel unusually significant — not the destiny you consciously pursue (that's the North Node), but the destiny that finds you. Transits and synastry contacts to the Vertex often coincide with meetings that feel electric, inevitable, and transformative.`,
     symbolism: [
       'The intersection — where two planes of existence cross',
       'The uninvited guest — fate that arrives without being summoned',

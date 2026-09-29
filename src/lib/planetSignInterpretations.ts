@@ -408,7 +408,7 @@ export const PLANET_SIGN_INTERPRETATIONS: PlanetSignMap = {
     },
     Scorpio: {
       hellenistic: "Mercury in Scorpio operates in Mars's nocturnal domicile (traditionally). The mind is investigative, penetrating, and drawn to hidden information. In traditional terms, Mercury here thinks in layers — always looking beneath the surface for what's really going on.",
-      modern: "Psychologically, thinking is depth-oriented and suspicious. You don't take information at face value; you analyze motives, hidden agendas, and subtext. The gift is notable psychological insight. The shadow is paranoia, obsessive thinking, and the inability to take anything at face value.",
+      modern: "Psychologically, thinking is depth-oriented and suspicious. You don't take information at face value; you analyze motives, hidden agendas, and subtext. The gift is notable psychological insight. The shadow is paranoia, looping, fixated thinking, and the inability to take anything at face value.",
       practical: "Apply your investigative mind to fields that reward depth: psychology, research, detective work, therapy, or financial analysis. Your ability to see what others miss is a genuine asset. But not everything has a hidden agenda. Sometimes people mean exactly what they say. Practice taking things at face value when the stakes are low.",
       superpower: "Psychological penetration — the ability to see through pretense and access the truth beneath any surface.",
       shadow: "Suspicion, all-consuming thinking, manipulation through information, and the inability to trust simple explanations.",
