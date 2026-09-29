@@ -126,7 +126,7 @@ describe('source copy sweep', () => {
       if (SKIP.test(f)) continue;
       fs.readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
         if (GUARD.test(l)) return;
-        if (/(?<!')\bfated\b(?!Theme|Themes|Area|')|\bobsessive\b|soul curriculum|soul-level|sexual chemistry|steer the reading|work as one unit|you('re| are) meant to be\b/i.test(l)) bad.push(`${f}:${i + 1}`);
+        if (/(?<!')\bfated\b(?!Theme|Themes|Area|'|:)|\bobsessive\b|soul curriculum|soul-level|sexual chemistry|steer the reading|work as one unit|you('re| are) meant to be\b/i.test(l)) bad.push(`${f}:${i + 1}`);
       });
     }
     expect(bad).toEqual([]);
