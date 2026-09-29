@@ -11,6 +11,7 @@ import { signDegreesToLongitude } from '@/lib/houseCalculations';
 import { EnhancedPlanetDetails } from './EnhancedPlanetDetails';
 import { getDeepAspectInterpretation, getFormattedAspectNarrative } from '@/lib/aspectInterpretationsDeep';
 import { getEffectiveOrb as getEffectiveOrbNarr } from '@/lib/aspectOrbs';
+import { classifyAspect } from '@/lib/aspects/classifyAspect';
 import { chartRulerNote } from '@/lib/interpretation/chartRuler';
 import { getHouseArena } from '@/lib/interpretation/psychologicalFunctions';
 
@@ -586,11 +587,11 @@ const ChartRulerSection = ({
 
   if (!rulerData?.sign) return null;
 
-  const rulerLon = signToLongitude(rulerData.sign, rulerData.degree);
+  const rulerLon = signToLongitude(rulerData.sign, rulerData.degree, rulerData.minutes ?? 0);
   const rulerHouse = getPlanetHouse(rulerLon, natalChart.houseCusps);
 
   const modernRulerHouse = modernRulerData?.sign
-    ? getPlanetHouse(signToLongitude(modernRulerData.sign, modernRulerData.degree), natalChart.houseCusps)
+    ? getPlanetHouse(signToLongitude(modernRulerData.sign, modernRulerData.degree, modernRulerData.minutes ?? 0), natalChart.houseCusps)
     : null;
 
   const synthesis = chartRulerNote(ascendantSign, {
@@ -937,16 +938,17 @@ const calculateNatalAspects = (planets: NatalChart['planets']): NatalAspect[] =>
       
       if (!planet1?.sign || !planet2?.sign) continue;
       
-      const lon1 = signToLongitude(planet1.sign, planet1.degree);
-      const lon2 = signToLongitude(planet2.sign, planet2.degree);
+      const lon1 = signToLongitude(planet1.sign, planet1.degree, planet1.minutes ?? 0);
+      const lon2 = signToLongitude(planet2.sign, planet2.degree, planet2.minutes ?? 0);
       
       let diff = Math.abs(lon1 - lon2);
       if (diff > 180) diff = 360 - diff;
       
-      for (const aspectType of aspectTypes) {
+      // Tightest aspect by true degree geometry (never first-match, never by sign).
+      const best = classifyAspect(diff, aspectTypes, (n) => getEffectiveOrbNarr(planet1Key, planet2Key, n));
+      for (const aspectType of aspectTypes.filter((t) => t.name === best?.name)) {
         const orbValue = Math.abs(diff - aspectType.angle);
-        const effectiveOrb = getEffectiveOrbNarr(planet1Key, planet2Key, aspectType.name);
-        if (orbValue <= effectiveOrb) {
+        {
           // Try deep interpretation first, then fall back to original
           const deepInterp = getDeepAspectInterpretation(planet1Key, planet2Key, aspectType.name);
           
@@ -1407,7 +1409,7 @@ const PatternsAndTiming = ({
     
     if (transitData && natalPlanet?.sign) {
       const transitLon = signToLongitude(transitData.signName, transitData.degree);
-      const natalLon = signToLongitude(natalPlanet.sign, natalPlanet.degree);
+      const natalLon = signToLongitude(natalPlanet.sign, natalPlanet.degree, natalPlanet.minutes ?? 0);
       const diff = Math.abs(transitLon - natalLon);
       const normalizedDiff = diff > 180 ? 360 - diff : diff;
       if (normalizedDiff < 8) {
