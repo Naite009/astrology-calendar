@@ -572,57 +572,61 @@ const ChartRulerSection = ({
   const ruler = SIGN_RULERS[ascendantSign];
   if (!ruler) return null;
   
-  const rulerPlanet = ruler.modern || ruler.traditional;
-  const traditionalRuler = ruler.traditional;
-  const hasModernRuler = ruler.modern && ruler.modern !== ruler.traditional;
-  
-  // Get the ruler's placement
+  // Traditional ruler is the primary chart ruler; the modern ruler is a co-ruler.
+  const rulerPlanet = ruler.traditional;
+  const modernRuler = ruler.modern && ruler.modern !== ruler.traditional ? ruler.modern : null;
+  const hasModernRuler = !!modernRuler;
+
   const rulerData = natalChart.planets[rulerPlanet as keyof typeof natalChart.planets];
-  const traditionalRulerData = hasModernRuler 
-    ? natalChart.planets[traditionalRuler as keyof typeof natalChart.planets] 
+  const modernRulerData = modernRuler
+    ? natalChart.planets[modernRuler as keyof typeof natalChart.planets]
     : null;
-  
+
   if (!rulerData?.sign) return null;
-  
+
   const rulerLon = signToLongitude(rulerData.sign, rulerData.degree);
   const rulerHouse = getPlanetHouse(rulerLon, natalChart.houseCusps);
-  
-  const traditionalRulerHouse = traditionalRulerData?.sign
-    ? getPlanetHouse(signToLongitude(traditionalRulerData.sign, traditionalRulerData.degree), natalChart.houseCusps)
+
+  const modernRulerHouse = modernRulerData?.sign
+    ? getPlanetHouse(signToLongitude(modernRulerData.sign, modernRulerData.degree), natalChart.houseCusps)
     : null;
-  
+
+  const synthesis = chartRulerNote(ascendantSign, {
+    traditional: { sign: rulerData.sign, house: rulerHouse },
+    modern: modernRulerData?.sign ? { sign: modernRulerData.sign, house: modernRulerHouse } : undefined,
+  });
+
   const getHouseInterpretation = (planet: string, house: number | null): string => {
     if (!house) return '';
     const houseKey = `house${house}` as keyof typeof CHART_RULER_INTERPRETATIONS['Sun'];
-    return CHART_RULER_INTERPRETATIONS[planet]?.[houseKey] || 
-      `Your chart ruler in the ${house}${getOrdinal(house)} house brings themes of ${HOUSE_MEANINGS[house as keyof typeof HOUSE_MEANINGS]?.short || 'this area'} to the forefront of your life path.`;
+    return CHART_RULER_INTERPRETATIONS[planet]?.[houseKey] ||
+      `${planet} in the ${house}${getOrdinal(house)} house ties how you approach life to ${getHouseArena(house)}.`;
   };
-  
+
   return (
     <div className="mb-8 p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-lg border-2 border-purple-500/50">
       <h3 className="text-xl font-bold mb-5 text-purple-800 dark:text-purple-300">
         👑 Your Chart Ruler
       </h3>
-      
+
       <div className="p-5 bg-background/95 rounded-lg mb-4">
         <div className="text-sm text-muted-foreground mb-2">
           Your Ascendant is in <span className="font-bold text-foreground">{ascendantSign}</span>
           {hasModernRuler && (
-            <span> (Modern ruler: {rulerPlanet}, Traditional: {traditionalRuler})</span>
+            <span> (Traditional ruler: {rulerPlanet}, modern co-ruler: {modernRuler})</span>
           )}
         </div>
-        
+
         <div className="text-lg font-bold mb-3 text-purple-800 dark:text-purple-300">
           {getSymbol(rulerPlanet)} {rulerPlanet} in {rulerData.degree}° {rulerData.sign}
           {rulerHouse && ` • ${rulerHouse}${getOrdinal(rulerHouse)} House`}
           {rulerData.isRetrograde && ' ℞'}
         </div>
-        
+
         <div className="text-sm leading-relaxed text-foreground mb-3">
-          <strong>What this means:</strong> Your chart ruler is the planet that guides your entire life journey. 
-          It's like the captain of your ship, steering everything toward its themes.
+          <strong>What this means:</strong> {synthesis}
         </div>
-        
+
         <div className="p-4 bg-purple-50 dark:bg-purple-950/40 rounded border-l-4 border-purple-500">
           <div className="text-sm leading-relaxed text-foreground">
             {getHouseInterpretation(rulerPlanet, rulerHouse)}
@@ -632,15 +636,15 @@ const ChartRulerSection = ({
           </div>
         </div>
       </div>
-      
-      {hasModernRuler && traditionalRulerData?.sign && traditionalRulerHouse && (
+
+      {modernRuler && modernRulerData?.sign && (
         <div className="p-4 bg-background/80 rounded-lg">
           <div className="text-sm font-semibold mb-2 text-purple-700 dark:text-purple-400">
-            Traditional Ruler: {getSymbol(traditionalRuler)} {traditionalRuler} in {traditionalRulerData.degree}° {traditionalRulerData.sign}
-            {traditionalRulerHouse && ` • ${traditionalRulerHouse}${getOrdinal(traditionalRulerHouse)} House`}
+            Modern co-ruler: {getSymbol(modernRuler)} {modernRuler} in {modernRulerData.degree}° {modernRulerData.sign}
+            {modernRulerHouse && ` • ${modernRulerHouse}${getOrdinal(modernRulerHouse)} House`}
           </div>
           <div className="text-sm text-muted-foreground">
-            {getHouseInterpretation(traditionalRuler, traditionalRulerHouse)}
+            {getHouseInterpretation(modernRuler, modernRulerHouse)}
           </div>
         </div>
       )}
