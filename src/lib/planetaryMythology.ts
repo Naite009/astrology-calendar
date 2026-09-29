@@ -294,7 +294,7 @@ export const PLANETARY_MYTHOLOGY: MythologyEntry[] = [
       'The black chariot — the vehicle of transformation that erupts without warning',
       'Buried treasure — wealth and resources that can only be found underground',
     ],
-    psychologicalFunction: 'Pluto represents the process of death and rebirth, transformation through crisis, power dynamics, the shadow, intense preoccupation, and the capacity to regenerate. It is where you must die to who you were in order to become who you are meant to be.',
+    psychologicalFunction: 'Pluto represents the process of death and rebirth, transformation through crisis, power dynamics, the shadow, intense preoccupation, and the capacity to regenerate. It is where you must die to who you were so a more honest version of you can take shape.',
     shadowExpression: 'All-consuming control, manipulation, power abuse, paranoia, destructiveness, refusing to let go, psychological coercion.',
     giftExpression: 'Profound transformation, psychological depth, resilience, capacity to heal deep wounds, empowerment, fearless truth-telling.',
     rulesSign: ['Scorpio'],
