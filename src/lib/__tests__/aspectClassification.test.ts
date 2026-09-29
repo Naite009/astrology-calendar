@@ -44,8 +44,8 @@ describe('aspect type comes from separation only', () => {
     ['Virgo', 29, 'Pisces', 29, 'opposition'],
     ['Virgo', 29, 'Aries', 1, 'opposition'],
     ['Pisces', 29.5, 'Aries', 0.5, 'conjunction'],
-    ['Pisces', 1, 'Scorpio', 29, 'trine'],
-    ['Aquarius', 29, 'Taurus', 1, 'square'],
+    ['Sagittarius', 29, 'Taurus', 1, 'trine'],
+    ['Aquarius', 29, 'Gemini', 1, 'square'],
   ])('%s %d° vs %s %d° = %s (incl. out-of-sign)', (s1, d1, s2, d2, want) => {
     // both argument orders must agree
     expect(angularSeparation(abs(s2 as string, d2 as number), abs(s1 as string, d1 as number))).toBeCloseTo(angularSeparation(abs(s1 as string, d1 as number), abs(s2 as string, d2 as number)));
