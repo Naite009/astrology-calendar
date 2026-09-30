@@ -135,17 +135,23 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
 }
 
+function houseLabel(house: number): string {
+  const mod100 = house % 100;
+  const suffix = mod100 >= 11 && mod100 <= 13 ? 'th' : house % 10 === 1 ? 'st' : house % 10 === 2 ? 'nd' : house % 10 === 3 ? 'rd' : 'th';
+  return `${house}${suffix}`;
+}
+
 function compensationForElement(element: ElementName, placements: BalancePlacement[]): string {
   const evidence: string[] = [];
   const signHits = placements.filter((p) => ELEMENT_SIGNS[element].includes(p.sign));
   const houseHits = placements.filter((p) => p.house && ELEMENT_HOUSES[element].includes(p.house));
   const angularBodies = placements.filter((p) => ELEMENT_BODIES[element].includes(p.body) && p.house && [1, 4, 7, 10].includes(p.house));
-  if (angularBodies.length) evidence.push(`${list(angularBodies.map((p) => `${p.body} in the ${p.house}th house`))} gives the related function extra visibility`);
+  if (angularBodies.length) evidence.push(`${list(angularBodies.map((p) => `${p.body} in the ${houseLabel(p.house ?? 0)} house`))} gives the related function extra visibility`);
   if (signHits.length) evidence.push(`${list(signHits.map((p) => `${p.body} in ${p.sign}`))} carries ${element.toLowerCase()} style directly`);
   const houseGroups = ELEMENT_HOUSES[element]
     .map((house) => ({ house, bodies: houseHits.filter((p) => p.house === house).map((p) => p.body) }))
     .filter((group) => group.bodies.length >= 2);
-  if (houseGroups.length) evidence.push(`${list(houseGroups.map((g) => `${g.bodies.join(' and ')} in the ${g.house}th house`))} repeats related real-life concerns`);
+  if (houseGroups.length) evidence.push(`${list(houseGroups.map((g) => `${g.bodies.join(' and ')} in the ${houseLabel(g.house)} house`))} repeats related real-life concerns`);
   if (!evidence.length) return `No strong ${element.toLowerCase()} compensation stands out from the associated signs, planets, or houses, so practical supports may matter more.`;
   return `The low count is modified by ${evidence.join('; ')}. This means the quality may be available through those specific parts of the chart even if it is not the default response.`;
 }

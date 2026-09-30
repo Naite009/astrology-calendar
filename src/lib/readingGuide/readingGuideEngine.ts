@@ -47,7 +47,7 @@ import {
 import {
   CORE_BODIES, HOUSE_CLUSTER_BODIES, PERSONAL_PLANETS, OUTER_PLANETS,
   BODY_MEANINGS, SIGN_MEANINGS, SIGN_ELEMENT, SIGN_MODALITY, SIGN_RULER,
-  ELEMENT_MEANINGS, MODALITY_MEANINGS, LOW_ELEMENT_READING, HOUSE_KEYWORDS,
+  ELEMENT_MEANINGS, MODALITY_MEANINGS, HOUSE_KEYWORDS,
   bodyLabel, factorChip,
 } from './factorMeanings';
 import { pairAspectReading, type AspectPairReading } from './aspectPairLibrary';
@@ -60,6 +60,13 @@ import {
   type PsychologicalAspectSynthesis,
   type PsychologicalMapRow,
 } from '@/lib/interpretation/psychologicalFunctions';
+import {
+  buildElementBalanceReading,
+  buildModalityBalanceReading,
+  type CombinedLightElementReading,
+  type LightElementReading,
+  type ModalityBalanceReading,
+} from '@/lib/interpretation/elementBalance';
 
 
 const ZODIAC = [
@@ -159,7 +166,8 @@ export interface ElementProfile {
   counts: Record<string, number>;
   dominant: string[];
   low: string[];
-  lowReadings: Array<{ element: string; headline: string; lines: string[]; note: string }>;
+  lowReadings: LightElementReading[];
+  combined: CombinedLightElementReading | null;
 }
 
 export interface ReadingGuide {
@@ -172,7 +180,7 @@ export interface ReadingGuide {
   /** "So what?" cards for the leading element and modality emphasis. */
   emphasisCards: ShorthandCard[];
   elements: ElementProfile;
-  modalities: { counts: Record<string, number>; dominant: string[]; low: string[]; note: string };
+  modalities: { counts: Record<string, number>; dominant: string[]; low: string[]; note: string; reading: ModalityBalanceReading };
   repeatedSigns: Array<{ sign: string; bodies: string[]; note: string }>;
   houseClusters: HouseCluster[];
   chartRuler: {
@@ -487,20 +495,22 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   const modMin = Math.min(...Object.values(modCounts));
   const dominantModalities = Object.keys(modCounts).filter((m) => modCounts[m] === modMax);
   const lowModalities = Object.keys(modCounts).filter((m) => modCounts[m] === modMin && modCounts[m] <= 1);
+  const balancePlacements = weighed.map((p) => ({ body: p.label, sign: p.sign, house: p.house }));
+  const elementBalance = buildElementBalanceReading(elCounts, balancePlacements);
+  const modalityBalance = buildModalityBalanceReading(modCounts, balancePlacements);
 
   const elements: ElementProfile = {
     counts: elCounts,
     dominant: dominantElements,
     low: lowElements,
-    lowReadings: lowElements.map((el) => {
-      const reading = LOW_ELEMENT_READING[el];
-      return {
-        element: el,
-        headline: reading ? applyStageVocabulary(reading.headline, stage) : `${el} is lightly represented`,
-        lines: (reading?.lines ?? []).map((l) => applyStageVocabulary(l, stage)),
-        note: `${elCounts[el]} of ${weighed.length} weighed placements are ${el}. Read this as a pattern in how things get processed, not as a missing quality.`,
-      };
-    }),
+    lowReadings: elementBalance.individual.map((reading) => sanitizeInterpretiveDeep({
+      ...reading,
+      behavior: applyStageVocabulary(reading.behavior, stage),
+      alternative: applyStageVocabulary(reading.alternative, stage),
+      support: applyStageVocabulary(reading.support, stage),
+      compensation: applyStageVocabulary(reading.compensation, stage),
+    })),
+    combined: elementBalance.combined ? sanitizeInterpretiveDeep(elementBalance.combined) : null,
   };
 
   // repeated signs (3+ of the weighed bodies)
@@ -1064,14 +1074,17 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     });
   }
   if (elements.low.length) {
+    const lowSummary = elements.combined
+      ? `${elements.combined.synthesis} ${elements.combined.alternative} ${elements.combined.support}`
+      : elements.lowReadings[0]
+        ? `${elements.lowReadings[0].behavior} ${elements.lowReadings[0].alternative} ${elements.lowReadings[0].support}`
+        : '';
     startHere.push({
       id: 'low-element',
       label: 'Lightly represented element',
-      shorthandLabel: null,
+      shorthandLabel: elements.combined?.label ?? elements.lowReadings[0]?.label ?? null,
       value: elements.low.map((e) => `${e} ${elCounts[e]}`).join(' · '),
-      note: elements.lowReadings[0]
-        ? `${elements.lowReadings[0].headline}. Frame it as a pattern, never as a missing quality.`
-        : 'Read as a pattern, not a defect.',
+      note: lowSummary,
       importance: 76,
     });
   }
@@ -1088,7 +1101,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     label: 'Modality balance',
     shorthandLabel: modCard?.label ?? null,
     value: Object.entries(modCounts).map(([m, n]) => `${m} ${n}`).join(' · '),
-    note: `${dominantModalities.join(' and ')} leads — ${dominantModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')}${lowModalities.length ? `. ${lowModalities.join(' and ')} is light, so ${lowModalities.map((m) => MODALITY_MEANINGS[m]).join('; ')} may take more deliberate effort.` : '.'}`,
+    note: `${modalityBalance.summary} ${modalityBalance.compensation}`.trim(),
     importance: 72,
   });
   const topConnections = rankConnections(placements, 12);
@@ -1136,8 +1149,11 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   if (!blends.some((b) => b.strength === 'Strong') && blends[0]) storyParts.push(blends[0].whatToSay);
   if (houseClusters[0]) storyParts.push(houseClusters[0].theme);
   if (elements.lowReadings[0]) {
+    const lowStory = elements.combined
+      ? `${elements.combined.synthesis} ${elements.combined.alternative}`
+      : `${elements.lowReadings[0].behavior} ${elements.lowReadings[0].alternative}`;
     storyParts.push(
-      speak(`${'{Sub}'} may not lead with ${elements.low[0].toLowerCase()}-style expression — ${elements.lowReadings[0].lines[0] ?? ''}`, stage)
+      speak(lowStory, stage)
     );
   }
   if (growth[1]) storyParts.push(growth[1].whatToSay);
@@ -1195,6 +1211,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       dominant: dominantModalities,
       low: lowModalities,
       note: `Counted across the ten planets plus the Ascendant (${weighed.length} placements).`,
+      reading: modalityBalance,
     },
     repeatedSigns,
     houseClusters,

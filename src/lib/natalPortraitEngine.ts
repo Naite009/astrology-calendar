@@ -26,6 +26,7 @@ import {
   type PsychologicalAspectSynthesis,
 } from '@/lib/interpretation/psychologicalFunctions';
 import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
+import { buildElementBalanceReading, buildModalityBalanceReading } from '@/lib/interpretation/elementBalance';
 
 export interface NatalPortrait {
   lifePurpose: LifePurposeSummary;
@@ -336,21 +337,6 @@ function domainPlanet(b: ReturnType<typeof getBodyData>[number], domainHint: str
     role: contextualRole(b.name, b.sign, b.house, domainHint),
     psychologicalJob: getPsychologicalFunction(b.name)?.shortFunction ?? 'Supporting symbolic function',
   };
-}
-
-function processingSummary(kind: 'element' | 'modality', counts: Record<string, number>): string {
-  const ordered = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const max = ordered[0]?.[1] ?? 0;
-  const leaders = ordered.filter(([, count]) => count === max).map(([name]) => name);
-  const lows = ordered.filter(([, count]) => count < max && count <= 2).map(([name]) => name);
-  const jobs = kind === 'element' ? ELEMENT_PROCESSING : MODALITY_PROCESSING;
-  const lead = leaders.length === 1
-    ? `${leaders[0]} is the most automatic channel. This person first ${jobs[leaders[0]].automatic}. The strength is ${jobs[leaders[0]].strength}. They tend to need ${jobs[leaders[0]].need}. Under pressure, the possible overuse is ${jobs[leaders[0]].overuse}.`
-    : `${leaders.join(' and ')} are tied, so there is no single default. The person may move between ${leaders.map((x) => jobs[x].automatic).join(' and ')} depending on the situation.`;
-  const low = lows.length
-    ? ` ${lows.join(' and ')} ${lows.length === 1 ? 'is' : 'are'} less automatic, not absent, and may need more deliberate use.`
-    : '';
-  return `${lead}${low}`;
 }
 
 function buildBigThreePsychology(life: Pick<LifePurposeSummary, 'sunSign' | 'moonSign' | 'risingSign' | 'sunHouse' | 'moonHouse'>): BigThreePsychology | null {
@@ -1028,6 +1014,9 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
 
   const elements = countElements(majorBodies);
   const modalities = countModalities(majorBodies);
+  const balancePlacements = majorBodies.map((body) => ({ body: body.name, sign: body.sign, house: body.house }));
+  const elementBalance = buildElementBalanceReading(elements, balancePlacements);
+  const modalityBalance = buildModalityBalanceReading(modalities, balancePlacements);
 
   const sunPos = chart.planets.Sun;
   const moonPos = chart.planets.Moon;
@@ -1066,8 +1055,8 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     elementBreakdown: elements,
     modalityBreakdown: modalities,
     bigThreePsychology: null,
-    elementPsychology: processingSummary('element', elements),
-    modalityPsychology: processingSummary('modality', modalities),
+    elementPsychology: elementBalance.summary,
+    modalityPsychology: `${modalityBalance.summary} ${modalityBalance.compensation} ${modalityBalance.evidence}`.trim(),
   };
   lifePurpose.bigThreePsychology = buildBigThreePsychology(lifePurpose);
 
