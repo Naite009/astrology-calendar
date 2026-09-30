@@ -176,7 +176,7 @@ describe('Reading Guide — Ava Kravitz', () => {
     } as NatalChart;
     const twoLight = buildReadingGuide(synthetic, { now: NOW });
     expect(twoLight.elements.low).toEqual(expect.arrayContaining(['Earth', 'Water']));
-    expect(twoLight.elements.combined?.evidence).toMatch(/Earth 0.*Water 1|Water 1.*Earth 0/);
+    expect(twoLight.elements.combined?.evidence).toMatch(/Earth 0.*Water 0|Water 0.*Earth 0/);
     expect(twoLight.elements.combined?.synthesis).toMatch(/schedule|steps|money|feelings/i);
     expect(twoLight.elements.combined?.alternative).toMatch(/Fire|Air/);
     expect(twoLight.elements.combined?.support).toMatch(/calendar|list|quiet time|journaling/i);

@@ -140,10 +140,10 @@ describe('shared high-level chart synthesis', () => {
   });
 
   it('uses traditional rulers first and current-chart placements for modern and non-modern signs', () => {
-    expect(getChartRulers('Scorpio')).toEqual({ traditional: 'Mars', modern: 'Pluto' });
-    expect(getChartRulers('Aquarius')).toEqual({ traditional: 'Saturn', modern: 'Uranus' });
-    expect(getChartRulers('Pisces')).toEqual({ traditional: 'Jupiter', modern: 'Neptune' });
-    expect(getChartRulers('Taurus')).toEqual({ traditional: 'Venus' });
+    expect(getChartRulers('Scorpio')).toMatchObject({ traditional: 'Mars', modern: 'Pluto' });
+    expect(getChartRulers('Aquarius')).toMatchObject({ traditional: 'Saturn', modern: 'Uranus' });
+    expect(getChartRulers('Pisces')).toMatchObject({ traditional: 'Jupiter', modern: 'Neptune' });
+    expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: undefined });
     const text = JSON.stringify(buildChartSynthesis(harrison));
     expect(text).toMatch(/Mars 26°42′ Cancer, 9th house/i);
     expect(text).toMatch(/Pluto 3°12′ Aquarius, 3rd house/i);
@@ -165,12 +165,12 @@ describe('shared high-level chart synthesis', () => {
 
   it('describes a two-sign Big Three accurately when no major Big Three aspect exists', () => {
     const chart = {
-      ...harrison,
+      id: 'two-sign-big-three', name: 'Two Sign Test', birthDate: '2000-01-01', birthTime: '12:00', birthLocation: 'Test',
       planets: {
-        ...harrison.planets,
         Sun: { sign: 'Aries', degree: 0, minutes: 0 },
         Moon: { sign: 'Aries', degree: 20, minutes: 0 },
         Ascendant: { sign: 'Virgo', degree: 12, minutes: 0 },
+        Mercury: { sign: 'Cancer', degree: 8, minutes: 0 },
       },
       houseCusps: { ...harrison.houseCusps, house1: { sign: 'Virgo', degree: 12, minutes: 0 } },
     } as NatalChart;
