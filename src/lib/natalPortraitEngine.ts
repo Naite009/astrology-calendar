@@ -27,8 +27,10 @@ import {
 } from '@/lib/interpretation/psychologicalFunctions';
 import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
 import { buildElementBalanceReading, buildModalityBalanceReading } from '@/lib/interpretation/elementBalance';
+import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 
 export interface NatalPortrait {
+  synthesis: ChartSynthesis;
   lifePurpose: LifePurposeSummary;
   topThemes: RankedTheme[];
   relationshipBlueprint: DomainDeepDive;
@@ -1025,6 +1027,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     .map(a => synthesisFromRankedAspect(a));
 
   return sanitizeInterpretiveDeep<NatalPortrait>({
+    synthesis: buildChartSynthesis(chart),
     lifePurpose,
     topThemes: rankTopThemes(chart, bodies),
     relationshipBlueprint: buildRelationshipDomain(chart, bodies),

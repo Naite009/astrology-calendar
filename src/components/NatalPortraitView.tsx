@@ -14,6 +14,7 @@ import { buildSectionArchetypes, type SectionArchetype } from '@/lib/natal/secti
 import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
+import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
 import type { ExportMeta } from '@/lib/pdfDocEngine';
 import { getPsychologicalFunction, getSignStyle, getHouseArena, type PsychologicalAspectSynthesis } from '@/lib/interpretation/psychologicalFunctions';
@@ -755,6 +756,8 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
           }}
         />
       </div>
+
+      <ChartSynthesisSection synthesis={portrait.synthesis} />
 
       {/* 1. Life Purpose & Core Identity */}
       <LifePurposeSection portrait={portrait} archetype={archetypes.lifePurpose} />

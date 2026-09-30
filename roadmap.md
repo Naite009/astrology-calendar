@@ -53,7 +53,7 @@
 - [x] Replaced leaked authoring guidance and abstract low-count wording with everyday behavior, alternative processing, practical supports, and chart-specific compensation.
 - [x] Added combined two-light-element synthesis and concrete dominant/light modality behavior across Natal Portrait, Chart Walkthrough, and Foundations.
 
-## In progress: shared natal synthesis
-- [ ] Build one deterministic, evidence-ranked synthesis shared by Natal Portrait and Chart Walkthrough.
-- [ ] Place “What This Chart Is Really Saying” near the top of both reading surfaces without replacing detailed sections.
-- [ ] Validate distinct outputs for three structurally different charts, then run focused/full tests, typecheck, build, and rendered UI checks.
+## Done: shared natal synthesis
+- [x] Build one deterministic, evidence-ranked synthesis shared by Natal Portrait and Chart Walkthrough.
+- [x] Place “What This Chart Is Really Saying” near the top of both reading surfaces without replacing detailed sections.
+- [x] Validated distinct Ava, Max, and Harrison outputs; focused/full tests, typecheck, build, and rendered UI checks pass.
