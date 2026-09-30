@@ -143,7 +143,7 @@ describe('shared high-level chart synthesis', () => {
     expect(getChartRulers('Scorpio')).toMatchObject({ traditional: 'Mars', modern: 'Pluto' });
     expect(getChartRulers('Aquarius')).toMatchObject({ traditional: 'Saturn', modern: 'Uranus' });
     expect(getChartRulers('Pisces')).toMatchObject({ traditional: 'Jupiter', modern: 'Neptune' });
-    expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: undefined });
+    expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: null });
     const text = JSON.stringify(buildChartSynthesis(harrison));
     expect(text).toMatch(/Mars 26°42′ Cancer, 9th house/i);
     expect(text).toMatch(/Pluto 3°12′ Aquarius, 3rd house/i);
