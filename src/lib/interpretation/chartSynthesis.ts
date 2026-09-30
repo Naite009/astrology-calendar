@@ -113,10 +113,6 @@ function aspectEvidence(aspect: RankedAspect): string {
   return `${aspect.a} in ${aspect.aSign} ${aspect.aspect} ${aspect.b} in ${aspect.bSign}, ${aspect.orb.toFixed(1)}° orb.${outOfSign}`;
 }
 
-function signal(score: number): SynthesisSignal {
-  return score >= 90 ? 'Strong' : 'Moderate';
-}
-
 function firstSentences(text: string, count = 2): string {
   return (text.match(/[^.!?]+[.!?]+/g) ?? [text]).slice(0, count).join(' ').trim();
 }
@@ -157,7 +153,9 @@ export function buildChartSynthesis(
       ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b} means these needs do not stay separate: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
       : repeated === 1
         ? `All three use ${sun.sign}, so the inner aim, emotional response, and first approach reinforce the same style.`
-        : `Because the three use different signs, first impressions, inner purpose, and emotional needs may not all ask for the same response at once.`;
+        : repeated === 2
+          ? `Two of the Big Three share one sign style, while the third adds a different need or response that modifies the repeated pattern.`
+          : `Because all three use different signs, first impressions, inner purpose, and emotional needs may not all ask for the same response at once.`;
     candidates.push({
       id: 'big-three', title: repeated === 1 ? `${sun.sign} Across the Big Three` : 'Inner Needs and Outer Approach',
       score: bigThreeAspect ? 98 : repeated <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
@@ -305,13 +303,9 @@ export function buildChartSynthesis(
   const selected: Candidate[] = [];
   for (const candidate of ranked) {
     if (selected.length >= 3) break;
-    if (!overlaps(candidate, selected) || selected.length < 2) selected.push(candidate);
+    if (!overlaps(candidate, selected)) selected.push(candidate);
   }
-  for (const candidate of ranked) {
-    if (selected.length >= 3) break;
-    if (!selected.includes(candidate)) selected.push(candidate);
-  }
-  const final = selected.slice(0, 3).map((candidate) => ({ ...candidate, signal: signal(candidate.score) }));
+  const final = selected.slice(0, 3);
   const summary = final.flatMap((candidate) => candidate.summary).slice(0, 6).map((line) => stageText(line, stage));
   const recognitionPoints = final.slice(0, 3).map((candidate) => stageText(candidate.recognition, stage));
   const whatHelps = stageText(final[0]?.practicalTakeaway ?? 'Use the strongest pattern as a question to test against ordinary life, not as a fixed verdict.', stage);

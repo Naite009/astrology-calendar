@@ -5,6 +5,7 @@
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { signDegreesToLongitude, getNatalPlanetHouse, getHouseForLongitude } from '@/lib/houseCalculations';
 import { getEffectiveOrb, STANDARD_ASPECTS } from '@/lib/aspectOrbs';
+import { angularSeparation, classifyAspect } from '@/lib/aspects/classifyAspect';
 
 export type AspectName =
   | 'conjunction' | 'opposition' | 'trine' | 'square'
@@ -131,11 +132,6 @@ function isAngular(house: number | null): boolean {
   return house === 1 || house === 4 || house === 7 || house === 10;
 }
 
-function shortestSeparation(a: number, b: number): number {
-  const d = Math.abs(a - b) % 360;
-  return d > 180 ? 360 - d : d;
-}
-
 export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
   if (!chart?.planets) return [];
 
@@ -155,7 +151,7 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
   const stackOf: Record<string, string[]> = {};
   for (const b of bodies) {
     stackOf[b.name] = bodies
-      .filter(o => o.name !== b.name && shortestSeparation(b.lon, o.lon) <= 3)
+      .filter(o => o.name !== b.name && angularSeparation(b.lon, o.lon) <= 3)
       .map(o => o.name);
   }
 
@@ -169,14 +165,16 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
       if ((A.name === 'NorthNode' && B.name === 'SouthNode') ||
           (A.name === 'SouthNode' && B.name === 'NorthNode')) continue;
 
-      const sep = shortestSeparation(A.lon, B.lon);
-
-      for (const aspectDef of STANDARD_ASPECTS) {
-        const orb = Math.abs(sep - aspectDef.angle);
-        const maxOrb = getEffectiveOrb(A.name, B.name, aspectDef.name);
-        if (orb > maxOrb) continue;
-
-        const aspect = aspectDef.name as AspectName;
+      const sep = angularSeparation(A.lon, B.lon);
+      const classified = classifyAspect(
+        sep,
+        STANDARD_ASPECTS,
+        (aspectName) => getEffectiveOrb(A.name, B.name, aspectName),
+      );
+      if (classified) {
+        const orb = classified.orb;
+        const maxOrb = getEffectiveOrb(A.name, B.name, classified.name);
+        const aspect = classified.name as AspectName;
         const signA = getBodySign(chart, A.name);
         const signB = getBodySign(chart, B.name);
         const dissociate = isDissociate(aspect, signA, signB);
@@ -206,7 +204,7 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
           bRetro: !!pB?.isRetrograde,
           aspect,
           symbol: ASPECT_SYMBOLS[aspect],
-          exactAngle: aspectDef.angle,
+          exactAngle: classified.angle,
           separation: sep,
           orb,
           maxOrb,
@@ -216,7 +214,6 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
           stackedWithB: stackOf[B.name] || [],
           score,
         });
-        break; // a pair can only match one aspect cleanly
       }
     }
   }

@@ -476,10 +476,8 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   const byBody = new Map(placements.map((p) => [p.body, p]));
   const clusterBodies = placements.filter((p) => (HOUSE_CLUSTER_BODIES as readonly string[]).includes(p.body));
 
-  // elements / modalities: 10 planets + Ascendant (the bodies a reader actually weighs)
-  const weighed = placements.filter(
-    (p) => (HOUSE_CLUSTER_BODIES as readonly string[]).includes(p.body) || p.body === 'Ascendant'
-  );
+  // Elements and modalities use the same ten major planets as Natal Portrait.
+  const weighed = clusterBodies;
   const elCounts: Record<string, number> = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
   const modCounts: Record<string, number> = { Cardinal: 0, Fixed: 0, Mutable: 0 };
   for (const p of weighed) {
@@ -1213,7 +1211,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
       counts: modCounts,
       dominant: dominantModalities,
       low: lowModalities,
-      note: `Counted across the ten planets plus the Ascendant (${weighed.length} placements).`,
+      note: `Counted across the ten major planets (${weighed.length} placements).`,
       reading: modalityBalance,
     },
     repeatedSigns,

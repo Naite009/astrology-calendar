@@ -15,6 +15,7 @@ import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
+import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
 import type { ExportMeta } from '@/lib/pdfDocEngine';
 import { getPsychologicalFunction, getSignStyle, getHouseArena, type PsychologicalAspectSynthesis } from '@/lib/interpretation/psychologicalFunctions';
@@ -602,10 +603,7 @@ const LifetimeWisdomSection = ({ wisdom, archetype }: { wisdom: LifetimeWisdom; 
 
 export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortraitViewProps) => {
   const allCharts = useMemo(() => {
-    const charts: NatalChart[] = [];
-    if (userNatalChart) charts.push(userNatalChart);
-    charts.push(...savedCharts.filter(c => c.id !== userNatalChart?.id));
-    return charts;
+    return buildSelectableCharts(userNatalChart, savedCharts);
   }, [userNatalChart, savedCharts]);
 
   const [selectedChartId, setSelectedChartId] = useState(allCharts[0]?.id || '');
@@ -631,7 +629,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
     }
   }, [allCharts, selectedChartId]);
 
-  const selectedChart = allCharts.find(c => c.id === selectedChartId) || allCharts[0];
+  const selectedChart = resolveSelectedChart(allCharts, selectedChartId);
 
   const hasCoreBodies = Boolean(selectedChart?.planets?.Sun?.sign && selectedChart?.planets?.Moon?.sign);
 

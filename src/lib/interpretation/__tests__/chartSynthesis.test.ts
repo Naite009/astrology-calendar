@@ -5,6 +5,9 @@ import { buildChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 import { generateNatalPortrait } from '@/lib/natalPortraitEngine';
 import { buildReadingGuide } from '@/lib/readingGuide/readingGuideEngine';
 import { findForbiddenPhrases } from '@/lib/interpretation/languagePolicy';
+import { getHouseForLongitude, signDegreesToLongitude } from '@/lib/houseCalculations';
+import { computeRankedAspects } from '@/lib/aspectRanking';
+import { getChartRulers } from '@/lib/interpretation/chartRuler';
 
 function calculatedChart(input: {
   id: string; name: string; date: string; time: string; latitude: number; longitude: number; timezoneId: string; place: string;
@@ -86,6 +89,118 @@ describe('shared high-level chart synthesis', () => {
     expect(generateNatalPortrait(ava).synthesis).toEqual(buildChartSynthesis(ava));
     expect(buildReadingGuide(ava, { stageOverride: 'teen', now: new Date('2026-09-30T00:00:00Z') }).synthesis)
       .toEqual(buildChartSynthesis(ava, { stage: 'teen' }));
+  });
+
+  it('keeps cross-surface element and modality counts on the same ten major planets', () => {
+    for (const chart of cases) {
+      const portrait = generateNatalPortrait(chart);
+      const guide = buildReadingGuide(chart, { stageOverride: 'adult' });
+      expect(guide.elements.counts).toEqual(portrait.lifePurpose.elementBreakdown);
+      expect(guide.modalities.counts).toEqual(portrait.lifePurpose.modalityBreakdown);
+      expect(Object.values(guide.elements.counts).reduce((sum, count) => sum + count, 0)).toBe(10);
+      expect(guide.modalities.note).toMatch(/ten major planets \(10 placements\)/i);
+    }
+  });
+
+  it('uses canonical cusp precision and late-degree positions without rounded-label recomputation', () => {
+    const cuspChart = {
+      ...harrison,
+      planets: {
+        ...harrison.planets,
+        Sun: { sign: 'Taurus', degree: 0, minutes: 0 },
+        Moon: { sign: 'Aries', degree: 29, minutes: 59 },
+      },
+      houseCusps: Object.fromEntries([
+        'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+        'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+      ].map((sign, index) => [`house${index + 1}`, { sign, degree: 0, minutes: 0 }])),
+    } as NatalChart;
+    expect(getHouseForLongitude(signDegreesToLongitude('Taurus', 0, 0), cuspChart)).toBe(2);
+    expect(getHouseForLongitude(signDegreesToLongitude('Aries', 29, 59), cuspChart)).toBe(1);
+    const text = JSON.stringify(buildChartSynthesis(cuspChart));
+    expect(text).toMatch(/Sun 0°00′ Taurus, 2nd house/i);
+    expect(text).toMatch(/Moon 29°59′ Aries, 1st house/i);
+  });
+
+  it('classifies aspects by actual shortest-arc degrees and preserves out-of-sign majors', () => {
+    const chart = {
+      ...harrison,
+      planets: {
+        ...harrison.planets,
+        Sun: { sign: 'Aries', degree: 29, minutes: 0 },
+        Moon: { sign: 'Taurus', degree: 1, minutes: 0 },
+      },
+    } as NatalChart;
+    const aspects = computeRankedAspects(chart);
+    const sunMoon = aspects.find((aspect) => [aspect.a, aspect.b].includes('Sun') && [aspect.a, aspect.b].includes('Moon'));
+    expect(sunMoon).toMatchObject({ aspect: 'conjunction', orb: 2, dissociate: true });
+    expect(computeRankedAspects(harrison).find((aspect) =>
+      [aspect.a, aspect.b].includes('Sun') && [aspect.a, aspect.b].includes('Chiron'))?.aspect).toBe('quincunx');
+    expect(JSON.stringify(buildChartSynthesis(harrison))).not.toMatch(/Sun (opposition|opposite) Chiron/i);
+  });
+
+  it('uses traditional rulers first and current-chart placements for modern and non-modern signs', () => {
+    expect(getChartRulers('Scorpio')).toMatchObject({ traditional: 'Mars', modern: 'Pluto' });
+    expect(getChartRulers('Aquarius')).toMatchObject({ traditional: 'Saturn', modern: 'Uranus' });
+    expect(getChartRulers('Pisces')).toMatchObject({ traditional: 'Jupiter', modern: 'Neptune' });
+    expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: null });
+    const text = JSON.stringify(buildChartSynthesis(harrison));
+    expect(text).toMatch(/Mars 26°42′ Cancer, 9th house/i);
+    expect(text).toMatch(/Pluto 3°12′ Aquarius, 3rd house/i);
+  });
+
+  it('does not promote two major planets to a stellium or count points as major planets', () => {
+    const sparse = {
+      ...harrison,
+      planets: {
+        Sun: { sign: 'Aries', degree: 2, minutes: 0 },
+        Moon: { sign: 'Aries', degree: 18, minutes: 0 },
+        Ascendant: { sign: 'Aries', degree: 0, minutes: 0 },
+        NorthNode: { sign: 'Aries', degree: 8, minutes: 0 },
+        Chiron: { sign: 'Aries', degree: 12, minutes: 0 },
+      },
+    } as NatalChart;
+    expect(JSON.stringify(buildChartSynthesis(sparse))).not.toMatch(/stellium/i);
+  });
+
+  it('describes a two-sign Big Three accurately when no major Big Three aspect exists', () => {
+    const chart = {
+      id: 'two-sign-big-three', name: 'Two Sign Test', birthDate: '2000-01-01', birthTime: '12:00', birthLocation: 'Test',
+      planets: {
+        Sun: { sign: 'Aries', degree: 0, minutes: 0 },
+        Moon: { sign: 'Aries', degree: 20, minutes: 0 },
+        Ascendant: { sign: 'Virgo', degree: 12, minutes: 0 },
+        Mercury: { sign: 'Cancer', degree: 8, minutes: 0 },
+      },
+      houseCusps: { ...harrison.houseCusps, house1: { sign: 'Virgo', degree: 12, minutes: 0 } },
+    } as NatalChart;
+    const bigThree = buildChartSynthesis(chart).dynamics.find((dynamic) => dynamic.id === 'big-three');
+    expect(bigThree?.modifyingFactor).toMatch(/Two of the Big Three share/i);
+    expect(bigThree?.modifyingFactor).not.toMatch(/all three use different signs/i);
+  });
+
+  it('does not select overlapping top dynamics that reuse two or more bodies', () => {
+    const chart = {
+      ...harrison,
+      planets: {
+        ...harrison.planets,
+        Sun: { sign: 'Leo', degree: 2, minutes: 0 },
+        Moon: { sign: 'Leo', degree: 14, minutes: 0 },
+        Mercury: { sign: 'Leo', degree: 25, minutes: 0 },
+        Ascendant: { sign: 'Leo', degree: 18, minutes: 0 },
+      },
+      houseCusps: { ...harrison.houseCusps, house1: { sign: 'Leo', degree: 18, minutes: 0 } },
+    } as NatalChart;
+    const ids = buildChartSynthesis(chart).dynamics.map((dynamic) => dynamic.id);
+    expect(ids).toContain('big-three');
+    expect(ids).not.toContain('sign-concentration');
+  });
+
+  it('keeps chart facts and ranking invariant when developmental wording changes', () => {
+    const adult = buildChartSynthesis(ava, { stage: 'adult' });
+    const teen = buildChartSynthesis(ava, { stage: 'teen' });
+    expect(teen.dynamics.map(({ id, evidence, signal }) => ({ id, evidence, signal })))
+      .toEqual(adult.dynamics.map(({ id, evidence, signal }) => ({ id, evidence, signal })));
   });
 
   it('keeps Harrison geometry and Scorpio rulership accurate', () => {
