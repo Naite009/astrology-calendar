@@ -57,3 +57,9 @@
 - [x] Build one deterministic, evidence-ranked synthesis shared by Natal Portrait and Chart Walkthrough.
 - [x] Place “What This Chart Is Really Saying” near the top of both reading surfaces without replacing detailed sections.
 - [x] Validated distinct Ava, Max, and Harrison outputs; focused/full tests, typecheck, build, and rendered UI checks pass.
+
+## In progress: synthesis data-integrity audit
+- [ ] Enforce exact shared chart identity across Natal Portrait and Chart Walkthrough without silent fallback or stale output.
+- [ ] Align positions, houses, aspects, rulers, concentrations, and element/modality counts with canonical helpers.
+- [ ] Prevent duplicate evidence from occupying multiple top dynamics and verify age changes affect wording only.
+- [ ] Add boundary, fixture, cross-surface, selection, and provenance regressions; run full checks and rendered QA.
