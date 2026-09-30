@@ -121,6 +121,10 @@ function firstSentences(text: string, count = 2): string {
   return (text.match(/[^.!?]+[.!?]+/g) ?? [text]).slice(0, count).join(' ').trim();
 }
 
+function asClause(text: string): string {
+  return firstSentences(text, 1).replace(/[.!?]+$/, '').trim();
+}
+
 function overlaps(candidate: Candidate, selected: Candidate[]): boolean {
   return selected.some((prior) => {
     const sharedBodies = candidate.bodies.filter((body) => prior.bodies.includes(body)).length;
@@ -147,8 +151,8 @@ export function buildChartSynthesis(
       ['Sun', 'Moon', 'Ascendant'].includes(aspect.a) && ['Sun', 'Moon', 'Ascendant'].includes(aspect.b));
     const repeated = new Set([sun.sign, moon.sign, asc.sign]).size;
     const evidence = `${degreeLabel(sun)}; ${degreeLabel(moon)}; ${degreeLabel(asc)}.${bigThreeAspect ? ` ${aspectEvidence(bigThreeAspect)}` : ''}`;
-    const identity = `The Sun approaches identity in a way that is ${getSignStyle(sun.sign)}, while the Moon settles through a style that is ${getSignStyle(moon.sign)}.`;
-    const outer = `The ${asc.sign} Ascendant means other people first meet an approach that is ${getSignStyle(asc.sign)}.`;
+    const identity = `identity uses a ${sun.sign} style, emotional settling uses a ${moon.sign} style, and first impressions use a ${asc.sign} style`;
+    const outer = `Other people may meet ${getSignStyle(asc.sign)} before the Moon's needs are obvious.`;
     const modifier = bigThreeAspect
       ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b} means these needs do not stay separate: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
       : repeated === 1
@@ -158,12 +162,12 @@ export function buildChartSynthesis(
       id: 'big-three', title: repeated === 1 ? `${sun.sign} Across the Big Three` : 'Inner Needs and Outer Approach',
       score: bigThreeAspect ? 98 : repeated <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
       evidence, whyItMatters: 'The Sun, Moon, and Ascendant describe identity, emotional needs, and the approach other people meet first.',
-      realLifeTranslation: `${identity} ${outer}`,
+      realLifeTranslation: `In ordinary life, ${identity}. ${outer}`,
       modifyingFactor: modifier,
       practicalTakeaway: 'Notice which response is serving the inner need and which one is mainly managing the situation in front of you.',
       summary: [
-        `${evidence} Together, these describe the chart’s central relationship between identity, emotional needs, and first reactions.`,
-        `${identity} ${outer} ${modifier}`,
+        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)} show that ${identity}.`,
+        `${asClause(modifier)}, so the practical question is whether the immediate response also serves the underlying need.`,
       ],
       recognition: bigThreeAspect
         ? pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).mayShowUp[0]
@@ -195,8 +199,8 @@ export function buildChartSynthesis(
         modifyingFactor: modifier,
         practicalTakeaway: lived ? `Ask the recurring house question: ${lived.question}` : `Track what helps ${functionName} make a clear, usable choice.`,
         summary: [
-          `${rulerEvidence} This matters because the chart ruler carries the rising sign’s approach into everyday decisions.`,
-          `Attention may keep returning to ${arena}, handled in a way that is ${getSignStyle(primary.sign)}. ${modifier}`,
+          `${asc.sign} rising makes ${primary.body} the traditional chart ruler, and ${degreeLabel(primary)} pulls repeated choices toward ${arena}.`,
+          `${asClause(modifier)}, which changes how directly that ${primary.sign} style works in ordinary decisions.`,
         ],
         recognition: `You may notice repeated choices around ${lived?.focus ?? arena}, even when the immediate subject looks different.`,
       });
@@ -230,7 +234,10 @@ export function buildChartSynthesis(
       realLifeTranslation: translation,
       modifyingFactor: 'The planets do different jobs, so the concentration does not create one fixed trait; it makes several needs compete or cooperate in the same place.',
       practicalTakeaway: lived ? `Keep asking: ${lived.question}` : 'Separate what each planet is asking for before choosing one response for the whole group.',
-      summary: [`${evidence} This matters because several major functions keep returning to the same concern.`, `${translation} The planets still do different jobs, so this is a repeated focus rather than one fixed trait.`],
+      summary: [
+        `${names.join(', ')} in ${house ? `the ${ordinalHouse(house)}` : concentration.key}${isStellium ? ' form a major-planet stellium' : ' repeat the same area'}, making ${lived?.focus ?? `${concentration.key} concerns`} a recurring focus rather than a side note.`,
+        `${asClause(translation)}, although the planets still have different jobs and may compete over how to handle it.`,
+      ],
       recognition: lived ? `Other people may notice ${lived.othersNotice}.` : `You may notice the same style appearing in several kinds of decision.`,
     });
   }
@@ -253,7 +260,10 @@ export function buildChartSynthesis(
         ? 'It is out of sign: the degree geometry is real, while the signs use styles that do not naturally perform that aspect in the same way.'
         : `${topAspect.aSign} and ${topAspect.bSign} support the same by-sign geometry as the exact degree aspect.`,
       practicalTakeaway: reading.watchFor,
-      summary: [`${evidence} ${reading.howItWorks[0]}`, `${reading.mayShowUp[0]} ${topAspect.dissociate ? 'Because it is out of sign, the signs modify how directly the aspect is expressed.' : reading.watchFor}`],
+      summary: [
+        `${topAspect.a} in ${topAspect.aSign} ${topAspect.aspect} ${topAspect.b} in ${topAspect.bSign}, ${topAspect.orb.toFixed(1)}° orb, repeatedly links these functions: ${asClause(reading.howItWorks[0]).replace(/^./, (letter) => letter.toLowerCase())}.`,
+        `${asClause(reading.mayShowUp[0])}, while ${topAspect.dissociate ? 'the out-of-sign styles make the degree contact less straightforward' : asClause(reading.watchFor).replace(/^./, (letter) => letter.toLowerCase())}.`,
+      ],
       recognition: reading.mayShowUp[1] ?? reading.mayShowUp[0],
     });
   }
@@ -283,7 +293,10 @@ export function buildChartSynthesis(
       realLifeTranslation: translation,
       modifyingFactor: firstSentences(low?.compensation ?? modalityReading.compensation),
       practicalTakeaway: low?.support ?? 'Use the strongest channel deliberately, then check whether another kind of information changes the decision.',
-      summary: [`${evidence} ${translation}`, `${firstSentences(low?.compensation ?? modalityReading.compensation)} This modifies the count without erasing the overall pattern.`],
+      summary: [
+        `${evidence} ${asClause(translation)}.`,
+        `${asClause(firstSentences(low?.compensation ?? modalityReading.compensation, 1))}, which modifies the count without erasing the overall pattern.`,
+      ],
       recognition: low?.alternative ?? elementReading.summary,
     });
   }
@@ -291,15 +304,15 @@ export function buildChartSynthesis(
   const ranked = candidates.sort((a, b) => b.score - a.score);
   const selected: Candidate[] = [];
   for (const candidate of ranked) {
-    if (selected.length >= 4) break;
+    if (selected.length >= 3) break;
     if (!overlaps(candidate, selected) || selected.length < 2) selected.push(candidate);
   }
   for (const candidate of ranked) {
     if (selected.length >= 3) break;
     if (!selected.includes(candidate)) selected.push(candidate);
   }
-  const final = selected.slice(0, 4).map((candidate) => ({ ...candidate, signal: signal(candidate.score) }));
-  const summary = final.flatMap((candidate) => candidate.summary).slice(0, 8).map((line) => stageText(line, stage));
+  const final = selected.slice(0, 3).map((candidate) => ({ ...candidate, signal: signal(candidate.score) }));
+  const summary = final.flatMap((candidate) => candidate.summary).slice(0, 6).map((line) => stageText(line, stage));
   const recognitionPoints = final.slice(0, 3).map((candidate) => stageText(candidate.recognition, stage));
   const whatHelps = stageText(final[0]?.practicalTakeaway ?? 'Use the strongest pattern as a question to test against ordinary life, not as a fixed verdict.', stage);
 
