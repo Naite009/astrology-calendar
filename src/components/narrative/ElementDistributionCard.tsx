@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { PlanetHouseInfo } from '@/lib/narrativeAnalysisEngine';
-import { getElementTeaching } from '@/lib/elementTeachings';
 import { ELEMENT_COLORS, SIGN_POLARITY, SIGN_AXES, SignAxis } from '@/lib/zodiacSignEncyclopedia';
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -78,8 +77,6 @@ export function ElementDistributionCard({ planetHouses }: Props) {
             const pct = total > 0 ? Math.round((count / total) * 100) : 0;
             const ec = ELEMENT_COLORS[element];
             const planetsInElement = elementPlanets[element];
-            const teaching = getElementTeaching(element);
-
             return (
               <div key={element} className={`p-3 rounded-lg border ${ec.border} ${ec.bg}`}>
                 <div className="flex items-center justify-between mb-2">
