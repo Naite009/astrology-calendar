@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { PlanetHouseInfo } from '@/lib/narrativeAnalysisEngine';
-import { getElementTeaching } from '@/lib/elementTeachings';
 import { ELEMENT_COLORS, SIGN_POLARITY, SIGN_AXES, SignAxis } from '@/lib/zodiacSignEncyclopedia';
 import { ElementSelfAssessment } from '@/components/sacredscript/ElementSelfAssessment';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
+import { buildElementBalanceReading } from '@/lib/interpretation/elementBalance';
 
 interface Props {
   planetHouses: PlanetHouseInfo[];
@@ -55,6 +55,10 @@ export function ElementDistributionCard({ planetHouses }: Props) {
 
   const total = planetHouses.length;
   const yangPct = total > 0 ? Math.round((yangPlanets.length / total) * 100) : 50;
+  const balance = useMemo(
+    () => buildElementBalanceReading(elementCounts, planetHouses.map((p) => ({ body: p.planet, sign: p.sign, house: p.house }))),
+    [elementCounts, planetHouses],
+  );
 
   return (
     <div className="space-y-6">
@@ -73,8 +77,6 @@ export function ElementDistributionCard({ planetHouses }: Props) {
             const pct = total > 0 ? Math.round((count / total) * 100) : 0;
             const ec = ELEMENT_COLORS[element];
             const planetsInElement = elementPlanets[element];
-            const teaching = getElementTeaching(element);
-
             return (
               <div key={element} className={`p-3 rounded-lg border ${ec.border} ${ec.bg}`}>
                 <div className="flex items-center justify-between mb-2">
@@ -93,21 +95,15 @@ export function ElementDistributionCard({ planetHouses }: Props) {
                   {count === 0 && <span className="text-xs text-muted-foreground italic">No planets</span>}
                 </div>
 
-                {/* Missing / low element interpretation */}
-                {count === 0 && teaching && (
-                  <div className="mt-2 p-2 rounded bg-background/50 border border-dashed border-current/10">
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1">Missing {element} — how this shows up:</p>
-                    <ul className="text-[10px] text-muted-foreground space-y-0.5">
-                      {teaching.lackSymptoms.slice(0, 3).map((s, i) => (
-                        <li key={i}>• {s}</li>
-                      ))}
-                    </ul>
+                {/* Concrete low-element interpretation from the shared balance layer. */}
+                {balance.individual.find((reading) => reading.element === element) && (
+                  <div className="mt-2 p-2 rounded bg-background/50 border border-dashed border-current/10 space-y-1">
+                    <p className="text-[10px] font-medium text-foreground">{balance.individual.find((reading) => reading.element === element)?.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{balance.individual.find((reading) => reading.element === element)?.behavior}</p>
+                    <p className="text-[10px] text-muted-foreground">{balance.individual.find((reading) => reading.element === element)?.alternative}</p>
+                    <p className="text-[10px] text-muted-foreground">What can balance this: {balance.individual.find((reading) => reading.element === element)?.support}</p>
+                    <p className="text-[10px] text-muted-foreground">What may compensate: {balance.individual.find((reading) => reading.element === element)?.compensation}</p>
                   </div>
-                )}
-                {count === 1 && teaching && (
-                  <p className="text-[10px] text-muted-foreground mt-1 italic">
-                    Low {element} — only {planetsInElement[0]}. May need conscious development or may be already internalized.
-                  </p>
                 )}
                 {count >= 4 && (
                   <p className="text-[10px] text-muted-foreground mt-1 italic">

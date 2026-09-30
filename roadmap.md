@@ -48,3 +48,7 @@
 - [x] Replaced vague house emphasis with shared lived descriptions for all twelve houses: attention, repeated choices, what others notice, and a recurring question.
 - [x] Kept exact house, planet count, named planets, and stellium evidence visible across Natal Portrait and Chart Walkthrough.
 - [x] Added regression guards against vague house phrases without changing chart calculations.
+
+## Done: concrete element and modality balance
+- [x] Replaced leaked authoring guidance and abstract low-count wording with everyday behavior, alternative processing, practical supports, and chart-specific compensation.
+- [x] Added combined two-light-element synthesis and concrete dominant/light modality behavior across Natal Portrait, Chart Walkthrough, and Foundations.

@@ -26,6 +26,7 @@ import {
   type PsychologicalAspectSynthesis,
 } from '@/lib/interpretation/psychologicalFunctions';
 import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
+import { buildElementBalanceReading, buildModalityBalanceReading } from '@/lib/interpretation/elementBalance';
 
 export interface NatalPortrait {
   lifePurpose: LifePurposeSummary;
@@ -221,48 +222,6 @@ const SIGN_STYLE: Record<string, string> = {
   Pisces: 'with intuitive, compassionate, boundary-dissolving sensitivity',
 };
 
-const ELEMENT_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
-  Fire: {
-    automatic: 'moves toward action, momentum, and the next live possibility',
-    strength: 'starting, recovering enthusiasm, and giving other people a clear signal',
-    need: 'a goal that feels alive and enough freedom to act',
-    overuse: 'acting before the slower information has arrived',
-  },
-  Earth: {
-    automatic: 'looks for what is workable, proven, and possible to sustain',
-    strength: 'turning an idea into steps, noticing practical limits, and following through',
-    need: 'time, a concrete plan, and results that can be checked',
-    overuse: 'staying with the familiar because it is reliable, even after a change is needed',
-  },
-  Air: {
-    automatic: 'sorts experience through words, comparison, questions, and other viewpoints',
-    strength: 'making connections, explaining a pattern, and seeing more than one side',
-    need: 'conversation, mental room, and an explanation that makes sense',
-    overuse: 'explaining a feeling instead of pausing long enough to feel it',
-  },
-  Water: {
-    automatic: 'reads mood, tone, trust, and what is happening underneath the words',
-    strength: 'noticing what is unsaid, remembering emotional meaning, and responding with care',
-    need: 'privacy, emotional honesty, and time to let a reaction settle',
-    overuse: 'treating the atmosphere around them as if it were entirely theirs to carry',
-  },
-};
-
-const MODALITY_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
-  Cardinal: {
-    automatic: 'opens the next phase and makes the first move', strength: 'creating momentum when nothing has started',
-    need: 'a meaningful direction and some say in how it begins', overuse: 'opening another path before the current one has a chance to develop',
-  },
-  Fixed: {
-    automatic: 'holds a position, promise, or process steady', strength: 'stamina, loyalty, and carrying work through the middle',
-    need: 'a sound reason for change and time to adjust', overuse: 'protecting consistency after flexibility would be more useful',
-  },
-  Mutable: {
-    automatic: 'revises the approach as new information arrives', strength: 'adapting quickly and finding another workable route',
-    need: 'variety and permission to refine the plan', overuse: 'changing direction before one approach has been tested long enough',
-  },
-};
-
 function contextualRole(planetName: string, sign: string, house: number | null, domainHint: string): string {
   const style = SIGN_STYLE[sign] || `through ${sign} energy`;
   const area = house ? HOUSE_LIFE_AREA[house] || `house ${house}` : 'your chart';
@@ -336,21 +295,6 @@ function domainPlanet(b: ReturnType<typeof getBodyData>[number], domainHint: str
     role: contextualRole(b.name, b.sign, b.house, domainHint),
     psychologicalJob: getPsychologicalFunction(b.name)?.shortFunction ?? 'Supporting symbolic function',
   };
-}
-
-function processingSummary(kind: 'element' | 'modality', counts: Record<string, number>): string {
-  const ordered = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const max = ordered[0]?.[1] ?? 0;
-  const leaders = ordered.filter(([, count]) => count === max).map(([name]) => name);
-  const lows = ordered.filter(([, count]) => count < max && count <= 2).map(([name]) => name);
-  const jobs = kind === 'element' ? ELEMENT_PROCESSING : MODALITY_PROCESSING;
-  const lead = leaders.length === 1
-    ? `${leaders[0]} is the most automatic channel. This person first ${jobs[leaders[0]].automatic}. The strength is ${jobs[leaders[0]].strength}. They tend to need ${jobs[leaders[0]].need}. Under pressure, the possible overuse is ${jobs[leaders[0]].overuse}.`
-    : `${leaders.join(' and ')} are tied, so there is no single default. The person may move between ${leaders.map((x) => jobs[x].automatic).join(' and ')} depending on the situation.`;
-  const low = lows.length
-    ? ` ${lows.join(' and ')} ${lows.length === 1 ? 'is' : 'are'} less automatic, not absent, and may need more deliberate use.`
-    : '';
-  return `${lead}${low}`;
 }
 
 function buildBigThreePsychology(life: Pick<LifePurposeSummary, 'sunSign' | 'moonSign' | 'risingSign' | 'sunHouse' | 'moonHouse'>): BigThreePsychology | null {
@@ -1028,6 +972,9 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
 
   const elements = countElements(majorBodies);
   const modalities = countModalities(majorBodies);
+  const balancePlacements = majorBodies.map((body) => ({ body: body.name, sign: body.sign, house: body.house }));
+  const elementBalance = buildElementBalanceReading(elements, balancePlacements);
+  const modalityBalance = buildModalityBalanceReading(modalities, balancePlacements);
 
   const sunPos = chart.planets.Sun;
   const moonPos = chart.planets.Moon;
@@ -1066,8 +1013,8 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     elementBreakdown: elements,
     modalityBreakdown: modalities,
     bigThreePsychology: null,
-    elementPsychology: processingSummary('element', elements),
-    modalityPsychology: processingSummary('modality', modalities),
+    elementPsychology: elementBalance.summary,
+    modalityPsychology: `${modalityBalance.summary} ${modalityBalance.compensation} ${modalityBalance.evidence}`.trim(),
   };
   lifePurpose.bigThreePsychology = buildBigThreePsychology(lifePurpose);
 

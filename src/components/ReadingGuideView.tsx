@@ -398,15 +398,33 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
         {guide.emphasisCards.map((c, i) => (
           <ShorthandCardBlock key={i} card={c} />
         ))}
+        {guide.elements.combined && (
+          <div className="rounded-sm border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-primary">Combined light elements</p>
+            <p className="text-sm font-medium text-foreground">{guide.elements.combined.label}</p>
+            <p className="text-[11px] text-muted-foreground">{guide.elements.combined.evidence}</p>
+            <p className="text-sm text-foreground">{guide.elements.combined.synthesis}</p>
+            <p className="text-xs text-muted-foreground">What may happen instead: {guide.elements.combined.alternative}</p>
+            <p className="text-xs text-muted-foreground">{guide.elements.combined.support}</p>
+            <p className="text-xs text-muted-foreground">What may compensate: {guide.elements.combined.compensation}</p>
+          </div>
+        )}
         {guide.elements.lowReadings.map((r) => (
           <div key={r.element} className="rounded-sm border border-dashed border-border p-3 space-y-1.5">
-            <p className="text-sm font-medium text-foreground">Low {r.element}: {r.headline}</p>
-            <ul className="list-disc pl-5 space-y-1">
-              {r.lines.map((l, i) => <li key={i} className="text-xs text-muted-foreground">{l}</li>)}
-            </ul>
-            <p className="text-[11px] text-muted-foreground">{r.note}</p>
+            <p className="text-sm font-medium text-foreground">Low {r.element}: {r.label}</p>
+            <p className="text-[11px] text-muted-foreground">{r.evidence}</p>
+            <p className="text-xs text-foreground">{r.behavior}</p>
+            <p className="text-xs text-muted-foreground">What may happen instead: {r.alternative}</p>
+            <p className="text-xs text-muted-foreground">What can balance this: {r.support}</p>
+            <p className="text-xs text-muted-foreground">What may compensate: {r.compensation}</p>
           </div>
         ))}
+        <div className="rounded-sm border border-dashed border-border p-3 space-y-1.5">
+          <p className="text-sm font-medium text-foreground">{guide.modalities.reading.label}</p>
+          <p className="text-xs text-foreground">{guide.modalities.reading.summary}</p>
+          {guide.modalities.reading.compensation && <p className="text-xs text-muted-foreground">{guide.modalities.reading.compensation}</p>}
+          <p className="text-[11px] text-muted-foreground">{guide.modalities.reading.evidence}</p>
+        </div>
       </Section>
 
       {/* 5. Personal planet groups */}

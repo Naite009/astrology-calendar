@@ -215,6 +215,14 @@ describe("Ava Kravitz natal portrait regression", () => {
     expect(label).toMatch(/grounds|meets|compass|motion/i);
     expect(label).not.toMatch(/balanced harmonizer|magnetic leader|complex person|unique energy/i);
   });
+
+  it('uses concrete low-element and modality behavior with compensation instead of authoring guidance', () => {
+    const portrait = generateNatalPortrait(chart);
+    const text = `${portrait.lifePurpose.elementPsychology} ${portrait.lifePurpose.modalityPsychology}`;
+    expect(text).toMatch(/first channel|first instinct|first thing|before|starting|staying|adjusting/i);
+    expect(text).toMatch(/balance|support|compensat|modified by/i);
+    expect(text).not.toMatch(/Frame it as a pattern|missing quality|may take more deliberate effort|is light, so/i);
+  });
 });
 
 describe('language policy sanitizer', () => {
