@@ -222,48 +222,6 @@ const SIGN_STYLE: Record<string, string> = {
   Pisces: 'with intuitive, compassionate, boundary-dissolving sensitivity',
 };
 
-const ELEMENT_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
-  Fire: {
-    automatic: 'moves toward action, momentum, and the next live possibility',
-    strength: 'starting, recovering enthusiasm, and giving other people a clear signal',
-    need: 'a goal that feels alive and enough freedom to act',
-    overuse: 'acting before the slower information has arrived',
-  },
-  Earth: {
-    automatic: 'looks for what is workable, proven, and possible to sustain',
-    strength: 'turning an idea into steps, noticing practical limits, and following through',
-    need: 'time, a concrete plan, and results that can be checked',
-    overuse: 'staying with the familiar because it is reliable, even after a change is needed',
-  },
-  Air: {
-    automatic: 'sorts experience through words, comparison, questions, and other viewpoints',
-    strength: 'making connections, explaining a pattern, and seeing more than one side',
-    need: 'conversation, mental room, and an explanation that makes sense',
-    overuse: 'explaining a feeling instead of pausing long enough to feel it',
-  },
-  Water: {
-    automatic: 'reads mood, tone, trust, and what is happening underneath the words',
-    strength: 'noticing what is unsaid, remembering emotional meaning, and responding with care',
-    need: 'privacy, emotional honesty, and time to let a reaction settle',
-    overuse: 'treating the atmosphere around them as if it were entirely theirs to carry',
-  },
-};
-
-const MODALITY_PROCESSING: Record<string, { automatic: string; strength: string; need: string; overuse: string }> = {
-  Cardinal: {
-    automatic: 'opens the next phase and makes the first move', strength: 'creating momentum when nothing has started',
-    need: 'a meaningful direction and some say in how it begins', overuse: 'opening another path before the current one has a chance to develop',
-  },
-  Fixed: {
-    automatic: 'holds a position, promise, or process steady', strength: 'stamina, loyalty, and carrying work through the middle',
-    need: 'a sound reason for change and time to adjust', overuse: 'protecting consistency after flexibility would be more useful',
-  },
-  Mutable: {
-    automatic: 'revises the approach as new information arrives', strength: 'adapting quickly and finding another workable route',
-    need: 'variety and permission to refine the plan', overuse: 'changing direction before one approach has been tested long enough',
-  },
-};
-
 function contextualRole(planetName: string, sign: string, house: number | null, domainHint: string): string {
   const style = SIGN_STYLE[sign] || `through ${sign} energy`;
   const area = house ? HOUSE_LIFE_AREA[house] || `house ${house}` : 'your chart';
