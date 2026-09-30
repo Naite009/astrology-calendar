@@ -177,7 +177,7 @@ export function buildChartSynthesis(
       const rulerEvidence = `${asc.sign} rising makes ${primary.body} the traditional chart ruler. ${degreeLabel(primary)}.${modern ? ` ${degreeLabel(modern)} is the modern co-ruler.` : ''}`;
       const functionName = getPsychologicalFunction(primary.body)?.shortFunction.toLowerCase() ?? primary.body;
       const modifier = rulerAspect
-        ? `${aspectEvidence(rulerAspect)} modifies the ruler by repeatedly linking ${functionName} with ${getPsychologicalFunction(rulerAspect.a === primary.body ? rulerAspect.b : rulerAspect.a)?.shortFunction.toLowerCase() ?? 'another function'}.`
+        ? `${rulerAspect.a} in ${rulerAspect.aSign} ${rulerAspect.aspect} ${rulerAspect.b} in ${rulerAspect.bSign}, ${rulerAspect.orb.toFixed(1)}° orb, modifies the ruler by repeatedly linking ${functionName} with ${getPsychologicalFunction(rulerAspect.a === primary.body ? rulerAspect.b : rulerAspect.a)?.shortFunction.toLowerCase() ?? 'another function'}.`
         : modern
           ? `${modern.body} adds intensity through ${modern.house ? ordinalHouse(modern.house) : modern.sign}, but it does not replace ${primary.body} as the primary ruler.`
           : 'No equally strong major aspect to the ruler is needed to make this placement relevant; its house still shows where attention repeatedly returns.';
@@ -305,7 +305,7 @@ export function buildChartSynthesis(
     summary,
     recognitionPoints,
     whatHelps,
-    dynamics: final.map(({ summary: _summary, recognition: _recognition, bodies: _bodies, houses: _houses, ...dynamic }) => ({
+    dynamics: final.map(({ summary: _summary, recognition: _recognition, bodies: _bodies, houses: _houses, score: _score, ...dynamic }) => ({
       ...dynamic,
       evidence: stageText(dynamic.evidence, stage),
       whyItMatters: stageText(dynamic.whyItMatters, stage),
