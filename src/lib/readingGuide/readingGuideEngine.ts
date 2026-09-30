@@ -67,6 +67,7 @@ import {
   type LightElementReading,
   type ModalityBalanceReading,
 } from '@/lib/interpretation/elementBalance';
+import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 
 
 const ZODIAC = [
@@ -173,6 +174,7 @@ export interface ElementProfile {
 export interface ReadingGuide {
   subject: { name: string; birthDate: string; birthTime: string; birthLocation: string };
   age: AgeContext;
+  synthesis: ChartSynthesis;
   placements: CoreBodyPlacement[];
   bigThree: { sun?: CoreBodyPlacement; moon?: CoreBodyPlacement; ascendant?: CoreBodyPlacement };
   /** Big Three hierarchy card: Sun = centre, Moon = need, Ascendant = approach. */
@@ -1165,6 +1167,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   );
 
   const guide: ReadingGuide = {
+    synthesis: buildChartSynthesis(chart, { stage }),
     subject: {
       name: chart.name,
       birthDate: chart.birthDate,

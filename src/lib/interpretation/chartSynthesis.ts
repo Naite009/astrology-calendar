@@ -269,8 +269,9 @@ export function buildChartSynthesis(
     const low = elementReading.combined ?? elementReading.individual[0];
     const dominant = elementReading.dominant.join(' and ');
     const evidence = `Element count: Fire ${elementCounts.Fire}, Earth ${elementCounts.Earth}, Air ${elementCounts.Air}, Water ${elementCounts.Water}.`;
+    const lowBehavior = low ? ('synthesis' in low ? low.synthesis : low.behavior) : '';
     const translation = low
-      ? `${low.synthesis ?? low.behavior} ${low.alternative}`
+      ? `${lowBehavior} ${low.alternative}`
       : `${dominant} leads, so ${elementReading.summary}`;
     candidates.push({
       id: 'element-balance', title: low?.label ?? `${dominant} Leads`, score: 78, signal: 'Moderate', bodies: [], houses: [],

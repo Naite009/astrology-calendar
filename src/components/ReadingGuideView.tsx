@@ -14,6 +14,7 @@ import { buildReadingGuide, type BlendCard, type ReadingGuide, type RankedConnec
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
+import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
 import {
   EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
   EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE,
@@ -276,6 +277,8 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
           placements shown on its card.
         </p>
       </div>
+
+      <ChartSynthesisSection synthesis={guide.synthesis} />
 
       {/* 1. Start here */}
       <Section title="Start here — what jumps out first" icon={<Eye size={14} className="text-primary" />} subtitle="ranked by importance">
