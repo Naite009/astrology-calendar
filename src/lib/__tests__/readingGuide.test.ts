@@ -151,13 +151,41 @@ describe('Reading Guide — Ava Kravitz', () => {
     expect(bt.note).toMatch(/clear Libra signature/i);
   });
 
-  it('reads low Water as a processing pattern, never as missing emotion', () => {
+  it('reads low Water as concrete behavior, an alternative process, and chart-specific compensation', () => {
     expect(guide.elements.low).toContain('Water');
     const water = guide.elements.lowReadings.find((r) => r.element === 'Water')!;
-    expect(water.lines.join(' ')).toMatch(/not be the first thing put into words/i);
-    const all = [water.headline, ...water.lines, water.note].join(' ');
+    expect(water.behavior).toMatch(/feelings may not be the first thing noticed or expressed/i);
+    expect(water.alternative).toMatch(/private|selective|after some time/i);
+    expect(water.support).toMatch(/quiet time|journaling|trusted person/i);
+    expect(water.compensation).toMatch(/compensation|modified by/i);
+    const all = [water.label, water.behavior, water.alternative, water.support, water.compensation, water.evidence].join(' ');
     expect(all).not.toMatch(/lack(s|ing)? emotion|unemotional|cold/i);
-    expect(water.note).toMatch(/pattern/i);
+    expect(all).not.toMatch(/Frame it as a pattern/i);
+  });
+
+  it('combines two light elements before listing their individual details', () => {
+    const base = buildAvaChart();
+    const signs = ['Aries', 'Leo', 'Sagittarius', 'Gemini', 'Libra', 'Aquarius', 'Aries', 'Leo', 'Gemini', 'Libra'];
+    const names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+    const synthetic = {
+      ...base,
+      planets: {
+        ...base.planets,
+        ...Object.fromEntries(names.map((name, i) => [name, { sign: signs[i], degree: i + 1, minutes: 0, seconds: 0, isRetrograde: false }])),
+      },
+    } as NatalChart;
+    const twoLight = buildReadingGuide(synthetic, { now: NOW });
+    expect(twoLight.elements.low).toEqual(expect.arrayContaining(['Earth', 'Water']));
+    expect(twoLight.elements.combined?.evidence).toMatch(/Earth 0.*Water 0|Water 0.*Earth 0/);
+    expect(twoLight.elements.combined?.synthesis).toMatch(/schedule|steps|money|feelings/i);
+    expect(twoLight.elements.combined?.alternative).toMatch(/Fire|Air/);
+    expect(twoLight.elements.combined?.support).toMatch(/calendar|list|quiet time|journaling/i);
+  });
+
+  it('translates modality counts into starting, sustaining, or adapting behavior', () => {
+    const text = `${guide.modalities.reading.summary} ${guide.modalities.reading.compensation}`;
+    expect(text).toMatch(/start|staying|changing|adjust|revise|first step|follow-through/i);
+    expect(text).not.toMatch(/may take more deliberate effort|is light, so/i);
   });
 
   it('blends Earth emphasis and the 6th-house concentration into a named theme', () => {

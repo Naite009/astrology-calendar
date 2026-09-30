@@ -147,7 +147,7 @@ function compensationForElement(element: ElementName, placements: BalancePlaceme
   const houseHits = placements.filter((p) => p.house && ELEMENT_HOUSES[element].includes(p.house));
   const angularBodies = placements.filter((p) => ELEMENT_BODIES[element].includes(p.body) && p.house && [1, 4, 7, 10].includes(p.house));
   if (angularBodies.length) evidence.push(`${list(angularBodies.map((p) => `${p.body} in the ${houseLabel(p.house ?? 0)} house`))} gives the related function extra visibility`);
-  if (signHits.length) evidence.push(`${list(signHits.map((p) => `${p.body} in ${p.sign}`))} carries ${element.toLowerCase()} style directly`);
+  if (signHits.length >= 2) evidence.push(`${list(signHits.map((p) => `${p.body} in ${p.sign}`))} repeats ${element.toLowerCase()} style across more than one function`);
   const houseGroups = ELEMENT_HOUSES[element]
     .map((house) => ({ house, bodies: houseHits.filter((p) => p.house === house).map((p) => p.body) }))
     .filter((group) => group.bodies.length >= 2);
@@ -211,9 +211,18 @@ function compensationForModality(modality: ModalityName, placements: BalancePlac
       ? ['Taurus', 'Leo', 'Scorpio', 'Aquarius']
       : ['Gemini', 'Virgo', 'Sagittarius', 'Pisces'];
   const houses = modality === 'Cardinal' ? [1, 4, 7, 10] : modality === 'Fixed' ? [2, 5, 8, 11] : [3, 6, 9, 12];
-  const relevant = placements.filter((p) => signs.includes(p.sign) || (p.house ? houses.includes(p.house) : false));
+  const central = placements.filter((p) => ['Sun', 'Moon', 'Ascendant'].includes(p.body) && signs.includes(p.sign));
+  const signGroups = signs
+    .map((sign) => ({ sign, bodies: placements.filter((p) => p.sign === sign).map((p) => p.body) }))
+    .filter((group) => group.bodies.length >= 2)
+    .map((group) => `${group.bodies.join(' and ')} in ${group.sign}`);
+  const houseGroups = houses
+    .map((house) => ({ house, bodies: placements.filter((p) => p.house === house).map((p) => p.body) }))
+    .filter((group) => group.bodies.length >= 2)
+    .map((group) => `${group.bodies.join(' and ')} in the ${houseLabel(group.house)} house`);
+  const relevant = [...central.map((p) => `${p.body} in ${p.sign}`), ...signGroups, ...houseGroups];
   if (!relevant.length) return `No strong ${modality.toLowerCase()} compensation stands out in the related signs or houses.`;
-  return `What may compensate: ${list(relevant.slice(0, 4).map((p) => `${p.body} in ${p.sign}${p.house ? `, house ${p.house}` : ''}`))} can provide this behavior in specific situations.`;
+  return `What may compensate: ${list([...new Set(relevant)].slice(0, 4))} can provide this behavior in specific situations.`;
 }
 
 export function buildModalityBalanceReading(

@@ -105,42 +105,6 @@ export const MODALITY_MEANINGS: Record<string, string> = {
   Mutable: 'adjusting and switching as things change',
 };
 
-/** How a low element reads — as a pattern, never as a missing human quality. */
-export const LOW_ELEMENT_READING: Record<string, { headline: string; lines: string[] }> = {
-  Water: {
-    headline: 'Feelings may not be the first language used',
-    lines: [
-      'feelings are usually there, they just may not be the first thing put into words',
-      'processing often happens through doing, thinking, organising, or holding it privately first',
-      'emotional expression can be selective — shown to a few people rather than broadly',
-    ],
-  },
-  Fire: {
-    headline: 'Momentum may build rather than ignite',
-    lines: [
-      'enthusiasm can be real but quieter, and may show in follow-through more than in a spark',
-      'a reason to act often matters more than a burst of excitement',
-      'encouragement and a clear first step can help more than being told to just go for it',
-    ],
-  },
-  Earth: {
-    headline: 'Practical structure may be learned rather than automatic',
-    lines: [
-      'ideas and feelings can arrive faster than the plan that carries them',
-      'routines, checklists, and physical anchors often help more than willpower',
-      'finishing can feel less interesting than starting, so visible progress markers help',
-    ],
-  },
-  Air: {
-    headline: 'Explaining may come after knowing',
-    lines: [
-      'a conclusion can be reached by feel or by doing before it can be put into words',
-      'thinking out loud with someone trusted often helps sort things out',
-      'time to draft an answer may produce a much clearer one than being asked on the spot',
-    ],
-  },
-};
-
 export const HOUSE_KEYWORDS: Record<number, string> = {
   1: 'self, presence, first impressions',
   2: 'value, security, self-worth',
