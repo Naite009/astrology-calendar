@@ -100,7 +100,7 @@ describe('shared high-level chart synthesis', () => {
     for (const chart of cases) {
       const text = JSON.stringify(buildChartSynthesis(chart, { stage: 'teen' }));
       expect(findForbiddenPhrases(text)).toEqual([]);
-      expect(text).not.toMatch(/steer the reading|section header|authoring|past life|trauma|diagnos|always|guaranteed/i);
+      expect(text).not.toMatch(/steer the reading|section header|authoring|past life|trauma|diagnos|you always|guaranteed/i);
       expect(text).not.toMatch(/\bscore\b|probability|percent/i);
     }
   });

@@ -117,6 +117,10 @@ function signal(score: number): SynthesisSignal {
   return score >= 90 ? 'Strong' : 'Moderate';
 }
 
+function firstSentences(text: string, count = 2): string {
+  return (text.match(/[^.!?]+[.!?]+/g) ?? [text]).slice(0, count).join(' ').trim();
+}
+
 function overlaps(candidate: Candidate, selected: Candidate[]): boolean {
   return selected.some((prior) => {
     const sharedBodies = candidate.bodies.filter((body) => prior.bodies.includes(body)).length;
@@ -277,9 +281,9 @@ export function buildChartSynthesis(
       id: 'element-balance', title: low?.label ?? `${dominant} Leads`, score: 78, signal: 'Moderate', bodies: [], houses: [],
       evidence, whyItMatters: 'The ten major planets show which processing channel is most automatic and which one may arrive later.',
       realLifeTranslation: translation,
-      modifyingFactor: low?.compensation ?? modalityReading.compensation,
+      modifyingFactor: firstSentences(low?.compensation ?? modalityReading.compensation),
       practicalTakeaway: low?.support ?? 'Use the strongest channel deliberately, then check whether another kind of information changes the decision.',
-      summary: [`${evidence} ${translation}`, `${low?.compensation ?? modalityReading.compensation} This modifies the count without erasing the overall pattern.`],
+      summary: [`${evidence} ${translation}`, `${firstSentences(low?.compensation ?? modalityReading.compensation)} This modifies the count without erasing the overall pattern.`],
       recognition: low?.alternative ?? elementReading.summary,
     });
   }
