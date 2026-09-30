@@ -21,7 +21,6 @@ export interface ChartSynthesisDynamic {
   realLifeTranslation: string;
   modifyingFactor: string;
   practicalTakeaway: string;
-  score: number;
 }
 
 export interface ChartSynthesis {
@@ -41,6 +40,7 @@ interface Placement {
 }
 
 interface Candidate extends ChartSynthesisDynamic {
+  score: number;
   bodies: string[];
   houses: number[];
   summary: [string, string];
