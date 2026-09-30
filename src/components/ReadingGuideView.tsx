@@ -6,7 +6,7 @@
  * secondary layers, ending with a synthesis that can be said out loud.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
@@ -15,6 +15,7 @@ import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
 import { ordinalHouse } from '@/lib/interpretation/ordinals';
 import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
 import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
+import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
 import {
   EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
   EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE,
@@ -200,16 +201,43 @@ const BlendCardView = ({ card }: { card: BlendCard }) => {
 
 export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideViewProps) => {
   const allCharts = useMemo(
-    () => [userNatalChart, ...savedCharts].filter((c): c is NatalChart => !!c),
+    () => buildSelectableCharts(userNatalChart, savedCharts),
     [userNatalChart, savedCharts]
   );
   const [selectedChartId, setSelectedChartId] = useState<string>(() => allCharts[0]?.id ?? '');
   const [stageOverride, setStageOverride] = useState<AgeStage | null>(null);
+  const knownIdsRef = useRef<string[] | null>(null);
+
+  useEffect(() => {
+    const ids = allCharts.map((chart) => chart.id).filter(Boolean);
+    const previous = knownIdsRef.current;
+    knownIdsRef.current = ids;
+    if (!ids.length) {
+      if (selectedChartId) setSelectedChartId('');
+      return;
+    }
+    const added = previous ? ids.filter((id) => !previous.includes(id)) : [];
+    if (previous && added.length === 1) {
+      setSelectedChartId(added[0]);
+      setStageOverride(null);
+      return;
+    }
+    if (!selectedChartId || !ids.includes(selectedChartId)) {
+      setSelectedChartId(ids[0]);
+      setStageOverride(null);
+    }
+  }, [allCharts, selectedChartId]);
 
   const selectedChart = useMemo(
-    () => allCharts.find((c) => c.id === selectedChartId) ?? allCharts[0] ?? null,
+    () => resolveSelectedChart(allCharts, selectedChartId),
     [allCharts, selectedChartId]
   );
+
+  const selectChart = (id: string) => {
+    const nextId = id === 'user' ? (userNatalChart?.id || '') : id;
+    setSelectedChartId(nextId);
+    setStageOverride(null);
+  };
 
   const guide: ReadingGuide | null = useMemo(
     () => (selectedChart ? buildReadingGuide(selectedChart, { stageOverride }) : null),
@@ -233,7 +261,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
           userNatalChart={userNatalChart}
           savedCharts={savedCharts}
           selectedChartId={selectedChartId === userNatalChart?.id ? 'user' : selectedChartId}
-          onSelect={(id) => setSelectedChartId(id === 'user' ? (userNatalChart?.id || '') : id)}
+          onSelect={selectChart}
           label="Select Chart"
         />
       )}
