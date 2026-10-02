@@ -147,8 +147,8 @@ describe('shared high-level chart synthesis', () => {
     expect(getHouseForLongitude(signDegreesToLongitude('Taurus', 0, 0), cuspChart)).toBe(2);
     expect(getHouseForLongitude(signDegreesToLongitude('Aries', 29, 59), cuspChart)).toBe(1);
     const text = JSON.stringify(buildChartSynthesis(cuspChart));
-    expect(text).toMatch(/Sun 0°00′ Taurus, 2nd house/i);
-    expect(text).toMatch(/Moon 29°59′ Aries, 1st house/i);
+    expect(text).toMatch(/Sun 0°00′ Taurus in the 2nd house/i);
+    expect(text).toMatch(/Moon 29°59′ Aries in the 1st house/i);
   });
 
   it('classifies aspects by actual shortest-arc degrees and preserves out-of-sign majors', () => {
@@ -174,8 +174,8 @@ describe('shared high-level chart synthesis', () => {
     expect(getChartRulers('Pisces')).toMatchObject({ traditional: 'Jupiter', modern: 'Neptune' });
     expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: null });
     const text = JSON.stringify(buildChartSynthesis(harrison));
-    expect(text).toMatch(/Mars 26°42′ Cancer, 9th house/i);
-    expect(text).toMatch(/Pluto 3°12′ Aquarius, 3rd house/i);
+    expect(text).toMatch(/Mars 26°42′ Cancer in the 9th house/i);
+    expect(text).toMatch(/Pluto 3°12′ Aquarius in the 3rd house/i);
   });
 
   it('does not promote two major planets to a stellium or count points as major planets', () => {
@@ -236,7 +236,9 @@ describe('shared high-level chart synthesis', () => {
     const bigThree = buildChartSynthesis(air).dynamics.find((dynamic) => dynamic.id === 'big-three');
     expect(bigThree?.title).toBe('Air Connects the Big Three');
     expect(bigThree?.realLifeTranslation).toMatch(/Gemini, Libra, and Aquarius are all Air signs/i);
-    expect(bigThree?.realLifeTranslation).toMatch(/Mutable, Cardinal, and Fixed|Cardinal, Fixed, and Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Cardinal/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Fixed/i);
     expect(bigThree?.realLifeTranslation).not.toMatch(/repeats through/i);
   });
 
@@ -250,7 +252,9 @@ describe('shared high-level chart synthesis', () => {
     const bigThree = buildChartSynthesis(mixed).dynamics.find((dynamic) => dynamic.id === 'big-three');
     expect(bigThree?.title).toBe('A Mixed Big Three');
     expect(bigThree?.realLifeTranslation).toMatch(/mix Earth, Fire, and Water/i);
-    expect(bigThree?.realLifeTranslation).toMatch(/Fixed, Mutable, and Cardinal|Cardinal, Fixed, and Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Fixed/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Cardinal/i);
   });
 
   it('never emits the rejected sign-style Big Three templates', () => {

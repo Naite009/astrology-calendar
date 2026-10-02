@@ -142,7 +142,7 @@ function aspectEvidence(aspect: RankedAspect): string {
 }
 
 function firstSentences(text: string, count = 2): string {
-  return (text.match(/[^.!?]+[.!?]+/g) ?? [text]).slice(0, count).join(' ').trim();
+  return text.split(/(?<=[.!?])\s+(?=[A-Z])/).slice(0, count).join(' ').trim();
 }
 
 function asClause(text: string): string {
