@@ -94,7 +94,7 @@ const CENTRAL_BODIES = new Set(['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 
 function degreeLabel(p: Placement): string {
   const degree = Math.floor(p.degree);
   const minutes = Math.round((p.degree - degree) * 60);
-  return `${p.body} ${degree}°${String(minutes).padStart(2, '0')}′ ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''}`;
+  return `${p.body} ${degree}°${String(minutes).padStart(2, '0')}′ ${p.sign}${p.house ? ` in the ${ordinalHouse(p.house)}` : ''}`;
 }
 
 function stageText(text: string, stage: DevelopmentalStage): string {
@@ -247,39 +247,57 @@ export function buildChartSynthesis(
   const placements = collectPlacements(chart);
   const byBody = new Map(placements.map((placement) => [placement.body, placement]));
   const aspects = computeRankedAspects(chart).filter((aspect) => MAJOR_ASPECTS.has(aspect.aspect));
+  const balancePlacements: BalancePlacement[] = placements.filter((p) => p.body !== 'Ascendant');
+  const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
+  const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
+  for (const placement of balancePlacements) {
+    const element = ELEMENT_OF_SIGN[placement.sign] as keyof typeof elementCounts;
+    const modality = MODALITY_OF_SIGN[placement.sign] as keyof typeof modalityCounts;
+    if (element) elementCounts[element] += 1;
+    if (modality) modalityCounts[modality] += 1;
+  }
+  const elementReading = buildElementBalanceReading(elementCounts, balancePlacements);
+  const modalityReading = buildModalityBalanceReading(modalityCounts, balancePlacements);
   const candidates: Candidate[] = [];
   const sun = byBody.get('Sun');
   const moon = byBody.get('Moon');
   const asc = byBody.get('Ascendant');
 
   if (sun && moon && asc) {
-    const bigThreeAspect = aspects.find((aspect) =>
+    const bigThreeAspects = aspects.filter((aspect) =>
       ['Sun', 'Moon', 'Ascendant'].includes(aspect.a) && ['Sun', 'Moon', 'Ascendant'].includes(aspect.b));
-    const repeated = new Set([sun.sign, moon.sign, asc.sign]).size;
-    const evidence = `${degreeLabel(sun)}; ${degreeLabel(moon)}; ${degreeLabel(asc)}.${bigThreeAspect ? ` ${aspectEvidence(bigThreeAspect)}` : ''}`;
-    const identity = `identity uses a ${sun.sign} style, emotional settling uses a ${moon.sign} style, and first impressions use a ${asc.sign} style`;
-    const outer = `Other people may meet ${getSignStyle(asc.sign)} before the Moon's needs are obvious.`;
-    const modifier = bigThreeAspect
-      ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b} means these needs do not stay separate: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
-      : repeated === 1
-        ? `All three use ${sun.sign}, so the inner aim, emotional response, and first approach reinforce the same style.`
-        : repeated === 2
-          ? `Two of the Big Three share one sign style, while the third adds a different need or response that modifies the repeated pattern.`
-          : `Because all three use different signs, first impressions, inner purpose, and emotional needs may not all ask for the same response at once.`;
+    const bigThreeAspect = bigThreeAspects[0];
+    const pattern = bigThreePattern(sun, moon, asc);
+    const houseContrast = bigThreeHouseContrast(sun, moon, asc);
+    const evidence = `${degreeLabel(sun)}; ${degreeLabel(moon)}; ${degreeLabel(asc)}.${bigThreeAspects.length ? ` ${bigThreeAspects.map(aspectEvidence).join(' ')}` : ''}`;
+    const bigElements = [...new Set([sun, moon, asc].map((placement) => ELEMENT_OF_SIGN[placement.sign]))];
+    const bigModalities = [...new Set([sun, moon, asc].map((placement) => MODALITY_OF_SIGN[placement.sign]))];
+    const wholeElementCounts = `Fire ${elementCounts.Fire}, Earth ${elementCounts.Earth}, Air ${elementCounts.Air}, Water ${elementCounts.Water}`;
+    const wholeModalityCounts = `Cardinal ${modalityCounts.Cardinal}, Fixed ${modalityCounts.Fixed}, Mutable ${modalityCounts.Mutable}`;
+    const dominantElement = elementReading.dominant.length === 1 ? elementReading.dominant[0] : null;
+    const dominantModality = modalityReading.dominant.length === 1 ? modalityReading.dominant[0] : null;
+    const balanceAddsContext = (bigElements.length === 1 && dominantElement) || (bigModalities.length === 1 && dominantModality);
+    const balanceModifier = balanceAddsContext
+      ? `Across the ten major planets, the counts are ${wholeElementCounts}; and ${wholeModalityCounts}. ${bigElements.length === 1 && dominantElement ? `${dominantElement === bigElements[0] ? `That reinforces the Big Three’s ${bigElements[0]} emphasis` : `That modifies the Big Three’s ${bigElements[0]} emphasis because ${dominantElement} is stronger across the whole chart`}.` : ''} ${bigModalities.length === 1 && dominantModality ? `${dominantModality === bigModalities[0] ? `The whole chart also reinforces its ${bigModalities[0]} timing.` : `The whole chart’s ${dominantModality} emphasis changes how consistently the Big Three’s ${bigModalities[0]} instinct leads.`}` : ''}`.trim()
+      : '';
+    const aspectModifier = bigThreeAspect
+      ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b}, at a ${bigThreeAspect.orb.toFixed(1)}° orb${bigThreeAspect.dissociate ? ' and out of sign' : ''}, directly connects two core points: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
+      : 'There is no supported major aspect among the Sun, Moon, and Ascendant, so their connection comes from the sign pattern and house contrast rather than an implied degree contact.';
+    const modifier = `${aspectModifier}${balanceModifier ? ` ${balanceModifier}` : ''}`;
     candidates.push({
-      id: 'big-three', title: repeated === 1 ? `${sun.sign} Across the Big Three` : 'Inner Needs and Outer Approach',
-      score: bigThreeAspect ? 98 : repeated <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
+      id: 'big-three', title: pattern.title,
+      score: bigThreeAspect ? 98 : new Set([sun.sign, moon.sign, asc.sign]).size <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
       evidence, whyItMatters: 'The Sun, Moon, and Ascendant describe identity, emotional needs, and the approach other people meet first.',
-      realLifeTranslation: `In ordinary life, ${identity}. ${outer}`,
+      realLifeTranslation: `${pattern.pattern} ${houseContrast}`,
       modifyingFactor: modifier,
       practicalTakeaway: 'Notice which response is serving the inner need and which one is mainly managing the situation in front of you.',
       summary: [
-        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)} show that ${identity}.`,
-        `${asClause(modifier)}, so the practical question is whether the immediate response also serves the underlying need.`,
+        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)} put ${pattern.pattern.replace(/^./, (letter) => letter.toLowerCase())}`,
+        `${houseContrast} ${asClause(modifier)}.`,
       ],
       recognition: bigThreeAspect
-        ? pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).mayShowUp[0]
-        : 'You may notice that what feels natural inside is not always the same response other people see first.',
+        ? `${pattern.recognition} ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).mayShowUp[0]}`
+        : pattern.recognition,
     });
   }
 
@@ -376,17 +394,6 @@ export function buildChartSynthesis(
     });
   }
 
-  const balancePlacements: BalancePlacement[] = placements.filter((p) => p.body !== 'Ascendant');
-  const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
-  const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
-  for (const placement of balancePlacements) {
-    const element = ELEMENT_OF_SIGN[placement.sign] as keyof typeof elementCounts;
-    const modality = MODALITY_OF_SIGN[placement.sign] as keyof typeof modalityCounts;
-    if (element) elementCounts[element] += 1;
-    if (modality) modalityCounts[modality] += 1;
-  }
-  const elementReading = buildElementBalanceReading(elementCounts, balancePlacements);
-  const modalityReading = buildModalityBalanceReading(modalityCounts, balancePlacements);
   if (elementReading.low.length || elementReading.dominant.length === 1) {
     const low = elementReading.combined ?? elementReading.individual[0];
     const dominant = elementReading.dominant.join(' and ');
