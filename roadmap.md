@@ -64,8 +64,8 @@
 - [x] Prevent duplicate evidence from occupying multiple top dynamics and verify age changes affect wording only.
 - [x] Added boundary, fixture, cross-surface, selection, and provenance regressions; full checks and rendered QA pass.
 
-## In progress: Big Three synthesis correction
+## Done: Big Three synthesis correction
 - [x] Replace generic sign-style templates with repeated-sign or mixed-pattern synthesis using Big Three elements, modalities, houses, and canonical aspects.
 - [x] Keep whole-chart ten-planet element and modality counts separate, using them only as factual modifiers.
 - [x] Add all-same-sign, same-element, mixed-pattern, house-contrast, and banned-phrase regressions.
-- [ ] Run full tests, TypeScript, production build, and rendered QA.
+- [x] Run full tests, TypeScript, production build, and rendered QA.
