@@ -292,7 +292,7 @@ export function buildChartSynthesis(
       modifyingFactor: modifier,
       practicalTakeaway: 'Notice which response is serving the inner need and which one is mainly managing the situation in front of you.',
       summary: [
-        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)} put ${pattern.pattern.replace(/^./, (letter) => letter.toLowerCase())}`,
+        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)}. ${pattern.pattern}`,
         `${houseContrast} ${asClause(modifier)}.`,
       ],
       recognition: bigThreeAspect

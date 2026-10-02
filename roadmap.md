@@ -58,8 +58,13 @@
 - [x] Place “What This Chart Is Really Saying” near the top of both reading surfaces without replacing detailed sections.
 - [x] Validated distinct Ava, Max, and Harrison outputs; focused/full tests, typecheck, build, and rendered UI checks pass.
 
-## In progress: synthesis data-integrity audit
+## Done: synthesis data-integrity audit
 - [x] Enforce exact shared chart identity across Natal Portrait and Chart Walkthrough without silent fallback or stale output.
 - [x] Align positions, houses, aspects, rulers, concentrations, and element/modality counts with canonical helpers.
 - [x] Prevent duplicate evidence from occupying multiple top dynamics and verify age changes affect wording only.
-- [ ] Add boundary, fixture, cross-surface, selection, and provenance regressions; run full checks and rendered QA.
+- [x] Added boundary, fixture, cross-surface, selection, and provenance regressions; full checks and rendered QA pass.
+
+## In progress: Big Three synthesis correction
+- [x] Replace generic sign-style templates with repeated-sign or mixed-pattern synthesis using Big Three elements, modalities, houses, and canonical aspects.
+- [x] Keep whole-chart ten-planet element and modality counts separate, using them only as factual modifiers.
+- [ ] Add all-same-sign, same-element, mixed-pattern, house-contrast, and banned-phrase regressions; run full checks and rendered QA.
