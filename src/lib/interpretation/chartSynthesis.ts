@@ -60,6 +60,34 @@ const MODALITY_OF_SIGN: Record<string, string> = {
   Gemini: 'Mutable', Virgo: 'Mutable', Sagittarius: 'Mutable', Pisces: 'Mutable',
 };
 
+const SIGN_FOCUS: Record<string, string> = {
+  Aries: 'initiative, directness, and the freedom to act',
+  Taurus: 'stability, tangible priorities, and what can be sustained',
+  Gemini: 'questions, connections, and more than one possible answer',
+  Cancer: 'belonging, protection, and changes in the emotional atmosphere',
+  Leo: 'personal expression, recognition, and wholehearted participation',
+  Virgo: 'useful detail, improvement, and what needs practical attention',
+  Libra: 'relationships, fairness, options, and the social atmosphere',
+  Scorpio: 'trust, privacy, strong investment, and what lies beneath the surface',
+  Sagittarius: 'meaning, candor, exploration, and the wider view',
+  Capricorn: 'responsibility, standards, timing, and durable results',
+  Aquarius: 'independence, group dynamics, systems, and alternatives to convention',
+  Pisces: 'subtle cues, imagination, compassion, and porous boundaries',
+};
+
+const ELEMENT_CHANNEL: Record<string, string> = {
+  Fire: 'responding through action, conviction, and what creates momentum',
+  Earth: 'responding through practical facts, steadiness, and what can work in real life',
+  Air: 'responding through observation, comparison, conversation, and social feedback',
+  Water: 'responding through feeling, trust, atmosphere, and private reflection',
+};
+
+const MODALITY_RESPONSE: Record<string, string> = {
+  Cardinal: 'adjust or initiate rather than wait for the situation to settle itself',
+  Fixed: 'hold a position, protect continuity, and stay with what already matters',
+  Mutable: 'take in new information, adapt the method, and keep options open',
+};
+
 const MAJOR_ASPECTS = new Set(['conjunction', 'opposition', 'square', 'trine', 'sextile']);
 const CENTRAL_BODIES = new Set(['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars']);
 
@@ -119,6 +147,88 @@ function firstSentences(text: string, count = 2): string {
 
 function asClause(text: string): string {
   return firstSentences(text, 1).replace(/[.!?]+$/, '').trim();
+}
+
+function list(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+}
+
+function bigThreePattern(sun: Placement, moon: Placement, asc: Placement): {
+  title: string;
+  pattern: string;
+  recognition: string;
+} {
+  const core = [sun, moon, asc];
+  const signGroups = new Map<string, Placement[]>();
+  for (const placement of core) signGroups.set(placement.sign, [...(signGroups.get(placement.sign) ?? []), placement]);
+  const repeated = [...signGroups.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+  const elements = [...new Set(core.map((placement) => ELEMENT_OF_SIGN[placement.sign]))];
+  const modalities = [...new Set(core.map((placement) => MODALITY_OF_SIGN[placement.sign]))];
+
+  if (repeated?.[1].length === 3) {
+    const [sign] = repeated;
+    const element = ELEMENT_OF_SIGN[sign];
+    const modality = MODALITY_OF_SIGN[sign];
+    return {
+      title: `${sign} Across the Big Three`,
+      pattern: `${sign} sits on all three core points. That gives the Big Three a strong ${element}-and-${modality} emphasis: ${SIGN_FOCUS[sign]} are noticed quickly, with a tendency toward ${ELEMENT_CHANNEL[element]} and an instinct to ${MODALITY_RESPONSE[modality]}.`,
+      recognition: `You may notice ${SIGN_FOCUS[sign]} shaping both the immediate response and what takes longer to process privately.`,
+    };
+  }
+
+  if (repeated?.[1].length === 2) {
+    const [sign, bodies] = repeated;
+    const other = core.find((placement) => placement.sign !== sign);
+    const element = ELEMENT_OF_SIGN[sign];
+    const modality = MODALITY_OF_SIGN[sign];
+    const bodyNames = bodies.map((placement) => placement.body);
+    return {
+      title: `${sign} Repeats in the Big Three`,
+      pattern: `${sign} repeats through ${list(bodyNames)}, concentrating the Big Three around ${SIGN_FOCUS[sign]}. Its ${element}-and-${modality} combination favors ${ELEMENT_CHANNEL[element]} and an instinct to ${MODALITY_RESPONSE[modality]}; ${other ? `${other.body} in ${other.sign} adds ${SIGN_FOCUS[other.sign]}` : 'the third core point adds a different response'}.`,
+      recognition: `You may notice the repeated ${sign} response arriving first, while the ${other?.sign ?? 'other'} part becomes clearer under different conditions.`,
+    };
+  }
+
+  if (elements.length === 1) {
+    const element = elements[0];
+    const modalityPhrase = modalities.length === 3
+      ? 'Cardinal initiation, Fixed follow-through, and Mutable adjustment are all represented'
+      : `${list(modalities)} responses divide how that shared channel gets expressed`;
+    return {
+      title: `${element} Connects the Big Three`,
+      pattern: `${sun.sign}, ${moon.sign}, and ${asc.sign} are all ${element} signs, so the Big Three shares one main channel: ${ELEMENT_CHANNEL[element]}. ${modalityPhrase}, preventing that ${element} emphasis from becoming one single response.`,
+      recognition: `You may notice the same ${element.toLowerCase()} channel linking self-expression, emotional response, and first approach, even though each sign handles it differently.`,
+    };
+  }
+
+  const modalityText = modalities.length === 1
+    ? `All three are ${modalities[0]}, so each different element still tends to ${MODALITY_RESPONSE[modalities[0]]}.`
+    : `Their ${list(modalities)} modalities create different timings for starting, sustaining, or changing course.`;
+  return {
+    title: 'A Mixed Big Three',
+    pattern: `${sun.sign}, ${moon.sign}, and ${asc.sign} mix ${list(elements)} across the Big Three. This combines ${elements.map((element) => ELEMENT_CHANNEL[element]).join('; ')}, rather than reducing the core to one style. ${modalityText}`,
+    recognition: 'You may notice that the response shown first, the choice that feels purposeful, and the reaction that creates emotional safety do not always arrive through the same channel or at the same speed.',
+  };
+}
+
+function bigThreeHouseContrast(sun: Placement, moon: Placement, asc: Placement): string {
+  if (sun.house === asc.house && moon.house && moon.house !== sun.house) {
+    const shared = getHouseLivedInterpretation(sun.house ?? 1);
+    const lunar = getHouseLivedInterpretation(moon.house);
+    return `With the Sun and Ascendant in the ${ordinalHouse(sun.house ?? 1)}, this pattern is visible through ${shared.attention}; with the Moon in the ${ordinalHouse(moon.house)}, feelings are more closely tied to ${lunar.attention}.`;
+  }
+  if (sun.house === moon.house && sun.house && asc.house !== sun.house) {
+    const shared = getHouseLivedInterpretation(sun.house);
+    return `The Sun and Moon in the ${ordinalHouse(sun.house)} bring both purpose and emotional needs into ${shared.attention}, while the Ascendant describes the first response other people meet.`;
+  }
+  const parts = [
+    sun.house ? `the Sun in the ${ordinalHouse(sun.house)} places self-definition around ${getHouseLivedInterpretation(sun.house).focus}` : '',
+    moon.house ? `the Moon in the ${ordinalHouse(moon.house)} ties emotional settling to ${getHouseLivedInterpretation(moon.house).focus}` : '',
+    asc.house ? `the Ascendant in the ${ordinalHouse(asc.house)} makes ${getHouseLivedInterpretation(asc.house).focus} part of the first response` : '',
+  ].filter(Boolean);
+  return `${list(parts)}.`.replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function overlaps(candidate: Candidate, selected: Candidate[]): boolean {
