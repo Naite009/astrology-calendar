@@ -67,6 +67,35 @@ const harrison = {
   houseCusps: Object.fromEntries(HARRISON_CUSPS.map(([sign, degree, minutes], index) => [`house${index + 1}`, { sign, degree, minutes }])),
 } as NatalChart;
 
+const ORDERED_SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+function equalHouseCusps(firstSign: string, degree: number, minutes = 0): NatalChart['houseCusps'] {
+  const start = ORDERED_SIGNS.indexOf(firstSign);
+  return Object.fromEntries(Array.from({ length: 12 }, (_, index) => [
+    `house${index + 1}`,
+    { sign: ORDERED_SIGNS[(start + index) % 12], degree, minutes },
+  ]));
+}
+
+function bigThreeFixture(
+  id: string,
+  sun: [string, number, number],
+  moon: [string, number, number],
+  asc: [string, number, number],
+): NatalChart {
+  const supporting: Record<string, [string, number, number]> = {
+    Mercury: ['Cancer', 12, 0], Venus: ['Taurus', 14, 0], Mars: ['Sagittarius', 16, 0],
+    Jupiter: ['Capricorn', 18, 0], Saturn: ['Pisces', 20, 0], Uranus: ['Aquarius', 22, 0],
+    Neptune: ['Aries', 24, 0], Pluto: ['Scorpio', 26, 0],
+  };
+  const entries = { Sun: sun, Moon: moon, Ascendant: asc, ...supporting };
+  return {
+    id, name: id, birthDate: '2000-01-01', birthTime: '12:00', birthLocation: 'Test',
+    planets: Object.fromEntries(Object.entries(entries).map(([body, [sign, degree, minutes]]) => [body, { sign, degree, minutes }])),
+    houseCusps: equalHouseCusps(asc[0], asc[1], asc[2]),
+  } as NatalChart;
+}
+
 describe('shared high-level chart synthesis', () => {
   const cases = [ava, max, harrison];
 
@@ -118,8 +147,8 @@ describe('shared high-level chart synthesis', () => {
     expect(getHouseForLongitude(signDegreesToLongitude('Taurus', 0, 0), cuspChart)).toBe(2);
     expect(getHouseForLongitude(signDegreesToLongitude('Aries', 29, 59), cuspChart)).toBe(1);
     const text = JSON.stringify(buildChartSynthesis(cuspChart));
-    expect(text).toMatch(/Sun 0°00′ Taurus, 2nd house/i);
-    expect(text).toMatch(/Moon 29°59′ Aries, 1st house/i);
+    expect(text).toMatch(/Sun 0°00′ Taurus in the 2nd house/i);
+    expect(text).toMatch(/Moon 29°59′ Aries in the 1st house/i);
   });
 
   it('classifies aspects by actual shortest-arc degrees and preserves out-of-sign majors', () => {
@@ -145,8 +174,8 @@ describe('shared high-level chart synthesis', () => {
     expect(getChartRulers('Pisces')).toMatchObject({ traditional: 'Jupiter', modern: 'Neptune' });
     expect(getChartRulers('Taurus')).toMatchObject({ traditional: 'Venus', modern: null });
     const text = JSON.stringify(buildChartSynthesis(harrison));
-    expect(text).toMatch(/Mars 26°42′ Cancer, 9th house/i);
-    expect(text).toMatch(/Pluto 3°12′ Aquarius, 3rd house/i);
+    expect(text).toMatch(/Mars 26°42′ Cancer in the 9th house/i);
+    expect(text).toMatch(/Pluto 3°12′ Aquarius in the 3rd house/i);
   });
 
   it('does not promote two major planets to a stellium or count points as major planets', () => {
@@ -175,8 +204,71 @@ describe('shared high-level chart synthesis', () => {
       houseCusps: { ...harrison.houseCusps, house1: { sign: 'Virgo', degree: 12, minutes: 0 } },
     } as NatalChart;
     const bigThree = buildChartSynthesis(chart).dynamics.find((dynamic) => dynamic.id === 'big-three');
-    expect(bigThree?.modifyingFactor).toMatch(/Two of the Big Three share/i);
-    expect(bigThree?.modifyingFactor).not.toMatch(/all three use different signs/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Aries repeats through Sun and Moon/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Fire-and-Cardinal/i);
+    expect(bigThree?.realLifeTranslation).not.toMatch(/all three use different signs/i);
+  });
+
+  it('synthesizes an all-same-sign Big Three through sign, element, modality, and house contrast', () => {
+    const libra = bigThreeFixture(
+      'Triple Libra',
+      ['Libra', 28, 11],
+      ['Libra', 3, 33],
+      ['Libra', 24, 56],
+    );
+    const reading = buildChartSynthesis(libra);
+    const bigThree = reading.dynamics.find((dynamic) => dynamic.id === 'big-three');
+    const text = JSON.stringify(bigThree);
+    expect(text).toMatch(/Libra sits on all three core points/i);
+    expect(text).toMatch(/Air-and-Cardinal emphasis/i);
+    expect(text).toMatch(/Sun and Ascendant in the 1st house/i);
+    expect(text).toMatch(/Moon in the 12th house/i);
+    expect(reading.summary[0]).toMatch(/Sun 28°11′ Libra in the 1st house, Moon 3°33′ Libra in the 12th house, and Ascendant 24°56′ Libra in the 1st house/i);
+  });
+
+  it('names a shared Big Three element without inventing one repeated sign', () => {
+    const air = bigThreeFixture(
+      'Three Air Signs',
+      ['Gemini', 10, 0],
+      ['Libra', 14, 0],
+      ['Aquarius', 18, 0],
+    );
+    const bigThree = buildChartSynthesis(air).dynamics.find((dynamic) => dynamic.id === 'big-three');
+    expect(bigThree?.title).toBe('Air Connects the Big Three');
+    expect(bigThree?.realLifeTranslation).toMatch(/Gemini, Libra, and Aquarius are all Air signs/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Cardinal/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Fixed/i);
+    expect(bigThree?.realLifeTranslation).not.toMatch(/repeats through/i);
+  });
+
+  it('names mixed Big Three elements and modalities instead of flattening them', () => {
+    const mixed = bigThreeFixture(
+      'Mixed Big Three',
+      ['Taurus', 8, 0],
+      ['Sagittarius', 16, 0],
+      ['Cancer', 24, 0],
+    );
+    const bigThree = buildChartSynthesis(mixed).dynamics.find((dynamic) => dynamic.id === 'big-three');
+    expect(bigThree?.title).toBe('A Mixed Big Three');
+    expect(bigThree?.realLifeTranslation).toMatch(/mix Earth, Fire, and Water/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Fixed/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Mutable/i);
+    expect(bigThree?.realLifeTranslation).toMatch(/Cardinal/i);
+  });
+
+  it('never emits the rejected sign-style Big Three templates', () => {
+    const charts = [
+      ...cases,
+      bigThreeFixture('Triple Libra Guard', ['Libra', 28, 11], ['Libra', 3, 33], ['Libra', 24, 56]),
+      bigThreeFixture('Air Guard', ['Gemini', 10, 0], ['Libra', 14, 0], ['Aquarius', 18, 0]),
+      bigThreeFixture('Mixed Guard', ['Taurus', 8, 0], ['Sagittarius', 16, 0], ['Cancer', 24, 0]),
+    ];
+    for (const chart of charts) {
+      const text = JSON.stringify(buildChartSynthesis(chart));
+      expect(text).not.toMatch(/uses a (?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces) style/i);
+      expect(text).not.toMatch(/emotional settling uses|first impressions use/i);
+    }
   });
 
   it('does not select overlapping top dynamics that reuse two or more bodies', () => {

@@ -60,13 +60,41 @@ const MODALITY_OF_SIGN: Record<string, string> = {
   Gemini: 'Mutable', Virgo: 'Mutable', Sagittarius: 'Mutable', Pisces: 'Mutable',
 };
 
+const SIGN_FOCUS: Record<string, string> = {
+  Aries: 'initiative, directness, and the freedom to act',
+  Taurus: 'stability, tangible priorities, and what can be sustained',
+  Gemini: 'questions, connections, and more than one possible answer',
+  Cancer: 'belonging, protection, and changes in the emotional atmosphere',
+  Leo: 'personal expression, recognition, and wholehearted participation',
+  Virgo: 'useful detail, improvement, and what needs practical attention',
+  Libra: 'relationships, fairness, options, and the social atmosphere',
+  Scorpio: 'trust, privacy, strong investment, and what lies beneath the surface',
+  Sagittarius: 'meaning, candor, exploration, and the wider view',
+  Capricorn: 'responsibility, standards, timing, and durable results',
+  Aquarius: 'independence, group dynamics, systems, and alternatives to convention',
+  Pisces: 'subtle cues, imagination, compassion, and porous boundaries',
+};
+
+const ELEMENT_CHANNEL: Record<string, string> = {
+  Fire: 'responding through action, conviction, and what creates momentum',
+  Earth: 'responding through practical facts, steadiness, and what can work in real life',
+  Air: 'responding through observation, comparison, conversation, and social feedback',
+  Water: 'responding through feeling, trust, atmosphere, and private reflection',
+};
+
+const MODALITY_RESPONSE: Record<string, string> = {
+  Cardinal: 'adjust or initiate rather than wait for the situation to settle itself',
+  Fixed: 'hold a position, protect continuity, and stay with what already matters',
+  Mutable: 'take in new information, adapt the method, and keep options open',
+};
+
 const MAJOR_ASPECTS = new Set(['conjunction', 'opposition', 'square', 'trine', 'sextile']);
 const CENTRAL_BODIES = new Set(['Sun', 'Moon', 'Ascendant', 'Mercury', 'Venus', 'Mars']);
 
 function degreeLabel(p: Placement): string {
   const degree = Math.floor(p.degree);
   const minutes = Math.round((p.degree - degree) * 60);
-  return `${p.body} ${degree}°${String(minutes).padStart(2, '0')}′ ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''}`;
+  return `${p.body} ${degree}°${String(minutes).padStart(2, '0')}′ ${p.sign}${p.house ? ` in the ${ordinalHouse(p.house)}` : ''}`;
 }
 
 function stageText(text: string, stage: DevelopmentalStage): string {
@@ -114,11 +142,93 @@ function aspectEvidence(aspect: RankedAspect): string {
 }
 
 function firstSentences(text: string, count = 2): string {
-  return (text.match(/[^.!?]+[.!?]+/g) ?? [text]).slice(0, count).join(' ').trim();
+  return text.split(/(?<=[.!?])\s+(?=[A-Z])/).slice(0, count).join(' ').trim();
 }
 
 function asClause(text: string): string {
   return firstSentences(text, 1).replace(/[.!?]+$/, '').trim();
+}
+
+function list(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+}
+
+function bigThreePattern(sun: Placement, moon: Placement, asc: Placement): {
+  title: string;
+  pattern: string;
+  recognition: string;
+} {
+  const core = [sun, moon, asc];
+  const signGroups = new Map<string, Placement[]>();
+  for (const placement of core) signGroups.set(placement.sign, [...(signGroups.get(placement.sign) ?? []), placement]);
+  const repeated = [...signGroups.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+  const elements = [...new Set(core.map((placement) => ELEMENT_OF_SIGN[placement.sign]))];
+  const modalities = [...new Set(core.map((placement) => MODALITY_OF_SIGN[placement.sign]))];
+
+  if (repeated?.[1].length === 3) {
+    const [sign] = repeated;
+    const element = ELEMENT_OF_SIGN[sign];
+    const modality = MODALITY_OF_SIGN[sign];
+    return {
+      title: `${sign} Across the Big Three`,
+      pattern: `${sign} sits on all three core points. That gives the Big Three a strong ${element}-and-${modality} emphasis: ${SIGN_FOCUS[sign]} are noticed quickly. The ${element} emphasis draws attention to ${ELEMENT_CHANNEL[element].replace('responding through ', '')}, while the ${modality} emphasis brings an instinct to ${MODALITY_RESPONSE[modality]}.`,
+      recognition: `You may notice ${SIGN_FOCUS[sign]} shaping both the immediate response and what takes longer to process privately.`,
+    };
+  }
+
+  if (repeated?.[1].length === 2) {
+    const [sign, bodies] = repeated;
+    const other = core.find((placement) => placement.sign !== sign);
+    const element = ELEMENT_OF_SIGN[sign];
+    const modality = MODALITY_OF_SIGN[sign];
+    const bodyNames = bodies.map((placement) => placement.body);
+    return {
+      title: `${sign} Repeats in the Big Three`,
+      pattern: `${sign} repeats through ${list(bodyNames)}, concentrating the Big Three around ${SIGN_FOCUS[sign]}. Its ${element}-and-${modality} combination favors ${ELEMENT_CHANNEL[element]} and an instinct to ${MODALITY_RESPONSE[modality]}; ${other ? `${other.body} in ${other.sign} adds ${SIGN_FOCUS[other.sign]}` : 'the third core point adds a different response'}.`,
+      recognition: `You may notice the repeated ${sign} response arriving first, while the ${other?.sign ?? 'other'} part becomes clearer under different conditions.`,
+    };
+  }
+
+  if (elements.length === 1) {
+    const element = elements[0];
+    const modalityPhrase = modalities.length === 3
+      ? 'Cardinal initiation, Fixed follow-through, and Mutable adjustment are all represented'
+      : `${list(modalities)} responses divide how that shared channel gets expressed`;
+    return {
+      title: `${element} Connects the Big Three`,
+      pattern: `${sun.sign}, ${moon.sign}, and ${asc.sign} are all ${element} signs, so the Big Three shares one main channel: ${ELEMENT_CHANNEL[element]}. ${modalityPhrase}, preventing that ${element} emphasis from becoming one single response.`,
+      recognition: `You may notice the same ${element.toLowerCase()} channel linking self-expression, emotional response, and first approach, even though each sign handles it differently.`,
+    };
+  }
+
+  const modalityText = modalities.length === 1
+    ? `All three are ${modalities[0]}, so each different element still tends to ${MODALITY_RESPONSE[modalities[0]]}.`
+    : `Their ${list(modalities)} modalities create different timings for starting, sustaining, or changing course.`;
+  return {
+    title: 'A Mixed Big Three',
+    pattern: `${sun.sign}, ${moon.sign}, and ${asc.sign} mix ${list(elements)} across the Big Three. This combines ${elements.map((element) => ELEMENT_CHANNEL[element]).join('; ')}, rather than reducing the core to one style. ${modalityText}`,
+    recognition: 'You may notice that the response shown first, the choice that feels purposeful, and the reaction that creates emotional safety do not always arrive through the same channel or at the same speed.',
+  };
+}
+
+function bigThreeHouseContrast(sun: Placement, moon: Placement, asc: Placement): string {
+  if (sun.house === asc.house && moon.house && moon.house !== sun.house) {
+    const shared = getHouseLivedInterpretation(sun.house ?? 1);
+    const lunar = getHouseLivedInterpretation(moon.house);
+    return `With the Sun and Ascendant in the ${ordinalHouse(sun.house ?? 1)}, this pattern is visible through ${shared.attention}; with the Moon in the ${ordinalHouse(moon.house)}, feelings are more closely tied to ${lunar.attention}.`;
+  }
+  if (sun.house === moon.house && sun.house && asc.house !== sun.house) {
+    const shared = getHouseLivedInterpretation(sun.house);
+    return `The Sun and Moon in the ${ordinalHouse(sun.house)} bring both purpose and emotional needs into ${shared.attention}, while the Ascendant describes the first response other people meet.`;
+  }
+  const parts = [
+    sun.house ? `the Sun in the ${ordinalHouse(sun.house)} places self-definition around ${getHouseLivedInterpretation(sun.house).focus}` : '',
+    moon.house ? `the Moon in the ${ordinalHouse(moon.house)} ties emotional settling to ${getHouseLivedInterpretation(moon.house).focus}` : '',
+    asc.house ? `the Ascendant in the ${ordinalHouse(asc.house)} makes ${getHouseLivedInterpretation(asc.house).focus} part of the first response` : '',
+  ].filter(Boolean);
+  return `${list(parts)}.`.replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function overlaps(candidate: Candidate, selected: Candidate[]): boolean {
@@ -137,39 +247,57 @@ export function buildChartSynthesis(
   const placements = collectPlacements(chart);
   const byBody = new Map(placements.map((placement) => [placement.body, placement]));
   const aspects = computeRankedAspects(chart).filter((aspect) => MAJOR_ASPECTS.has(aspect.aspect));
+  const balancePlacements: BalancePlacement[] = placements.filter((p) => p.body !== 'Ascendant');
+  const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
+  const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
+  for (const placement of balancePlacements) {
+    const element = ELEMENT_OF_SIGN[placement.sign] as keyof typeof elementCounts;
+    const modality = MODALITY_OF_SIGN[placement.sign] as keyof typeof modalityCounts;
+    if (element) elementCounts[element] += 1;
+    if (modality) modalityCounts[modality] += 1;
+  }
+  const elementReading = buildElementBalanceReading(elementCounts, balancePlacements);
+  const modalityReading = buildModalityBalanceReading(modalityCounts, balancePlacements);
   const candidates: Candidate[] = [];
   const sun = byBody.get('Sun');
   const moon = byBody.get('Moon');
   const asc = byBody.get('Ascendant');
 
   if (sun && moon && asc) {
-    const bigThreeAspect = aspects.find((aspect) =>
+    const bigThreeAspects = aspects.filter((aspect) =>
       ['Sun', 'Moon', 'Ascendant'].includes(aspect.a) && ['Sun', 'Moon', 'Ascendant'].includes(aspect.b));
-    const repeated = new Set([sun.sign, moon.sign, asc.sign]).size;
-    const evidence = `${degreeLabel(sun)}; ${degreeLabel(moon)}; ${degreeLabel(asc)}.${bigThreeAspect ? ` ${aspectEvidence(bigThreeAspect)}` : ''}`;
-    const identity = `identity uses a ${sun.sign} style, emotional settling uses a ${moon.sign} style, and first impressions use a ${asc.sign} style`;
-    const outer = `Other people may meet ${getSignStyle(asc.sign)} before the Moon's needs are obvious.`;
-    const modifier = bigThreeAspect
-      ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b} means these needs do not stay separate: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
-      : repeated === 1
-        ? `All three use ${sun.sign}, so the inner aim, emotional response, and first approach reinforce the same style.`
-        : repeated === 2
-          ? `Two of the Big Three share one sign style, while the third adds a different need or response that modifies the repeated pattern.`
-          : `Because all three use different signs, first impressions, inner purpose, and emotional needs may not all ask for the same response at once.`;
+    const bigThreeAspect = bigThreeAspects[0];
+    const pattern = bigThreePattern(sun, moon, asc);
+    const houseContrast = bigThreeHouseContrast(sun, moon, asc);
+    const evidence = `${degreeLabel(sun)}; ${degreeLabel(moon)}; ${degreeLabel(asc)}.${bigThreeAspects.length ? ` ${bigThreeAspects.map(aspectEvidence).join(' ')}` : ''}`;
+    const bigElements = [...new Set([sun, moon, asc].map((placement) => ELEMENT_OF_SIGN[placement.sign]))];
+    const bigModalities = [...new Set([sun, moon, asc].map((placement) => MODALITY_OF_SIGN[placement.sign]))];
+    const wholeElementCounts = `Fire ${elementCounts.Fire}, Earth ${elementCounts.Earth}, Air ${elementCounts.Air}, Water ${elementCounts.Water}`;
+    const wholeModalityCounts = `Cardinal ${modalityCounts.Cardinal}, Fixed ${modalityCounts.Fixed}, Mutable ${modalityCounts.Mutable}`;
+    const dominantElement = elementReading.dominant.length === 1 ? elementReading.dominant[0] : null;
+    const dominantModality = modalityReading.dominant.length === 1 ? modalityReading.dominant[0] : null;
+    const balanceAddsContext = (bigElements.length === 1 && dominantElement) || (bigModalities.length === 1 && dominantModality);
+    const balanceModifier = balanceAddsContext
+      ? `Across the ten major planets, the counts are ${wholeElementCounts}; and ${wholeModalityCounts}. ${bigElements.length === 1 && dominantElement ? `${dominantElement === bigElements[0] ? `That reinforces the Big Three’s ${bigElements[0]} emphasis` : `That modifies the Big Three’s ${bigElements[0]} emphasis because ${dominantElement} is stronger across the whole chart`}.` : ''} ${bigModalities.length === 1 && dominantModality ? `${dominantModality === bigModalities[0] ? `The whole chart also reinforces its ${bigModalities[0]} timing.` : `The whole chart’s ${dominantModality} emphasis changes how consistently the Big Three’s ${bigModalities[0]} instinct leads.`}` : ''}`.trim()
+      : '';
+    const aspectModifier = bigThreeAspect
+      ? `${bigThreeAspect.a} ${bigThreeAspect.aspect} ${bigThreeAspect.b}, at a ${bigThreeAspect.orb.toFixed(1)}° orb${bigThreeAspect.dissociate ? ' and out of sign' : ''}, directly connects two core points: ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).howItWorks[0]}`
+      : 'There is no supported major aspect among the Sun, Moon, and Ascendant, so their connection comes from the sign pattern and house contrast rather than an implied degree contact.';
+    const modifier = `${aspectModifier}${balanceModifier ? ` ${balanceModifier}` : ''}`;
     candidates.push({
-      id: 'big-three', title: repeated === 1 ? `${sun.sign} Across the Big Three` : 'Inner Needs and Outer Approach',
-      score: bigThreeAspect ? 98 : repeated <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
+      id: 'big-three', title: pattern.title,
+      score: bigThreeAspect ? 98 : new Set([sun.sign, moon.sign, asc.sign]).size <= 2 ? 95 : 88, signal: 'Strong', bodies: ['Sun', 'Moon', 'Ascendant'], houses: [sun.house, moon.house, 1].filter((h): h is number => Boolean(h)),
       evidence, whyItMatters: 'The Sun, Moon, and Ascendant describe identity, emotional needs, and the approach other people meet first.',
-      realLifeTranslation: `In ordinary life, ${identity}. ${outer}`,
+      realLifeTranslation: `${pattern.pattern} ${houseContrast}`,
       modifyingFactor: modifier,
       practicalTakeaway: 'Notice which response is serving the inner need and which one is mainly managing the situation in front of you.',
       summary: [
-        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)} show that ${identity}.`,
-        `${asClause(modifier)}, so the practical question is whether the immediate response also serves the underlying need.`,
+        `${degreeLabel(sun)}, ${degreeLabel(moon)}, and ${degreeLabel(asc)}. ${pattern.pattern}`,
+        `${houseContrast} ${asClause(modifier)}.`,
       ],
       recognition: bigThreeAspect
-        ? pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).mayShowUp[0]
-        : 'You may notice that what feels natural inside is not always the same response other people see first.',
+        ? `${pattern.recognition} ${pairAspectReading(bigThreeAspect.a, bigThreeAspect.b, bigThreeAspect.aspect, bigThreeAspect.orb).mayShowUp[0]}`
+        : pattern.recognition,
     });
   }
 
@@ -193,12 +321,12 @@ export function buildChartSynthesis(
         bodies: [primary.body, ...(modern ? [modern.body] : [])], houses: [primary.house, modern?.house].filter((h): h is number => Boolean(h)),
         evidence: rulerEvidence,
         whyItMatters: 'The traditional ruler of the Ascendant describes the function that carries the chart’s approach into everyday choices.',
-        realLifeTranslation: `Attention may keep returning to ${arena}. ${primary.body} handles that through a style that is ${getSignStyle(primary.sign)}.`,
+        realLifeTranslation: `Attention may keep returning to ${arena}. In ${primary.sign}, ${primary.body} approaches those choices in a way that is ${getSignStyle(primary.sign)}.`,
         modifyingFactor: modifier,
         practicalTakeaway: lived ? `Ask the recurring house question: ${lived.question}` : `Track what helps ${functionName} make a clear, usable choice.`,
         summary: [
           `${asc.sign} rising makes ${primary.body} the traditional chart ruler, and ${degreeLabel(primary)} pulls repeated choices toward ${arena}.`,
-          `${asClause(modifier)}, which changes how directly that ${primary.sign} style works in ordinary decisions.`,
+          `${asClause(modifier)}, which changes how directly ${primary.body} acts through ${primary.sign} in ordinary decisions.`,
         ],
         recognition: `You may notice repeated choices around ${lived?.focus ?? arena}, even when the immediate subject looks different.`,
       });
@@ -224,7 +352,7 @@ export function buildChartSynthesis(
     const evidence = `${names.join(', ')} are concentrated in ${house ? `the ${ordinalHouse(house)}` : concentration.key}. ${isStellium ? 'Three or more major planets make this a stellium.' : 'Two major planets repeat the same life area.'}`;
     const translation = lived
       ? `This can keep attention on ${lived.attention}, with recurring choices around ${lived.repeatingPattern}.`
-      : `Several different functions use a ${concentration.key} style, so the same approach repeats across identity, relating, thinking, or action.`;
+      : `${concentration.key} repeats across several different functions, so its priorities recur in identity, relating, thinking, or action.`;
     candidates.push({
       id: `${concentration.kind}-concentration`, title: house ? `${ordinalHouse(house)} Repeats` : `${concentration.key} Repeats`,
       score: isStellium ? 96 : 86, signal: isStellium ? 'Strong' : 'Moderate', bodies: names, houses: house ? [house] : concentration.group.map((p) => p.house).filter((h): h is number => Boolean(h)),
@@ -266,17 +394,6 @@ export function buildChartSynthesis(
     });
   }
 
-  const balancePlacements: BalancePlacement[] = placements.filter((p) => p.body !== 'Ascendant');
-  const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
-  const modalityCounts = { Cardinal: 0, Fixed: 0, Mutable: 0 };
-  for (const placement of balancePlacements) {
-    const element = ELEMENT_OF_SIGN[placement.sign] as keyof typeof elementCounts;
-    const modality = MODALITY_OF_SIGN[placement.sign] as keyof typeof modalityCounts;
-    if (element) elementCounts[element] += 1;
-    if (modality) modalityCounts[modality] += 1;
-  }
-  const elementReading = buildElementBalanceReading(elementCounts, balancePlacements);
-  const modalityReading = buildModalityBalanceReading(modalityCounts, balancePlacements);
   if (elementReading.low.length || elementReading.dominant.length === 1) {
     const low = elementReading.combined ?? elementReading.individual[0];
     const dominant = elementReading.dominant.join(' and ');
@@ -300,9 +417,11 @@ export function buildChartSynthesis(
   }
 
   const ranked = candidates.sort((a, b) => b.score - a.score);
-  const selected: Candidate[] = [];
+  const bigThreeCandidate = ranked.find((candidate) => candidate.id === 'big-three');
+  const selected: Candidate[] = bigThreeCandidate ? [bigThreeCandidate] : [];
   for (const candidate of ranked) {
     if (selected.length >= 3) break;
+    if (candidate.id === 'big-three') continue;
     if (!overlaps(candidate, selected)) selected.push(candidate);
   }
   const final = selected.slice(0, 3);
