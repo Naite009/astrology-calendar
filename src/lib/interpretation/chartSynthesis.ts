@@ -417,9 +417,11 @@ export function buildChartSynthesis(
   }
 
   const ranked = candidates.sort((a, b) => b.score - a.score);
-  const selected: Candidate[] = [];
+  const bigThreeCandidate = ranked.find((candidate) => candidate.id === 'big-three');
+  const selected: Candidate[] = bigThreeCandidate ? [bigThreeCandidate] : [];
   for (const candidate of ranked) {
     if (selected.length >= 3) break;
+    if (candidate.id === 'big-three') continue;
     if (!overlaps(candidate, selected)) selected.push(candidate);
   }
   const final = selected.slice(0, 3);
