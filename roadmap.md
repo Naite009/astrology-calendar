@@ -67,4 +67,5 @@
 ## In progress: Big Three synthesis correction
 - [x] Replace generic sign-style templates with repeated-sign or mixed-pattern synthesis using Big Three elements, modalities, houses, and canonical aspects.
 - [x] Keep whole-chart ten-planet element and modality counts separate, using them only as factual modifiers.
-- [ ] Add all-same-sign, same-element, mixed-pattern, house-contrast, and banned-phrase regressions; run full checks and rendered QA.
+- [x] Add all-same-sign, same-element, mixed-pattern, house-contrast, and banned-phrase regressions.
+- [ ] Run full tests, TypeScript, production build, and rendered QA.

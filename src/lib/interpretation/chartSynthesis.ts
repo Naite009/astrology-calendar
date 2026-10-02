@@ -173,7 +173,7 @@ function bigThreePattern(sun: Placement, moon: Placement, asc: Placement): {
     const modality = MODALITY_OF_SIGN[sign];
     return {
       title: `${sign} Across the Big Three`,
-      pattern: `${sign} sits on all three core points. That gives the Big Three a strong ${element}-and-${modality} emphasis: ${SIGN_FOCUS[sign]} are noticed quickly, with a tendency toward ${ELEMENT_CHANNEL[element]} and an instinct to ${MODALITY_RESPONSE[modality]}.`,
+      pattern: `${sign} sits on all three core points. That gives the Big Three a strong ${element}-and-${modality} emphasis: ${SIGN_FOCUS[sign]} are noticed quickly. The ${element} emphasis draws attention to ${ELEMENT_CHANNEL[element].replace('responding through ', '')}, while the ${modality} emphasis brings an instinct to ${MODALITY_RESPONSE[modality]}.`,
       recognition: `You may notice ${SIGN_FOCUS[sign]} shaping both the immediate response and what takes longer to process privately.`,
     };
   }
@@ -321,12 +321,12 @@ export function buildChartSynthesis(
         bodies: [primary.body, ...(modern ? [modern.body] : [])], houses: [primary.house, modern?.house].filter((h): h is number => Boolean(h)),
         evidence: rulerEvidence,
         whyItMatters: 'The traditional ruler of the Ascendant describes the function that carries the chart’s approach into everyday choices.',
-        realLifeTranslation: `Attention may keep returning to ${arena}. ${primary.body} handles that through a style that is ${getSignStyle(primary.sign)}.`,
+        realLifeTranslation: `Attention may keep returning to ${arena}. In ${primary.sign}, ${primary.body} approaches those choices in a way that is ${getSignStyle(primary.sign)}.`,
         modifyingFactor: modifier,
         practicalTakeaway: lived ? `Ask the recurring house question: ${lived.question}` : `Track what helps ${functionName} make a clear, usable choice.`,
         summary: [
           `${asc.sign} rising makes ${primary.body} the traditional chart ruler, and ${degreeLabel(primary)} pulls repeated choices toward ${arena}.`,
-          `${asClause(modifier)}, which changes how directly that ${primary.sign} style works in ordinary decisions.`,
+          `${asClause(modifier)}, which changes how directly ${primary.body} acts through ${primary.sign} in ordinary decisions.`,
         ],
         recognition: `You may notice repeated choices around ${lived?.focus ?? arena}, even when the immediate subject looks different.`,
       });
@@ -352,7 +352,7 @@ export function buildChartSynthesis(
     const evidence = `${names.join(', ')} are concentrated in ${house ? `the ${ordinalHouse(house)}` : concentration.key}. ${isStellium ? 'Three or more major planets make this a stellium.' : 'Two major planets repeat the same life area.'}`;
     const translation = lived
       ? `This can keep attention on ${lived.attention}, with recurring choices around ${lived.repeatingPattern}.`
-      : `Several different functions use a ${concentration.key} style, so the same approach repeats across identity, relating, thinking, or action.`;
+      : `${concentration.key} repeats across several different functions, so its priorities recur in identity, relating, thinking, or action.`;
     candidates.push({
       id: `${concentration.kind}-concentration`, title: house ? `${ordinalHouse(house)} Repeats` : `${concentration.key} Repeats`,
       score: isStellium ? 96 : 86, signal: isStellium ? 'Strong' : 'Moderate', bodies: names, houses: house ? [house] : concentration.group.map((p) => p.house).filter((h): h is number => Boolean(h)),
