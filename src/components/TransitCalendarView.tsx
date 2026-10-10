@@ -1,3 +1,4 @@
+import { MajorTransitsDashboard } from './transits/MajorTransitsDashboard';
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameDay } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -306,6 +307,9 @@ export const TransitCalendarView = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Major Transits & Exact Dates: personalized slow-planet dashboard */}
+      {activeChart && <MajorTransitsDashboard chart={activeChart} />}
       
       {/* Stats summary */}
       {yearTransits.length > 0 && (
