@@ -7,6 +7,8 @@
 import { Doc, cover, C, slug, today, downloadJson, type ExportMeta } from "@/lib/pdfDocEngine";
 import type { DomainDeepDive } from "@/lib/natalPortraitEngine";
 
+import { actionText, buildTakeawayAction } from "@/lib/interpretation/takeawayActions";
+
 const DOC_LABEL = "Natal Portrait";
 
 const SUBTITLES: Record<string, string> = {
@@ -56,7 +58,7 @@ function renderDomain(doc: Doc, domain: DomainDeepDive) {
   }
 
   if (domain.advice) {
-    doc.box("What to do with this", [{ p: domain.advice }], C.soft);
+    doc.box("What to do with this", [{ p: domain.advice }, { p: `Try this: ${actionText(domain.tryThis ?? buildTakeawayAction(domain.advice, { context: domain.summary }))}` }], C.soft);
   }
 }
 

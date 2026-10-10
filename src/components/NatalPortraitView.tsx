@@ -14,6 +14,7 @@ import { buildSectionArchetypes, type SectionArchetype } from '@/lib/natal/secti
 import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
 import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
+import { TryThisAction } from '@/components/TryThisAction';
 import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
 import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
@@ -377,6 +378,7 @@ const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; me
         {/* Advice */}
         <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm">
           <p className="text-[11px] text-primary italic">💡 {domain.advice}</p>
+          <TryThisAction action={domain.tryThis} />
         </div>
 
         <div className="pt-3 border-t border-border">
@@ -391,7 +393,7 @@ const DomainSection = ({ domain, meta, archetype }: { domain: DomainDeepDive; me
   );
 };
 
-const ImportantAspectsSection = ({ aspects }: { aspects: PsychologicalAspectSynthesis[] }) => (
+const ImportantAspectsSection = ({ aspects }: { aspects: NatalPortrait['importantAspects'] }) => (
   <SectionWrapper title="Important Psychological Dynamics" emoji="↔" defaultOpen={true}>
     <div className="space-y-2">
       {aspects.map((a, i) => (
@@ -405,6 +407,7 @@ const ImportantAspectsSection = ({ aspects }: { aspects: PsychologicalAspectSynt
             <ul className="list-disc pl-4">{a.howThisCanShowUp.map((line) => <li key={line}>{line}</li>)}</ul>
             <p><span className="font-medium">When integrated:</span> {a.whenIntegrated}</p>
             <p><span className="font-medium">Watch for:</span> {a.watchFor}</p>
+            <TryThisAction action={a.tryThis} />
             <p><span className="font-medium">Reflect:</span> {a.reflectionQuestion}</p>
           </div>
         </details>
@@ -490,6 +493,7 @@ const PowerPortraitSection = ({ power, archetype }: { power: NatalPowerPortrait;
             <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Reset Button</span>
           </div>
           <p className="text-[12px] text-foreground leading-relaxed">{power.realignment}</p>
+        <TryThisAction action={power.tryThis} />
         </div>
       </div>
     </div>
@@ -575,11 +579,13 @@ const LifetimeWisdomSection = ({ wisdom, archetype }: { wisdom: LifetimeWisdom; 
           <p className="text-sm font-serif text-foreground">{wisdom.northNodeSign} {wisdom.northNodeHouse > 0 ? `(House ${wisdom.northNodeHouse})` : ''}</p>
           <p className="text-[12px] text-foreground/80 mt-2">{wisdom.lifeDirection}</p>
           <p className="text-[10px] text-primary mt-2 italic">Growth edge: {wisdom.growthEdge}</p>
+          <TryThisAction action={wisdom.actions?.growth} />
         </div>
         <div className="p-4 bg-secondary/30 rounded-sm border border-border">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-1">South Node — Past-Life Gifts</p>
           <p className="text-sm font-serif text-foreground">{wisdom.southNodeSign} {wisdom.southNodeHouse > 0 ? `(House ${wisdom.southNodeHouse})` : ''}</p>
           <p className="text-[12px] text-foreground/80 mt-2">{wisdom.pastLifeGifts}</p>
+          <TryThisAction action={wisdom.actions?.gifts} />
         </div>
       </div>
 
@@ -588,12 +594,14 @@ const LifetimeWisdomSection = ({ wisdom, archetype }: { wisdom: LifetimeWisdom; 
         <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Saturn's Lifetime Lesson</p>
         <p className="text-sm font-serif text-foreground">{wisdom.saturnSign} {wisdom.saturnHouse > 0 ? `(House ${wisdom.saturnHouse})` : ''}</p>
         <p className="text-[12px] text-foreground/80 mt-2">{wisdom.saturnLesson}</p>
+        <TryThisAction action={wisdom.actions?.saturn} />
       </div>
 
       {/* Closing */}
       <div className="p-5 bg-primary/5 border border-primary/20 rounded-sm text-center">
         <BookOpen size={20} className="mx-auto text-primary mb-2" />
         <p className="text-[12px] text-foreground leading-relaxed font-serif italic">{wisdom.closingWisdom}</p>
+        <TryThisAction action={wisdom.actions?.closing} />
       </div>
     </div>
   </SectionWrapper>

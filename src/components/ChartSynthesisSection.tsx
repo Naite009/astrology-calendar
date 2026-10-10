@@ -1,4 +1,5 @@
 import { ChevronDown, Sparkles } from 'lucide-react';
+import { TryThisAction } from './TryThisAction';
 import type { ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 
 export function ChartSynthesisSection({ synthesis }: { synthesis: ChartSynthesis }) {
@@ -32,6 +33,7 @@ export function ChartSynthesisSection({ synthesis }: { synthesis: ChartSynthesis
       <p className="border-l-2 border-primary pl-3 text-sm leading-relaxed text-foreground">
         <span className="font-medium">What helps:</span> {synthesis.whatHelps}
       </p>
+      <TryThisAction action={synthesis.tryThis} />
 
       <details className="border-t border-border pt-3">
         <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-primary">
@@ -49,6 +51,7 @@ export function ChartSynthesisSection({ synthesis }: { synthesis: ChartSynthesis
               <p className="text-xs text-foreground"><span className="font-medium">In ordinary life:</span> {dynamic.realLifeTranslation}</p>
               <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">What modifies it:</span> {dynamic.modifyingFactor}</p>
               <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Practical takeaway:</span> {dynamic.practicalTakeaway}</p>
+              <TryThisAction action={dynamic.tryThis} />
             </div>
           ))}
         </div>
