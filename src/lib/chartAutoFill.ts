@@ -24,6 +24,8 @@ import {
   partOfFortuneLongitude,
   signPositionToLongitude,
   norm360,
+  computeBodies,
+  type BodyKey,
 } from './ephemerisEngine';
 
 const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -70,11 +72,56 @@ const cuspFromLongitude = (lon: number): { sign: string; degree: number; minutes
  * Fill every derivable body that is missing from a chart.
  * Returns the same object reference when nothing had to change.
  */
+/**
+ * Ephemeris retrograde status for the retrograde-capable planets. Uses the
+ * exact birth instant when it resolves; otherwise checks the whole span of
+ * possible UTC instants for the local date/time (UTC-14..UTC+14) and only
+ * reports a status when it is the same across that span.
+ */
+export function ephemerisRetrogradeStatus(chart: NatalChart, moment?: BirthMoment): Record<string, boolean> {
+  const out: Record<string, boolean> = {};
+  const m = moment ?? birthMomentFor(chart);
+  const keys = [...RETRO_CAPABLE] as BodyKey[];
+  if (m.status === 'ok' && m.utc) {
+    const r = computeBodies(m.utc, keys);
+    for (const k of keys) { const x = r[k]; if (x.ok === true) out[k] = x.retrograde; }
+    return out;
+  }
+  const dm = /^(\d{4})-(\d{2})-(\d{2})/.exec(chart.birthDate || '');
+  if (!dm) return out;
+  const tm = /^(\d{1,2}):(\d{2})/.exec(chart.birthTime || '12:00') || ['', '12', '00'];
+  const base = Date.UTC(+dm[1], +dm[2] - 1, +dm[3], +tm[1], +tm[2]);
+  const early = computeBodies(new Date(base - 14 * 3600e3), keys);
+  const late = computeBodies(new Date(base + 14 * 3600e3), keys);
+  for (const k of keys) {
+    const a = early[k], b = late[k];
+    if (a.ok === true && b.ok === true && a.retrograde === b.retrograde) out[k] = a.retrograde;
+  }
+  return out;
+}
+
+function applyRetrogradeStatus(planets: Record<string, NatalPlanetPosition>, status: Record<string, boolean>): boolean {
+  let changed = false;
+  for (const key of RETRO_CAPABLE) {
+    const stored = planets[key];
+    if (!hasSign(stored) || status[key] === undefined) continue;
+    if (Boolean(stored.isRetrograde) !== status[key]) {
+      planets[key] = { ...stored, isRetrograde: status[key] };
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
   if (!chart || !chart.planets || !chart.birthDate) return chart;
 
   const moment = birthMomentFor(chart);
-  if (moment.status !== 'ok' || !moment.utc) return chart;
+  if (moment.status !== 'ok' || !moment.utc) {
+    const planets = { ...chart.planets } as Record<string, NatalPlanetPosition>;
+    if (!applyRetrogradeStatus(planets, ephemerisRetrogradeStatus(chart, moment))) return chart;
+    return { ...chart, planets } as T;
+  }
 
   const calc = calculateNatalFromMoment(moment);
   const planets = { ...chart.planets } as Record<string, NatalPlanetPosition>;
@@ -95,19 +142,7 @@ export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
   // retrograde. Imported tables often omit the ℞ marker, so a stored "direct"
   // is not trusted when the calculated position agrees with the stored one.
   // Sun/Moon never retrograde; Nodes keep their existing convention.
-  let retroChanged = false;
-  for (const key of RETRO_CAPABLE) {
-    const stored = planets[key];
-    const p = calc.positions[key];
-    if (!hasSign(stored) || !p || p.isRetrograde === undefined) continue;
-    const sLon = absDeg(stored);
-    const cLon = absDeg(toStoredPosition(p));
-    if (sLon === null || cLon === null || circularSeparation(sLon, cLon) > 1) continue;
-    if (Boolean(stored.isRetrograde) !== p.isRetrograde) {
-      planets[key] = { ...stored, isRetrograde: p.isRetrograde };
-      retroChanged = true;
-    }
-  }
+  const retroChanged = applyRetrogradeStatus(planets, ephemerisRetrogradeStatus(chart, moment));
 
   if (!hasSign(planets.NorthNode)) add('NorthNode', fromCalc('NorthNode'));
 
