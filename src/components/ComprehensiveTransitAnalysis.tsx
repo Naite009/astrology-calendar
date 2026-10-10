@@ -4,6 +4,7 @@
 // historical patterns, and journal tracking
 // ============================================================================
 
+import { realExactPasses } from '@/lib/transits/majorTransits';
 import { useState } from 'react';
 import { TransitAspect } from '@/lib/transitAspects';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -174,7 +175,8 @@ const calculateDetailedTransitTimeline = (
   transitDegree: number,
   natalDegree: number,
   aspect: string,
-  currentDate: Date
+  currentDate: Date,
+  natalSign?: string,
 ): TransitTimelineData => {
   const speeds = PLANET_SPEEDS;
   const aspectAngles: Record<string, number> = {
@@ -217,52 +219,34 @@ const calculateDetailedTransitTimeline = (
   const orbExitDate = new Date(exactDegreeDate);
   orbExitDate.setDate(orbExitDate.getDate() + Math.floor(daysInOrb));
   
-  // Retrograde passes calculation for outer planets
+  // Real exact passes from the ephemeris (replaces the old average-speed,
+  // always-three-pass estimate). Only passes the sky actually makes are shown.
   let retrogradeNote = '';
   let retrogradePasses: RetrogradePasses | null = null;
   const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-  
-  if (outerPlanets.includes(transitPlanet.toLowerCase())) {
-    // Outer planets typically retrograde for 4-5 months per year
-    // This creates 3 passes: direct → retrograde → direct
-    const retrogradeLength = transitPlanet.toLowerCase() === 'pluto' ? 160 : 
-                             transitPlanet.toLowerCase() === 'neptune' ? 158 :
-                             transitPlanet.toLowerCase() === 'uranus' ? 155 :
-                             transitPlanet.toLowerCase() === 'saturn' ? 140 : 120;
-    
-    // First pass (direct motion)
-    const firstPassExact = new Date(exactDegreeDate);
-    const firstPassStart = new Date(firstPassExact);
-    firstPassStart.setDate(firstPassStart.getDate() - Math.floor(daysInOrb));
-    const firstPassEnd = new Date(firstPassExact);
-    firstPassEnd.setDate(firstPassEnd.getDate() + Math.floor(daysInOrb / 3));
-    
-    // Second pass (retrograde motion) - typically 2-4 months after first
-    const secondPassExact = new Date(firstPassExact);
-    secondPassExact.setDate(secondPassExact.getDate() + Math.floor(retrogradeLength * 0.6));
-    const secondPassStart = new Date(secondPassExact);
-    secondPassStart.setDate(secondPassStart.getDate() - Math.floor(daysInOrb / 2));
-    const secondPassEnd = new Date(secondPassExact);
-    secondPassEnd.setDate(secondPassEnd.getDate() + Math.floor(daysInOrb / 2));
-    
-    // Third pass (direct motion again) - typically 2-4 months after second
-    const thirdPassExact = new Date(secondPassExact);
-    thirdPassExact.setDate(thirdPassExact.getDate() + Math.floor(retrogradeLength * 0.5));
-    const thirdPassStart = new Date(thirdPassExact);
-    thirdPassStart.setDate(thirdPassStart.getDate() - Math.floor(daysInOrb / 3));
-    const thirdPassEnd = new Date(thirdPassExact);
-    thirdPassEnd.setDate(thirdPassEnd.getDate() + Math.floor(daysInOrb));
-    
-    retrogradePasses = {
-      hasRetrograde: true,
-      firstPass: { start: firstPassStart, exact: firstPassExact, end: firstPassEnd },
-      secondPass: { start: secondPassStart, exact: secondPassExact, end: secondPassEnd },
-      thirdPass: { start: thirdPassStart, exact: thirdPassExact, end: thirdPassEnd },
-    };
-    
-    retrogradeNote = `${transitPlanet} retrogrades ~${Math.round(retrogradeLength / 30)} months/year, creating 3 passes over this degree.`;
+  if (outerPlanets.includes(transitPlanet.toLowerCase()) && natalSign) {
+    const SIGN_LIST = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const natalLon = SIGN_LIST.indexOf(natalSign) * 30 + natalDegree;
+    const name = transitPlanet.charAt(0).toUpperCase() + transitPlanet.slice(1).toLowerCase();
+    const passes = realExactPasses(name, natalLon, aspectAngle, currentDate, 540);
+    if (passes.length) {
+      const nearest = passes.reduce((best, p) => Math.abs(p.date.getTime() - currentDate.getTime()) < Math.abs(best.date.getTime() - currentDate.getTime()) ? p : best);
+      exactDegreeDate.setTime(nearest.date.getTime());
+      orbEntryDate.setTime(passes[0].date.getTime() - Math.floor(daysInOrb) * 86400000);
+      orbExitDate.setTime(passes[passes.length - 1].date.getTime() + Math.floor(daysInOrb) * 86400000);
+      const win = (d: Date) => ({ start: d, exact: d, end: d });
+      if (passes.length > 1) {
+        retrogradePasses = {
+          hasRetrograde: true,
+          firstPass: win(passes[0].date),
+          secondPass: passes[1] ? win(passes[1].date) : null,
+          thirdPass: passes[2] ? win(passes[2].date) : null,
+        };
+      }
+      retrogradeNote = `Ephemeris exact passes: ${passes.map(p => `${p.label} ${p.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`).join('; ')}.`;
+    }
   }
-  
+
   // Explanation of what "entered orb" means
   const orbExplanation = `"Orb" is the range of influence (±${orb}°). When ${transitPlanet} enters this ${orb}° range of your natal ${natalDegree}°, you begin feeling the transit. The effect intensifies as it approaches exact, then gradually fades.`;
   
@@ -991,7 +975,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
   aspect: string;
   currentDate: Date;
 }) => {
-  const timeline = calculateDetailedTransitTimeline(transitPlanet, transitDegree, natalDegree, aspect, currentDate);
+  const timeline = calculateDetailedTransitTimeline(transitPlanet, transitDegree, natalDegree, aspect, currentDate, natalSign);
   
   const formatDate = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const formatDateWithYear = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1047,7 +1031,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
         {timeline.retrogradePasses?.hasRetrograde ? (
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontWeight: '600', color: '#6A1B9A', marginBottom: '12px', fontSize: '15px' }}>
-              🔄 Three Passes (Due to Retrograde):
+              🔄 Exact Passes (from the ephemeris):
             </div>
             
             {/* First Pass */}

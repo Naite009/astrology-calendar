@@ -181,6 +181,8 @@ export const getTransitPlanetSymbol = (planet: string): string => {
 export { getHouseLabel, hasHouseData, HOUSE_MEANINGS };
 
 // Calculate transit-to-natal aspects
+const ANGLE_HOUSE: Record<string, number> = { Ascendant: 1, IC: 4, Descendant: 7, Midheaven: 10 };
+
 const ANGLE_ALIASES: Record<string, string[]> = {
   Ascendant: ['Ascendant', 'ASC'],
   IC: ['IC', 'ImumCoeli', 'Imum Coeli'],
@@ -255,11 +257,9 @@ export const calculateTransitAspects = (
   // IC = house4, DSC = house7, MC = house10. Raw planet-table angle rows are
   // replaced so naming stays canonical for scoring and interpretation.
   for (const angle of getNatalAngleTargets(natalChart)) {
-    const idx = rawNatalPlanets.findIndex(p => ANGLE_ALIASES[angle.name].includes(p.name));
     while (rawNatalPlanets.some(p => ANGLE_ALIASES[angle.name].includes(p.name))) {
       rawNatalPlanets.splice(rawNatalPlanets.findIndex(p => ANGLE_ALIASES[angle.name].includes(p.name)), 1);
     }
-    void idx;
     rawNatalPlanets.push(angle);
   }
 
@@ -283,7 +283,7 @@ export const calculateTransitAspects = (
       if (diff > 180) diff = 360 - diff;
 
       // Calculate which house the natal planet is in
-      const natalHouse = getNatalPlanetHouse(natal.name, natalChart);
+      const natalHouse = ANGLE_HOUSE[natal.name] ?? getNatalPlanetHouse(natal.name, natalChart);
 
       // Check for aspects
       ASPECT_TYPES.forEach(aspectType => {
