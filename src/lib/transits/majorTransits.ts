@@ -49,7 +49,7 @@ const TARGET_WEIGHT: Record<string, number> = {
 };
 const NATAL_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
 
-export type MajorTransitStatus = 'Applying' | 'Exact' | 'Separating';
+export type MajorTransitStatus = 'Applying' | 'Exact' | 'Separating' | 'Upcoming';
 export type MajorTransitMotion = 'Direct' | 'Retrograde' | 'Stationing';
 
 export interface ExactPassInfo {
@@ -203,7 +203,7 @@ const SPECIAL: Record<string, { meaning: string; watch: string }> = {
 
 function durationLabel(start: Date, end: Date, openEnded: boolean): string {
   const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY));
-  const txt = days < 45 ? `about ${Math.round(days / 7)} week${Math.round(days / 7) === 1 ? '' : 's'}` : days < 540 ? `about ${Math.round(days / 30.44)} months` : `about ${(days / 365.25).toFixed(1)} years`;
+  const txt = days < 45 ? `about ${Math.round(days / 7)} week${Math.round(days / 7) === 1 ? '' : 's'}` : days < 540 ? `about ${Math.round(days / 30.44)} month${Math.round(days / 30.44) === 1 ? '' : 's'}` : `about ${(days / 365.25).toFixed(1)} years`;
   return openEnded ? `${txt}+ (continues past the scan window)` : txt;
 }
 
@@ -276,7 +276,7 @@ export function computeMajorTransits(chart: NatalChart | null | undefined, opts:
 
         const orb = orbAt(nowMs);
         const orbNext = aspectOrb(lonTomorrow, t.lon, asp.angle);
-        const status: MajorTransitStatus = orb <= 0.25 ? 'Exact' : orbNext < orb ? 'Applying' : 'Separating';
+        const status: MajorTransitStatus = !isActiveNow ? 'Upcoming' : orb <= 0.25 ? 'Exact' : orbNext < orb ? 'Applying' : 'Separating';
         const natalHouse = t.isAngle ? null : houseForLongitude(chart, t.lon);
         const transitHouse = houseForLongitude(chart, lonNow);
         const key = `${planet}-${asp.name}-${t.name}`;
@@ -323,7 +323,12 @@ export function computeMajorTransits(chart: NatalChart | null | undefined, opts:
       }
     }
   }
-  return results.sort((a, b) => b.priority - a.priority);
+  // An opposition to one angle is the same event as a conjunction to the
+  // opposite angle; keep the conjunction (its card explains both ends).
+  const OPP: Record<string, string> = { Ascendant: 'Descendant', Descendant: 'Ascendant', IC: 'Midheaven', Midheaven: 'IC' };
+  const ids = new Set(results.map(r => r.id));
+  const deduped = results.filter(r => !(r.isAngle && r.aspect === 'opposition' && ids.has(`${r.transitPlanet}-conjunction-${OPP[r.target]}`)));
+  return deduped.sort((a, b) => b.priority - a.priority);
 }
 
 const HOUSE_AREA: Record<number, string> = {
