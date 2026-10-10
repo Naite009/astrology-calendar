@@ -22,7 +22,8 @@ import {
 } from '@/lib/interpretation/evidenceStandard';
 
 import { formatDateMMDDYYYY } from '@/lib/localDate';
-import { ChevronDown, ChevronUp, Compass, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
+import { downloadSectionJson } from '@/lib/sectionExport';
+import { ChevronDown, ChevronUp, Compass, Download, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
 
 interface ReadingGuideViewProps {
   userNatalChart: NatalChart | null;
@@ -270,7 +271,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
       <div className="border border-border rounded-sm bg-card p-4 space-y-3">
         <div className="flex items-start gap-3">
           <Compass size={24} className="text-primary mt-0.5" />
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-serif tracking-wide text-foreground">{guide.subject.name} — Chart Walkthrough</h2>
             <p className="text-xs text-muted-foreground">
               {guide.subject.birthDate ? formatDateMMDDYYYY(guide.subject.birthDate) : ''}
@@ -278,6 +279,24 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
               {guide.subject.birthLocation ? ` • ${guide.subject.birthLocation}` : ''}
             </p>
           </div>
+          <button
+            onClick={() =>
+              downloadSectionJson(
+                `${guide.subject.name || 'chart'} Chart Walkthrough`,
+                {
+                  exportedAt: new Date().toISOString(),
+                  subject: guide.subject,
+                  ageContext: guide.age,
+                  guide,
+                },
+              )
+            }
+            title="Download this walkthrough as a JSON data file"
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-sm border border-border text-xs text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+          >
+            <Download size={13} />
+            Download JSON
+          </button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
