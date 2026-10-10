@@ -1,8 +1,8 @@
 # Roadmap
 
 ## Actionable Natal takeaways
-- [ ] Add shared theme-aware weekly actions to Natal takeaway generators, views, and report exports.
-- [ ] Add regression coverage and verify tests, types, and rendered takeaways.
+- [x] Add shared theme-aware weekly actions to Natal takeaway generators, views, and report exports.
+- [x] Add regression coverage and verify tests, types, and rendered takeaways.
 
 ## Done: birth-chart time/place/ephemeris repair (verified 2026-09)
 - [x] Shared zone math (Intl based, exact historical offsets, ambiguous/nonexistent detection)
