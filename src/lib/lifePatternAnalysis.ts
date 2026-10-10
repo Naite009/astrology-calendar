@@ -198,8 +198,8 @@ export function calculateDominantPlanets(chart: NatalChart): DominantPlanetResul
 
 function getDominantPlanetMeaning(planet: string): string {
   const meanings: Record<string, string> = {
-    Sun: "Your life force radiates outward. You may thrive being seen, to lead, to express your honest self without apology. Your vitality, confidence, and creative fire are the engine of your entire chart.",
-    Moon: "Your emotional world runs the show. You process everything through feeling first, and your intuition is your most reliable compass. Nurturing, memory, and emotional intelligence are your superpowers.",
+    Sun: "Your life force radiates outward. You may thrive being seen, to lead, to express your honest self without apology. Vitality and confidence are themes here, alongside the rest of the chart.",
+    Moon: "Emotional security is a strong theme. Feelings and comfort often shape how you respond, and memory and care for others matter.",
     Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought. You're the eternal student and teacher.",
     Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision you make.",
     Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts, even when they feel like too much for the room.",

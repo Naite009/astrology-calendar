@@ -157,7 +157,7 @@ describe('Reading Guide — Ava Kravitz', () => {
     expect(water.behavior).toMatch(/feelings may not be the first thing noticed or expressed/i);
     expect(water.alternative).toMatch(/private|selective|after some time/i);
     expect(water.support).toMatch(/quiet time|journaling|trusted person/i);
-    expect(water.compensation).toMatch(/compensation|modified by/i);
+    expect(water.compensation).toMatch(/compensation|Still present through/i);
     const all = [water.label, water.behavior, water.alternative, water.support, water.compensation, water.evidence].join(' ');
     expect(all).not.toMatch(/lack(s|ing)? emotion|unemotional|cold/i);
     expect(all).not.toMatch(/Frame it as a pattern/i);

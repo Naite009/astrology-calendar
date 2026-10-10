@@ -444,7 +444,7 @@ const HouseEmphasisSection = ({ houses, archetype }: { houses: HouseEmphasis[]; 
       {houses.filter((h) => h.intensity !== 'Empty').map((h) => (
         <div key={`detail-${h.house}`} className="border-l-2 border-primary pl-3">
           <p className="text-xs font-medium text-foreground">House {h.house}: {h.theme}</p>
-          <p className="text-[11px] text-primary">{h.countLabel}{h.isStellium ? ' · Stellium' : ''}</p>
+          <p className="text-[11px] text-primary">{h.countLabel}{h.isStellium ? ' · House concentration (3+ major planets, app convention)' : ''}</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{h.description}</p>
         </div>
       ))}

@@ -343,7 +343,7 @@ export function describeHouseEmphasis(
   const count = majorPlanets.length;
   const evidence = `${count} major planet${count === 1 ? '' : 's'} (${majorPlanets.join(', ')}) in ${possessive} ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house`;
   const weight = options.isStellium
-    ? ` Because three or more major planets are gathered here, this is a stellium: several psychological needs keep returning to the same set of real-life concerns, which gives this house extra weight in the chart.`
+    ? ` This app counts three or more major planets in one house as a house concentration (some astrologers call it a house stellium; the threshold is a convention, not a universal rule). Several psychological needs keep returning to the same set of real-life concerns, which gives this house extra weight in the chart.`
     : '';
   const text = `With ${evidence}, a noticeable amount of attention may go toward ${lived.focus}. ${subject === 'you' ? 'You' : 'They'} may pay close attention to ${lived.attention}. A repeating choice can involve ${lived.repeatingPattern}. Other people may notice ${lived.othersNotice}. The question this house keeps asking is, “${lived.question}”${weight}`;
   return stageText(text, stage);
@@ -432,10 +432,18 @@ export function synthesizePsychologicalAspect(input: PsychologicalAspectContext)
 }
 
 export function synthesisFromRankedAspect(aspect: RankedAspect, stage: DevelopmentalStage = 'adult'): PsychologicalAspectSynthesis {
-  return synthesizePsychologicalAspect({
+  const base = synthesizePsychologicalAspect({
     bodyA: aspect.a, bodyB: aspect.b, aspect: aspect.aspect, orb: aspect.orb,
     signA: aspect.aSign, signB: aspect.bSign, houseA: aspect.aHouse, houseB: aspect.bHouse, stage,
   });
+  const retro = [aspect.aRetro ? `${aspect.a} ℞` : '', aspect.bRetro ? `${aspect.b} ℞` : ''].filter(Boolean);
+  if (retro.length) base.evidence = `${base.evidence} (${retro.join(', ')} retrograde)`;
+  if (!aspect.isWide) return base;
+  return {
+    ...base,
+    title: `${base.title} (wide)`,
+    evidence: `${base.evidence} · Wide orb (${aspect.orb.toFixed(1)}°): a background influence, given less weight than tighter aspects.`,
+  };
 }
 
 export function isPsychologicalBody(body: string): body is PsychologicalBody {
