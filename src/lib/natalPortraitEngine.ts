@@ -26,7 +26,7 @@ import {
   type PsychologicalAspectSynthesis,
 } from '@/lib/interpretation/psychologicalFunctions';
 import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
-import { buildElementBalanceReading, buildModalityBalanceReading } from '@/lib/interpretation/elementBalance';
+import { buildElementBalanceReading, buildModalityBalanceReading, buildElementPsychology } from '@/lib/interpretation/elementBalance';
 import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 
 export interface NatalPortrait {
