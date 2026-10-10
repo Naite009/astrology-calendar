@@ -153,7 +153,7 @@ function compensationForElement(element: ElementName, placements: BalancePlaceme
     .filter((group) => group.bodies.length >= 2);
   if (houseGroups.length) evidence.push(`${list(houseGroups.map((g) => `${g.bodies.join(' and ')} in the ${houseLabel(g.house)} house`))} repeats related real-life concerns`);
   if (!evidence.length) return `No strong ${element.toLowerCase()} compensation stands out from the associated signs, planets, or houses, so practical supports may matter more.`;
-  return `The low count is modified by ${evidence.join('; ')}. This means the quality may be available through those specific parts of the chart even if it is not the default response.`;
+  return `Still present through ${evidence.join('; ')}, so this quality is available in those areas even if it is not the first response.`;
 }
 
 function lowNames<T extends string>(names: T[], counts: Record<T, number>): T[] {
@@ -248,4 +248,77 @@ export function buildModalityBalanceReading(
     compensation,
     evidence: `${MODALITIES.map((modality) => `${modality} ${counts[modality]}`).join(' · ')} (${total} counted placements).`,
   };
+}
+const SIGN_FLAVOR: Record<string, string> = {
+  Aries: 'directness and quick starts',
+  Taurus: 'steadiness and comfort with what is tangible',
+  Gemini: 'curiosity and quick exchange of ideas',
+  Cancer: 'protectiveness and attention to belonging',
+  Leo: 'warmth and a wish to be seen',
+  Virgo: 'careful attention to detail and usefulness',
+  Libra: 'social judgment and a feel for balance',
+  Scorpio: 'depth, privacy, and sensitivity around trust',
+  Sagittarius: 'big-picture thinking and frankness',
+  Capricorn: 'practicality and long-range planning',
+  Aquarius: 'independent thinking and some emotional distance',
+  Pisces: 'empathy and openness to atmosphere',
+};
+
+const SIGN_ELEMENT: Record<string, ElementName> = {
+  Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire', Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth',
+  Gemini: 'Air', Libra: 'Air', Aquarius: 'Air', Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water',
+};
+
+/**
+ * Concise, chart-specific element psychology: strongest element with its
+ * actual weight, the most-occupied signs as flavor, the sharper of the
+ * element/modality imbalances, and low counts framed as less-default, never missing.
+ */
+export function buildElementPsychology(
+  rawElements: Record<string, number>,
+  rawModalities: Record<string, number>,
+  placements: BalancePlacement[],
+): string {
+  const el = normalizeCounts(ELEMENTS, rawElements);
+  const mo = normalizeCounts(MODALITIES, rawModalities);
+  const total = Object.values(el).reduce((a, b) => a + b, 0) || 1;
+  const sortedEl = [...ELEMENTS].sort((a, b) => el[b] - el[a]);
+  const top = sortedEl[0];
+  const topTied = ELEMENTS.filter((e) => el[e] === el[top]);
+  const margin = el[top] - el[sortedEl[1]];
+  const parts: string[] = [];
+  if (topTied.length > 1) {
+    parts.push(`${list(topTied.map((e) => `${e} (${el[e]})`))} are tied, so no single element sets the default tone.`);
+  } else if (el[top] / total >= 0.5) {
+    parts.push(`${top} is clearly strongest (${el[top]} of ${total}), so ${DOMINANT_ALTERNATIVE[top]} is often the first channel used.`);
+  } else {
+    parts.push(`${top} is the strongest element (${el[top]} of ${total}) but not overwhelmingly dominant${margin <= 1 ? `, with ${sortedEl[1]} close behind` : ''}.`);
+  }
+  const signCounts = new Map<string, number>();
+  for (const p of placements) if (p.body !== 'Ascendant' && SIGN_FLAVOR[p.sign]) signCounts.set(p.sign, (signCounts.get(p.sign) || 0) + 1);
+  const ascP = placements.find((p) => p.body === 'Ascendant');
+  const flavorSigns = [...signCounts.entries()].sort((a, b) => b[1] - a[1]).map(([s]) => s);
+  const picks: string[] = [];
+  for (const s of flavorSigns) {
+    if (picks.length >= 2) break;
+    if (!picks.some((x) => SIGN_ELEMENT[x] === SIGN_ELEMENT[s])) picks.push(s);
+  }
+  if (ascP?.sign && SIGN_FLAVOR[ascP.sign] && !picks.includes(ascP.sign)) picks.push(ascP.sign);
+  if (picks.length) {
+    parts.push(`${list(picks.map((s) => `${s} adds ${SIGN_FLAVOR[s]}`))}.`);
+  }
+  const moMax = Math.max(...MODALITIES.map((m) => mo[m]));
+  const moMin = Math.min(...MODALITIES.map((m) => mo[m]));
+  const elMin = Math.min(...ELEMENTS.map((e) => el[e]));
+  const strongMod = MODALITIES.find((m) => mo[m] === moMax)!;
+  const weakMod = MODALITIES.find((m) => mo[m] === moMin)!;
+  const verb: Record<ModalityName, string> = { Cardinal: 'starting things', Fixed: 'sustaining and committing', Mutable: 'changing direction quickly' };
+  if (moMax - moMin > el[top] - elMin && strongMod !== weakMod) {
+    parts.push(`The sharper imbalance is modality: ${strongMod} ${moMax}, ${weakMod} ${moMin}, so ${verb[strongMod]} may come more naturally than ${verb[weakMod]}.`);
+  }
+  const lows = ELEMENTS.filter((e) => el[e] <= 1);
+  if (lows.length) {
+    parts.push(`A low ${list(lows)} count does not mean the quality is missing; it is simply less often the first response.`);
+  }
+  return parts.join(' ');
 }

@@ -390,7 +390,7 @@ export function bigThreeCard(input: {
       sameSign
         ? `Sun and Moon both in ${sunSign} means what this person is reaching for and what they need to feel steady point the same way — less internal argument, and less built-in contrast to fall back on.`
         : tension
-          ? `${sunSign} wants to ${SIGN_APPROACH[sunSign]}, while the ${moonSign} Moon needs ${SIGN_NEED[moonSign]}. Those two do not naturally agree, so the same person can look ${adj(sunSign).toLowerCase()} in public and want something quite different in private.`
+          ? `The ${sunSign} side ${SIGN_APPROACH[sunSign]}, while the ${moonSign} Moon needs ${SIGN_NEED[moonSign]}. Those two do not naturally agree, so the same person can look ${adj(sunSign).toLowerCase()} in public and want something quite different in private.`
           : `The ${sunSign} centre is lived through a ${moonSign} need for ${SIGN_NEED[moonSign]}, so the drive rarely shows up raw — it comes filtered through that need.`
     );
   }

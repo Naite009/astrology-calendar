@@ -1015,7 +1015,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     elementBreakdown: elements,
     modalityBreakdown: modalities,
     bigThreePsychology: null,
-    elementPsychology: elementBalance.summary,
+    elementPsychology: buildElementPsychology(elements, modalities, balancePlacements),
     modalityPsychology: `${modalityBalance.summary} ${modalityBalance.compensation} ${modalityBalance.evidence}`.trim(),
   };
   lifePurpose.bigThreePsychology = buildBigThreePsychology(lifePurpose);
