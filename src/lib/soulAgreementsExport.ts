@@ -57,10 +57,14 @@ function renderContract(doc: Doc, contract: StrengthContract) {
   });
 
   doc.eyebrow("How to use it");
-  doc.bullets(contract.howToUse);
+  contract.howToUse.forEach((text, i) => {
+    const action = contract.actions?.howToUse[i] ?? buildTakeawayAction(text);
+    doc.box("", [{ p: text }, { p: `Try this: ${actionText(action)}` }]);
+  });
   doc.eyebrow("What it costs when it runs unchecked");
   doc.body(contract.costWhenOverused);
-  doc.box("The Commitment", [{ p: contract.commitment }], C.soft);
+  doc.body(`Try this: ${actionText(contract.actions?.cost ?? buildTakeawayAction(contract.costWhenOverused))}`);
+  doc.box("The Commitment", [{ p: contract.commitment }, { p: `Try this: ${actionText(contract.actions?.commitment ?? buildTakeawayAction(contract.commitment))}` }], C.soft);
 }
 
 function renderSummary(doc: Doc, summary: ExportSummary) {

@@ -454,7 +454,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                       {contract.howToUse.map((line, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>{line}</span>
+                          <span>{line}<TryThisAction action={contract.actions?.howToUse[i]} /></span>
                         </li>
                       ))}
                     </ul>
@@ -463,11 +463,13 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                   <div className="mt-4">
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">When it runs unchecked</p>
                     <p className="text-[12px] text-foreground/90 leading-relaxed">{contract.costWhenOverused}</p>
+                    <TryThisAction action={contract.actions?.cost} />
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-primary/20">
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The commitment</p>
                     <p className="text-[12px] text-foreground italic leading-relaxed">{contract.commitment}</p>
+                    <TryThisAction action={contract.actions?.commitment} />
                   </div>
                 </div>
               )}
