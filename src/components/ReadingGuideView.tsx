@@ -22,7 +22,8 @@ import {
 } from '@/lib/interpretation/evidenceStandard';
 
 import { formatDateMMDDYYYY } from '@/lib/localDate';
-import { ChevronDown, ChevronUp, Compass, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
+import { downloadSectionJson } from '@/lib/sectionExport';
+import { ChevronDown, ChevronUp, Compass, Download, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
 
 interface ReadingGuideViewProps {
   userNatalChart: NatalChart | null;
