@@ -87,7 +87,7 @@ describe('theme-aware weekly Natal actions', () => {
     const pdf = buildFullPdfDoc({ name: 'Test client' }, [], summary, {
       headline: 'Strength-Based Contract', coreStrength: 'You can finish a task.', strengths: [], howToUse: [], costWhenOverused: 'You may overwork.', commitment: 'I will stop at a planned time.',
     });
-    const output = pdf.output();
+    const output = [...pdf.output().matchAll(/\(([^\n]*)\) Tj/g)].map(match => match[1]).join(' ');
     expect(output).toContain('Try this:');
     // PDF layout may wrap a sentence into separate text operations.
     expect(output).toContain('what I know');

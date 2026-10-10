@@ -56,10 +56,10 @@ const THEME_RULES: Array<[TakeawayCategory, RegExp]> = [
   ['sharing', /(?:let(?:ting)? others help|shar(?:e|ing) (?:your )?responsibilit|delegat|handle alone|do(?:ing)? everything|asking for help|self.reliance|carrying.*(?:alone|yourself)|receiv.*support)/i],
   ['motives', /(?:motiv|over.analy|intellect.*shield|assumptions|suspici|second.guess|hidden meaning)/i],
   ['selfWorth', /(?:self.worth|self worth|worth.*(?:productiv|achievement|useful)|prov(?:e|ing).*value|security.*(?:own|productiv)|earn.*care)/i],
-  ['boundaries', /(?:boundar|saying no|say no|over.accommodat|over.carry|limits|resent|overrid)/i],
+  ['boundaries', /(?:boundar|saying no|say no|over.accommodat|over.carry|limits|resent|overrid|manag.*other people's emotions|soften.*(?:need|opinion)|taking on.*emotional weight)/i],
   ['perfectionism', /(?:perfect|control|critical|criticis|competence|discipline|standards|fix everything)/i],
   ['rest', /(?:rest|play|pleasure|enjoy|nourish|burnout|tired|sensory|pacing)/i],
-  ['communication', /(?:communicat|speak|speaking|words|listen|conversation|say.*want|telling the truth|clear.*question|learning|curiosity|express|explain|put.*(?:word|paper)|teach|input)/i],
+  ['communication', /(?:communicat|speak|speaking|words|listen|conversation|say.*want|telling the truth|clear.*question|learning|curiosity|express|explain|put.*(?:word|paper)|teach|input|feel understood)/i],
   ['emotions', /(?:feeling|emotion|vulnerab|settle|regulat|inner need|pause|react|private)/i],
   ['relationships', /(?:relationship|partner|closeness|trust|bond|mutual|compromise|connection|affection)/i],
 ];
