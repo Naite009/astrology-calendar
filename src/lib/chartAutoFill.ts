@@ -53,6 +53,9 @@ export const DERIVABLE_BODIES = [
   'Vesta', 'Eris', 'Vertex', 'PartOfFortune',
 ] as const;
 
+/** Bodies whose retrograde flag is derived from the ephemeris (never Sun, Moon, or Nodes). */
+const RETRO_CAPABLE = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron'] as const;
+
 export interface AutoFillResult<T> {
   chart: T;
   derived: string[];
@@ -87,6 +90,24 @@ export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
     const stored = toStoredPosition(p);
     return { ...stored, isRetrograde: stored.isRetrograde ?? false };
   };
+
+  // Retrograde status from the ephemeris for planets that can actually go
+  // retrograde. Imported tables often omit the ℞ marker, so a stored "direct"
+  // is not trusted when the calculated position agrees with the stored one.
+  // Sun/Moon never retrograde; Nodes keep their existing convention.
+  let retroChanged = false;
+  for (const key of RETRO_CAPABLE) {
+    const stored = planets[key];
+    const p = calc.positions[key];
+    if (!hasSign(stored) || !p || p.isRetrograde === undefined) continue;
+    const sLon = absDeg(stored);
+    const cLon = absDeg(toStoredPosition(p));
+    if (sLon === null || cLon === null || circularSeparation(sLon, cLon) > 1) continue;
+    if (Boolean(stored.isRetrograde) !== p.isRetrograde) {
+      planets[key] = { ...stored, isRetrograde: p.isRetrograde };
+      retroChanged = true;
+    }
+  }
 
   if (!hasSign(planets.NorthNode)) add('NorthNode', fromCalc('NorthNode'));
 
@@ -156,7 +177,7 @@ export function autoFillChartBodies<T extends NatalChart | null>(chart: T): T {
     }
   }
 
-  if (derived.length === 0) return chart;
+  if (derived.length === 0 && !retroChanged) return chart;
 
   return {
     ...chart,
