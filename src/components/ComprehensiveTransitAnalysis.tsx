@@ -552,12 +552,12 @@ const TRANSIT_DURATIONS: Record<string, string> = {
   mercury: 'Mercury moves 1-2° per day (when direct). This transit lasts about 3-5 days. If Mercury is retrograde, it can pass this point THREE times over 2-3 weeks — intensifying the mental processing.',
   venus: 'Venus moves about 1° per day. This transit lasts about 5-7 days. If Venus is retrograde (rare), it can revisit this point over several weeks.',
   mars: 'Mars moves about 0.5° per day. This transit lasts about 1-2 weeks. Mars retrograde (every 2 years) can extend this to 2-3 months of sustained activation.',
-  jupiter: 'Jupiter moves about 0.08° per day (5 arcminutes). This transit is active for about 2-3 months. With retrograde motion, Jupiter can make 3 passes over this point across 6-9 months — each pass bringing a different layer of growth.',
-  saturn: 'Saturn moves about 0.03° per day (2 arcminutes). This transit is active for about 3-4 months per pass. With retrograde, Saturn typically makes 3 passes over 9-12 months. Each pass tests and strengthens different aspects of the theme.',
-  uranus: 'Uranus moves about 0.01° per day. This transit is active for about 6-8 months per pass. With retrograde, Uranus makes 3 passes over 1-2 YEARS. This is a slow, fundamental reshaping of the affected life area.',
-  neptune: 'Neptune moves about 0.006° per day. This transit is active for about 8-12 months per pass. With retrograde, Neptune makes 3 passes over 2-3 YEARS. This is one of the longest transits — a gradual dissolution and spiritual transformation.',
-  pluto: 'Pluto moves about 0.004° per day. This transit is active for 1-2 YEARS per pass. With retrograde, Pluto can make 3-5 passes over 2-4 YEARS at the same degree. This is the deepest, slowest, most transformative transit in astrology.',
-  chiron: 'Chiron moves about 0.02° per day. This transit is active for about 4-6 months per pass. With retrograde, Chiron makes 3 passes over 9-14 months. Each pass opens a deeper layer of the healing process.',
+  jupiter: 'Jupiter moves about 0.08° per day (5 arcminutes). This transit is active for about 2-3 months. With retrograde motion, Jupiter can make one, two, or more exact passes (the real dates come from the ephemeris) over this point across 6-9 months — each pass bringing a different layer of growth.',
+  saturn: 'Saturn moves about 0.03° per day (2 arcminutes). This transit is active for about 3-4 months per pass. With retrograde, Saturn can make one, two, or more exact passes (the real dates come from the ephemeris) over 9-12 months. Each pass tests and strengthens different aspects of the theme.',
+  uranus: 'Uranus moves about 0.01° per day. This transit is active for about 6-8 months per pass. With retrograde, Uranus can make one, two, or more exact passes (the real dates come from the ephemeris) over 1-2 YEARS. This is a slow, fundamental reshaping of the affected life area.',
+  neptune: 'Neptune moves about 0.006° per day. This transit is active for about 8-12 months per pass. With retrograde, Neptune can make one, two, or more exact passes (the real dates come from the ephemeris) over 2-3 YEARS. This is one of the longest transits — a gradual dissolution and spiritual transformation.',
+  pluto: 'Pluto moves about 0.004° per day. This transit is active for 1-2 YEARS per pass. With retrograde, Pluto can make one, two, or more exact passes (the real dates come from the ephemeris) over 2-4 YEARS at the same degree. This is the deepest, slowest, most transformative transit in astrology.',
+  chiron: 'Chiron moves about 0.02° per day. This transit is active for about 4-6 months per pass. With retrograde, Chiron can make one, two, or more exact passes (the real dates come from the ephemeris) over 9-14 months. Each pass opens a deeper layer of the healing process.',
 };
 
 const getFeeling = (transitPlanet: string, natalPlanet: string, aspect: string, natalHouse: number | null): FeelingData => {
@@ -1515,13 +1515,13 @@ const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; pas
     duration: '5+ months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Neptune — the planet of intuition, dreams, and spirituality — reverses direction for about 5-6 months each year. Its 3 passes over a chart point allow spiritual and creative themes to gradually emerge, dissolve old illusions, and re-form with greater clarity. This is a gentle, slow unfolding — not a sudden event.'
+    description: 'Neptune — the planet of intuition, dreams, and spirituality — reverses direction for about 5-6 months each year. Its repeated passes over a chart point allow spiritual and creative themes to gradually emerge, dissolve old illusions, and re-form with greater clarity. This is a gentle, slow unfolding — not a sudden event.'
   },
   uranus: {
     duration: '5 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Uranus — the planet of sudden change and awakening — retrogrades for about 5 months every year. Its 3 passes work like this: the first pass brings an unexpected shift or realization, the retrograde pass asks you to sit with the disruption and understand it more deeply, and the final pass helps you fully embrace the change and move forward in a more honest way.'
+    description: 'Uranus — the planet of sudden change and awakening — retrogrades for about 5 months every year. Its repeated passes work like this: the first pass brings an unexpected shift or realization, the retrograde pass asks you to sit with the disruption and understand it more deeply, and the final pass helps you fully embrace the change and move forward in a more honest way.'
   },
   saturn: {
     duration: '4.5 months',
