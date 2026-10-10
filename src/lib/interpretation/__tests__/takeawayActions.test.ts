@@ -89,7 +89,9 @@ describe('theme-aware weekly Natal actions', () => {
     });
     const output = pdf.output();
     expect(output).toContain('Try this:');
-    expect(output).toContain('what I know, what I am guessing');
+    // PDF layout may wrap a sentence into separate text operations.
+    expect(output).toContain('what I know');
+    expect(output).toContain('what I am guessing');
     expect(output).toContain('achievement or usefulness');
   });
 });
