@@ -4,6 +4,7 @@
 // historical patterns, and journal tracking
 // ============================================================================
 
+import { realExactPasses } from '@/lib/transits/majorTransits';
 import { useState } from 'react';
 import { TransitAspect } from '@/lib/transitAspects';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -174,7 +175,8 @@ const calculateDetailedTransitTimeline = (
   transitDegree: number,
   natalDegree: number,
   aspect: string,
-  currentDate: Date
+  currentDate: Date,
+  natalSign?: string,
 ): TransitTimelineData => {
   const speeds = PLANET_SPEEDS;
   const aspectAngles: Record<string, number> = {
@@ -217,52 +219,34 @@ const calculateDetailedTransitTimeline = (
   const orbExitDate = new Date(exactDegreeDate);
   orbExitDate.setDate(orbExitDate.getDate() + Math.floor(daysInOrb));
   
-  // Retrograde passes calculation for outer planets
+  // Real exact passes from the ephemeris (replaces the old average-speed,
+  // always-three-pass estimate). Only passes the sky actually makes are shown.
   let retrogradeNote = '';
   let retrogradePasses: RetrogradePasses | null = null;
   const outerPlanets = ['jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-  
-  if (outerPlanets.includes(transitPlanet.toLowerCase())) {
-    // Outer planets typically retrograde for 4-5 months per year
-    // This creates 3 passes: direct → retrograde → direct
-    const retrogradeLength = transitPlanet.toLowerCase() === 'pluto' ? 160 : 
-                             transitPlanet.toLowerCase() === 'neptune' ? 158 :
-                             transitPlanet.toLowerCase() === 'uranus' ? 155 :
-                             transitPlanet.toLowerCase() === 'saturn' ? 140 : 120;
-    
-    // First pass (direct motion)
-    const firstPassExact = new Date(exactDegreeDate);
-    const firstPassStart = new Date(firstPassExact);
-    firstPassStart.setDate(firstPassStart.getDate() - Math.floor(daysInOrb));
-    const firstPassEnd = new Date(firstPassExact);
-    firstPassEnd.setDate(firstPassEnd.getDate() + Math.floor(daysInOrb / 3));
-    
-    // Second pass (retrograde motion) - typically 2-4 months after first
-    const secondPassExact = new Date(firstPassExact);
-    secondPassExact.setDate(secondPassExact.getDate() + Math.floor(retrogradeLength * 0.6));
-    const secondPassStart = new Date(secondPassExact);
-    secondPassStart.setDate(secondPassStart.getDate() - Math.floor(daysInOrb / 2));
-    const secondPassEnd = new Date(secondPassExact);
-    secondPassEnd.setDate(secondPassEnd.getDate() + Math.floor(daysInOrb / 2));
-    
-    // Third pass (direct motion again) - typically 2-4 months after second
-    const thirdPassExact = new Date(secondPassExact);
-    thirdPassExact.setDate(thirdPassExact.getDate() + Math.floor(retrogradeLength * 0.5));
-    const thirdPassStart = new Date(thirdPassExact);
-    thirdPassStart.setDate(thirdPassStart.getDate() - Math.floor(daysInOrb / 3));
-    const thirdPassEnd = new Date(thirdPassExact);
-    thirdPassEnd.setDate(thirdPassEnd.getDate() + Math.floor(daysInOrb));
-    
-    retrogradePasses = {
-      hasRetrograde: true,
-      firstPass: { start: firstPassStart, exact: firstPassExact, end: firstPassEnd },
-      secondPass: { start: secondPassStart, exact: secondPassExact, end: secondPassEnd },
-      thirdPass: { start: thirdPassStart, exact: thirdPassExact, end: thirdPassEnd },
-    };
-    
-    retrogradeNote = `${transitPlanet} retrogrades ~${Math.round(retrogradeLength / 30)} months/year, creating 3 passes over this degree.`;
+  if (outerPlanets.includes(transitPlanet.toLowerCase()) && natalSign) {
+    const SIGN_LIST = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const natalLon = SIGN_LIST.indexOf(natalSign) * 30 + natalDegree;
+    const name = transitPlanet.charAt(0).toUpperCase() + transitPlanet.slice(1).toLowerCase();
+    const passes = realExactPasses(name, natalLon, aspectAngle, currentDate, 540);
+    if (passes.length) {
+      const nearest = passes.reduce((best, p) => Math.abs(p.date.getTime() - currentDate.getTime()) < Math.abs(best.date.getTime() - currentDate.getTime()) ? p : best);
+      exactDegreeDate.setTime(nearest.date.getTime());
+      orbEntryDate.setTime(passes[0].date.getTime() - Math.floor(daysInOrb) * 86400000);
+      orbExitDate.setTime(passes[passes.length - 1].date.getTime() + Math.floor(daysInOrb) * 86400000);
+      const win = (d: Date) => ({ start: d, exact: d, end: d });
+      if (passes.length > 1) {
+        retrogradePasses = {
+          hasRetrograde: true,
+          firstPass: win(passes[0].date),
+          secondPass: passes[1] ? win(passes[1].date) : null,
+          thirdPass: passes[2] ? win(passes[2].date) : null,
+        };
+      }
+      retrogradeNote = `Ephemeris exact passes: ${passes.map(p => `${p.label} ${p.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`).join('; ')}.`;
+    }
   }
-  
+
   // Explanation of what "entered orb" means
   const orbExplanation = `"Orb" is the range of influence (±${orb}°). When ${transitPlanet} enters this ${orb}° range of your natal ${natalDegree}°, you begin feeling the transit. The effect intensifies as it approaches exact, then gradually fades.`;
   
@@ -568,12 +552,12 @@ const TRANSIT_DURATIONS: Record<string, string> = {
   mercury: 'Mercury moves 1-2° per day (when direct). This transit lasts about 3-5 days. If Mercury is retrograde, it can pass this point THREE times over 2-3 weeks — intensifying the mental processing.',
   venus: 'Venus moves about 1° per day. This transit lasts about 5-7 days. If Venus is retrograde (rare), it can revisit this point over several weeks.',
   mars: 'Mars moves about 0.5° per day. This transit lasts about 1-2 weeks. Mars retrograde (every 2 years) can extend this to 2-3 months of sustained activation.',
-  jupiter: 'Jupiter moves about 0.08° per day (5 arcminutes). This transit is active for about 2-3 months. With retrograde motion, Jupiter can make 3 passes over this point across 6-9 months — each pass bringing a different layer of growth.',
-  saturn: 'Saturn moves about 0.03° per day (2 arcminutes). This transit is active for about 3-4 months per pass. With retrograde, Saturn typically makes 3 passes over 9-12 months. Each pass tests and strengthens different aspects of the theme.',
-  uranus: 'Uranus moves about 0.01° per day. This transit is active for about 6-8 months per pass. With retrograde, Uranus makes 3 passes over 1-2 YEARS. This is a slow, fundamental reshaping of the affected life area.',
-  neptune: 'Neptune moves about 0.006° per day. This transit is active for about 8-12 months per pass. With retrograde, Neptune makes 3 passes over 2-3 YEARS. This is one of the longest transits — a gradual dissolution and spiritual transformation.',
-  pluto: 'Pluto moves about 0.004° per day. This transit is active for 1-2 YEARS per pass. With retrograde, Pluto can make 3-5 passes over 2-4 YEARS at the same degree. This is the deepest, slowest, most transformative transit in astrology.',
-  chiron: 'Chiron moves about 0.02° per day. This transit is active for about 4-6 months per pass. With retrograde, Chiron makes 3 passes over 9-14 months. Each pass opens a deeper layer of the healing process.',
+  jupiter: 'Jupiter moves about 0.08° per day (5 arcminutes). This transit is active for about 2-3 months. With retrograde motion, Jupiter can make one, two, or more exact passes (the real dates come from the ephemeris) over this point across 6-9 months — each pass bringing a different layer of growth.',
+  saturn: 'Saturn moves about 0.03° per day (2 arcminutes). This transit is active for about 3-4 months per pass. With retrograde, Saturn can make one, two, or more exact passes (the real dates come from the ephemeris) over 9-12 months. Each pass tests and strengthens different aspects of the theme.',
+  uranus: 'Uranus moves about 0.01° per day. This transit is active for about 6-8 months per pass. With retrograde, Uranus can make one, two, or more exact passes (the real dates come from the ephemeris) over 1-2 YEARS. This is a slow, fundamental reshaping of the affected life area.',
+  neptune: 'Neptune moves about 0.006° per day. This transit is active for about 8-12 months per pass. With retrograde, Neptune can make one, two, or more exact passes (the real dates come from the ephemeris) over 2-3 YEARS. This is one of the longest transits — a gradual dissolution and spiritual transformation.',
+  pluto: 'Pluto moves about 0.004° per day. This transit is active for 1-2 YEARS per pass. With retrograde, Pluto can make one, two, or more exact passes (the real dates come from the ephemeris) over 2-4 YEARS at the same degree. This is the deepest, slowest, most transformative transit in astrology.',
+  chiron: 'Chiron moves about 0.02° per day. This transit is active for about 4-6 months per pass. With retrograde, Chiron can make one, two, or more exact passes (the real dates come from the ephemeris) over 9-14 months. Each pass opens a deeper layer of the healing process.',
 };
 
 const getFeeling = (transitPlanet: string, natalPlanet: string, aspect: string, natalHouse: number | null): FeelingData => {
@@ -991,7 +975,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
   aspect: string;
   currentDate: Date;
 }) => {
-  const timeline = calculateDetailedTransitTimeline(transitPlanet, transitDegree, natalDegree, aspect, currentDate);
+  const timeline = calculateDetailedTransitTimeline(transitPlanet, transitDegree, natalDegree, aspect, currentDate, natalSign);
   
   const formatDate = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const formatDateWithYear = (date: Date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1047,7 +1031,7 @@ const TransitTimeline = ({ transitPlanet, transitDegree, natalPlanet, natalDegre
         {timeline.retrogradePasses?.hasRetrograde ? (
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontWeight: '600', color: '#6A1B9A', marginBottom: '12px', fontSize: '15px' }}>
-              🔄 Three Passes (Due to Retrograde):
+              🔄 Exact Passes (from the ephemeris):
             </div>
             
             {/* First Pass */}
@@ -1531,13 +1515,13 @@ const RETROGRADE_INFO: Record<string, { duration: string; frequency: string; pas
     duration: '5+ months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Neptune — the planet of intuition, dreams, and spirituality — reverses direction for about 5-6 months each year. Its 3 passes over a chart point allow spiritual and creative themes to gradually emerge, dissolve old illusions, and re-form with greater clarity. This is a gentle, slow unfolding — not a sudden event.'
+    description: 'Neptune — the planet of intuition, dreams, and spirituality — reverses direction for about 5-6 months each year. Its repeated passes over a chart point allow spiritual and creative themes to gradually emerge, dissolve old illusions, and re-form with greater clarity. This is a gentle, slow unfolding — not a sudden event.'
   },
   uranus: {
     duration: '5 months',
     frequency: 'once per year',
     passCount: 3,
-    description: 'Uranus — the planet of sudden change and awakening — retrogrades for about 5 months every year. Its 3 passes work like this: the first pass brings an unexpected shift or realization, the retrograde pass asks you to sit with the disruption and understand it more deeply, and the final pass helps you fully embrace the change and move forward in a more honest way.'
+    description: 'Uranus — the planet of sudden change and awakening — retrogrades for about 5 months every year. Its repeated passes work like this: the first pass brings an unexpected shift or realization, the retrograde pass asks you to sit with the disruption and understand it more deeply, and the final pass helps you fully embrace the change and move forward in a more honest way.'
   },
   saturn: {
     duration: '4.5 months',

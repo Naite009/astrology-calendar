@@ -181,6 +181,41 @@ export const getTransitPlanetSymbol = (planet: string): string => {
 export { getHouseLabel, hasHouseData, HOUSE_MEANINGS };
 
 // Calculate transit-to-natal aspects
+const ANGLE_HOUSE: Record<string, number> = { Ascendant: 1, IC: 4, Descendant: 7, Midheaven: 10 };
+
+const ANGLE_ALIASES: Record<string, string[]> = {
+  Ascendant: ['Ascendant', 'ASC'],
+  IC: ['IC', 'ImumCoeli', 'Imum Coeli'],
+  Descendant: ['Descendant', 'DSC', 'DC'],
+  Midheaven: ['Midheaven', 'MC'],
+};
+
+/**
+ * Natal chart angles as transit targets, derived from exact house cusps
+ * (ASC=house1, IC=house4, DSC=house7, MC=house10). Falls back to the stored
+ * Ascendant / Midheaven rows, then to the opposite angle + 180°.
+ */
+export function getNatalAngleTargets(natalChart: NatalChart): { name: string; sign: string; degree: number; minutes: number; longitude: number }[] {
+  const cusps = natalChart.houseCusps as Record<string, { sign: string; degree: number; minutes?: number } | undefined> | undefined;
+  const planets = natalChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number } | undefined>;
+  const SIGNS_L = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  const lonOf = (p?: { sign?: string; degree?: number; minutes?: number }) =>
+    p?.sign && SIGNS_L.includes(p.sign) ? signToLongitude(p.sign, p.degree || 0, p.minutes || 0) : null;
+  const asc = lonOf(cusps?.house1) ?? lonOf(planets?.Ascendant);
+  const mc = lonOf(cusps?.house10) ?? lonOf(planets?.Midheaven) ?? lonOf(planets?.MC);
+  const ic = lonOf(cusps?.house4) ?? (mc !== null ? (mc + 180) % 360 : null);
+  const dsc = lonOf(cusps?.house7) ?? (asc !== null ? (asc + 180) % 360 : null);
+  const out: { name: string; sign: string; degree: number; minutes: number; longitude: number }[] = [];
+  const add = (name: string, lon: number | null) => {
+    if (lon === null) return;
+    const l = ((lon % 360) + 360) % 360;
+    const totalMin = Math.round((l % 30) * 60);
+    out.push({ name, sign: SIGNS_L[Math.floor(l / 30) % 12], degree: Math.floor(totalMin / 60), minutes: totalMin % 60, longitude: l });
+  };
+  add('Ascendant', asc); add('IC', ic); add('Descendant', dsc); add('Midheaven', mc);
+  return out;
+}
+
 export const calculateTransitAspects = (
   transitDate: Date,
   transitPositions: PlanetaryPositions,
@@ -218,17 +253,14 @@ export const calculateTransitAspects = (
       longitude: signToLongitude(pos!.sign, pos!.degree, pos!.minutes),
     }));
 
-  // Add corrected Ascendant from houseCusps.house1 (avoids 180° flip bug)
-  const h1 = natalChart.houseCusps?.house1;
-  const ascData = h1?.sign ? h1 : natalChart.planets?.Ascendant;
-  if (ascData?.sign) {
-    rawNatalPlanets.push({
-      name: 'Ascendant',
-      sign: ascData.sign,
-      degree: ascData.degree,
-      minutes: ascData.minutes || 0,
-      longitude: signToLongitude(ascData.sign, ascData.degree, ascData.minutes || 0),
-    });
+  // Chart angles from exact cusps: ASC = house1 (corrected, avoids 180° flip),
+  // IC = house4, DSC = house7, MC = house10. Raw planet-table angle rows are
+  // replaced so naming stays canonical for scoring and interpretation.
+  for (const angle of getNatalAngleTargets(natalChart)) {
+    while (rawNatalPlanets.some(p => ANGLE_ALIASES[angle.name].includes(p.name))) {
+      rawNatalPlanets.splice(rawNatalPlanets.findIndex(p => ANGLE_ALIASES[angle.name].includes(p.name)), 1);
+    }
+    rawNatalPlanets.push(angle);
   }
 
   const natalPlanets = rawNatalPlanets;
@@ -251,7 +283,7 @@ export const calculateTransitAspects = (
       if (diff > 180) diff = 360 - diff;
 
       // Calculate which house the natal planet is in
-      const natalHouse = getNatalPlanetHouse(natal.name, natalChart);
+      const natalHouse = ANGLE_HOUSE[natal.name] ?? getNatalPlanetHouse(natal.name, natalChart);
 
       // Check for aspects
       ASPECT_TYPES.forEach(aspectType => {
