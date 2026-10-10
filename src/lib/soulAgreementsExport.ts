@@ -10,6 +10,8 @@ import {
   type ExportMeta,
 } from "@/lib/pdfDocEngine";
 
+import { actionText, buildTakeawayAction, buildSummaryActions, TAKEAWAY_SUMMARY_FIELDS, type TakeawaySummaryActions } from "@/lib/interpretation/takeawayActions";
+
 export type { ExportMeta };
 
 export interface ExportSection {
@@ -27,6 +29,7 @@ export interface ExportSummary {
   whatToGive: string;
   integration?: string;
   growthSigns?: string[];
+  actions?: TakeawaySummaryActions;
 }
 
 export { downloadJson };
@@ -54,23 +57,27 @@ function renderContract(doc: Doc, contract: StrengthContract) {
   });
 
   doc.eyebrow("How to use it");
-  doc.bullets(contract.howToUse);
+  contract.howToUse.forEach((text, i) => {
+    const action = contract.actions?.howToUse[i] ?? buildTakeawayAction(text);
+    doc.box("", [{ p: text }, { p: `Try this: ${actionText(action)}` }]);
+  });
   doc.eyebrow("What it costs when it runs unchecked");
   doc.body(contract.costWhenOverused);
-  doc.box("The Commitment", [{ p: contract.commitment }], C.soft);
+  doc.body(`Try this: ${actionText(contract.actions?.cost ?? buildTakeawayAction(contract.costWhenOverused))}`);
+  doc.box("The Commitment", [{ p: contract.commitment }, { p: `Try this: ${actionText(contract.actions?.commitment ?? buildTakeawayAction(contract.commitment))}` }], C.soft);
 }
 
 function renderSummary(doc: Doc, summary: ExportSummary) {
   doc.eyebrow("Soul Contract Summary");
   doc.title("The reading in four lines", 14);
   doc.rule();
-  doc.box("", [
-    { p: `What to practice: ${summary.whatToPractice}` },
-    { p: `What to watch for: ${summary.whatToWatchFor}` },
-    { p: `What to build: ${summary.whatToBuild}` },
-    { p: `What to give: ${summary.whatToGive}` },
-  ]);
-  if (summary.integration) doc.body(summary.integration);
+  const actions = summary.actions ?? buildSummaryActions(summary);
+  for (const [key, label] of TAKEAWAY_SUMMARY_FIELDS) {
+    const text = summary[key];
+    if (!text) continue;
+    const action = actions[key];
+    doc.box(label, [{ p: text }, ...(action ? [{ p: `Try this: ${actionText(action)}` }] : [])]);
+  }
   if (summary.growthSigns?.length) {
     doc.eyebrow("How to know you're growing");
     doc.bullets(summary.growthSigns);
@@ -188,7 +195,7 @@ export function exportFullJson(
     note: "Section order is story order (Family first, earliest layer), not a ranking of importance.",
     person: meta,
     sections,
-    summary,
+    summary: { ...summary, actions: summary.actions ?? buildSummaryActions(summary) },
     strengthContract: contract,
   });
 }

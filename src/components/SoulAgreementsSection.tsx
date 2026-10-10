@@ -17,6 +17,10 @@ import {
 } from "@/lib/soulAgreementsExport";
 import { ReadingExportButtons } from "@/components/ReadingExportButtons";
 
+import { TryThisAction } from "@/components/TryThisAction";
+import { buildSummaryActions, TAKEAWAY_SUMMARY_FIELDS, type TakeawaySummaryActions } from "@/lib/interpretation/takeawayActions";
+import { buildAgeContext } from "@/lib/readingGuide/ageContext";
+
 const SIGN_RULERS: Record<string, string> = {
   Aries: "Mars", Taurus: "Venus", Gemini: "Mercury", Cancer: "Moon",
   Leo: "Sun", Virgo: "Mercury", Libra: "Venus", Scorpio: "Mars",
@@ -45,6 +49,7 @@ interface SoulAgreements {
     whatToGive: string;
     integration?: string;
     growthSigns?: string[];
+    actions?: TakeawaySummaryActions;
   };
 }
 
@@ -143,6 +148,11 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
     }),
     [chart.name, chart.birthDate, chart.birthTime, chart.birthLocation],
   );
+
+  const summaryWithActions = useMemo(() => data ? {
+    ...data.summary,
+    actions: buildSummaryActions(data.summary, buildAgeContext(chart.birthDate).stage),
+  } : null, [data, chart.birthDate]);
 
   const contract = useMemo(
     () => (data ? buildStrengthContract(chart, data.summary) : null),
@@ -383,16 +393,19 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                 <div className="p-4 bg-primary/5 border border-primary/30 rounded-sm">
                   <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-3">Soul Contract Summary</p>
                   <div className="space-y-2 text-[12px] text-foreground">
-                    <div><span className="font-medium">What to practice:</span> {data.summary.whatToPractice}</div>
-                    <div><span className="font-medium">What to watch for:</span> {data.summary.whatToWatchFor}</div>
-                    <div><span className="font-medium">What to build:</span> {data.summary.whatToBuild}</div>
-                    <div><span className="font-medium">What to give:</span> {data.summary.whatToGive}</div>
+                    {TAKEAWAY_SUMMARY_FIELDS.filter(([key]) => key !== 'integration').map(([key, label]) => (
+                      <div key={key} className="pb-2">
+                        <p><span className="font-medium">{label}:</span> {data.summary[key]}</p>
+                        <TryThisAction action={summaryWithActions?.actions[key]} />
+                      </div>
+                    ))}
                   </div>
                   {data.summary.integration && (
                     <p className="mt-4 pt-3 border-t border-primary/20 text-[12px] text-foreground italic leading-relaxed">
                       {data.summary.integration}
                     </p>
                   )}
+                  {data.summary.integration && <TryThisAction action={summaryWithActions?.actions.integration} />}
                 </div>
               )}
 
@@ -441,7 +454,7 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                       {contract.howToUse.map((line, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-primary mt-0.5">•</span>
-                          <span>{line}</span>
+                          <span>{line}<TryThisAction action={contract.actions?.howToUse[i]} /></span>
                         </li>
                       ))}
                     </ul>
@@ -450,11 +463,13 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                   <div className="mt-4">
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">When it runs unchecked</p>
                     <p className="text-[12px] text-foreground/90 leading-relaxed">{contract.costWhenOverused}</p>
+                    <TryThisAction action={contract.actions?.cost} />
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-primary/20">
                     <p className="text-[10px] uppercase tracking-widest text-primary mb-1.5">The commitment</p>
                     <p className="text-[12px] text-foreground italic leading-relaxed">{contract.commitment}</p>
+                    <TryThisAction action={contract.actions?.commitment} />
                   </div>
                 </div>
               )}
@@ -468,8 +483,8 @@ export const SoulAgreementsSection = ({ chart }: { chart: NatalChart }) => {
                   </p>
                   <ReadingExportButtons
                     emphasis
-                    onPdf={() => exportFullPdf(meta, exportSections, data.summary, contract)}
-                    onJson={() => exportFullJson(meta, exportSections, data.summary, contract)}
+                    onPdf={() => exportFullPdf(meta, exportSections, summaryWithActions ?? data.summary, contract)}
+                    onJson={() => exportFullJson(meta, exportSections, summaryWithActions ?? data.summary, contract)}
                   />
                 </div>
               )}

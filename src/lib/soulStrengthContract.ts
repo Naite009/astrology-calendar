@@ -1,4 +1,6 @@
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
+import { buildTakeawayAction, type TakeawayAction } from '@/lib/interpretation/takeawayActions';
+import { buildAgeContext } from '@/lib/readingGuide/ageContext';
 /**
  * Strength-Based Contract
  * ------------------------------------------------------------------
@@ -25,6 +27,7 @@ export interface StrengthContract {
   costWhenOverused: string;
   /** The commitment line, written in first person. */
   commitment: string;
+  actions?: { howToUse: TakeawayAction[]; cost: TakeawayAction; commitment: TakeawayAction };
 }
 
 const DOMICILE: Record<string, string[]> = {
@@ -195,7 +198,7 @@ export function buildStrengthContract(
   if (summary?.whatToBuild) howToUse.push(summary.whatToBuild);
   if (summary?.whatToGive) howToUse.push(summary.whatToGive);
 
-  return {
+  const contract: StrengthContract = {
     headline: "Strength-Based Contract",
     coreStrength: `${lead.plain} That is the capacity this chart keeps returning to, and it is strongest in ${leadArena}.`,
     strengths,
@@ -206,4 +209,11 @@ export function buildStrengthContract(
         ? `I will lead with what already works in me, use it on purpose rather than on reflex, and stop when it turns into overwork. ${summary.integration}`
         : "I will lead with what already works in me, use it on purpose rather than on reflex, and stop when it turns into overwork.",
   };
+  const stage = buildAgeContext(chart.birthDate).stage;
+  contract.actions = {
+    howToUse: contract.howToUse.map(text => buildTakeawayAction(text, { stage })),
+    cost: buildTakeawayAction(contract.costWhenOverused, { stage }),
+    commitment: buildTakeawayAction(contract.commitment, { stage, context: contract.coreStrength }),
+  };
+  return contract;
 }

@@ -28,6 +28,8 @@ import {
 import { bigThreeCard, type ShorthandCard } from '@/lib/interpretation/shorthandDescriptor';
 import { buildElementBalanceReading, buildModalityBalanceReading, buildElementPsychology } from '@/lib/interpretation/elementBalance';
 import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
+import { buildTakeawayAction, type TakeawayAction } from '@/lib/interpretation/takeawayActions';
+import { buildAgeContext } from '@/lib/readingGuide/ageContext';
 
 export interface NatalPortrait {
   synthesis: ChartSynthesis;
@@ -45,7 +47,7 @@ export interface NatalPortrait {
   patterns: ChartPattern[];
   minorBodyPatterns: ChartPattern[];
   lifetimeWisdom: LifetimeWisdom;
-  importantAspects: PsychologicalAspectSynthesis[];
+  importantAspects: (PsychologicalAspectSynthesis & { tryThis?: TakeawayAction })[];
 }
 
 export interface LifePurposeSummary {
@@ -99,6 +101,7 @@ export interface DomainDeepDive {
   strengths: string[];
   challenges: string[];
   advice: string;
+  tryThis?: TakeawayAction;
   evidence?: string[];
 }
 
@@ -138,6 +141,7 @@ export interface NatalPowerPortrait {
   realignment: string;
   realignmentTools: string[];
   mantra: string;
+  tryThis?: TakeawayAction;
 }
 
 export interface LifetimeWisdom {
@@ -152,6 +156,7 @@ export interface LifetimeWisdom {
   saturnHouse: number;
   saturnLesson: string;
   closingWisdom: string;
+  actions?: { growth: TakeawayAction; gifts: TakeawayAction; saturn: TakeawayAction; closing: TakeawayAction };
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -1049,7 +1054,7 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     .slice(0, 8)
     .map(a => synthesisFromRankedAspect(a));
 
-  return sanitizeInterpretiveDeep<NatalPortrait>({
+  const portrait = sanitizeInterpretiveDeep<NatalPortrait>({
     synthesis: buildChartSynthesis(chart),
     lifePurpose,
     topThemes: rankTopThemes(chart, bodies),
@@ -1067,4 +1072,18 @@ export function generateNatalPortrait(chart: NatalChart): NatalPortrait {
     lifetimeWisdom: buildLifetimeWisdom(chart, bodies),
     importantAspects,
   });
+  const stage = buildAgeContext(chart.birthDate).stage;
+  for (const domain of [portrait.relationshipBlueprint, portrait.careerMoneyMap, portrait.emotionalArchitecture, portrait.healthVitality, portrait.shadowGrowth, portrait.spiritualKarmic]) {
+    domain.tryThis = buildTakeawayAction(domain.advice, { stage, context: `${domain.summary} ${domain.keyPlanets.map(p => p.role).join(' ')}` });
+  }
+  portrait.importantAspects = portrait.importantAspects.map(aspect => ({ ...aspect, tryThis: buildTakeawayAction(aspect.watchFor, { stage, context: aspect.aspectDynamic }) }));
+  portrait.powerPortrait.tryThis = buildTakeawayAction(portrait.powerPortrait.realignment, { stage, context: portrait.powerPortrait.realignmentTools.join(' ') });
+  const wisdom = portrait.lifetimeWisdom;
+  wisdom.actions = {
+    growth: buildTakeawayAction(wisdom.growthEdge, { stage, context: wisdom.lifeDirection }),
+    gifts: buildTakeawayAction(wisdom.pastLifeGifts, { stage }),
+    saturn: buildTakeawayAction(wisdom.saturnLesson, { stage }),
+    closing: buildTakeawayAction(wisdom.closingWisdom, { stage, context: wisdom.saturnLesson }),
+  };
+  return portrait;
 }

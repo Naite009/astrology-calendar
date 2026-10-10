@@ -10,6 +10,8 @@ import { ordinalHouse } from './ordinals';
 import { sanitizeInterpretiveDeep } from './languagePolicy';
 import { pairAspectReading } from '@/lib/readingGuide/aspectPairLibrary';
 
+import { buildTakeawayAction, type TakeawayAction } from './takeawayActions';
+
 export type SynthesisSignal = 'Strong' | 'Moderate';
 
 export interface ChartSynthesisDynamic {
@@ -21,6 +23,7 @@ export interface ChartSynthesisDynamic {
   realLifeTranslation: string;
   modifyingFactor: string;
   practicalTakeaway: string;
+  tryThis?: TakeawayAction;
 }
 
 export interface ChartSynthesis {
@@ -29,6 +32,7 @@ export interface ChartSynthesis {
   summary: string[];
   recognitionPoints: string[];
   whatHelps: string;
+  tryThis?: TakeawayAction;
   dynamics: ChartSynthesisDynamic[];
 }
 
@@ -435,6 +439,7 @@ export function buildChartSynthesis(
     summary,
     recognitionPoints,
     whatHelps,
+    tryThis: buildTakeawayAction(whatHelps, { stage, context: summary.join(' ') }),
     dynamics: final.map(({ summary: _summary, recognition: _recognition, bodies: _bodies, houses: _houses, score: _score, ...dynamic }) => ({
       ...dynamic,
       evidence: stageText(dynamic.evidence, stage),
@@ -442,6 +447,7 @@ export function buildChartSynthesis(
       realLifeTranslation: stageText(dynamic.realLifeTranslation, stage),
       modifyingFactor: stageText(dynamic.modifyingFactor, stage),
       practicalTakeaway: stageText(dynamic.practicalTakeaway, stage),
+      tryThis: buildTakeawayAction(dynamic.practicalTakeaway, { stage, context: dynamic.realLifeTranslation }),
     })),
   });
 }
