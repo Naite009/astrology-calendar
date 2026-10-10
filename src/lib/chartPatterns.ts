@@ -293,7 +293,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
               }
               detailedDesc += `\n\n`;
               
-              detailedDesc += `The release point is the EMPTY LEG of your T-Square—opposite the apex. This is where you CONSCIOUSLY develop skills to release the pressure.\n\n`;
+              detailedDesc += `The release point is the empty leg of the T-Square: the degree opposite the apex planet. It is an unoccupied balancing point, not another planet, a prediction, or a guaranteed trait. Its sign and house suggest qualities that can help balance the pattern.\n\n`;
               
               // House-specific release guidance
               if (releaseHouse) {
@@ -309,7 +309,7 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 detailedDesc += `**⭐ PLANETS NEAR RELEASE POINT: ${planetsNearRelease.join(', ')}**\n`;
                 detailedDesc += `This is significant! You have planetary support at your release point. ${planetsNearRelease.join(' and ')} can help channel the T-Square tension constructively. These planets are your pressure valve—develop their qualities consciously.\n\n`;
               } else {
-                detailedDesc += `**No planets at the release point**—it helps to consciously develop ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} qualities. This is learned skill, not natural talent.\n\n`;
+                detailedDesc += `**No planets at the release point**—it helps to consciously develop ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} qualities as a symbolic integration strategy. This does not mean those qualities are absent or unnatural for you.\n\n`;
               }
               
               detailedDesc += `**Integration Practice:** ${apexMeaning.release}`;
@@ -319,9 +319,9 @@ const detectTSquares = (planets: Array<{ name: string; degree: number }>, chart?
                 symbol: '⊤',
                 planets: [oppPlanet1.name, oppPlanet2.name, apexPlanet.name],
                 description: detailedDesc,
-                meaning: `The ${oppPlanet1.name}-${oppPlanet2.name} opposition creates a fundamental life polarity. ${apexPlanet.name} at the apex receives ALL that tension and must DO something with it. This can create real drive, and it may also feel like ongoing pressure. The release point in ${releaseSign}${releaseHouse ? ` (${ordinalHouse(releaseHouse)})` : ''} is where you learn to let go.`,
-                challenge: `${apexPlanet.name} is under constant pressure. You may overdo ${apexPlanet.name} activities, burn out in this area, or swing between the two opposition planets without resolution. The release point feels unfamiliar—that's exactly why you need to develop it.`,
-                gift: `Notable ${apexPlanet.name} capability built through pressure. Once you learn to use the release point, this becomes a powerful engine for achievement. The tension never fully goes away—but it becomes fuel rather than drain.`,
+                meaning: `The ${oppPlanet1.name}-${oppPlanet2.name} opposition describes a pull between two needs. ${apexPlanet.name} at the apex squares both, so ${apexPlanet.name} themes are where that pull is often felt and acted on. This can create drive, and at times it may feel like pressure. The empty leg at about ${releaseDegreeInSign.toFixed(0)}° ${releaseSign}${releaseHouse ? ` in the ${ordinalHouse(releaseHouse)}` : ''} points to qualities that can help balance the pattern.`,
+                challenge: `At times you may lean hard on ${apexPlanet.name} themes or swing between the two opposition planets. Noticing that pattern early makes it easier to choose a steadier response.`,
+                gift: `Over time this pattern can build real ${apexPlanet.name} capability. Using ${releaseSign}${releaseHouse ? `/${ordinalHouse(releaseHouse)}` : ''} strategies on purpose can turn some of the strain into steady, usable energy. This is a symbolic integration strategy, not a forecast.`,
               });
             }
           }
@@ -340,7 +340,7 @@ const getHouseReleaseGuidance = (house: number): string => {
     2: "Build material security and self-worth. Develop your resources, skills, values. Grounding in what you OWN and VALUE releases tension.",
     3: "Communicate, learn, connect locally. Write, teach, network. Short trips and sibling/neighbor connections help. Information gathering is therapeutic.",
     4: "Create a home base. Family healing, emotional security, roots. Private time at home releases pressure. Connect with your ancestry and inner foundation.",
-    5: "Create! Play! Romance! Express yourself through art, performance, children. Joy and creative output are your release. Stop being so serious.",
+    5: "Creating for pleasure, play, enjoyment, and doing something because it feels nourishing rather than because it has to achieve or control an outcome.",
     6: "Daily routines, health practices, service work. Detailed tasks and helping others grounds the energy. Exercise, diet, and skilled work release tension.",
     7: "Partnership and collaboration. Let others help. Develop relationship skills. One-on-one connections and learning to cooperate releases the pressure.",
     8: "Go deep. Psychological work, shared resources, intimacy. Transformation through crisis. Face your shadows. Other people's resources support you.",
@@ -356,7 +356,7 @@ const getHouseReleaseGuidance = (house: number): string => {
 const getSignReleaseEnergy = (sign: string): string => {
   const energies: Record<string, string> = {
     Aries: "Courage, initiative, directness. Be willing to act first, assert yourself, take risks. Stop waiting for permission.",
-    Taurus: "Patience, stability, sensory grounding. Slow down. Build something lasting. Enjoy the physical world. Trust the process.",
+    Taurus: "Slowing down, grounding in the body and senses, and patient building.",
     Gemini: "Curiosity, flexibility, communication. Ask questions. Stay light. Gather information before deciding. Variety is medicine.",
     Cancer: "Nurturing, emotional honesty, creating safety. Let yourself feel. Take care of yourself and others. Home matters.",
     Leo: "Creative self-expression, generosity, play. Shine without apology. Lead with heart. Drama and joy are therapeutic.",

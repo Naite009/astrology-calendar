@@ -197,7 +197,12 @@ export const DominantPlanetsCard = ({ report, context = 'natal', compact = false
         <div className="px-5 py-3 border-t border-border">
           <div className="flex items-start gap-2">
             <Info size={12} className="text-muted-foreground mt-0.5 flex-shrink-0" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed">{r.interpretation}</p>
+            <div className="space-y-1">
+              <p className="text-[10px] text-muted-foreground leading-relaxed">{r.interpretation}</p>
+              {'methodologyNote' in report && report.methodologyNote && (
+                <p className="text-[10px] text-muted-foreground leading-relaxed italic">{report.methodologyNote}</p>
+              )}
+            </div>
           </div>
         </div>
       )}

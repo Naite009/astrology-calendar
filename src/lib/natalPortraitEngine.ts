@@ -771,6 +771,27 @@ function generateDomainChallenges(domain: string, planets: DomainPlanet[]): stri
   return challenges;
 }
 
+const SATURN_HOUSE_PRESSURE: Record<number, string> = {
+  1: 'self-presentation, competence, and being taken seriously',
+  2: 'security, competence, money, or self-sufficiency',
+  3: 'speaking up, learning, and being understood',
+  4: 'home, family duties, and emotional foundations',
+  5: 'creative output, play, and being good enough at what you enjoy',
+  6: 'daily routines, workload, and being useful',
+  7: 'commitments and fairness in close partnerships',
+  8: 'trust, shared resources, and emotional exposure',
+  9: 'beliefs, study, and having the right answer',
+  10: 'career, reputation, and public responsibility',
+  11: 'friendships, groups, and long-range goals',
+  12: 'rest, privacy, and things handled alone',
+};
+
+const SATURN_HOUSE_LESSON: Record<number, string> = {
+  2: 'Building security and self-worth on standards that are genuinely your own, rather than proving your value through productivity, possessions, or outside approval',
+  6: 'Setting a workload and routine you can sustain, rather than proving your worth by doing everything',
+  10: 'Building a reputation on goals that are truly yours, rather than on outside expectations alone',
+};
+
 // ─── Power Portrait ─────────────────────────────────────────────────
 
 function buildPowerPortrait(chart: NatalChart, bodies: ReturnType<typeof getBodyData>): NatalPowerPortrait {
@@ -794,8 +815,10 @@ function buildPowerPortrait(chart: NatalChart, bodies: ReturnType<typeof getBody
       : domMod === 'Cardinal' ? 'You sustain through starting new phases — momentum is your fuel, but follow-through needs attention.'
       : 'You sustain through adaptation — you keep going by adjusting, not by holding rigid.',
     sustainDrivers: [`Dominant modality: ${domMod}`, saturn ? `Saturn in ${saturn.sign}` : ''].filter(Boolean),
-    burnoutPattern: saturn ? `Saturn in ${saturn.sign} (House ${saturn.house}) shows where you over-work, over-control, or deny yourself rest. Your burnout comes from ${saturn.sign === 'Capricorn' ? 'never feeling accomplished enough' : saturn.sign === 'Cancer' ? 'carrying everyone\'s emotional weight' : `taking on too much responsibility in ${HOUSE_THEMES[saturn.house]?.toLowerCase() || 'life'}`}.` : 'Saturn placement reveals your over-work patterns.',
-    burnoutTriggers: [saturn ? `Saturn in ${saturn.sign}` : '', '6th house overload'].filter(Boolean),
+    burnoutPattern: saturn ? (SATURN_HOUSE_PRESSURE[saturn.house]
+      ? `Saturn in the ${ordinalHouse(saturn.house)} can make ${SATURN_HOUSE_PRESSURE[saturn.house]} areas where pressure accumulates, especially when worth becomes tied too closely to productivity or control.`
+      : `Saturn in ${saturn.sign} shows where responsibility can pile up, especially when worth becomes tied too closely to productivity or control.`) : 'Saturn placement shows where responsibility can pile up.',
+    burnoutTriggers: [saturn ? `Saturn in ${saturn.sign}${saturn.house ? ` (${ordinalHouse(saturn.house)})` : ''}` : ''].filter(Boolean),
     realignment: moon ? `Your Moon in ${moon.sign} is your reset button. ${MOON_NEEDS[moon.sign] || ''} When burned out, return to what your Moon needs.` : 'Honor your emotional needs to reset.',
     realignmentTools: [moon ? `Moon in ${moon.sign}` : '', nn ? `North Node in ${nn.sign}` : ''].filter(Boolean),
     mantra: generateMantra(sun?.sign || '', moon?.sign || '', mars?.sign || ''),
@@ -943,7 +966,7 @@ function buildLifetimeWisdom(chart: NatalChart, bodies: ReturnType<typeof getBod
     Scorpio: 'Trusting others with power and vulnerability',
     Sagittarius: 'Committing to depth over breadth, quality over quantity',
     Capricorn: 'Understanding that success isn\'t just external achievement',
-    Aquarius: 'Balancing individuality with genuine community belonging',
+    Aquarius: 'Holding to standards you have thought through yourself, while still belonging to the groups that matter to you',
     Pisces: 'Setting boundaries while maintaining compassion',
   };
 
@@ -957,7 +980,7 @@ function buildLifetimeWisdom(chart: NatalChart, bodies: ReturnType<typeof getBod
     growthEdge: nodeInfo.edge,
     saturnSign: saturn?.sign || 'unknown',
     saturnHouse: saturn?.house || 0,
-    saturnLesson: saturnLessons[saturn?.sign || ''] || 'Mastering discipline through patience',
+    saturnLesson: (saturn?.house && SATURN_HOUSE_LESSON[saturn.house]) || saturnLessons[saturn?.sign || ''] || 'Mastering discipline through patience',
     closingWisdom: `Your chart is a blueprint, not a sentence. Every placement — even the difficult ones — is a tool. The planets don't make you do anything; they show you what you're working with. The question isn't "what will happen to me?" but "how will I use what I've been given?"`,
   };
 }
