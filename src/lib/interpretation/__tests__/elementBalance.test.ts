@@ -26,7 +26,7 @@ describe('concrete element balance interpretation', () => {
     expect(reading?.behavior).toMatch(behavior);
     expect(reading?.alternative).toMatch(alternative);
     expect(reading?.support).toMatch(support);
-    expect(reading?.compensation).toMatch(/compensation|modified by/i);
+    expect(reading?.compensation).toMatch(/compensation|Still present through/i);
   });
 
   it('synthesizes both light elements and names the stronger replacement channel', () => {
@@ -35,7 +35,7 @@ describe('concrete element balance interpretation', () => {
     expect(reading.combined?.label.split(/\s+/).length).toBeLessThanOrEqual(3);
     expect(reading.combined?.synthesis).toMatch(/feelings.*schedule|schedule.*feelings/i);
     expect(reading.combined?.alternative).toMatch(/Fire|action|enthusiasm/i);
-    expect(reading.combined?.compensation).toMatch(/compensation|modified by/i);
+    expect(reading.combined?.compensation).toMatch(/compensation|Still present through/i);
   });
 
   it('uses actual placements when a low count is strongly compensated', () => {
