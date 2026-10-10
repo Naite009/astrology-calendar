@@ -56,6 +56,8 @@ export interface DominantPlanetsReport {
   interpretation: string;
   /** One line explaining the index so no surface can imply literal percentages. */
   indexExplainer: string;
+  /** States that ranks are app-defined, and when modern rulerships are used. */
+  methodologyNote: string;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -87,20 +89,46 @@ const EXALTATION_SIGNS: Record<string, string> = {
   Mars: 'Capricorn', Jupiter: 'Cancer', Saturn: 'Libra',
 };
 
-const PLANET_MEANINGS: Record<string, string> = {
-  Sun: "Your life force radiates outward. You may thrive being seen, to lead, to express your honest self without apology. Your vitality, confidence, and creative fire are the engine of your entire chart.",
-  Moon: "Your emotional world runs the show. You process everything through feeling first, and your intuition is your most reliable compass. Nurturing, memory, and emotional intelligence are your superpowers.",
-  Mercury: "Your mind never stops. You process the world through analysis, communication, and connection. Words are your currency — whether written, spoken, or thought.",
-  Venus: "Beauty, harmony, and connection are your lifeblood. You have a natural gift for making things — and people — feel good. Your values and aesthetic sense shape every decision.",
-  Mars: "You run on drive, ambition, and raw energy. You're built to take action, compete, and pioneer. Your courage and directness are gifts.",
-  Jupiter: "Growth, meaning, and perspective are recurring themes. A sense of possibility often helps you keep going when a situation looks discouraging, and you tend to notice the wider context.",
-  Saturn: "Discipline, structure, and long-term thinking define you. You earn everything the hard way — and keep it. Your authority comes from lived experience.",
-  Uranus: "Independence and originality run through the chart. One expression of this is questioning how things are usually done and trying a different route; another is needing room to do things your own way.",
-  Neptune: "Imagination and sensitivity are strongly marked. This can show up as creativity and compassion, and under strain as blurred boundaries or wishful reading of a situation.",
-  Pluto: "Depth and change are recurring themes. You may prefer getting to the bottom of something over leaving it half-understood, and you tend to recover and rebuild after difficult periods.",
-  Chiron: "This points to an area of real sensitivity, which often becomes a source of understanding over time. It may make you attentive to the same thing in other people, though it does not oblige you to take care of anyone.",
-  NorthNode: "Your soul's growth direction shapes everything. The North Node isn't a planet but a compass — pulling you toward what you came here to learn and become.",
+const PLANET_FUNCTION: Record<string, string> = {
+  Sun: 'identity, purpose, and where you want to be recognized',
+  Moon: 'emotional security, comfort, and how you settle',
+  Mercury: 'thinking, learning, and communication',
+  Venus: 'values, relationships, and what feels worth having',
+  Mars: 'drive, assertion, and how you go after things',
+  Jupiter: 'growth, meaning, and a sense of possibility',
+  Saturn: 'responsibility, standards, and long-term building',
+  Uranus: 'independence and a wish to do things differently',
+  Neptune: 'imagination and sensitivity to atmosphere',
+  Pluto: 'depth, intensity, and change under pressure',
+  Chiron: 'a sensitive area that can grow into understanding',
+  NorthNode: 'a direction of growth (a point, not a planet)',
 };
+
+const HOUSE_AREA: Record<number, string> = {
+  1: 'self-presentation', 2: 'money, security, and self-worth', 3: 'communication and everyday learning',
+  4: 'home and family', 5: 'creativity, play, and romance', 6: 'routines and work habits',
+  7: 'close partnerships', 8: 'trust, intimacy, and shared resources', 9: 'beliefs, study, and travel',
+  10: 'career and public reputation', 11: 'friends and groups', 12: 'privacy and rest',
+};
+
+/** Chart-contextual description that never contradicts the planet's rank. */
+function contextualMeaning(
+  planet: string, rank: number, count: number, score: number, nextName: string | undefined, nextScore: number | undefined,
+  house: number | null, tightHard: string[],
+): string {
+  const fn = PLANET_FUNCTION[planet] || planet;
+  const where = house ? ` Placed in the ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house, it focuses on ${HOUSE_AREA[house]}.` : '';
+  const pressure = tightHard.length ? ` Its tighter hard aspects (${tightHard.join(', ')}) make this an important pressure point even so.` : '';
+  if (rank === 1) {
+    const close = nextName && nextScore !== undefined && score - nextScore <= 1.5 ? `, narrowly ahead of ${nextName}` : '';
+    return `Using this app's dominance scoring system, ${planet} ranks first${close}. ${planet} describes ${fn}.${where}`;
+  }
+  if (rank <= 3) return `${planet} ranks ${rank === 2 ? 'second' : 'third'} in this app's dominance scoring. It describes ${fn}.${where}`;
+  if (rank > Math.ceil(count / 2)) {
+    return `${planet} is not one of the highest-scoring planets in this app's dominance scoring (rank ${rank} of ${count}), so it is not the main driver of the chart. It describes ${fn}.${where}${pressure}`;
+  }
+  return `${planet} ranks ${rank} of ${count} in this app's dominance scoring. It describes ${fn}.${where}${pressure}`;
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -305,7 +333,12 @@ export function calculateNatalDominantPlanets(chart: NatalChart): DominantPlanet
     breakdown: s.breakdown,
     dignity: s.dignity,
     tags: s.tags,
-    meaning: PLANET_MEANINGS[s.planet] || '',
+    meaning: contextualMeaning(
+      s.planet, i + 1, scored.length, s.totalScore, scored[1]?.planet, scored[1]?.totalScore,
+      planets.find(p => p.name === s.planet)?.house ?? null,
+      allAspects.filter(x => (x.p1 === s.planet || x.p2 === s.planet) && ['Square', 'Opposition'].includes(x.type) && x.orb <= 6)
+        .map(x => `${x.p1 === s.planet ? x.p2 : x.p1} ${x.type.toLowerCase()} ${x.orb.toFixed(1)}°`),
+    ),
     };
   });
 
@@ -329,8 +362,13 @@ export function calculateNatalDominantPlanets(chart: NatalChart): DominantPlanet
 
   const top3 = entries.slice(0, 3).map(e => e.planet);
   const captainTags = entries[0]?.tags.length ? entries[0].tags.join(', ').toLowerCase() : 'placement and aspects';
-  const indexExplainer = 'The dominance index is relative: the top planet is set to 100 and the others are scaled against it. It is not a percentage of your chart, and the numbers do not sum to 100. Raw scores are shown alongside.';
-  const interpretation = `${captain} is the highest-scoring planet in this chart with a raw score of ${entries[0]?.totalScore} — it has the most influence over your chart through a combination of ${captainTags}. ${
+  const modernUsed = results.some(r =>
+    (['Uranus', 'Neptune', 'Pluto'].includes(r.planet) && (r.breakdown.sign > 0 || r.breakdown.ruler > 0)));
+  const methodologyNote = `Rankings come from this app's own scoring system (sign dignity, house, angle closeness, rulership, and aspects), not from an objective astronomical measurement.${modernUsed ? ' This scoring uses modern rulerships and dignities, so Uranus, Neptune, and Pluto can earn rulership or domicile points (for example Pluto in Scorpio).' : ''}`;
+  const indexExplainer = methodologyNote + ' The dominance index is relative: the top planet is set to 100 and the others are scaled against it. It is not a percentage of your chart, and the numbers do not sum to 100. Raw scores are shown alongside.';
+  const runnerUp = entries[1];
+  const narrow = runnerUp && (entries[0].totalScore - runnerUp.totalScore) <= 1.5 ? `, narrowly ahead of ${runnerUp.planet}` : '';
+  const interpretation = `Using this app's dominance scoring system, ${captain} ranks first${narrow} (raw score ${entries[0]?.totalScore}, from ${captainTags}). ${
     starPlayer !== captain ? `${starPlayer} is your strongest planet by dignity — most comfortable in its sign. ` : ''
   }${billboard !== captain ? `${billboard} is your most elevated planet (closest to the Midheaven) — what the world sees first. ` : ''
   }Your top three: ${top3.join(', ')}.`;
@@ -343,5 +381,6 @@ export function calculateNatalDominantPlanets(chart: NatalChart): DominantPlanet
     captainScore: entries[0]?.totalScore || 0,
     interpretation,
     indexExplainer,
+    methodologyNote,
   });
 }
