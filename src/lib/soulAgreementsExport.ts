@@ -10,7 +10,7 @@ import {
   type ExportMeta,
 } from "@/lib/pdfDocEngine";
 
-import { actionText, buildSummaryActions, TAKEAWAY_SUMMARY_FIELDS, type TakeawaySummaryActions } from "@/lib/interpretation/takeawayActions";
+import { actionText, buildTakeawayAction, buildSummaryActions, TAKEAWAY_SUMMARY_FIELDS, type TakeawaySummaryActions } from "@/lib/interpretation/takeawayActions";
 
 export type { ExportMeta };
 
