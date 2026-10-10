@@ -31,6 +31,13 @@ export interface RankedAspect {
   stackedWithA: string[];    // other bodies within 3° of planet A
   stackedWithB: string[];    // other bodies within 3° of planet B
   score: number;
+  /** Wide orb (>= 7° or >= 75% of the allowed orb): real geometry, lighter interpretive weight. */
+  isWide: boolean;
+}
+
+/** Shared wide-orb rule so every surface labels and down-weights the same aspects. */
+export function isWideOrb(orb: number, maxOrb: number): boolean {
+  return orb >= 7 || (maxOrb > 0 && orb / maxOrb >= 0.75);
 }
 
 // Bodies we care about for ranking (skip the deep Kuiper / centaur list unless present and major).
@@ -192,6 +199,8 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
         if (isAngular(aHouse)) score += 8;
         if (isAngular(bHouse)) score += 8;
         if (dissociate) score *= 0.92; // small penalty: real but more diffuse
+        const isWide = isWideOrb(orb, maxOrb);
+        if (isWide) score *= 0.55; // wide aspects never outrank tighter ones of similar weight
 
         out.push({
           a: A.name,
@@ -213,6 +222,7 @@ export function computeRankedAspects(chart: NatalChart): RankedAspect[] {
           stackedWithA: stackOf[A.name] || [],
           stackedWithB: stackOf[B.name] || [],
           score,
+          isWide,
         });
       }
     }

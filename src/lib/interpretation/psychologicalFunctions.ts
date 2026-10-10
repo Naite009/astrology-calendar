@@ -432,10 +432,16 @@ export function synthesizePsychologicalAspect(input: PsychologicalAspectContext)
 }
 
 export function synthesisFromRankedAspect(aspect: RankedAspect, stage: DevelopmentalStage = 'adult'): PsychologicalAspectSynthesis {
-  return synthesizePsychologicalAspect({
+  const base = synthesizePsychologicalAspect({
     bodyA: aspect.a, bodyB: aspect.b, aspect: aspect.aspect, orb: aspect.orb,
     signA: aspect.aSign, signB: aspect.bSign, houseA: aspect.aHouse, houseB: aspect.bHouse, stage,
   });
+  if (!aspect.isWide) return base;
+  return {
+    ...base,
+    title: `${base.title} (wide)`,
+    evidence: `${base.evidence} · Wide orb (${aspect.orb.toFixed(1)}°): a background influence, given less weight than tighter aspects.`,
+  };
 }
 
 export function isPsychologicalBody(body: string): body is PsychologicalBody {
