@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Deeper Chart Walkthrough natal synthesis
-- [ ] Structurally deepen evidence-linked identity themes, developmental possibilities, inner/outer contrasts, internalized rules, and central tensions without invented history or coaching.
-- [ ] Preserve deeper JSON output and add evidence, safety, distinct-chart, age, and sparse-input regressions.
-- [ ] Run regression checks and inspect the rendered reading and JSON; signed-in saved-chart checks require an available session.
+- [x] Structurally deepen evidence-linked identity themes, developmental possibilities, inner/outer contrasts, internalized rules, and central tensions without invented history or coaching.
+- [x] Preserve deeper schema-4 JSON output and add evidence, safety, distinct-chart, age, sparse-input, and non-Libra regressions.
+- [x] Full suite: 533 tests pass; automatic build OK. Local reference reading and downloaded JSON verified in desktop/mobile browser, with resolved evidence and no overflow or page errors.
+- [ ] Signed-in saved-chart recheck blocked: no active preview session and no matching account available for automatic sign-in. Requires the user to sign in in the preview.
 
 ## Chart Walkthrough natal identity correction
 - [x] Replace action-oriented output with integrated temperament, modified expression, inside/outside distinctions, and evidence-backed repeating identity themes.
