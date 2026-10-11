@@ -1,5 +1,10 @@
 # Roadmap
 
+## Deeper Chart Walkthrough natal synthesis
+- [ ] Structurally deepen evidence-linked identity themes, developmental possibilities, inner/outer contrasts, internalized rules, and central tensions without invented history or coaching.
+- [ ] Preserve deeper JSON output and add evidence, safety, distinct-chart, age, and sparse-input regressions.
+- [ ] Run regression checks and inspect the rendered reading and JSON; signed-in saved-chart checks require an available session.
+
 ## Chart Walkthrough natal identity correction
 - [x] Replace action-oriented output with integrated temperament, modified expression, inside/outside distinctions, and evidence-backed repeating identity themes.
 - [x] Remove coaching fields from practitioner JSON and ending; preserve separate Natal takeaway actions.
