@@ -1,5 +1,9 @@
 # Roadmap
 
+## Practitioner Chart Walkthrough rebuild
+- [ ] Replace the planet-by-planet presentation with evidence-ranked themes, ruler connections, tensions, configurations, integration, and practitioner questions.
+- [ ] Preserve JSON parity and verify regressions, application checks, and saved-chart desktop/mobile rendering.
+
 ## Actionable Natal takeaways
 - [x] Add shared theme-aware weekly actions to Natal takeaway generators, views, and report exports.
 - [x] Add regression coverage and verify tests, types, and rendered takeaways.
