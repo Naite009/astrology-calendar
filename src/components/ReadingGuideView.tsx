@@ -1,204 +1,19 @@
-/**
- * Chart Walkthrough — a live-reading dashboard, not a report.
- *
- * Layout follows the reader's eye: where to look first, then named blends with
- * their evidence, reasoning chain, spoken line and follow-up question, then the
- * secondary layers, ending with a synthesis that can be said out loud.
- */
-
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { NatalChart } from '@/hooks/useNatalChart';
+import type { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
-import { ShorthandCardBlock } from '@/components/ShorthandCardBlock';
-import { buildReadingGuide, type BlendCard, type ReadingGuide, type RankedConnection } from '@/lib/readingGuide/readingGuideEngine';
+import { buildReadingGuide, type ReadingGuide } from '@/lib/readingGuide/readingGuideEngine';
 import { STAGE_LABELS, type AgeStage } from '@/lib/readingGuide/ageContext';
-import { ordinalHouse } from '@/lib/interpretation/ordinals';
-import { DoesNotMean } from '@/components/interpretation/DoesNotMean';
-import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
 import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
-import {
-  EVIDENCE_TIER_LABEL, EVIDENCE_TIER_NOTE, SIGNAL_DISCLAIMER,
-  EXPLORE_DEEPER_LABEL, EXPLORE_DEEPER_NOTE,
-} from '@/lib/interpretation/evidenceStandard';
-
 import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { downloadSectionJson } from '@/lib/sectionExport';
-import { ChevronDown, ChevronUp, Compass, Download, Eye, MessageCircle, HelpCircle, Link2, Home, Droplets } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PractitionerWalkthroughSections } from '@/components/PractitionerWalkthroughSections';
+import { Compass, Download } from 'lucide-react';
 
 interface ReadingGuideViewProps {
   userNatalChart: NatalChart | null;
   savedCharts: NatalChart[];
 }
-
-const STRENGTH_STYLE: Record<string, string> = {
-  Strong: 'bg-primary/15 text-primary border-primary/40',
-  Moderate: 'bg-secondary text-foreground border-border',
-  'Single-placement': 'bg-muted text-muted-foreground border-border',
-};
-
-const Chip = ({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'accent' }) => (
-  <span
-    className={`inline-block rounded-sm border px-2 py-0.5 text-[11px] leading-relaxed ${
-      tone === 'accent' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-secondary/60 text-muted-foreground'
-    }`}
-  >
-    {children}
-  </span>
-);
-
-/** One aspect, with the pair-specific reading a reader can speak from. */
-const ConnectionCard = ({ c }: { c: RankedConnection }) => {
-  const [open, setOpen] = useState(false);
-  const r = c.reading;
-  return (
-    <div className="rounded-sm border border-border bg-background/40">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-start gap-3 p-3 text-left hover:bg-secondary/20 transition-colors"
-      >
-        <span className="text-base text-primary">{c.symbol}</span>
-        <span className="flex-1">
-          <span className="block text-sm text-foreground">
-            {c.a} {c.aspect} {c.b} <span className="text-muted-foreground">({c.orb}° orb)</span>
-          </span>
-          <span className="block text-xs text-primary/90">{r.headline}</span>
-        </span>
-        {open ? <ChevronUp className="w-3 h-3 mt-1 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 mt-1 text-muted-foreground" />}
-      </button>
-      {open && (
-        <div className="space-y-3 border-t border-border px-3 py-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">How it works</p>
-            {r.howItWorks.map((l, i) => (
-              <p key={i} className="text-sm leading-relaxed text-foreground">{l}</p>
-            ))}
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">How it may show up</p>
-            <ul className="list-disc pl-4 space-y-1">
-              {r.mayShowUp.map((l, i) => (
-                <li key={i} className="text-sm leading-relaxed text-foreground">{l}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Where it can strain, and what helps</p>
-            <p className="text-sm leading-relaxed text-foreground">{r.watchFor}</p>
-          </div>
-          <p className="text-xs text-muted-foreground">{r.strengthNote}</p>
-          <div className="rounded-sm border border-primary/30 bg-primary/5 p-2">
-            <p className="text-[11px] uppercase tracking-widest text-primary">Say this</p>
-            <p className="text-sm leading-relaxed text-foreground">{r.whatToSay}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Then ask: {r.askThis}</p>
-          </div>
-          <DoesNotMean lines={r.doesNotMean} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-const Section = ({
-  title, icon, children, subtitle, defaultOpen = true,
-}: {
-  title: string; icon?: React.ReactNode; subtitle?: string; children: React.ReactNode; defaultOpen?: boolean;
-}) => {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <section className="border border-border rounded-sm bg-card overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full px-4 py-3 flex items-center justify-between border-b border-border hover:bg-secondary/30 transition-colors text-left"
-      >
-        <span className="flex items-center gap-2">
-          {icon}
-          <span className="text-xs font-medium uppercase tracking-widest text-foreground">{title}</span>
-          {subtitle && <span className="text-[11px] text-muted-foreground normal-case tracking-normal">{subtitle}</span>}
-        </span>
-        {open ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
-      </button>
-      {open && <div className="p-4 space-y-3">{children}</div>}
-    </section>
-  );
-};
-
-const BlendCardView = ({ card }: { card: BlendCard }) => {
-  const [showChain, setShowChain] = useState(false);
-  return (
-    <article className="border border-border rounded-sm bg-background/40 p-4 space-y-3">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-sm font-medium text-foreground">{card.name}</h4>
-        <span className="flex flex-wrap items-center gap-1.5">
-          <span
-            className="rounded-sm border border-border bg-secondary/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground"
-            title={EVIDENCE_TIER_NOTE[card.tier]}
-          >
-            {EVIDENCE_TIER_LABEL[card.tier]}
-          </span>
-          <span
-            className={`rounded-sm border px-2 py-0.5 text-[10px] uppercase tracking-wider ${STRENGTH_STYLE[card.strength]}`}
-            title={SIGNAL_DISCLAIMER}
-          >
-            {card.strength} · {card.supportCount} factor{card.supportCount === 1 ? '' : 's'}
-          </span>
-        </span>
-      </header>
-
-
-      {card.shorthand && (
-        <div className="space-y-2">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">In a word or two</p>
-          <ShorthandCardBlock card={card.shorthand} />
-        </div>
-      )}
-
-      <div>
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What created it</p>
-        <div className="flex flex-wrap gap-1.5">
-          {card.factors.map((f, i) => (
-            <Chip key={i} tone={i === 0 ? 'accent' : 'default'}>
-              <span className="text-foreground">{f.label}</span> — {f.meaning}
-            </Chip>
-          ))}
-        </div>
-      </div>
-
-      <button
-        onClick={() => setShowChain((v) => !v)}
-        className="text-[11px] uppercase tracking-widest text-primary hover:underline"
-      >
-        {showChain ? 'Hide' : 'Show'} why this matters / how it was built
-      </button>
-      {showChain && (
-        <div className="space-y-2 rounded-sm border border-dashed border-border p-3">
-          <ol className="space-y-1">
-            {card.chain.map((line, i) => (
-              <li key={i} className={`text-xs ${i === card.chain.length - 1 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                {line}
-              </li>
-            ))}
-          </ol>
-          <p className="text-xs text-muted-foreground">{card.why}</p>
-        </div>
-      )}
-
-      <div className="rounded-sm bg-secondary/40 p-3">
-        <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-          <MessageCircle size={11} /> What to say
-        </p>
-        <p className="text-sm text-foreground leading-relaxed">{card.whatToSay}</p>
-      </div>
-
-      <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-        <HelpCircle size={12} className="mt-0.5 shrink-0" />
-        <span><span className="uppercase tracking-widest text-[10px] mr-1">Ask them this:</span>{card.askThis}</span>
-      </p>
-
-      <DoesNotMean lines={card.doesNotMean} />
-
-    </article>
-  );
-};
 
 export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideViewProps) => {
   const allCharts = useMemo(
@@ -268,18 +83,18 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
       )}
 
       {/* Header + age context */}
-      <div className="border border-border rounded-sm bg-card p-4 space-y-3">
-        <div className="flex items-start gap-3">
+      <div className="border-b border-border pb-5 space-y-3">
+        <div className="flex flex-wrap items-start gap-3">
           <Compass size={24} className="text-primary mt-0.5" />
           <div className="min-w-0">
-            <h2 className="text-xl font-serif tracking-wide text-foreground">{guide.subject.name} — Chart Walkthrough</h2>
+            <h2 className="text-xl font-serif tracking-wide text-foreground">{guide.subject.name}: Chart Walkthrough</h2>
             <p className="text-xs text-muted-foreground">
               {guide.subject.birthDate ? formatDateMMDDYYYY(guide.subject.birthDate) : ''}
               {guide.subject.birthTime ? ` at ${guide.subject.birthTime}` : ''}
               {guide.subject.birthLocation ? ` • ${guide.subject.birthLocation}` : ''}
             </p>
           </div>
-          <button
+          <Button
             onClick={() =>
               downloadSectionJson(
                 `${guide.subject.name || 'chart'} Chart Walkthrough`,
@@ -287,23 +102,26 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
                   exportedAt: new Date().toISOString(),
                   subject: guide.subject,
                   ageContext: guide.age,
-                  guide,
+                  schemaVersion: 2,
+                  placements: guide.placements,
+                  walkthrough: guide.practitioner,
                 },
               )
             }
             title="Download this walkthrough as a JSON data file"
-            className="ml-auto inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-sm border border-border text-xs text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+            variant="outline" size="sm" className="ml-auto shrink-0 text-xs"
           >
             <Download size={13} />
             Download JSON
-          </button>
+          </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
             Reading level{guide.age.years != null ? ` · age ${guide.age.years}` : ''}:
           </span>
           {(['child', 'teen', 'adult'] as AgeStage[]).map((s) => (
-            <button
+            <Button
+              variant="outline" size="sm" aria-pressed={guide.age.stage === s}
               key={s}
               onClick={() => setStageOverride(stageOverride === s ? null : s)}
               className={`rounded-sm border px-2.5 py-1 text-[11px] uppercase tracking-widest transition-colors ${
@@ -313,221 +131,15 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
               }`}
             >
               {STAGE_LABELS[s]}
-            </button>
+            </Button>
           ))}
           <span className="text-[10px] text-muted-foreground">
             {guide.age.source === 'override' ? 'manual override' : 'from birth date'}
           </span>
         </div>
-        <p className="text-[11px] text-muted-foreground">
-          Uses the ten planets, Ascendant, the nodes and Chiron only. Every spoken line below is built from the
-          placements shown on its card.
-        </p>
       </div>
 
-      <ChartSynthesisSection synthesis={guide.synthesis} />
-
-      {/* 1. Start here */}
-      <Section title="Start here — what jumps out first" icon={<Eye size={14} className="text-primary" />} subtitle="ranked by importance">
-        <div className="space-y-2">
-          {guide.startHere.map((item, i) => (
-            <div key={item.id} className="flex items-start gap-3 rounded-sm border border-border bg-background/40 p-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-primary/15 text-[11px] font-medium text-primary">
-                {i + 1}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</p>
-                {item.shorthandLabel && (
-                  <p className="text-sm font-medium text-foreground">{item.shorthandLabel}</p>
-                )}
-                <p className={item.shorthandLabel ? 'text-xs text-muted-foreground' : 'text-sm text-foreground'}>{item.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{item.note}</p>
-              </div>
-              <div className="ml-auto hidden sm:block w-20 shrink-0">
-                <div className="h-1.5 w-full rounded-sm bg-secondary">
-                  <div className="h-1.5 rounded-sm bg-primary" style={{ width: `${item.importance}%` }} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {guide.startHereDeeper.length > 0 && (
-          <details className="mt-3 rounded-sm border border-dashed border-border p-3">
-            <summary className="cursor-pointer text-xs text-primary">{EXPLORE_DEEPER_LABEL}</summary>
-            <p className="mt-1 text-xs text-muted-foreground">{EXPLORE_DEEPER_NOTE}</p>
-            <ul className="mt-2 space-y-1">
-              {guide.startHereDeeper.map((item) => (
-                <li key={item.id} className="text-xs text-muted-foreground">
-                  <span className="uppercase tracking-widest text-[10px] mr-1">{item.label}:</span>
-                  {item.shorthandLabel && <span className="font-medium text-foreground">{item.shorthandLabel} — </span>}
-                  {item.value}. {item.note}
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </Section>
-
-
-
-      {guide.coreInnerDynamics.length > 0 && (
-        <Section title="Core inner dynamics" subtitle="strongest function relationships first">
-          {guide.coreInnerDynamics.map((dynamic) => (
-            <details key={dynamic.evidence} className="rounded-sm border border-border bg-background/40 p-3">
-              <summary className="cursor-pointer text-sm font-medium text-foreground">{dynamic.title}<span className="block text-xs font-normal text-muted-foreground">{dynamic.evidence}</span></summary>
-              <div className="mt-3 space-y-2 text-xs leading-relaxed text-foreground">
-                <p><span className="font-medium">Function A:</span> {dynamic.functionA}</p>
-                <p><span className="font-medium">Function B:</span> {dynamic.functionB}</p>
-                <p><span className="font-medium">What the aspect does:</span> {dynamic.aspectDynamic}</p>
-                {dynamic.signHouseContext && <p><span className="font-medium">Sign and house context:</span> {dynamic.signHouseContext}</p>}
-                <ul className="list-disc pl-4">{dynamic.howThisCanShowUp.map(line => <li key={line}>{line}</li>)}</ul>
-                <p><span className="font-medium">When integrated:</span> {dynamic.whenIntegrated}</p>
-                <p><span className="font-medium">Reflect:</span> {dynamic.reflectionQuestion}</p>
-              </div>
-            </details>
-          ))}
-        </Section>
-      )}
-
-      <Section title="Psychological map" subtitle="planet, job, style, arena, modifying aspects" defaultOpen={false}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead><tr className="border-b border-border text-muted-foreground"><th className="py-2 pr-3">Planet</th><th className="py-2 pr-3">Psychological job</th><th className="py-2 pr-3">Placement style</th><th className="py-2 pr-3">What this affects</th><th className="py-2">Strongest modifying aspects</th></tr></thead>
-            <tbody>{guide.psychologicalMap.map(row => (
-              <tr key={row.body} className="border-b border-border/50 align-top">
-                <td className="py-2 pr-3 font-medium text-foreground">{row.body}</td><td className="py-2 pr-3">{row.psychologicalJob}</td><td className="py-2 pr-3">{row.placementStyle}</td><td className="py-2 pr-3">{row.lifeArena}</td><td className="py-2">{row.strongestAspects.join(', ') || 'No major aspect shown'}</td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* 2. Blended characteristics */}
-      <Section title="Blended characteristics" icon={<Link2 size={14} className="text-primary" />} subtitle="the heart of the reading">
-        {guide.blends.map((card) => <BlendCardView key={card.id} card={card} />)}
-      </Section>
-
-      {/* 3. House concentrations */}
-      {guide.houseClusters.length > 0 && (
-        <Section title="House concentrations" icon={<Home size={14} className="text-primary" />}>
-          {guide.houseClusters.map((c) => (
-            <div key={c.house} className="rounded-sm border border-border bg-background/40 p-3 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-foreground">{ordinalHouse(c.house)}</span>
-                {c.bodies.map((b) => <Chip key={b} tone="accent">{b}</Chip>)}
-              </div>
-              <p className="text-xs text-muted-foreground">What this affects: {c.arena}</p>
-              <p className="text-sm text-foreground">{c.theme}</p>
-            </div>
-          ))}
-          <p className="text-[11px] text-muted-foreground">
-            Only the ten planets can create a concentration here. The Ascendant is a cusp rather than a placement, and the
-            nodes and Chiron are shown separately so they cannot inflate a cluster.
-          </p>
-        </Section>
-      )}
-
-      {/* 3b. Big Three, taught as a hierarchy with a combined descriptor */}
-      {guide.bigThreeShorthand && (
-        <Section title="The Big Three, layered" subtitle="Sun = centre, Moon = needs, Ascendant = what people meet first">
-          <ShorthandCardBlock card={guide.bigThreeShorthand} />
-        </Section>
-      )}
-
-      {/* 4. Elements & modality, including lightly represented elements */}
-      <Section title="Element and modality balance" icon={<Droplets size={14} className="text-primary" />}>
-        <div className="flex flex-wrap gap-1.5">
-          {Object.entries(guide.elements.counts).map(([el, n]) => (
-            <Chip key={el} tone={guide.elements.dominant.includes(el) ? 'accent' : 'default'}>{el} {n}</Chip>
-          ))}
-          {Object.entries(guide.modalities.counts).map(([m, n]) => (
-            <Chip key={m} tone={guide.modalities.dominant.includes(m) ? 'accent' : 'default'}>{m} {n}</Chip>
-          ))}
-        </div>
-        <p className="text-[11px] text-muted-foreground">{guide.modalities.note}</p>
-        {guide.emphasisCards.map((c, i) => (
-          <ShorthandCardBlock key={i} card={c} />
-        ))}
-        {guide.elements.combined && (
-          <div className="rounded-sm border border-primary/30 bg-primary/5 p-3 space-y-2">
-            <p className="text-[10px] uppercase tracking-widest text-primary">Combined light elements</p>
-            <p className="text-sm font-medium text-foreground">{guide.elements.combined.label}</p>
-            <p className="text-[11px] text-muted-foreground">{guide.elements.combined.evidence}</p>
-            <p className="text-sm text-foreground">{guide.elements.combined.synthesis}</p>
-            <p className="text-xs text-muted-foreground">What may happen instead: {guide.elements.combined.alternative}</p>
-            <p className="text-xs text-muted-foreground">{guide.elements.combined.support}</p>
-            <p className="text-xs text-muted-foreground">What may compensate: {guide.elements.combined.compensation}</p>
-          </div>
-        )}
-        {guide.elements.lowReadings.map((r) => (
-          <div key={r.element} className="rounded-sm border border-dashed border-border p-3 space-y-1.5">
-            <p className="text-sm font-medium text-foreground">Low {r.element}: {r.label}</p>
-            <p className="text-[11px] text-muted-foreground">{r.evidence}</p>
-            <p className="text-xs text-foreground">{r.behavior}</p>
-            <p className="text-xs text-muted-foreground">What may happen instead: {r.alternative}</p>
-            <p className="text-xs text-muted-foreground">What can balance this: {r.support}</p>
-            <p className="text-xs text-muted-foreground">What may compensate: {r.compensation}</p>
-          </div>
-        ))}
-        <div className="rounded-sm border border-dashed border-border p-3 space-y-1.5">
-          <p className="text-sm font-medium text-foreground">{guide.modalities.reading.label}</p>
-          <p className="text-xs text-foreground">{guide.modalities.reading.summary}</p>
-          {guide.modalities.reading.compensation && <p className="text-xs text-muted-foreground">{guide.modalities.reading.compensation}</p>}
-          <p className="text-[11px] text-muted-foreground">{guide.modalities.reading.evidence}</p>
-        </div>
-      </Section>
-
-      {/* 5. Personal planet groups */}
-      {guide.personalGroups.length > 0 && (
-        <Section title="Personal planets, grouped" subtitle="repeated themes rather than five separate readings">
-          {guide.personalGroups.map((card) => <BlendCardView key={card.id} card={card} />)}
-        </Section>
-      )}
-
-      {/* 6. Jupiter & Saturn */}
-      {guide.growth.length > 0 && (
-        <Section title="Jupiter and Saturn — growth and building">
-          {guide.growth.map((card) => <BlendCardView key={card.id} card={card} />)}
-        </Section>
-      )}
-
-      {/* 7. Outer planets */}
-      <Section title="Uranus, Neptune, Pluto" subtitle="raised only when personally relevant" defaultOpen={false}>
-        {guide.outerPlanets.elevated.map((card) => <BlendCardView key={card.id} card={card} />)}
-        <p className="text-[11px] text-muted-foreground">{guide.outerPlanets.secondaryNote}</p>
-      </Section>
-
-      {/* 8. Nodes & Chiron */}
-      {(guide.nodes || guide.chiron) && (
-        <Section title="Nodes and Chiron" defaultOpen={false}>
-          {guide.nodes && <BlendCardView card={guide.nodes} />}
-          {guide.chiron && <BlendCardView card={guide.chiron} />}
-          {!guide.chiron && (
-            <p className="text-[11px] text-muted-foreground">
-              Chiron is not tightly tied to a personal planet or angle here, so it stays background rather than a
-              headline theme.
-            </p>
-          )}
-        </Section>
-      )}
-
-      {/* 9. Top connections */}
-      {guide.topConnections.length > 0 && (
-        <Section title="What each connection means" subtitle="tightest and most personal first">
-          <div className="space-y-2">
-            {guide.topConnections.map((c, i) => <ConnectionCard key={i} c={c} />)}
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            The North Node–South Node opposition is automatic geometry, so it is never listed here as a connection.
-          </p>
-        </Section>
-
-      )}
-
-      {/* 10. Story */}
-      <Section title="The story of the chart" subtitle="say this at the end">
-        <p className="text-sm leading-relaxed text-foreground">{guide.story}</p>
-      </Section>
+      <PractitionerWalkthroughSections reading={guide.practitioner} />
     </div>
   );
 };

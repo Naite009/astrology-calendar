@@ -1,5 +1,9 @@
 # Roadmap
 
+## Practitioner Chart Walkthrough rebuild
+- [x] Replace the planet-by-planet presentation with evidence-ranked themes, ruler connections, tensions, configurations, integration, and practitioner questions.
+- [x] Preserve JSON parity; 515 regression tests and automatic builds pass. Verified saved Ava Kravitz, Max Levin, Harrison Bates, and Karina Client readings, JSON downloads, expanded evidence, and desktop/mobile rendering.
+
 ## Actionable Natal takeaways
 - [x] Add shared theme-aware weekly actions to Natal takeaway generators, views, and report exports.
 - [x] Add regression coverage and verify tests, types, and rendered takeaways.
