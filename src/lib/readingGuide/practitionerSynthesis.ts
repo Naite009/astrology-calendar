@@ -121,7 +121,10 @@ const unique = <T,>(items: T[]) => [...new Set(items)];
 const houseNumbers = (items: CoreBodyPlacement[]) => unique(items.flatMap(p => p.house ? [p.house] : []));
 const placementLine = (p: CoreBodyPlacement) => `${p.label}${p.isRetrograde && p.body !== 'Sun' && p.body !== 'Moon' && p.body !== 'Ascendant' && p.body !== 'MC' ? ' ℞' : ''} ${formatDegreeMinutes(p.degree)} ${p.sign}${p.house ? `, House ${p.house}` : ''}`;
 const aspectId = (a: RankedAspect) => `aspect:${[a.a, a.b].sort().join(':')}:${a.aspect}`;
-const personalVoice = (text: string, stage: AgeStage) => applyStageVocabulary(text, stage);
+const personalVoice = (text: string, stage: AgeStage) => applyStageVocabulary(text, stage)
+  .replace(/future direction direction/g, 'future direction').replace(/energy, rest, and routines habits/g, 'energy and rest habits')
+  .replace(/and routines habits/g, 'and routines').replace(/\b(helps?|makes?|allows?|supports?|asks?|sees?) they\b/gi, '$1 them')
+  .replace(/\b(to|for|with|from|about) they\b/gi, '$1 them');
 const practitionerVoice = (text: string, stage: AgeStage) => personalVoice(text, stage).replace(/\b(helps?|supports?|allows?|asks?|sees?|expects?|from|to|for|with|about) you\b/gi, '$1 them')
   .replace(/\byou are\b/gi, 'they are').replace(/\byou have\b/gi, 'they have').replace(/\byou do\b/gi, 'they do')
   .replace(/\byou feel\b/gi, 'they feel').replace(/\byou want\b/gi, 'they want').replace(/\byou need\b/gi, 'they need')
@@ -156,13 +159,13 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
   }
   const psychologyFor = (a: RankedAspect) => {
     const syn = synthesisFromRankedAspect(a,stage);
-    if (!['MC','Ascendant'].includes(a.a) && !['MC','Ascendant'].includes(a.b)) return syn;
+    if (!['MC','Ascendant'].includes(a.a) && !['MC','Ascendant'].includes(a.b) && !/covers|handles|linked in this chart/i.test(syn.aspectDynamic)) return syn;
     const needA = BODY_NEED[a.a] ?? 'use this function'; const needB = BODY_NEED[a.b] ?? 'use the other function';
     const tense = ['square','opposition'].includes(a.aspect);
     return { ...syn,
-      title: `${a.a === 'MC' || a.b === 'MC' ? 'Public direction' : 'First response'} and ${(a.a === 'MC' || a.a === 'Ascendant' ? a.b : a.a).toLowerCase()} ${tense ? 'ask for a balance' : 'can support each other'}`,
+      title: !['MC','Ascendant'].includes(a.a) && !['MC','Ascendant'].includes(a.b) ? `${a.a} and ${a.b}: ${tense ? 'different needs, one decision' : 'a shared response'}` : `${a.a === 'MC' || a.b === 'MC' ? 'Public direction' : 'First response'} and ${(a.a === 'MC' || a.a === 'Ascendant' ? a.b : a.a).toLowerCase()} ${tense ? 'ask for a balance' : 'can support each other'}`,
       aspectDynamic: tense ? `One part may want to ${needA}, while another needs to ${needB}. Meeting the first need can interrupt the second, so the person may alternate rather than feel both satisfied at once.` : `The wish to ${needA} can support the need to ${needB}. This can make the response easier to use, but ease does not mean there is no need to check its effect.`,
-      watchFor: `The person may respond to what others see or expect before checking what they actually need from ${a.a === 'MC' || a.a === 'Ascendant' ? a.b : a.a}.`,
+      watchFor: `The person may lean on the easier response and postpone the other need. Check whether the choice serves both ${a.a} and ${a.b}, rather than only the function that answers first.`,
       whenIntegrated: `A workable expression makes room to ${needA} and ${needB}, without treating public approval or a first impression as the only measure.`,
       howThisCanShowUp: [`A choice that works outwardly may still need a private check before it feels right.`, `The person may revise what they show after noticing what the other function needs.`],
       reflectionQuestion: 'When a choice looks right to other people, what helps you check whether it works for you too?',
@@ -361,7 +364,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
   const build=selectedThemes[1]?.integration ?? 'Ask which part of the pattern fits, which does not, and what changes with context.';
   const limitations=[...(!completeCusps?['Twelve valid stored house cusps are not available. House themes and house rulers are withheld; sign and degree contacts remain visible.']:[]),...(majors.length<10?[`Only ${majors.length} of the ten major planets are present. Counts and synthesis are incomplete.`]:[]),...(!chart.birthTime?['Birth time is unknown. Stored angles and houses need independent confirmation before use.']:[]),...(stage!=='adult'?['Life examples use the selected developmental level. Geometry, evidence, and rankings do not change with age.']:[])];
   const dominance=calculateNatalDominantPlanets(chart);
-  return sanitizeInterpretiveDeep({schemaVersion:2,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>t.text).join(' '),signatures},chartRuler,themes:selectedThemes,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:questions.slice(0,5),practice,watchFor,build,actions:[buildTakeawayAction(practice,{stage}),buildTakeawayAction(watchFor,{stage}),buildTakeawayAction(build,{stage})]},methodology:[
+  const result = sanitizeInterpretiveDeep({schemaVersion:2,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>t.text).join(' '),signatures},chartRuler,themes:selectedThemes,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:questions.slice(0,5),practice,watchFor,build,actions:[buildTakeawayAction(practice,{stage}),buildTakeawayAction(watchFor,{stage}),buildTakeawayAction(build,{stage})]},methodology:[
     'Opening signatures are ranked by traditional chart rulership, validated configurations, luminary and personal-planet involvement, angular houses, repeated house focus, and canonical aspect weight. These are app-defined reading priorities, not objective personality measurements.',
     'Wide aspects use the shared lower-weight rule (7° or 75% of their allowed orb). Nodes and Chiron stay secondary; the automatic nodal opposition is never added as evidence.',
     'Traditional sign dispositors and house rulers are used. Modern co-rulers are named separately. Three or more major planets in one house is this app’s house-concentration convention.',
@@ -369,4 +372,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     'Interpretations are hypotheses to check with the client, not biography, diagnosis, or predictions.',
     ...(selectedThemes.some(t => ['theme:house4','theme:house5'].includes(t.id)) ? ['Expecting respect, cooperation, and kindness in a home is reasonable. This is not the same as relying on children for self-worth.'] : []),
   ],limitations} satisfies PractitionerWalkthrough);
+  // Source banks may already have age substitutions. Finish object pronouns and repeated phrases without altering evidence.
+  const clean = (value: unknown): unknown => typeof value === 'string' ? value.replace(/\b(to|for|from|with|about) they\b/gi, '$1 them').replace(/\b(helps?|makes?|allows?|supports?|asks?|sees?) they\b/gi, '$1 them').replace(/future direction direction/g, 'future direction').replace(/energy, rest, and routines habits/g, 'energy and rest habits') : Array.isArray(value) ? value.map(clean) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key,item]) => [key,clean(item)])) : value;
+  return clean(result) as PractitionerWalkthrough;
 }
