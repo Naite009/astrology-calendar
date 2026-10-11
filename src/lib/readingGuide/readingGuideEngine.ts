@@ -68,6 +68,7 @@ import {
   type ModalityBalanceReading,
 } from '@/lib/interpretation/elementBalance';
 import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
+import { buildPractitionerWalkthrough, type PractitionerWalkthrough } from './practitionerSynthesis';
 
 
 const ZODIAC = [
@@ -172,6 +173,7 @@ export interface ElementProfile {
 }
 
 export interface ReadingGuide {
+  practitioner: PractitionerWalkthrough;
   subject: { name: string; birthDate: string; birthTime: string; birthLocation: string };
   age: AgeContext;
   synthesis: ChartSynthesis;
@@ -427,7 +429,8 @@ export function rankConnections(placements: CoreBodyPlacement[], limit = 5): Ran
       const sep = angularSeparation(a.absDeg, b.absDeg);
       const asp0 = classifyAspect(sep, MAJOR_ASPECTS, (n) => getEffectiveOrb(a.body, b.body, n));
       if (asp0) {
-        const asp = MAJOR_ASPECTS.find((m) => m.name === asp0.name)!;
+        const asp = MAJOR_ASPECTS.find((m) => m.name === asp0.name);
+        if (!asp) continue;
         const orb = asp0.orb;
         const weight = (IMPORTANCE_WEIGHT[a.body] ?? 3) + (IMPORTANCE_WEIGHT[b.body] ?? 3);
         const tightness = Math.max(0, 8 - orb);
@@ -631,7 +634,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     }
 
     if (chartRuler?.ruler === bodyName) {
-      factors.push({ label: `Chart ruler (${chartRuler.sign} rising)`, meaning: 'runs the whole chart, so it carries extra weight' });
+      factors.push({ label: `Chart ruler (${chartRuler.sign} rising)`, meaning: 'carries the rising approach into everyday choices' });
       support += 1;
       reasons.push('it is the chart ruler, so it colours everything else');
     }
@@ -1081,7 +1084,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
         : '';
     startHere.push({
       id: 'low-element',
-      label: 'Lightly represented element',
+      label: 'Alternative processing channels',
       shorthandLabel: elements.combined?.label ?? elements.lowReadings[0]?.label ?? null,
       value: elements.low.map((e) => `${e} ${elCounts[e]}`).join(' · '),
       note: lowSummary,
@@ -1165,6 +1168,10 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   );
 
   const guide: ReadingGuide = {
+    practitioner: buildPractitionerWalkthrough(chart, {
+      placements, elements, modalities: { counts: modCounts, dominant: dominantModalities, low: lowModalities, note: '', reading: modalityBalance },
+      synthesis: buildChartSynthesis(chart, { stage }), age: stageCtx,
+    }),
     synthesis: buildChartSynthesis(chart, { stage }),
     subject: {
       name: chart.name,

@@ -8,3 +8,4 @@
 - Element and modality balance copy must use `src/lib/interpretation/elementBalance.ts`; why: keeps low-count behavior, alternatives, and compensation evidence concrete and consistent across natal surfaces.
 - The high-level natal synthesis in Natal Portrait and Chart Walkthrough must use `src/lib/interpretation/chartSynthesis.ts`; why: keeps prioritization, evidence, modifiers, and practical translation consistent without changing chart math.
 - Natal Portrait and Chart Walkthrough must build and resolve chart selections through `src/lib/charts/chartSelection.ts`; why: prevents hidden duplicates, stale ids, and silent substitution of another person's chart.
+- Chart Walkthrough's practitioner presentation and JSON must use `readingGuide/practitionerSynthesis.ts`, deriving theme evidence from canonical natal helpers and shared chart synthesis; why: preserves a distinct theme-led reading without parallel chart calculations or mismatched exports.
