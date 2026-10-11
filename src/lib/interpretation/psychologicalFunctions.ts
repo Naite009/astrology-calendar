@@ -371,6 +371,50 @@ export function getHouseArena(house?: number | null): string {
   return house ? HOUSE_ARENA[house] ?? `House ${house}` : 'House not available';
 }
 
+export interface NatalDevelopmentalInteraction {
+  pattern: string;
+  internalRule: string;
+  capacity: string;
+  cost: string;
+  question: string;
+}
+
+/** Symbolic learning hypotheses, never evidence of an environment, parent, or childhood event. */
+export function getNatalDevelopmentalInteraction(aspect: RankedAspect, stage: DevelopmentalStage = 'adult'): NatalDevelopmentalInteraction | null {
+  const personal = ['Moon', 'Sun', 'Venus', 'Mercury', 'Mars'];
+  const modifiers = ['Saturn', 'Pluto', 'Uranus', 'Neptune', 'Mars'];
+  const subject = personal.find(body => (aspect.a === body || aspect.b === body) && modifiers.includes(aspect.a === body ? aspect.b : aspect.a));
+  if (!subject || aspect.isWide || !['conjunction', 'square', 'opposition', 'trine', 'sextile'].includes(aspect.aspect)) return null;
+  const other = aspect.a === subject ? aspect.b : aspect.a;
+  if (aspect.orb > (other === 'Saturn' ? 5 : 3)) return null;
+  const demanding = ['square', 'opposition', 'conjunction'].includes(aspect.aspect);
+  const needs: Record<string, { wish: string; expression: string; question: string }> = {
+    Moon: { wish: 'receive reassurance and let a feeling be seen', expression: 'showing a need for comfort', question: 'When you need reassurance, what do you notice yourself doing before anyone else knows you need it?' },
+    Sun: { wish: 'take up space as a distinct person', expression: 'showing a personal aim or accepting recognition', question: 'What happens inside when someone notices you personally rather than just what you do?' },
+    Venus: { wish: 'be liked while having their own preferences count', expression: 'receiving affection or admitting what they enjoy', question: 'When someone values you, do you feel free to disagree with them, or does being liked start to feel conditional?' },
+    Mercury: { wish: 'make sense of an experience and be understood accurately', expression: 'offering an unfinished thought', question: 'What makes an unfinished thought feel shareable, and what makes you keep checking it privately?' },
+    Mars: { wish: 'act on a preference and defend a limit', expression: 'saying no or making the first move', question: 'When you assert a preference, is the harder part the disagreement itself or what that disagreement might mean about you?' },
+  };
+  const need = needs[subject];
+  if (!need) return null;
+  const strategies: Record<string, Omit<NatalDevelopmentalInteraction, 'pattern' | 'question'>> = {
+    Saturn: { internalRule: `They may measure whether ${need.expression} is justified, well timed, or responsible before allowing it to be visible.`, capacity: 'They can become skilled at keeping promises, noticing consequences, and holding a steady position when others are unsure.', cost: 'If that skill becomes the only permitted response, people may offer them more responsibility while missing their wish to be supported without first proving competence.' },
+    Pluto: { internalRule: `They may want to know how much is at stake and how another person will use what is shared before ${need.expression}.`, capacity: 'They can become skilled at noticing inconsistencies, staying with emotionally charged subjects, and choosing carefully where to invest.', cost: 'If checking trust becomes constant, they may reveal the conclusion but not the uncertainty behind it, leaving others unaware of how much a small exchange mattered.' },
+    Uranus: { internalRule: `They may check whether ${need.expression} leaves them free to change their mind, rather than letting closeness or recognition assign them a role.`, capacity: 'They can become skilled at recognizing unsuitable expectations and finding a way to participate without simply copying the group.', cost: 'If freedom has to be demonstrated at every turn, an abrupt refusal may hide the continuing wish to be understood and included on terms they can choose.' },
+    Neptune: { internalRule: `They may picture what another person hopes for before ${need.expression}, sometimes finding it easier to feel the atmosphere than to separate their own response from it.`, capacity: 'They can become skilled at noticing unspoken feeling, imagining another perspective, and expressing an experience through images or creative work.', cost: 'If the imagined response becomes more important than the actual exchange, they may keep a preference unspoken and later feel unseen for something no one knew to ask about.' },
+    Mars: { internalRule: `They may respond to ${need.expression} by acting, defending, or trying to settle the issue quickly, before its personal meaning is clear.`, capacity: 'They can become skilled at taking initiative and making a limit visible instead of waiting indefinitely for permission.', cost: 'If action always arrives before explanation, people may hear a challenge where the person also wanted recognition, reassurance, or an accurate hearing.' },
+  };
+  const strategy = strategies[other];
+  if (!strategy) return null;
+  return {
+    pattern: `${getNatalAspectExpression(aspect, stage)} ${demanding ? `The developmental question is whether the wish to ${need.wish} gets tied to a rule about when it is acceptable to show it.` : `These functions cooperate, so the wish to ${need.wish} may be met through a familiar skill rather than an obvious conflict. Ease is not proof that the person never has to consider their own needs.`}`,
+    internalRule: demanding ? strategy.internalRule : `As an available strength rather than a required defense: ${strategy.internalRule.replace(/^They may /, 'they may ')}`,
+    capacity: strategy.capacity,
+    cost: strategy.cost,
+    question: need.question,
+  };
+}
+
 export function getHouseLivedInterpretation(house?: number | null): HouseLivedInterpretation | null {
   return house ? HOUSE_LIVED[house] ?? null : null;
 }
