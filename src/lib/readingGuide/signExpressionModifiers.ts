@@ -40,7 +40,6 @@ export function buildSignExpressionContrasts(input: {
 }): SignExpressionContrast[] {
   const { placements, aspects, ruler, configurations, evidence } = input;
   const majors = placements.filter(p => input.majorBodies.has(p.body));
-  const byBody = new Map(placements.map(p => [p.body, p]));
   const groups = new Map<string, CoreBodyPlacement[]>();
   for (const p of placements.filter(p => BIG_THREE.has(p.body) || input.majorBodies.has(p.body))) {
     groups.set(p.sign, [...(groups.get(p.sign) ?? []), p]);
@@ -76,7 +75,7 @@ export function buildSignExpressionContrasts(input: {
       const hasAngle = ['Ascendant', 'MC'].includes(changed);
       const human = hasAngle
         ? `${other} closely contacts the ${changed === 'Ascendant' ? 'first-response angle' : 'public-direction angle'}. ${sentence(getPsychologicalFunction(other)?.relationshipExpression ?? '')} This can be noticeable before the quieter needs in the chart are expressed.`
-        : `${a.a} ${a.aspect} ${a.b} connects the ${sign} response with ${getPsychologicalFunction(other)?.shortFunction.toLowerCase().replace(/&/g, 'and') ?? other}. ${sentence(syn.aspectDynamic)}`;
+        : `${a.a} ${a.aspect} ${a.b} connects the ${sign} response with ${getPsychologicalFunction(other)?.shortFunction.toLowerCase().replace(/&/g, 'and') ?? other}. ${sentence(syn.aspectDynamic)} ${syn.howThisCanShowUp[0] ?? ''}`;
       add('aspect', human, [pairId(a), `placement:${changed}`, `placement:${other}`]);
     }
     const asc = ps.find(p => p.body === 'Ascendant');
@@ -112,7 +111,7 @@ export function buildSignExpressionContrasts(input: {
     const centralModifiers = modifiers.filter(m => m.kind !== 'balance').slice(0, 2);
     const expression = centralModifiers.map(m => m.meaning).join(' ');
     contrasts.push({ id: `expression:${sign}`, sign, bodies: ps.map(p => p.body), title: `${sign}: more than the sign label`,
-      synthesis: `On paper, ${ps.map(p => p.body).join(', ')} points to ${sign}. That describes a ${getSignStyle(sign)} style, not a promise about what others see. ${expression} The sign's needs can still matter while their expression changes with the setting; ask which side shows first rather than deciding that the client does not fit their chart.`,
+      synthesis: `On paper, ${ps.map(p => p.body).join(', ')} ${ps.length === 1 ? 'points' : 'point'} to ${sign}. The sign's style is ${getSignStyle(sign)}, but that is not a promise about what others see. ${expression} The sign's needs can still matter while their expression changes with the setting; ask which side shows first rather than deciding that the client does not fit their chart.`,
       modifiers, evidenceIds: [...new Set([...ids, ...modifiers.flatMap(m => m.evidenceIds)])],
       question: 'What do people notice first, and what do they only discover when you feel comfortable or have more time?',
       weight: (ps.some(p => BIG_THREE.has(p.body)) ? 20 : 0) + links.length * 8 + modifiers.filter(m => m.kind !== 'balance').length * 3 });
