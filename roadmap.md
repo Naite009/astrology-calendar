@@ -1,5 +1,10 @@
 # Roadmap
 
+## Chart Walkthrough natal identity correction
+- [x] Replace action-oriented output with integrated temperament, modified expression, inside/outside distinctions, and evidence-backed repeating identity themes.
+- [x] Remove coaching fields from practitioner JSON and ending; preserve separate Natal takeaway actions.
+- [x] Add template-leakage/evidence regressions and verify saved Lauren, Ava, Max, Harrison, and Karina readings and schema-3 downloads; full tests and automatic type/build checks pass.
+
 ## Sign-expression contrasts
 - [x] Add conditional full-chart modifier synthesis and per-conclusion evidence to Chart Walkthrough and JSON.
 - [x] Verify private Leo, modified Libra, tight/wide contacts, ruler and configuration evidence, empty states, and saved Ava, Max, Harrison, and Karina output; 521 tests passed and automatic build OK.

@@ -1,5 +1,4 @@
 import type { PractitionerWalkthrough, WalkthroughEvidence, PractitionerTheme } from '@/lib/readingGuide/practitionerSynthesis';
-import { TryThisAction } from '@/components/TryThisAction';
 import { ChevronDown, Compass, MessageCircle, Search, GitBranch } from 'lucide-react';
 
 function EvidenceTrail({ ids, evidence, reasoning = [] }: { ids: string[]; evidence: Map<string, WalkthroughEvidence>; reasoning?: string[] }) {
@@ -20,15 +19,15 @@ function EvidenceTrail({ ids, evidence, reasoning = [] }: { ids: string[]; evide
 function ThemeSection({ theme, evidence, index }: { theme: PractitionerTheme; evidence: Map<string, WalkthroughEvidence>; index: number }) {
   return <article className="border-l-2 border-primary bg-secondary/20 px-5 py-5 space-y-4">
     <header><p className="text-[10px] uppercase tracking-widest text-primary">Reading thread {index + 1} · {theme.signal} signal</p><h3 className="mt-1 text-xl font-serif text-foreground">{theme.title}</h3><p className="mt-1 text-xs text-muted-foreground">{theme.question}</p></header>
-    <p className="text-sm leading-relaxed text-foreground">{theme.synthesis}</p>
+    <EvidenceTrail ids={theme.evidenceIds} evidence={evidence} reasoning={theme.reasoning} />
+    <div><h4 className="mb-1 text-[10px] uppercase tracking-widest text-primary">The combined human expression</h4><p className="text-sm leading-relaxed text-foreground">{theme.synthesis}</p></div>
     <div className="grid gap-4 sm:grid-cols-2">
-      <div><h4 className="mb-1 text-[10px] uppercase tracking-widest text-primary">The gift</h4><p className="text-sm leading-relaxed text-foreground">{theme.gift}</p></div>
-      <div><h4 className="mb-1 text-[10px] uppercase tracking-widest text-muted-foreground">The tension</h4><p className="text-sm leading-relaxed text-foreground">{theme.tension}</p></div>
+      <div><h4 className="mb-1 text-[10px] uppercase tracking-widest text-primary">What people may notice</h4><p className="text-sm leading-relaxed text-foreground">{theme.gift}</p></div>
+      <div><h4 className="mb-1 text-[10px] uppercase tracking-widest text-muted-foreground">What can coexist underneath</h4><p className="text-sm leading-relaxed text-foreground">{theme.tension}</p></div>
     </div>
     <ul className="list-disc pl-4 space-y-1 text-xs leading-relaxed text-muted-foreground">{theme.examples.map(line => <li key={line}>{line}</li>)}</ul>
     <div className="border-t border-border/60 pt-3"><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Recognition check</p><p className="text-sm text-foreground">{theme.recognition}</p></div>
-    <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">What helps</p><p className="text-sm leading-relaxed text-foreground">{theme.integration}</p><TryThisAction action={theme.tryThis} /></div>
-    <EvidenceTrail ids={theme.evidenceIds} evidence={evidence} reasoning={theme.reasoning} />
+    <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">How the ruler chain changes the meaning</p><p className="text-sm leading-relaxed text-foreground">{theme.integration}</p></div>
   </article>;
 }
 
@@ -44,6 +43,7 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
         <p className="text-xs leading-relaxed text-muted-foreground">{item.meaning}</p><EvidenceTrail ids={item.evidenceIds} evidence={evidence} />
       </li>)}</ol>
     </section>
+    <section className="space-y-3 border-b border-border pb-5"><h2 className="text-xl font-serif text-foreground">The chart's baseline temperament</h2><p className="text-sm leading-relaxed text-foreground">{reading.baseline.synthesis}</p><EvidenceTrail ids={reading.baseline.evidenceIds} evidence={evidence} /></section>
     {reading.chartRuler && <section className="space-y-3 border-l-2 border-primary pl-5">
       <p className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary"><GitBranch className="h-4 w-4" /> Chart ruler and the connected houses</p>
       <h2 className="text-xl font-serif text-foreground">{reading.chartRuler.title}</h2>
@@ -57,6 +57,7 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
       {reading.expressionContrasts.map(item => <article key={item.id} className="border-l-2 border-primary pl-5 space-y-3">
         <h3 className="text-lg font-serif text-foreground">{item.title}</h3>
         <p className="text-sm leading-relaxed text-foreground">{item.synthesis}</p>
+        <div className="grid gap-4 sm:grid-cols-2"><div><h4 className="text-xs font-medium text-primary mb-1">How this may look from the outside</h4><p className="text-sm leading-relaxed text-foreground">{item.outside}</p></div><div><h4 className="text-xs font-medium text-primary mb-1">What may be going on inside</h4><p className="text-sm leading-relaxed text-foreground">{item.inside}</p></div></div>
         <p className="text-xs leading-relaxed text-muted-foreground">Evidence: {item.bodies.map(body => evidence.get(`placement:${body}`)?.text).filter(Boolean).join('; ')}.</p>
         <details className="space-y-3"><summary className="cursor-pointer text-xs font-medium text-primary">The modifiers, one layer at a time</summary>
           <ul className="mt-3 space-y-4">{item.modifiers.map((modifier,index) => <li key={`${modifier.kind}:${index}`} className="space-y-2">
@@ -68,30 +69,29 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
         <EvidenceTrail ids={item.evidenceIds} evidence={evidence} />
       </article>)}
     </section>}
-    <section className="space-y-4"><h2 className="text-xl font-serif text-foreground">The themes that connect the chart</h2>{reading.themes.map((theme,index) => <ThemeSection key={theme.id} theme={theme} evidence={evidence} index={index} />)}</section>
+    <section className="space-y-4"><h2 className="text-xl font-serif text-foreground">The strongest repeating themes</h2>{reading.themes.map((theme,index) => <ThemeSection key={theme.id} theme={theme} evidence={evidence} index={index} />)}</section>
     <section className="border-y border-border py-5 space-y-3">
       <h2 className="text-xl font-serif text-foreground">What comes first, what keeps going</h2>
       <p className="text-sm leading-relaxed text-foreground">{reading.balance.synthesis}</p>
       <p className="text-sm leading-relaxed text-foreground">{reading.balance.modality}</p>
       <p className="text-xs leading-relaxed text-muted-foreground">{reading.balance.alternative}</p>
       {reading.balance.compensation && <p className="text-xs leading-relaxed text-muted-foreground">{reading.balance.compensation}</p>}
-      <TryThisAction action={reading.balance.tryThis} /><EvidenceTrail ids={reading.balance.evidenceIds} evidence={evidence} />
+      <EvidenceTrail ids={reading.balance.evidenceIds} evidence={evidence} />
     </section>
-    {reading.configurations.length > 0 && <section className="space-y-4"><h2 className="text-xl font-serif text-foreground">Configurations: the complete circuit</h2>
+    {reading.configurations.length > 0 && <section className="space-y-4"><h2 className="text-xl font-serif text-foreground">Configurations and architecture</h2>
       {reading.configurations.map(pattern => <article key={pattern.id} className="border-l-2 border-primary bg-secondary/20 p-5 space-y-3">
         <header><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{pattern.tier === 'primary' ? 'Major-planet / angle pattern' : 'Secondary pattern'}</p><h3 className="mt-1 text-lg font-serif text-foreground">{pattern.name}{pattern.apex ? `, ${pattern.apex} at the focus` : ''}</h3></header>
         <p className="text-sm leading-relaxed text-foreground">{pattern.synthesis}</p><p className="text-xs leading-relaxed text-muted-foreground">{pattern.gift}</p>
         {pattern.release && <p className="text-xs leading-relaxed text-primary">Symbolic balancing point: {pattern.release.degree.toFixed(2)}° {pattern.release.sign}{pattern.release.house ? `, House ${pattern.release.house}` : ''}. {pattern.release.note}</p>}
-        <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">What helps</p><p className="text-sm leading-relaxed text-foreground">{pattern.integration}</p><TryThisAction action={pattern.tryThis} /></div>
+        <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">What this adds to the natal pattern</p><p className="text-sm leading-relaxed text-foreground">{pattern.integration}</p></div>
         <EvidenceTrail ids={pattern.evidenceIds} evidence={evidence} reasoning={pattern.reasoning} />
       </article>)}
     </section>}
     {reading.hiddenPatterns.length > 0 && <section className="space-y-4"><h2 className="flex items-center gap-2 text-xl font-serif text-foreground"><Search className="h-4 w-4 text-primary" /> What the client may not notice</h2>{reading.hiddenPatterns.map(item => <article key={item.title} className="border-l-2 border-border pl-5 space-y-3"><h3 className="text-sm font-medium text-foreground">{item.title}</h3><p className="text-sm leading-relaxed text-foreground">{item.observation}</p><p className="text-xs text-primary">Ask: {item.check}</p><EvidenceTrail ids={item.evidenceIds} evidence={evidence} /></article>)}</section>}
     <section className="border-t-2 border-primary pt-6 space-y-5">
       <header><p className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary"><MessageCircle className="h-4 w-4" /> Practitioner summary</p><h2 className="mt-2 text-xl font-serif text-foreground">If I were reading this chart for the client, I would keep coming back to...</h2></header>
-      <ol className="space-y-3">{reading.closing.threads.map((thread,index) => <li key={thread.text} className="text-sm leading-relaxed text-foreground"><span className="mr-2 text-primary">{index+1}.</span>{thread.text}</li>)}</ol>
-      <div className="space-y-2"><h3 className="text-[10px] uppercase tracking-widest text-primary">Client questions worth asking</h3><ul className="list-disc pl-4 space-y-2 text-sm text-foreground">{reading.closing.questions.map(q => <li key={q.text}>{q.text}</li>)}</ul></div>
-      <div className="space-y-4 border-t border-border pt-4">{[['What to practice',reading.closing.practice],['What to watch for',reading.closing.watchFor],['What to build',reading.closing.build]].map(([label,text],index) => <div key={label}><p className="text-sm leading-relaxed text-foreground"><span className="font-medium">{label}:</span> {text}</p><TryThisAction action={reading.closing.actions[index]} /></div>)}</div>
+      <ol className="space-y-4">{reading.closing.threads.map((thread,index) => <li key={thread.text} className="text-sm leading-relaxed text-foreground space-y-2"><p><span className="mr-2 text-primary">{index+1}.</span>{thread.text}</p><EvidenceTrail ids={thread.evidenceIds} evidence={evidence} /></li>)}</ol>
+      <div className="space-y-3"><h3 className="text-[10px] uppercase tracking-widest text-primary">Client questions worth asking</h3><ul className="space-y-4 text-sm text-foreground">{reading.closing.questions.map(q => <li key={q.text} className="space-y-2"><p>{q.text}</p><details><summary className="cursor-pointer text-xs text-primary">Chart hypothesis behind this question</summary><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{q.hypothesis}</p></details><EvidenceTrail ids={q.evidenceIds} evidence={evidence} /></li>)}</ul></div>
     </section>
     <details className="border-t border-border pt-4"><summary className="cursor-pointer text-xs text-muted-foreground">Reading priorities and limits</summary><div className="mt-3 space-y-2">{reading.methodology.map(line => <p key={line} className="text-xs leading-relaxed text-muted-foreground">{line}</p>)}</div></details>
   </div>;

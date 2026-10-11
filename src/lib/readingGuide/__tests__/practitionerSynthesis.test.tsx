@@ -18,16 +18,34 @@ const CHART = fixture({ Sun:['Scorpio',15], Moon:['Leo',25], Mercury:['Scorpio',
 const reading = (chart=CHART,stageOverride?:'child'|'teen'|'adult') => buildReadingGuide(chart,{now:NOW,stageOverride}).practitioner;
 
 describe('Practitioner Chart Walkthrough',()=>{
+ it('keeps coaching fields and worksheet templates out of the practitioner reading and JSON',()=>{
+   const charts=[CHART,fixture({Sun:['Libra',20],Moon:['Libra',10],Mercury:['Libra',5],Mars:['Scorpio',8],Uranus:['Scorpio',9],Pluto:['Libra',11]},'Scorpio'),fixture({Sun:['Leo',15],Moon:['Cancer',7],Mercury:['Leo',18]},'Virgo')];
+   for(const chart of charts){
+    const r=reading(chart);const json=JSON.stringify(r);const html=renderToStaticMarkup(<PractitionerWalkthroughSections reading={r}/>);
+    expect(json+' '+html).not.toMatch(/this week|try this|low.stakes|before one conversation|write two|set a time limit|what to practice|what to watch for|what to build|one part may want|drive and disruption combine|mind and intensity combine/i);
+    expect(r.closing).not.toHaveProperty('actions');expect(r.closing).not.toHaveProperty('practice');
+    for(const t of r.themes)expect(t).not.toHaveProperty('tryThis');
+    expect(r.baseline.evidenceIds.length).toBeGreaterThan(0);
+    for(const q of r.closing.questions){expect(q.hypothesis.length).toBeGreaterThan(30);expect(q.evidenceIds.length).toBeGreaterThan(0);}
+   }
+ });
+ it('includes a supported baseline and substantive identity threads with no action ending',()=>{
+   const r=reading();const html=renderToStaticMarkup(<PractitionerWalkthroughSections reading={r}/>);
+   expect(html).toContain("The chart&#x27;s baseline temperament");expect(html).toContain('The strongest repeating themes');
+   expect(html).toContain('Chart hypothesis behind this question');
+   expect(r.baseline.synthesis).toContain('Saturn');
+   for(const thread of r.closing.threads){expect(thread.text.length).toBeGreaterThan(100);expect(thread.evidenceIds.length).toBeGreaterThan(1);}
+ });
  it('exports a distinct theme-led structure with resolvable exact evidence',()=>{
   const r=reading(); const evidence=new Map(r.evidence.map(e=>[e.id,e]));
-  expect(r.schemaVersion).toBe(2); expect(r.chartId).toBe(CHART.id);
+   expect(r.schemaVersion).toBe(3); expect(r.chartId).toBe(CHART.id);
   expect(r.opening.signatures.length).toBeGreaterThanOrEqual(3);expect(r.opening.signatures.length).toBeLessThanOrEqual(6);
   expect(r.themes.length).toBeGreaterThanOrEqual(3);
   for(const item of [...r.opening.signatures,...r.themes,...r.configurations,...r.hiddenPatterns,...r.closing.threads,...r.closing.questions]) {
    expect(item.evidenceIds.length).toBeGreaterThan(0);
    for(const id of item.evidenceIds)expect(evidence.has(id),id).toBe(true);
   }
-  for(const theme of r.themes){expect(theme.reasoning.length).toBeGreaterThan(1);expect(theme.tension).toMatch(/part|need|want/i);expect(theme.tryThis.behaviors.length).toBeGreaterThan(0);}
+   for(const theme of r.themes){expect(theme.reasoning.length).toBeGreaterThan(1);expect(theme.synthesis.length).toBeGreaterThan(100);expect(theme.evidenceIds.length).toBeGreaterThan(1);}
   expect(r.evidence.find(e=>e.id==='placement:Mercury')?.text).toContain('℞');
   expect(JSON.parse(JSON.stringify(r))).toEqual(r);
  });
@@ -40,7 +58,7 @@ describe('Practitioner Chart Walkthrough',()=>{
  it('connects MC and learning rulers and gives configurations a complete reasoning trail',()=>{
    const r=reading();expect(r.chartRuler?.reasoning.join(' ')).toContain('MC ruler is Venus');
    expect(r.themes.some(t=>t.reasoning.some(line=>line.includes('Cognitive profile')&&line.includes('House 3 intake')))).toBe(true);
-   expect(new Set(r.themes.map(t=>t.tryThis.behaviors[0])).size).toBe(r.themes.length);
+    expect(new Set(r.themes.map(t=>t.synthesis)).size).toBe(r.themes.length);
    for(const c of r.configurations)expect(c.reasoning.length).toBe(c.evidenceIds.filter(id=>id.startsWith('aspect:')).length);
  });
  it('does not leak angle fallback wording or broken object pronouns',()=>{
