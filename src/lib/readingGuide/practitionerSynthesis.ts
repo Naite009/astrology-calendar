@@ -8,7 +8,7 @@ import { getEssentialDignity } from '@/lib/essentialDignity';
 import { getHouseForLongitude, signDegreesToLongitude } from '@/lib/houseCalculations';
 import { getHouseLivedInterpretation, getPsychologicalFunction, synthesisFromRankedAspect } from '@/lib/interpretation/psychologicalFunctions';
 import { buildElementBalanceReading, buildElementPsychology, buildModalityBalanceReading } from '@/lib/interpretation/elementBalance';
-import { buildTakeawayAction, type TakeawayAction } from '@/lib/interpretation/takeawayActions';
+import { buildTakeawayAction, actionText, type TakeawayAction } from '@/lib/interpretation/takeawayActions';
 import { analyzeSignVsDegree, formatDegreeMinutes, ZODIAC_ORDER } from '@/lib/aspects/outOfSign';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import { applyStageVocabulary, type AgeStage } from './ageContext';
@@ -92,6 +92,14 @@ const SIGN_BEHAVIOR: Record<string, string> = {
   Sagittarius: 'look for the larger reason and leave room to explore', Capricorn: 'check the responsibility, timing, and practical outcome',
   Aquarius: 'question the usual rule and compare it with a workable alternative', Pisces: 'take in the atmosphere and look for meaning through images or feeling',
 };
+const BODY_NEED: Record<string, string> = {
+  Sun: 'choose a direction that feels personally meaningful', Moon: 'feel settled enough to name and receive care',
+  Mercury: 'understand what is happening before giving an answer', Venus: 'enjoy closeness and have their preferences matter',
+  Mars: 'act on a want and defend a clear limit', Jupiter: 'see a reason to explore and keep growing',
+  Saturn: 'know what is reliable and meet a realistic standard', Uranus: 'retain the freedom to change an unsuitable rule',
+  Neptune: 'leave room for imagination without losing track of what is agreed', Pluto: 'know what matters and choose how much to invest',
+  Ascendant: 'respond to the situation in front of them', MC: 'build a visible direction they can stand behind',
+};
 const first = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-Z])/)[0] ?? text;
 const unique = <T,>(items: T[]) => [...new Set(items)];
 const houseNumbers = (items: CoreBodyPlacement[]) => unique(items.flatMap(p => p.house ? [p.house] : []));
@@ -102,7 +110,7 @@ const practitionerVoice = (text: string, stage: AgeStage) => personalVoice(text,
   .replace(/\byou are\b/gi, 'they are').replace(/\byou have\b/gi, 'they have').replace(/\byou do\b/gi, 'they do')
   .replace(/\byou feel\b/gi, 'they feel').replace(/\byou want\b/gi, 'they want').replace(/\byou need\b/gi, 'they need')
   .replace(/\byou know\b/gi, 'they know').replace(/\byou get\b/gi, 'they get').replace(/\byou say\b/gi, 'they say')
-  .replace(/\byourself\b/gi, 'themselves').replace(/\byour\b/gi, 'their').replace(/\byou\b/gi, 'they');
+  .replace(/\bto you\b/gi, 'to them').replace(/\bfor you\b/gi, 'for them').replace(/\bwith you\b/gi, 'with them').replace(/\babout you\b/gi, 'about them').replace(/\byourself\b/gi, 'themselves').replace(/\byour\b/gi, 'their').replace(/\byou\b/gi, 'they');
 
 /** Read-only synthesis of stored placements and existing canonical geometry. No ephemeris or birth-data changes. */
 export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInput): PractitionerWalkthrough {
@@ -130,6 +138,20 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const layers = a.dissociate ? analyzeSignVsDegree({ labelA: pa.label, signA: pa.sign, degreeA: pa.degree, labelB: pb.label, signB: pb.sign, degreeB: pb.degree, aspect: a.aspect, aspectAngle: a.exactAngle, separation: a.separation, orb: a.orb }).lines : undefined;
     add({ id: aspectId(a), kind: 'aspect', text: `${placementLine(pa)} ${a.aspect} ${placementLine(pb)}; ${a.orb.toFixed(2)}° orb${a.isWide ? ' (wide, lower weight)' : ''}${a.dissociate ? '; Out of sign' : ''}.`, bodies: [a.a, a.b], houses: houseNumbers([pa, pb]), tier: MAJORS.has(a.a) || ['Ascendant', 'MC'].includes(a.a) ? MAJORS.has(a.b) || ['Ascendant', 'MC'].includes(a.b) ? 'primary' : 'secondary' : 'secondary', orb: a.orb, wide: a.isWide, layers });
   }
+  const psychologyFor = (a: RankedAspect) => {
+    const syn = synthesisFromRankedAspect(a,stage);
+    if (!['MC','Ascendant'].includes(a.a) && !['MC','Ascendant'].includes(a.b)) return syn;
+    const needA = BODY_NEED[a.a] ?? 'use this function'; const needB = BODY_NEED[a.b] ?? 'use the other function';
+    const tense = ['square','opposition'].includes(a.aspect);
+    return { ...syn,
+      title: `${a.a === 'MC' || a.b === 'MC' ? 'Public direction' : 'First response'} and ${(a.a === 'MC' || a.a === 'Ascendant' ? a.b : a.a).toLowerCase()} ${tense ? 'ask for a balance' : 'can support each other'}`,
+      aspectDynamic: tense ? `One part may want to ${needA}, while another needs to ${needB}. Meeting the first need can interrupt the second, so the person may alternate rather than feel both satisfied at once.` : `The wish to ${needA} can support the need to ${needB}. This can make the response easier to use, but ease does not mean there is no need to check its effect.`,
+      watchFor: `The person may respond to what others see or expect before checking what they actually need from ${a.a === 'MC' || a.a === 'Ascendant' ? a.b : a.a}.`,
+      whenIntegrated: `A workable expression makes room to ${needA} and ${needB}, without treating public approval or a first impression as the only measure.`,
+      howThisCanShowUp: [`A choice that works outwardly may still need a private check before it feels right.`, `The person may revise what they show after noticing what the other function needs.`],
+      reflectionQuestion: 'When a choice looks right to other people, what helps you check whether it works for you too?',
+    };
+  };
   const leadingAspects = aspects.filter(a => MAJOR_ASPECTS.has(a.aspect) && evidence.get(aspectId(a))?.tier === 'primary')
     .sort((a, b) => b.score - a.score);
   const asc = byBody.get('Ascendant');
@@ -155,7 +177,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const root = rulership(1);
     const host = dispositor(ruler);
     const lived = getHouseLivedInterpretation(ruler.house);
-    const syn = rulerLinks[0] ? synthesisFromRankedAspect(rulerLinks[0], stage) : null;
+    const syn = rulerLinks[0] ? psychologyFor(rulerLinks[0]) : null;
     const condition = getEssentialDignity(ruler.body, ruler.sign);
     const modern = rulerInfo.modern ? byBody.get(rulerInfo.modern) : null;
     const rulerEvidence = unique([...idsFor([asc, ruler]), ...(root ? [root.id] : []), ...rulerLinks.map(aspectId), ...(host ? [host.id] : [])]);
@@ -205,7 +227,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const patternId = add({ id: `configuration:${key}`, kind: 'configuration', text: `${name}: ${ps.map(placementLine).join('; ')}.${apexP ? ` Apex / focus: ${placementLine(apexP)}.` : ''}${release ? ` Balancing point: ${formatDegreeMinutes(release.degree)} ${release.sign}${release.house ? `, House ${release.house}` : ''}; ${release.occupiedBy.length ? `occupied near ${release.occupiedBy.join(', ')}` : 'unoccupied by a major planet within 8°'}. ${release.note}` : ''}`, bodies, houses: houseNumbers(ps), tier });
     const tensionEdge = edges.find(a => ['opposition','square','quincunx'].includes(a.aspect));
     const linked = tensionEdge ?? edges[0];
-    const psychological = synthesisFromRankedAspect(linked,stage);
+    const psychological = psychologyFor(linked);
     const arenas = unique(ps.map(p => getHouseLivedInterpretation(p.house)?.focus).filter((x): x is string => Boolean(x)));
     const integration = release
       ? `${release.sign === 'Taurus' ? 'Try a slower pace: make or eat something with attention, enjoy music, or build one small thing patiently, without measuring its usefulness.' : `Try the balancing sign as an experiment: ${SIGN_BEHAVIOR[release.sign]}.`}${release.house === 5 ? ' Make space for play or creative work with no required result.' : release.house ? ` Apply it around ${getHouseLivedInterpretation(release.house)?.attention}.` : ''} This gives ${apex ?? 'the apex'} another way to handle the pull between ${linked.a} and ${linked.b}, rather than repeating the same response.`
@@ -231,43 +253,45 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const weight=ps.reduce((sum,p)=>sum+(BODY_WEIGHT[p.body] ?? 3)+(ruler?.body===p.body ? 10 : 0),0) + ([1,4,7,10].includes(house)?8:0) + (ps.length>=3?12:0) + Math.min(links[0]?.score ?? 0,200)/20;
     if (ps.length<2 && !ps.some(p=>['Sun','Moon',ruler?.body].includes(p.body)) && weight<22) continue;
     const lead=[...ps].sort((a,b)=>(BODY_WEIGHT[b.body] ?? 0)-(BODY_WEIGHT[a.body] ?? 0))[0];
-    const primaryLink=links.find(a => !usedPairs.has(aspectId(a))) ?? null;
+    const primaryLink=links.find(a => !usedPairs.has(aspectId(a)) && !['Ascendant','MC'].includes(a.a) && !['Ascendant','MC'].includes(a.b)) ?? links.find(a => !usedPairs.has(aspectId(a))) ?? null;
     if (primaryLink) usedPairs.add(aspectId(primaryLink));
     const otherBody=primaryLink ? (ps.some(p=>p.body===primaryLink.a)?primaryLink.b:primaryLink.a) : null;
     const other=otherBody ? byBody.get(otherBody) : undefined;
     const lived=getHouseLivedInterpretation(house); if (!lived) continue;
-    const psychology=primaryLink ? synthesisFromRankedAspect(primaryLink,stage) : null;
+    const psychology=primaryLink ? psychologyFor(primaryLink) : null;
     const host=dispositor(lead);
     const repeated=majors.filter(p=>p.sign===lead.sign);
     const involved=unique([...ps,...(other?[other]:[]),...(hr?[hr.p]:[]),...(host?[host.p]:[])]);
     const themeEvidence=unique([...idsFor(involved),...(primaryLink?[aspectId(primaryLink)]:[]),...(hr?[hr.id]:[]),...(host?[host.id]:[])]);
     const funcs=ps.map(p=>`${p.body} (${getPsychologicalFunction(p.body)?.shortFunction.toLowerCase().replace(/&/g,'and') ?? 'its own function'})`);
     const arenaOther=other?.house && other.house!==house ? getHouseLivedInterpretation(other.house) : null;
-    const tension=psychology ? first(psychology.watchFor)
+    const tension=primaryLink ? `One part may want to ${BODY_NEED[primaryLink.a]}, while another needs to ${BODY_NEED[primaryLink.b]}. ${first(psychology?.watchFor ?? '')}`
       : `The person may ${SIGN_BEHAVIOR[lead.sign]}, while also needing room to decide what is enough around ${lived.focus}. ${ps.length>=2 ? `${ps[0].body} and ${ps[1].body} share a setting, not the same need.` : 'Keep the need separate from the standard used to judge it.'}`;
-    const synthesis=`${ps.length >= 2 ? `${funcs.join(' and ')} return to the same life area: ${lived.attention}.` : `${lead.body} places a central need around ${lived.attention}.`} ${psychology ? first(psychology.aspectDynamic) : `In ${lead.sign}, a likely first response is to ${SIGN_BEHAVIOR[lead.sign]}.`} ${arenaOther ? `That response has to work both in ${lived.focus} and in ${arenaOther.focus}; meeting one need does not automatically settle the other.` : `The recurring choice is ${lived.repeatingPattern}.`}`;
+    const synthesis=`${ps.length >= 2 ? `${funcs.join(' and ')} return to the same life area: ${lived.attention}.` : `${lead.body} places a central need around ${lived.attention}.`} ${psychology ? `${first(psychology.aspectDynamic)} In ${lead.sign}, the first response may be to ${SIGN_BEHAVIOR[lead.sign]}.` : `In ${lead.sign}, a likely first response is to ${SIGN_BEHAVIOR[lead.sign]}.`} ${arenaOther ? `That response has to work both in ${lived.focus} and in ${arenaOther.focus}; meeting one need does not automatically settle the other.` : `The recurring choice is ${lived.repeatingPattern}.`}`;
     const reasoning=[`${ps.length} major planet${ps.length===1?'':'s'} in House ${house}${ps.length>=3 ? '; this app uses three or more for a house concentration, sometimes called a house stellium' : ''}. Their different functions share an arena, not a single personality trait.`,
       ...(primaryLink?[`${primaryLink.isWide?'Wide, lower-weight':'Supported'} ${primaryLink.aspect}, ${primaryLink.orb.toFixed(2)}° orb, joins ${primaryLink.a} with ${primaryLink.b}${primaryLink.dissociate ? '; keep the by-sign and by-degree readings distinct' : ''}.`]:[]),
       ...(hr?[`${house===10?'The MC ruler':'The house ruler'}, ${hr.p.body}, sits in ${hr.p.sign}${hr.p.house?`, House ${hr.p.house}`:''}${hr.p.house===house?', reinforcing the same setting':`. This connects ${lived.focus} to ${getHouseLivedInterpretation(hr.p.house)?.focus ?? 'a house that is not verified'}`}.`]:[]),
       ...(host && host.p.body!==lead.body?[`${lead.body}'s traditional dispositor, ${host.p.body}, places the next step around ${getHouseLivedInterpretation(host.p.house)?.attention ?? host.p.sign}.`]:[]),
       ...(ruler && involved.some(p=>p.body===ruler.body)?[`${ruler.body} is the traditional chart ruler, so this also modifies how the rising sign enters the situation.`]:[]),
       ...(repeated.length>=3?[`${lead.sign} repeats through ${repeated.map(p=>p.body).join(', ')}. The same choice style appears in several functions, but does not erase their differences.`]:[])];
-    const integration=psychology ? psychology.watchFor : `Ask “${lived.question}” before agreeing to one more demand. Choose one small action that serves the need rather than only meeting an outside expectation.`;
-    themes.push({id:`theme:house${house}`,title:HOUSE_TITLES[house],question:lived.question,synthesis:practitionerVoice(synthesis,stage),gift:practitionerVoice(psychology?first(psychology.whenIntegrated):`This can build skill in ${lived.focus}: ${lived.othersNotice}.`,stage),tension:practitionerVoice(tension,stage),
+    const integrationPattern=psychology ? psychology.watchFor : `Ask “${lived.question}” before agreeing to one more demand. Choose one small action that serves the need rather than only meeting an outside expectation.`;
+    const action=buildTakeawayAction(integrationPattern,{stage,context:synthesis});
+    const integration=`${actionText(action)} This tests the balance between ${primaryLink ? `${primaryLink.a} and ${primaryLink.b}` : `${lead.body}'s need and the demands in this house`} in an ordinary situation.`;
+    themes.push({id:`theme:house${house}`,title:HOUSE_TITLES[house],question:lived.question,synthesis:practitionerVoice(synthesis,stage),gift:practitionerVoice(primaryLink?`The same link can help the person ${BODY_NEED[primaryLink.a]} while making room to ${BODY_NEED[primaryLink.b]}. ${first(psychology?.howThisCanShowUp[0] ?? '')}`:`This can build skill in ${lived.focus}: ${lived.othersNotice}.`,stage),tension:practitionerVoice(tension,stage),
       examples:psychology ? psychology.howThisCanShowUp.slice(0,2).map(t=>practitionerVoice(t,stage)) : [practitionerVoice(`A repeated choice can involve ${lived.repeatingPattern}.`,stage)],
-      recognition:personalVoice(psychology?.reflectionQuestion ?? lived.question,stage), integration:personalVoice(integration,stage),tryThis:buildTakeawayAction(integration,{stage,context:synthesis}), evidenceIds:themeEvidence,reasoning,signal:ps.length>=2 && links.some(a=>!a.isWide) ? 'Strong':'Moderate',weight});
+      recognition:personalVoice(psychology?.reflectionQuestion ?? lived.question,stage), integration:personalVoice(integration,stage),tryThis:action, evidenceIds:themeEvidence,reasoning,signal:ps.length>=2 && links.some(a=>!a.isWide) ? 'Strong':'Moderate',weight});
   }
   // Missing houses do not become fabricated house stories. Strong degree contacts remain readable.
   for (const a of leadingAspects.filter(a=>CENTRAL.has(a.a)||CENTRAL.has(a.b)).slice(0,8)) {
-    if (usedPairs.has(aspectId(a)) || themes.length>=6) continue;
+    if (usedPairs.has(aspectId(a)) || themes.length>=3 || themes.some(t => t.evidenceIds.includes(`placement:${a.a}`) && t.evidenceIds.includes(`placement:${a.b}`))) continue;
     const pa=byBody.get(a.a);const pb=byBody.get(a.b);if(!pa||!pb)continue;
-    const syn=synthesisFromRankedAspect(a,stage);
+    const syn=psychologyFor(a);
     const host=dispositor(pa);
     const modifier=leadingAspects.find(x=>aspectId(x)!==aspectId(a) && (x.a===a.a||x.b===a.a||x.a===a.b||x.b===a.b) && !usedPairs.has(aspectId(x)));
     usedPairs.add(aspectId(a));
     if (modifier) usedPairs.add(aspectId(modifier));
     const reasoning=[`${a.a} may ${SIGN_BEHAVIOR[pa.sign]}, while ${a.b} may ${SIGN_BEHAVIOR[pb.sign]}. The aspect connects those responses, rather than making either one the whole person.`,...(host?[`${pa.body}'s dispositor is ${host.p.body} in ${host.p.sign}${host.p.house?`, House ${host.p.house}`:''}.`]:[]),...(modifier?[`A second contact, ${modifier.a} ${modifier.aspect} ${modifier.b} (${modifier.orb.toFixed(2)}°), modifies the same function.`]:[])];
-    themes.push({id:`theme:${aspectId(a)}`,title:syn.title,question:personalVoice(syn.reflectionQuestion,stage),synthesis:practitionerVoice(`${first(syn.aspectDynamic)} ${reasoning[0]}${modifier?` ${first(synthesisFromRankedAspect(modifier,stage).aspectDynamic)}`:''}`,stage),gift:practitionerVoice(first(syn.whenIntegrated),stage),tension:practitionerVoice(first(syn.watchFor),stage),examples:syn.howThisCanShowUp.slice(0,2).map(t=>practitionerVoice(t,stage)),recognition:personalVoice(syn.reflectionQuestion,stage),integration:personalVoice(syn.watchFor,stage),tryThis:buildTakeawayAction(syn.watchFor,{stage}),evidenceIds:unique([...idsFor([pa,pb]),aspectId(a),...(host?[host.id]:[]),...(modifier?[aspectId(modifier)]:[])]),reasoning,signal:a.isWide?'Moderate':'Strong',weight:Math.min(a.score/5,65)});
+    themes.push({id:`theme:${aspectId(a)}`,title:syn.title,question:personalVoice(syn.reflectionQuestion,stage),synthesis:practitionerVoice(`${first(syn.aspectDynamic)} ${reasoning[0]}${modifier?` ${first(psychologyFor(modifier).aspectDynamic)}`:''}`,stage),gift:practitionerVoice(first(syn.whenIntegrated),stage),tension:practitionerVoice(first(syn.watchFor),stage),examples:syn.howThisCanShowUp.slice(0,2).map(t=>practitionerVoice(t,stage)),recognition:personalVoice(syn.reflectionQuestion,stage),integration:`${actionText(buildTakeawayAction(syn.watchFor,{stage}))} This gives both ${a.a} and ${a.b} a place in the response.`,tryThis:buildTakeawayAction(syn.watchFor,{stage}),evidenceIds:unique([...idsFor([pa,pb]),aspectId(a),...(host?[host.id]:[]),...(modifier?[aspectId(modifier)]:[])]),reasoning,signal:a.isWide?'Moderate':'Strong',weight:Math.min(a.score/5,65)});
   }
   themes.sort((a,b)=>b.weight-a.weight);
   const selectedThemes=themes.slice(0,5);
@@ -283,8 +307,8 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const links=hardRepeated.filter(a=>a.a===p.body||a.b===p.body);
     if(links.length<2)continue;
     const support=leadingAspects.find(a=>['trine','sextile'].includes(a.aspect)&&(a.a===p.body||a.b===p.body));
-    const syn=synthesisFromRankedAspect(links[0],stage);
-    hiddenPatterns.push({title:`Different situations may press the same ${p.body} need`,observation:practitionerVoice(`The person may treat these as separate problems, while ${p.body} participates in both contacts. ${first(syn.watchFor)}${support?` ${support.a} ${support.aspect} ${support.b} offers a different response: ${first(synthesisFromRankedAspect(support,stage).aspectDynamic)}`:''}`,stage),check:personalVoice('When two situations upset you in similar ways, what need is the same in both?',stage),evidenceIds:unique([...idsFor([p]),...links.slice(0,2).map(aspectId),...(support?[aspectId(support)]:[])])});
+    const syn=psychologyFor(links[0]);
+    hiddenPatterns.push({title:`Different situations may press the same ${p.body} need`,observation:practitionerVoice(`The person may treat these as separate problems, while ${p.body} participates in both contacts. ${first(syn.watchFor)}${support?` ${support.a} ${support.aspect} ${support.b} offers a different response: ${first(psychologyFor(support).aspectDynamic)}`:''}`,stage),check:personalVoice('When two situations upset you in similar ways, what need is the same in both?',stage),evidenceIds:unique([...idsFor([p]),...links.slice(0,2).map(aspectId),...(support?[aspectId(support)]:[])])});
     if(hiddenPatterns.length>=2)break;
   }
   const privateMoon=byBody.get('Moon');const outwardSun=byBody.get('Sun');
@@ -294,15 +318,15 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
   const signatureCandidates:PractitionerWalkthrough['opening']['signatures']=[];
   if(chartRuler && ruler)signatureCandidates.push({id:'chart-ruler',title:chartRuler.title,meaning:first(chartRuler.synthesis),evidenceIds:chartRuler.evidenceIds,weight:100+(rulerLinks.some(a=>a.orb<=3)?5:0)});
   for(const c of selectedConfigurations)signatureCandidates.push({id:`pattern:${c.id}`,title:c.name,meaning:first(c.synthesis),evidenceIds:c.evidenceIds,weight:c.weight});
-  for(const t of selectedThemes.slice(0,3))signatureCandidates.push({id:t.id,title:t.title,meaning:first(t.synthesis),evidenceIds:t.evidenceIds,weight:t.weight+15});
+  for(const t of selectedThemes.slice(0,3))signatureCandidates.push({id:t.id,title:t.title,meaning:first(t.tension),evidenceIds:t.evidenceIds,weight:t.weight+15});
   const bigThree=guide.synthesis.dynamics.find(d=>d.id==='big-three');
-  if(bigThree && asc && byBody.has('Sun') && byBody.has('Moon'))signatureCandidates.push({id:'big-three',title:bigThree.title,meaning:practitionerVoice(first(bigThree.realLifeTranslation),stage),evidenceIds:['placement:Sun','placement:Moon','placement:Ascendant',...leadingAspects.filter(a=>['Sun','Moon','Ascendant'].includes(a.a)&&['Sun','Moon','Ascendant'].includes(a.b)).map(aspectId)],weight:85});
+  if(bigThree && asc && byBody.has('Sun') && byBody.has('Moon'))signatureCandidates.push({id:'big-three',title:bigThree.title,meaning:practitionerVoice(bigThree.realLifeTranslation,stage),evidenceIds:['placement:Sun','placement:Moon','placement:Ascendant',...leadingAspects.filter(a=>['Sun','Moon','Ascendant'].includes(a.a)&&['Sun','Moon','Ascendant'].includes(a.b)).map(aspectId)],weight:85});
   signatureCandidates.push({id:'balance',title:`${elementReading.dominant.join(' + ')} processing, ${modalityReading.dominant.join(' + ')} timing`,meaning:first(balance.synthesis),evidenceIds:[balanceId],weight:55+Math.max(...Object.values(guide.modalities.counts))*2});
   const signatures=signatureCandidates.sort((a,b)=>b.weight-a.weight).filter((s,i,list)=>!list.slice(0,i).some(other=>s.id.startsWith('theme:')&&other.id.startsWith('pattern:')&&s.evidenceIds.filter(id=>id.startsWith('aspect:')).every(id=>other.evidenceIds.includes(id))&&s.evidenceIds.some(id=>id.startsWith('aspect:')))).slice(0,6);
   const threads=[...(chartRuler?[{text:first(chartRuler.synthesis),evidenceIds:chartRuler.evidenceIds}]:[]),...selectedThemes.slice(0,3).map(t=>({text:`${t.title}: ${first(t.tension)}`,evidenceIds:t.evidenceIds})),...(selectedConfigurations[0]?[{text:`${selectedConfigurations[0].name}: ${first(selectedConfigurations[0].integration)}`,evidenceIds:selectedConfigurations[0].evidenceIds}]:[])].slice(0,5);
   const questions=unique(selectedThemes.map(t=>t.recognition)).slice(0,4).map(text=>({text,evidenceIds:selectedThemes.find(t=>t.recognition===text)?.evidenceIds ?? []}));
   if(hiddenPatterns[0] && questions.length<5)questions.push({text:hiddenPatterns[0].check,evidenceIds:hiddenPatterns[0].evidenceIds});
-  if(questions.length<3)questions.push({text:personalVoice('Which response comes first for you: a feeling, a plan, a conversation, or an action? What changes when you have more time?',stage),evidenceIds:[balanceId]});
+  if(questions.length<5)questions.push({text:personalVoice('Which response comes first for you: a feeling, a plan, a conversation, or an action? What changes when you have more time?',stage),evidenceIds:[balanceId]});
   const practice=selectedConfigurations[0]?.integration ?? selectedThemes[0]?.integration ?? 'Test the leading interpretation against one recent example before treating it as a thread.';
   const watchFor=selectedThemes[0]?.tension ?? 'Do not turn a sparse chart into a full biography.';
   const build=selectedThemes[1]?.integration ?? 'Ask which part of the pattern fits, which does not, and what changes with context.';
