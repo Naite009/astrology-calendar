@@ -14,6 +14,7 @@ import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import { applyStageVocabulary, type AgeStage } from './ageContext';
 import { getCognitiveProfile, getThirdHouseIntake } from '@/lib/childPortrait';
 import { calculateNatalDominantPlanets } from '@/lib/dominantPlanetsEngine';
+import { buildSignExpressionContrasts, type SignExpressionContrast } from './signExpressionModifiers';
 
 export interface WalkthroughEvidence {
   id: string;
@@ -64,6 +65,7 @@ export interface PractitionerWalkthrough {
   opening: { summary: string; signatures: Array<{ id: string; title: string; meaning: string; evidenceIds: string[]; weight: number }> };
   chartRuler: { title: string; synthesis: string; condition: string; reasoning: string[]; evidenceIds: string[]; modernNote?: string } | null;
   themes: PractitionerTheme[];
+  expressionContrasts: SignExpressionContrast[];
   balance: { synthesis: string; modality: string; alternative: string; compensation: string; evidenceIds: string[]; tryThis: TakeawayAction };
   configurations: PractitionerConfiguration[];
   hiddenPatterns: Array<{ title: string; observation: string; check: string; evidenceIds: string[] }>;
@@ -367,7 +369,10 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
   const build=selectedThemes[1]?.integration ?? 'Ask which part of the pattern fits, which does not, and what changes with context.';
   const limitations=[...(!completeCusps?['Twelve valid stored house cusps are not available. House themes and house rulers are withheld; sign and degree contacts remain visible.']:[]),...(majors.length<10?[`Only ${majors.length} of the ten major planets are present. Counts and synthesis are incomplete.`]:[]),...(!chart.birthTime?['Birth time is unknown. Stored angles and houses need independent confirmation before use.']:[]),...(stage!=='adult'?['Life examples use the selected developmental level. Geometry, evidence, and rankings do not change with age.']:[])];
   const dominance=calculateNatalDominantPlanets(chart);
-  const result = sanitizeInterpretiveDeep({schemaVersion:2,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>t.text).join(' '),signatures},chartRuler,themes:selectedThemes,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:questions.slice(0,5),practice,watchFor,build,actions:[buildTakeawayAction(practice,{stage}),buildTakeawayAction(watchFor,{stage}),buildTakeawayAction(build,{stage})]},methodology:[
+  const expressionContrasts = buildSignExpressionContrasts({placements, majorBodies:MAJORS, aspects:leadingAspects, ruler, rulerCondition:chartRuler?.condition, configurations:selectedConfigurations, evidence, balance})
+    .map(item => ({...item, synthesis:practitionerVoice(item.synthesis,stage), modifiers:item.modifiers.map(modifier => ({...modifier,meaning:practitionerVoice(modifier.meaning,stage)}))}));
+  const result = sanitizeInterpretiveDeep({schemaVersion:2,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>t.text).join(' '),signatures},chartRuler,themes:selectedThemes,expressionContrasts,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:questions.slice(0,5),practice,watchFor,build,actions:[buildTakeawayAction(practice,{stage}),buildTakeawayAction(watchFor,{stage}),buildTakeawayAction(build,{stage})]},methodology:[
+    'Sign-expression contrasts require a verified private-house placement, tight primary modifying contact, traditional ruler difference, or tightly joined first-house cluster. They describe possibilities to ask about, not a measured mismatch. Wide contacts, retrograde motion alone, and unrelated outer planets do not establish a different personality.',
     'Opening signatures are ranked by traditional chart rulership, validated configurations, luminary and personal-planet involvement, angular houses, repeated house focus, and canonical aspect weight. These are app-defined reading priorities, not objective personality measurements.',
     'Wide aspects use the shared lower-weight rule (7° or 75% of their allowed orb). Nodes and Chiron stay secondary; the automatic nodal opposition is never added as evidence.',
     'Traditional sign dispositors and house rulers are used. Modern co-rulers are named separately. Three or more major planets in one house is this app’s house-concentration convention.',
