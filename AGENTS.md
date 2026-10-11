@@ -1,6 +1,6 @@
 # Architecture Rules
 
-- Natal takeaway actions must use `src/lib/interpretation/takeawayActions.ts` in generators, views, and exports; why: one theme-aware behavioral action layer keeps saved and newly generated takeaways consistent without changing chart math.
+- Separate Natal takeaway actions must use `src/lib/interpretation/takeawayActions.ts` in generators, views, and exports, but never in Chart Walkthrough; why: shared actions stay consistent while practitioner synthesis remains an identity reading rather than a coaching plan.
 
 - All natal psychological-function and aspect interpretation must use `psychologicalFunctions.ts`; this keeps Natal Portrait, Story of Self, and Chart Walkthrough consistent without changing chart calculations.
 - All natal house interpretation must use the concrete twelve-house descriptions in `psychologicalFunctions.ts`; this prevents vague house keywords from drifting between reading surfaces.
@@ -8,5 +8,5 @@
 - Element and modality balance copy must use `src/lib/interpretation/elementBalance.ts`; why: keeps low-count behavior, alternatives, and compensation evidence concrete and consistent across natal surfaces.
 - The high-level natal synthesis in Natal Portrait and Chart Walkthrough must use `src/lib/interpretation/chartSynthesis.ts`; why: keeps prioritization, evidence, modifiers, and practical translation consistent without changing chart math.
 - Natal Portrait and Chart Walkthrough must build and resolve chart selections through `src/lib/charts/chartSelection.ts`; why: prevents hidden duplicates, stale ids, and silent substitution of another person's chart.
-- Chart Walkthrough's practitioner presentation and JSON must use `readingGuide/practitionerSynthesis.ts`, deriving theme evidence from canonical natal helpers and shared chart synthesis; why: preserves a distinct theme-led reading without parallel chart calculations or mismatched exports.
+- Chart Walkthrough's practitioner presentation and JSON must use `readingGuide/practitionerSynthesis.ts`, deriving identity themes, baseline, and outside/inside contrasts from canonical natal helpers and shared chart synthesis, without action fields; why: preserves a distinct natal identity reading without parallel chart calculations or mismatched exports.
 - Sign-expression contrasts must consume canonical practitioner evidence through `readingGuide/signExpressionModifiers.ts`, require specific primary modifiers, and retain per-conclusion evidence IDs; why: prevents sign stereotypes, unrelated outer-planet claims, and UI/export drift without changing natal math.

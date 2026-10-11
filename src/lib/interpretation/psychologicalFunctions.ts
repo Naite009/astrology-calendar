@@ -322,6 +322,51 @@ export function getSignStyle(sign?: string | null): string {
   return sign ? SIGN_STYLE[sign] ?? `expressed through ${sign}` : 'style not available';
 }
 
+/** Observable sign responses for combined natal interpretation, never standalone personality labels. */
+export function getNatalSignExpression(sign: string): string {
+  const responses: Record<string, string> = {
+    Aries: 'address the immediate issue directly, resist waiting for permission, and sometimes act before knowing how others will respond',
+    Taurus: 'check what feels dependable, resist changes that have not earned their trust, and keep investing after others would move on',
+    Gemini: 'compare explanations, resist being confined to one answer, and sometimes keep exploring after a choice is needed',
+    Cancer: 'notice the emotional climate, protect familiar connections, and sometimes hide a personal need while caring for someone else',
+    Leo: 'want their contribution to feel personal and recognized, resist being treated as interchangeable, and care about the response even when they do not seek an audience',
+    Virgo: 'notice what does not quite work, resist an answer that skips useful detail, and sometimes question work that others already consider finished',
+    Libra: 'read other people closely, compare competing viewpoints, and notice unequal treatment, while sometimes delaying a personal preference until its effect on others is clear',
+    Scorpio: 'watch for consistency between words and actions, choose carefully what to reveal, and remain deeply invested even when their expression is restrained',
+    Sagittarius: 'look for a larger explanation, resist a rule that has no convincing purpose, and sometimes commit to the possibility before checking its limits',
+    Capricorn: 'judge what can be sustained, resist relying on an uncertain promise, and sometimes appear composed while privately carrying the responsibility',
+    Aquarius: 'notice the rule behind a situation, resist expectations that do not make sense, and stay interested in people without automatically conforming to the group',
+    Pisces: 'notice atmosphere and unspoken feeling, resist reducing an experience to a rigid explanation, and sometimes understand an impression before they can put it into words',
+  };
+  return responses[sign] ?? getSignStyle(sign);
+}
+
+/** Personality interaction, rather than a task or a verdict. Canonical geometry is supplied by the caller. */
+export function getNatalAspectExpression(aspect: RankedAspect, stage: DevelopmentalStage = 'adult'): string {
+  const key = [aspect.a, aspect.b].sort().join('|');
+  const conjunction = aspect.aspect === 'conjunction';
+  const flowing = ['trine','sextile'].includes(aspect.aspect);
+  if (key === 'Moon|Saturn') return flowing
+    ? 'They may take emotional commitments seriously and find reassurance in consistency. Being dependable can coexist with a private need for care that they do not readily announce.'
+    : 'They may register a need for reassurance and immediately judge whether it is reasonable to show it. Composure can look like not needing much, while internally they care strongly about dependable support; the chart does not establish where that rule came from.';
+  if (key === 'Mars|Sun') return conjunction
+    ? 'They may experience a decision as something to act on, not simply discuss. Defending a preference can also feel like defending who they are, so directness may be noticeable even when they care about how others respond.'
+    : flowing ? 'They may translate a personal aim into action readily, while still choosing which disagreements deserve their effort.'
+    : 'They may care strongly about a direction yet feel impatient with the effort or opposition involved. The wish to be recognized and the way they assert themselves do not always land together.';
+  if (key === 'Mercury|Sun') return 'They may understand themselves through forming an explanation and giving their experience words. An idea can feel personal rather than detached, so being misunderstood may matter even when they do not show it immediately.';
+  if (key === 'Mercury|Venus') return 'They may hear how an explanation will affect another person while they are still forming it. Attention to tone can make their words considered, but an agreeable delivery does not mean there is no private disagreement.';
+  if (key === 'Moon|Venus' && !flowing && !conjunction) return 'They may want an interaction to feel pleasant while privately needing something different from what has been offered. What they accept outwardly may therefore reveal less than how the exchange feels afterward.';
+  if (key === 'Mars|Uranus') return conjunction
+    ? 'They may act decisively when a situation feels restrictive, resisting being managed even while wanting their choices to be understood. Quick initiative can be visible before the reasons behind it are explained.'
+    : flowing ? 'They may find an independent way to act without needing to reject every shared arrangement. Initiative and experimentation can reinforce each other.'
+    : 'They may want to follow through on a choice yet resist it when it starts to feel imposed. A sudden change of direction can reflect that tension rather than a lack of interest.';
+  if (key === 'Mercury|Pluto') return conjunction
+    ? 'They may listen for what is left unsaid, compare explanations closely, and keep thinking after a conversation ends. Wanting an accurate account can coexist with reluctance to reveal their own unfinished thoughts.'
+    : flowing ? 'They may stay with a complex subject and ask precise questions without needing to expose every private thought. Depth of attention can make a quiet response more substantial than it first appears.'
+    : 'They may want a clear explanation while remaining uncertain about what another person is leaving out. Their words can become more pointed when a subject matters deeply, even if they would rather keep the exchange measured.';
+  return synthesisFromRankedAspect(aspect, stage).aspectDynamic;
+}
+
 export function getHouseArena(house?: number | null): string {
   return house ? HOUSE_ARENA[house] ?? `House ${house}` : 'House not available';
 }

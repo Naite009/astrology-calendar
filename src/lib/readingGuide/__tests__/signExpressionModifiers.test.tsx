@@ -13,6 +13,19 @@ function chart(planets: Record<string,[string,number]>, rising='Virgo'): NatalCh
 const read=(c:NatalChart,stageOverride:'adult'|'teen'|'child'='adult')=>buildReadingGuide(c,{now:new Date('2026-10-11T12:00:00Z'),stageOverride}).practitioner;
 
 describe('Full-chart sign-expression contrasts',()=>{
+  it('explains Libra social perception alongside privacy and independent first reactions',()=>{
+    const r=read(chart({Sun:['Libra',20],Moon:['Libra',10],Mercury:['Libra',5],Mars:['Scorpio',8],Uranus:['Scorpio',9],Pluto:['Libra',11]},'Scorpio'));
+    const c=r.expressionContrasts.find(c=>c.sign==='Libra');
+    expect(c?.synthesis).toMatch(/competing viewpoints|unequal treatment/);
+    expect(c?.synthesis).toMatch(/private preparation/);
+    expect(c?.outside).toMatch(/House 1/);expect(c?.inside).toMatch(/House 12/);
+    expect(c?.synthesis).not.toMatch(/beauty|harmony|mind and intensity combine|drive and disruption combine/);
+    const ids=new Set(r.evidence.map(e=>e.id));for(const id of c?.evidenceIds ?? [])expect(ids.has(id)).toBe(true);
+  });
+  it('does not use an outer-to-outer sextile to override a personal sign expression',()=>{
+    const r=read({...chart({Sun:['Libra',20],Moon:['Libra',10],Pluto:['Libra',11],Neptune:['Sagittarius',11]},'Scorpio')});
+    expect(r.expressionContrasts.find(c=>c.sign==='Libra')?.modifiers.filter(m=>m.kind==='aspect').some(m=>m.evidenceIds.some(id=>/Neptune:Pluto/.test(id)))).toBe(false);
+  });
   it('explains private Leo identity without declaring an outgoing stereotype',()=>{
     const r=read(chart({Sun:['Leo',15]}));const c=r.expressionContrasts.find(c=>c.sign==='Leo');
     expect(c?.synthesis).toMatch(/private|behind the scenes/);

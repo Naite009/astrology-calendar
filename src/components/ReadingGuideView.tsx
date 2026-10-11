@@ -102,7 +102,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
                   exportedAt: new Date().toISOString(),
                   subject: guide.subject,
                   ageContext: guide.age,
-                  schemaVersion: 2,
+                   schemaVersion: guide.practitioner.schemaVersion,
                   placements: guide.placements,
                   walkthrough: guide.practitioner,
                 },
