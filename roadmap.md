@@ -1,5 +1,9 @@
 # Roadmap
 
+## Sign-expression contrasts
+- [x] Add conditional full-chart modifier synthesis and per-conclusion evidence to Chart Walkthrough and JSON.
+- [x] Verify private Leo, modified Libra, tight/wide contacts, ruler and configuration evidence, empty states, and saved Ava, Max, Harrison, and Karina output; 521 tests passed and automatic build OK.
+
 ## Practitioner Chart Walkthrough rebuild
 - [x] Replace the planet-by-planet presentation with evidence-ranked themes, ruler connections, tensions, configurations, integration, and practitioner questions.
 - [x] Preserve JSON parity; 515 regression tests and automatic builds pass. Verified saved Ava Kravitz, Max Levin, Harrison Bates, and Karina Client readings, JSON downloads, expanded evidence, and desktop/mobile rendering.

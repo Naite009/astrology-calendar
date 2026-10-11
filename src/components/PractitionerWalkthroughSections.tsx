@@ -52,6 +52,22 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
       {reading.chartRuler.modernNote && <p className="text-xs text-muted-foreground">{reading.chartRuler.modernNote}</p>}
       <EvidenceTrail ids={reading.chartRuler.evidenceIds} evidence={evidence} reasoning={reading.chartRuler.reasoning} />
     </section>}
+    {reading.expressionContrasts.length > 0 && <section className="space-y-5">
+      <h2 className="text-xl font-serif text-foreground">What changes the obvious expression</h2>
+      {reading.expressionContrasts.map(item => <article key={item.id} className="border-l-2 border-primary pl-5 space-y-3">
+        <h3 className="text-lg font-serif text-foreground">{item.title}</h3>
+        <p className="text-sm leading-relaxed text-foreground">{item.synthesis}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">Evidence: {item.bodies.map(body => evidence.get(`placement:${body}`)?.text).filter(Boolean).join('; ')}.</p>
+        <details className="space-y-3"><summary className="cursor-pointer text-xs font-medium text-primary">The modifiers, one layer at a time</summary>
+          <ul className="mt-3 space-y-4">{item.modifiers.map((modifier,index) => <li key={`${modifier.kind}:${index}`} className="space-y-2">
+            <p className="text-sm leading-relaxed text-foreground">{modifier.meaning}</p>
+            <EvidenceTrail ids={modifier.evidenceIds} evidence={evidence} />
+          </li>)}</ul>
+        </details>
+        <p className="text-xs text-primary">Ask: {item.question}</p>
+        <EvidenceTrail ids={item.evidenceIds} evidence={evidence} />
+      </article>)}
+    </section>}
     <section className="space-y-4"><h2 className="text-xl font-serif text-foreground">The themes that connect the chart</h2>{reading.themes.map((theme,index) => <ThemeSection key={theme.id} theme={theme} evidence={evidence} index={index} />)}</section>
     <section className="border-y border-border py-5 space-y-3">
       <h2 className="text-xl font-serif text-foreground">What comes first, what keeps going</h2>
