@@ -373,23 +373,26 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
   const bigThreePlacements = ['Sun','Moon','Ascendant'].flatMap(body => { const p=byBody.get(body); return p ? [p] : []; });
   const baseline = { synthesis: practitionerVoice(`${bigThree?.realLifeTranslation ?? identityExpression(bigThreePlacements)} ${chartRuler?.synthesis ?? ''} ${balance.synthesis}`,stage), evidenceIds:unique([...idsFor(bigThreePlacements),...(chartRuler?.evidenceIds ?? []),...balance.evidenceIds]) };
   const developmental = buildDevelopmentalSynthesis({placements, aspects:leadingAspects, ruler, configurations:selectedConfigurations, evidence, stage});
+  const usedDeepThreads = new Set<string>();
   const deepThemes = selectedThemes.map(theme => {
     const match = developmental.threads.map(thread => ({thread, overlap:theme.evidenceIds.filter(id => id.startsWith('aspect:') && thread.evidenceIds.includes(id)).length}))
-      .filter(item => item.overlap > 0).sort((a,b) => b.overlap-a.overlap)[0]?.thread;
+      .filter(item => item.overlap > 0 && !usedDeepThreads.has(item.thread.id)).sort((a,b) => b.overlap-a.overlap)[0]?.thread;
     if (!match) return theme;
-    return {...theme, title:match.title, synthesis:match.synthesis, gift:match.outside, tension:match.inside, examples:[], recognition:match.question,
-      integration:match.capacity, evidenceIds:unique([...theme.evidenceIds,...match.evidenceIds])};
+    usedDeepThreads.add(match.id);
+    return {...theme, title:match.title, synthesis:practitionerVoice(match.synthesis,stage), gift:practitionerVoice(match.outside,stage), tension:practitionerVoice(match.inside,stage), examples:[], recognition:personalVoice(match.question,stage),
+      integration:practitionerVoice(match.capacity,stage), evidenceIds:unique([...theme.evidenceIds,...match.evidenceIds])};
   });
   const fallbackThreads=[...deepThemes.map(t=>({text:`${t.title}: ${t.synthesis}`,evidenceIds:t.evidenceIds})),...(chartRuler?[{text:chartRuler.synthesis,evidenceIds:chartRuler.evidenceIds}]:[])];
-  const threads=[...developmental.threads.map(t=>({text:`${t.title}: ${t.synthesis} ${t.cost}`,evidenceIds:t.evidenceIds})),...fallbackThreads.filter(t=>!developmental.threads.some(d=>t.evidenceIds.some(id=>id.startsWith('aspect:') && d.evidenceIds.includes(id))))].slice(0,5);
+  const threads=[...developmental.threads.map(t=>({text:practitionerVoice(`${t.title}: ${t.synthesis} ${t.cost}`,stage),evidenceIds:t.evidenceIds})),...fallbackThreads.filter(t=>!developmental.threads.some(d=>t.evidenceIds.some(id=>id.startsWith('aspect:') && d.evidenceIds.includes(id))))].slice(0,5);
   const questions=unique(selectedThemes.map(t=>t.recognition)).slice(0,4).map(text=>({text,hypothesis:selectedThemes.find(t=>t.recognition===text)?.synthesis ?? '',evidenceIds:selectedThemes.find(t=>t.recognition===text)?.evidenceIds ?? []}));
   if(hiddenPatterns[0] && questions.length<5)questions.push({text:hiddenPatterns[0].check,hypothesis:hiddenPatterns[0].observation,evidenceIds:hiddenPatterns[0].evidenceIds});
-  const deepQuestions = developmental.threads.map(t=>({text:t.question,hypothesis:t.internalized || t.inside,evidenceIds:t.evidenceIds}));
+  const deepQuestions = developmental.threads.map(t=>({text:personalVoice(t.question,stage),hypothesis:practitionerVoice(t.internalized || t.inside,stage),evidenceIds:t.evidenceIds}));
+  const developmentalSections=developmental.sections.map(section=>({...section,conclusions:section.conclusions.map(c=>({...c,text:practitionerVoice(c.text,stage)}))}));
   const limitations=[...(!completeCusps?['Twelve valid stored house cusps are not available. House themes and house rulers are withheld; sign and degree contacts remain visible.']:[]),...(majors.length<10?[`Only ${majors.length} of the ten major planets are present. Counts and synthesis are incomplete.`]:[]),...(!chart.birthTime?['Birth time is unknown. Stored angles and houses need independent confirmation before use.']:[]),...(stage!=='adult'?['Life examples use the selected developmental level. Geometry, evidence, and rankings do not change with age.']:[])];
   const dominance=calculateNatalDominantPlanets(chart);
   const expressionContrasts = buildSignExpressionContrasts({placements, majorBodies:MAJORS, aspects:leadingAspects, ruler, rulerCondition:chartRuler?.condition, configurations:selectedConfigurations, evidence, balance})
     .map(item => ({...item, synthesis:practitionerVoice(item.synthesis,stage), modifiers:item.modifiers.map(modifier => ({...modifier,meaning:practitionerVoice(modifier.meaning,stage)}))}));
-  const result = sanitizeInterpretiveDeep({schemaVersion:4,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>first(t.text)).join(' '),signatures},baseline,chartRuler,themes:deepThemes,expressionContrasts,developmentalSections:developmental.sections,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:[...deepQuestions,...questions.filter(q=>!deepQuestions.some(d=>d.text===q.text))].slice(0,5)},methodology:[
+  const result = sanitizeInterpretiveDeep({schemaVersion:4,chartId:chart.id,evidence:[...evidence.values()],opening:{summary:threads.slice(0,2).map(t=>first(t.text)).join(' '),signatures},baseline,chartRuler,themes:deepThemes,expressionContrasts,developmentalSections,balance,configurations:selectedConfigurations,hiddenPatterns,closing:{threads,questions:[...deepQuestions,...questions.filter(q=>!deepQuestions.some(d=>d.text===q.text))].slice(0,5)},methodology:[
     'Developmental sections combine canonical primary contacts, actual house settings, and verified ruler destinations. Learned-rule descriptions are symbolic hypotheses, not childhood facts, family-history claims, diagnoses, or proof of unsafe conditions. Private houses alone never establish a difficult childhood. Flowing contacts describe resources rather than required defenses.',
     'Sign-expression contrasts require a verified private-house placement, tight primary modifying contact, traditional ruler difference, or tightly joined first-house cluster. They describe possibilities to ask about, not a measured mismatch. Wide contacts, retrograde motion alone, and unrelated outer planets do not establish a different personality.',
     'Opening signatures are ranked by traditional chart rulership, validated configurations, luminary and personal-planet involvement, angular houses, repeated house focus, and canonical aspect weight. These are app-defined reading priorities, not objective personality measurements.',
