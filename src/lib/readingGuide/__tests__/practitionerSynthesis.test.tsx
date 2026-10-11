@@ -37,6 +37,17 @@ describe('Practitioner Chart Walkthrough',()=>{
   expect(r.evidence.some(e=>e.id==='ruler:house10' && /Venus/.test(e.text))).toBe(true);
   expect(r.evidence.some(e=>e.kind==='rulership' && e.id.startsWith('dispositor:'))).toBe(true);
  });
+ it('connects MC and learning rulers and gives configurations a complete reasoning trail',()=>{
+   const r=reading();expect(r.chartRuler?.reasoning.join(' ')).toContain('MC ruler is Venus');
+   expect(r.themes.some(t=>t.reasoning.some(line=>line.includes('Cognitive profile')&&line.includes('House 3 intake')))).toBe(true);
+   expect(new Set(r.themes.map(t=>t.tryThis.behaviors[0])).size).toBe(r.themes.length);
+   for(const c of r.configurations)expect(c.reasoning.length).toBe(c.evidenceIds.filter(id=>id.startsWith('aspect:')).length);
+ });
+ it('does not leak angle fallback wording or broken object pronouns',()=>{
+   const c=fixture({Sun:['Virgo',29.56],Moon:['Aquarius',12],Mercury:['Libra',8],Venus:['Scorpio',4],Mars:['Cancer',26],Jupiter:['Leo',18],Saturn:['Aries',15],Uranus:['Gemini',5],Neptune:['Aries',3],Pluto:['Aquarius',3]},'Scorpio');
+   const text=JSON.stringify(reading(c,'child'));
+   expect(text).not.toMatch(/true to they|helps they|makes they|covers,|linked in this chart/);
+ });
  it('retains canonical wide aspect labels and down-weights them',()=>{
   const c=fixture({Sun:['Scorpio',15.2],Pluto:['Scorpio',25],Moon:['Leo',19],Mercury:['Scorpio',11.5],Saturn:['Aquarius',25]});
   const r=reading(c);for(const a of computeRankedAspects(c).filter(a=>a.isWide)){
