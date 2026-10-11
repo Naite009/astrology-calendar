@@ -515,6 +515,10 @@ const THIRD_HOUSE_RULER_NUDGE: Record<string, string> = {
   Pluto: "they learn best by going deep on one thing at a time",
 };
 
+/** Shared read-only access to the existing cognitive-profile vocabulary. */
+export function getCognitiveProfile(sign: string) { return MERCURY_COGNITIVE_PROFILE[sign] ?? null; }
+export function getThirdHouseIntake(sign: string) { return THIRD_HOUSE_CUSP_INTAKE[sign] ?? null; }
+
 // ── Rising-Filter Synthesis (Chart Ruler "Boss of the Chart") ───────────────
 // Each rising sign carries a stereotype that gets weaponized into "keyword astrology."
 // We name the stereotype only to ban it, then describe the actual nervous-system intent.

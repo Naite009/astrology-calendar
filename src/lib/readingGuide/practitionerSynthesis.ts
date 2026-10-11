@@ -12,6 +12,7 @@ import { buildTakeawayAction, actionText, type TakeawayAction } from '@/lib/inte
 import { analyzeSignVsDegree, formatDegreeMinutes, ZODIAC_ORDER } from '@/lib/aspects/outOfSign';
 import { sanitizeInterpretiveDeep } from '@/lib/interpretation/languagePolicy';
 import { applyStageVocabulary, type AgeStage } from './ageContext';
+import { getCognitiveProfile, getThirdHouseIntake } from '@/lib/childPortrait';
 import { calculateNatalDominantPlanets } from '@/lib/dominantPlanetsEngine';
 
 export interface WalkthroughEvidence {
@@ -50,6 +51,7 @@ export interface PractitionerConfiguration {
   release?: { longitude: number; sign: string; degree: number; house: number | null; occupiedBy: string[]; note: string };
   synthesis: string;
   gift: string;
+  reasoning: string[];
   integration: string;
   tryThis: TakeawayAction;
   weight: number;
@@ -84,6 +86,20 @@ const HOUSE_TITLES: Record<number, string> = {
   10: 'Being known for something that matters', 11: 'Belonging without disappearing into the group',
   12: 'The life that happens out of view',
 };
+const RELEASE_PRACTICE: Record<string, string> = {
+ Aries: 'Choose one small action you can take without waiting for everyone to agree. Name the limit before acting.',
+ Taurus: 'Try a slower pace: make or eat something with attention, enjoy music, or build one small thing patiently, without measuring its usefulness.',
+ Gemini: 'Write two possible explanations for the situation. Ask one question that could show which one fits.',
+ Cancer: 'Arrange one familiar, quiet activity and ask for a specific kind of care, such as a short conversation without advice.',
+ Leo: 'Make or share one thing you enjoy, without checking whether it impresses anyone. Notice what you like about it yourself.',
+ Virgo: 'Choose one practical step and define what finished means. Leave the larger problem alone while completing that step.',
+ Libra: 'State your own preference, invite the other person to state theirs, and agree on one small change that serves both.',
+ Scorpio: 'Separate what is known from what is guessed. Choose one honest question and one clear limit around what is private.',
+ Sagittarius: 'Step back and write the larger purpose in one sentence. Try a different setting or new source of information before deciding.',
+ Capricorn: 'Set one realistic limit on time or effort. Choose a small commitment that can be kept rather than a bigger promise.',
+ Aquarius: 'List one rule that is not serving the situation. Test a different method on one low-stakes task and check its effect.',
+ Pisces: 'Take a brief pause with music, drawing, or quiet. Then write what is felt separately from what has been agreed.',
+};
 const SIGN_BEHAVIOR: Record<string, string> = {
   Aries: 'make a first move and ask the direct question', Taurus: 'take time, check what is tangible, and stay with a choice',
   Gemini: 'compare answers and try another way of explaining', Cancer: 'check who feels included and whether care is mutual',
@@ -106,7 +122,7 @@ const houseNumbers = (items: CoreBodyPlacement[]) => unique(items.flatMap(p => p
 const placementLine = (p: CoreBodyPlacement) => `${p.label}${p.isRetrograde && p.body !== 'Sun' && p.body !== 'Moon' && p.body !== 'Ascendant' && p.body !== 'MC' ? ' ℞' : ''} ${formatDegreeMinutes(p.degree)} ${p.sign}${p.house ? `, House ${p.house}` : ''}`;
 const aspectId = (a: RankedAspect) => `aspect:${[a.a, a.b].sort().join(':')}:${a.aspect}`;
 const personalVoice = (text: string, stage: AgeStage) => applyStageVocabulary(text, stage);
-const practitionerVoice = (text: string, stage: AgeStage) => personalVoice(text, stage)
+const practitionerVoice = (text: string, stage: AgeStage) => personalVoice(text, stage).replace(/\b(helps?|supports?|allows?|asks?|sees?|expects?|from|to|for|with|about) you\b/gi, '$1 them')
   .replace(/\byou are\b/gi, 'they are').replace(/\byou have\b/gi, 'they have').replace(/\byou do\b/gi, 'they do')
   .replace(/\byou feel\b/gi, 'they feel').replace(/\byou want\b/gi, 'they want').replace(/\byou need\b/gi, 'they need')
   .replace(/\byou know\b/gi, 'they know').replace(/\byou get\b/gi, 'they get').replace(/\byou say\b/gi, 'they say')
@@ -173,6 +189,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const id = add({ id: `dispositor:${p.body}`, kind: 'rulership', text: `${p.body} in ${p.sign} is traditionally disposed by ${placementLine(host)}${host.body === p.body ? ' (in its own sign)' : ''}.`, bodies: unique([p.body, host.body]), houses: houseNumbers([p, host]), tier: 'primary' });
     return { id, p: host };
   };
+  const mcRuler = rulership(10);
   const chartRuler = ruler && asc && rulerInfo ? (() => {
     const root = rulership(1);
     const host = dispositor(ruler);
@@ -180,13 +197,14 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const syn = rulerLinks[0] ? psychologyFor(rulerLinks[0]) : null;
     const condition = getEssentialDignity(ruler.body, ruler.sign);
     const modern = rulerInfo.modern ? byBody.get(rulerInfo.modern) : null;
-    const rulerEvidence = unique([...idsFor([asc, ruler]), ...(root ? [root.id] : []), ...rulerLinks.map(aspectId), ...(host ? [host.id] : [])]);
+    const rulerEvidence = unique([...idsFor([asc, ruler]), ...(root ? [root.id] : []), ...rulerLinks.map(aspectId), ...(host ? [host.id] : []), ...(mcRuler ? [mcRuler.id] : [])]);
     const reasoning = [
+      ...(mcRuler ? [`The MC ruler is ${mcRuler.p.body} in ${mcRuler.p.sign}${mcRuler.p.house ? `, House ${mcRuler.p.house}` : ''}. Public direction connects to ${getHouseLivedInterpretation(mcRuler.p.house)?.attention ?? 'the sign response shown here'}${mcRuler.p.body === ruler.body ? ', and uses the same planet as the chart ruler' : ''}.`] : []),
       `${asc.sign} rising is the first approach; ${ruler.body} carries that approach into ${lived?.focus ?? 'choices whose house cannot yet be verified'}.`,
       `${ruler.body} in ${ruler.sign} may ${SIGN_BEHAVIOR[ruler.sign]}. ${syn ? practitionerVoice(first(syn.aspectDynamic), stage) : 'Its placement matters without inventing an aspect.'}`,
       ...(host && host.p.body !== ruler.body ? [`The ruler's dispositor is ${host.p.body} in ${host.p.sign}${host.p.house ? `, House ${host.p.house}` : ''}. This links the initial approach to ${getHouseLivedInterpretation(host.p.house)?.focus ?? 'that planet’s choices'}, rather than reading the rising sign on its own.`] : []),
     ];
-    return { title: `${ruler.body}: how ${asc.sign} rising finds a direction`, synthesis: practitionerVoice(`${reasoning.slice(0, 2).join(' ')}${host && host.p.body !== ruler.body ? ` The dispositor adds a second setting: ${getHouseLivedInterpretation(host.p.house)?.attention ?? host.p.sign}.` : ''}`, stage), condition: `Traditional essential dignity: ${condition.toLowerCase()}.${ruler.isRetrograde ? ` ${ruler.body} is retrograde; this is a motion fact, not a defect or a prediction.` : ''} Dignity describes the sign setting, not a rating of the person.`, reasoning, evidenceIds: rulerEvidence, ...(modern ? { modernNote: `${placementLine(modern)} is the modern co-ruler, not a replacement for ${ruler.body}.`, evidenceIds: unique([...rulerEvidence, ...idsFor([modern])]) } : {}) };
+    return { title: `${ruler.body}: how ${asc.sign} rising finds a direction`, synthesis: practitionerVoice(`${reasoning.filter(line => !line.startsWith('The MC ruler')).slice(0, 2).join(' ')}${host && host.p.body !== ruler.body ? ` The dispositor adds a second setting: ${getHouseLivedInterpretation(host.p.house)?.attention ?? host.p.sign}.` : ''}`, stage), condition: `Traditional essential dignity: ${condition.toLowerCase()}.${ruler.isRetrograde ? ` ${ruler.body} is retrograde; this is a motion fact, not a defect or a prediction.` : ''} Dignity describes the sign setting, not a rating of the person.`, reasoning, evidenceIds: rulerEvidence, ...(modern ? { modernNote: `${placementLine(modern)} is the modern co-ruler, not a replacement for ${ruler.body}.`, evidenceIds: unique([...rulerEvidence, ...idsFor([modern])]) } : {}) };
   })() : null;
 
   // Retain detector membership only when ALL required edges exist at the detector's own orb limits.
@@ -230,13 +248,13 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const psychological = psychologyFor(linked);
     const arenas = unique(ps.map(p => getHouseLivedInterpretation(p.house)?.focus).filter((x): x is string => Boolean(x)));
     const integration = release
-      ? `${release.sign === 'Taurus' ? 'Try a slower pace: make or eat something with attention, enjoy music, or build one small thing patiently, without measuring its usefulness.' : `Try the balancing sign as an experiment: ${SIGN_BEHAVIOR[release.sign]}.`}${release.house === 5 ? ' Make space for play or creative work with no required result.' : release.house ? ` Apply it around ${getHouseLivedInterpretation(release.house)?.attention}.` : ''} This gives ${apex ?? 'the apex'} another way to handle the pull between ${linked.a} and ${linked.b}, rather than repeating the same response.`
+      ? `${RELEASE_PRACTICE[release.sign]}${release.house === 5 ? ' Make space for play or creative work with no required result.' : release.house ? ` Apply it around ${getHouseLivedInterpretation(release.house)?.attention}.` : ''} This gives ${apex ?? 'the apex'} another way to handle the pull between ${linked.a} and ${linked.b}, rather than repeating the same response.`
       : name === 'Grand Trine' ? 'Choose one real task that uses all three functions. Check the result with another person rather than assuming an easy first attempt needs no revision.'
       : name === 'Yod' ? `Change one small part of the plan, then check whether ${apex ?? 'the focus planet'} can work with the two base functions. Adjust the method rather than judging the person.`
       : 'Name the two competing needs, set one workable limit for each, and use the supportive contacts to test a small shared solution.';
     configurations.push({ id:key,name,bodies,evidenceIds:unique([patternId,...idsFor(ps),...edges.map(aspectId)]),apex,release,
       synthesis: practitionerVoice(`${first(psychological.aspectDynamic)} ${apexP ? `${apexP.body} is where the linked needs meet, often through ${getHouseLivedInterpretation(apexP.house)?.attention ?? 'its choices'}.` : `The same functions connect across ${arenas.join('; ') || 'the signs shown in the evidence'}.`} ${name === 'Grand Trine' ? 'A response may come easily enough that the person does not notice the skill they are using.' : name === 'Yod' ? 'The base offers a workable resource, while the two quincunxes ask for different adjustments at the focus.' : 'Read the complete circuit, not just one hard contact as a verdict about character.'}`,stage),
-      gift: practitionerVoice(first(psychological.whenIntegrated),stage),integration:personalVoice(integration,stage),tryThis:buildTakeawayAction(integration,{stage,category:release ? 'rest' : undefined}),
+      gift: practitionerVoice(first(psychological.whenIntegrated),stage),reasoning: edges.map(e => `${e.a} ${e.aspect} ${e.b} (${e.orb.toFixed(2)}° orb${e.isWide ? ', wide' : ''}) connects ${BODY_NEED[e.a] ?? e.a} with ${BODY_NEED[e.b] ?? e.b}.`),integration:personalVoice(integration,stage),tryThis:buildTakeawayAction(integration,{stage,category:release ? 'rest' : undefined}),
       weight:(tier === 'primary' ? 96 : 50) + (bodies.some(b => CENTRAL.has(b)) ? 5 : 0) - edges.filter(e => e.isWide).length * 4,tier });
   }
   configurations.sort((a,b) => b.weight-a.weight);
@@ -262,7 +280,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     const host=dispositor(lead);
     const repeated=majors.filter(p=>p.sign===lead.sign);
     const involved=unique([...ps,...(other?[other]:[]),...(hr?[hr.p]:[]),...(host?[host.p]:[])]);
-    const themeEvidence=unique([...idsFor(involved),...(primaryLink?[aspectId(primaryLink)]:[]),...(hr?[hr.id]:[]),...(host?[host.id]:[])]);
+    let themeEvidence=unique([...idsFor(involved),...(primaryLink?[aspectId(primaryLink)]:[]),...(hr?[hr.id]:[]),...(host?[host.id]:[])]);
     const funcs=ps.map(p=>`${p.body} (${getPsychologicalFunction(p.body)?.shortFunction.toLowerCase().replace(/&/g,'and') ?? 'its own function'})`);
     const arenaOther=other?.house && other.house!==house ? getHouseLivedInterpretation(other.house) : null;
     const tension=primaryLink ? `One part may want to ${BODY_NEED[primaryLink.a]}, while another needs to ${BODY_NEED[primaryLink.b]}. ${first(psychology?.watchFor ?? '')}`
@@ -275,6 +293,17 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
       ...(ruler && involved.some(p=>p.body===ruler.body)?[`${ruler.body} is the traditional chart ruler, so this also modifies how the rising sign enters the situation.`]:[]),
       ...(repeated.length>=3?[`${lead.sign} repeats through ${repeated.map(p=>p.body).join(', ')}. The same choice style appears in several functions, but does not erase their differences.`]:[])];
     const integrationPattern=psychology ? psychology.watchFor : `Ask “${lived.question}” before agreeing to one more demand. Choose one small action that serves the need rather than only meeting an outside expectation.`;
+    const mercury = involved.find(p => p.body === 'Mercury');
+    if (mercury) {
+      const third = rulership(3);
+      const profile = getCognitiveProfile(mercury.sign);
+      const cusp = chart.houseCusps?.house3;
+      const intake = completeCusps && cusp ? getThirdHouseIntake(cusp.sign) : null;
+      if (profile && third && intake) {
+        reasoning.push(`Cognitive profile, ${profile.label}: the person may ${profile.processing}. A possible blocker is ${profile.blocker}. Try this delivery: ${profile.application}. House 3 intake: ${intake}. Its ruler, ${third.p.body}, in ${third.p.sign}${third.p.house ? `, House ${third.p.house}` : ''}, adds a way to ${SIGN_BEHAVIOR[third.p.sign]}. These are prompts to check, not fixed learning limits.`);
+        themeEvidence = unique([...themeEvidence,third.id,`placement:${third.p.body}`]);
+      }
+    }
     const action=buildTakeawayAction(integrationPattern,{stage,context:synthesis});
     const integration=`${actionText(action)} This tests the balance between ${primaryLink ? `${primaryLink.a} and ${primaryLink.b}` : `${lead.body}'s need and the demands in this house`} in an ordinary situation.`;
     themes.push({id:`theme:house${house}`,title:HOUSE_TITLES[house],question:lived.question,synthesis:practitionerVoice(synthesis,stage),gift:practitionerVoice(primaryLink?`The same link can help the person ${BODY_NEED[primaryLink.a]} while making room to ${BODY_NEED[primaryLink.b]}. ${first(psychology?.howThisCanShowUp[0] ?? '')}`:`This can build skill in ${lived.focus}: ${lived.othersNotice}.`,stage),tension:practitionerVoice(tension,stage),
@@ -337,6 +366,7 @@ export function buildPractitionerWalkthrough(chart: NatalChart, guide: GuideInpu
     'Wide aspects use the shared lower-weight rule (7° or 75% of their allowed orb). Nodes and Chiron stay secondary; the automatic nodal opposition is never added as evidence.',
     'Traditional sign dispositors and house rulers are used. Modern co-rulers are named separately. Three or more major planets in one house is this app’s house-concentration convention.',
     dominance.methodologyNote,
-    'Interpretations are hypotheses to check with the client, not biography, diagnosis, or predictions. Expecting respect, cooperation, and kindness in a home is reasonable; this is not the same as relying on children for self-worth.',
+    'Interpretations are hypotheses to check with the client, not biography, diagnosis, or predictions.',
+    ...(selectedThemes.some(t => ['theme:house4','theme:house5'].includes(t.id)) ? ['Expecting respect, cooperation, and kindness in a home is reasonable. This is not the same as relying on children for self-worth.'] : []),
   ],limitations} satisfies PractitionerWalkthrough);
 }

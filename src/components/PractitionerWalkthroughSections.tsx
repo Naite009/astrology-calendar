@@ -10,7 +10,7 @@ function EvidenceTrail({ ids, evidence, reasoning = [] }: { ids: string[]; evide
       <ul className="space-y-2">{lines.map(item => <li key={item.id} className="text-xs leading-relaxed text-muted-foreground break-words">
         <span className="text-foreground">{item.text}</span>
         {item.tier === 'secondary' && <span className="ml-1 text-primary">Secondary evidence.</span>}
-        {item.layers && <ul className="mt-1 space-y-1 border-l border-border pl-3">{item.layers.slice(2).map(line => <li key={line}>{line}</li>)}</ul>}
+        {item.layers && <ul className="mt-1 space-y-1 border-l border-border pl-3">{item.layers.map(line => <li key={line}>{line}</li>)}</ul>}
       </li>)}</ul>
       {reasoning.length > 0 && <div className="space-y-2 border-t border-border pt-3"><p className="text-[10px] uppercase tracking-widest text-primary">How the pieces connect</p>{reasoning.map(line => <p key={line} className="text-xs leading-relaxed text-foreground">{line}</p>)}</div>}
     </div>
@@ -67,7 +67,7 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
         <p className="text-sm leading-relaxed text-foreground">{pattern.synthesis}</p><p className="text-xs leading-relaxed text-muted-foreground">{pattern.gift}</p>
         {pattern.release && <p className="text-xs leading-relaxed text-primary">Symbolic balancing point: {pattern.release.degree.toFixed(2)}° {pattern.release.sign}{pattern.release.house ? `, House ${pattern.release.house}` : ''}. {pattern.release.note}</p>}
         <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">What helps</p><p className="text-sm leading-relaxed text-foreground">{pattern.integration}</p><TryThisAction action={pattern.tryThis} /></div>
-        <EvidenceTrail ids={pattern.evidenceIds} evidence={evidence} />
+        <EvidenceTrail ids={pattern.evidenceIds} evidence={evidence} reasoning={pattern.reasoning} />
       </article>)}
     </section>}
     {reading.hiddenPatterns.length > 0 && <section className="space-y-4"><h2 className="flex items-center gap-2 text-xl font-serif text-foreground"><Search className="h-4 w-4 text-primary" /> What the client may not notice</h2>{reading.hiddenPatterns.map(item => <article key={item.title} className="border-l-2 border-border pl-5 space-y-3"><h3 className="text-sm font-medium text-foreground">{item.title}</h3><p className="text-sm leading-relaxed text-foreground">{item.observation}</p><p className="text-xs text-primary">Ask: {item.check}</p><EvidenceTrail ids={item.evidenceIds} evidence={evidence} /></article>)}</section>}

@@ -34,7 +34,7 @@ describe('Practitioner Chart Walkthrough',()=>{
  it('names the traditional chart ruler, condition, MC ruler, and dispositors',()=>{
   const r=reading();expect(r.chartRuler?.title).toContain('Saturn');
   expect(r.chartRuler?.condition).toContain('domicile');
-  expect(r.evidence.some(e=>e.id==='ruler:house10' && /Mars/.test(e.text))).toBe(true);
+  expect(r.evidence.some(e=>e.id==='ruler:house10' && /Venus/.test(e.text))).toBe(true);
   expect(r.evidence.some(e=>e.kind==='rulership' && e.id.startsWith('dispositor:'))).toBe(true);
  });
  it('retains canonical wide aspect labels and down-weights them',()=>{
@@ -51,7 +51,7 @@ describe('Practitioner Chart Walkthrough',()=>{
   expect(t?.evidenceIds.filter(id=>id.startsWith('aspect:'))).toHaveLength(3);
  });
  it('keeps a mathematically incomplete kite out of the reading',()=>{
-  const c=fixture({Sun:['Aries',0],Moon:['Leo',7],Mars:['Sagittarius',0],Jupiter:['Libra',0]});
+  const c=fixture({Sun:['Aries',0],Mercury:['Leo',7],Mars:['Sagittarius',0],Jupiter:['Libra',0]});
   expect(reading(c).configurations.some(c=>c.name==='Kite')).toBe(false);
  });
  it('recognizes valid grand trines, kites, crosses, rectangles, and yods',()=>{
