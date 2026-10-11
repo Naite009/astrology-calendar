@@ -38,7 +38,7 @@ describe('Practitioner Chart Walkthrough',()=>{
  });
  it('exports a distinct theme-led structure with resolvable exact evidence',()=>{
   const r=reading(); const evidence=new Map(r.evidence.map(e=>[e.id,e]));
-   expect(r.schemaVersion).toBe(3); expect(r.chartId).toBe(CHART.id);
+    expect(r.schemaVersion).toBe(4); expect(r.chartId).toBe(CHART.id);
   expect(r.opening.signatures.length).toBeGreaterThanOrEqual(3);expect(r.opening.signatures.length).toBeLessThanOrEqual(6);
   expect(r.themes.length).toBeGreaterThanOrEqual(3);
   for(const item of [...r.opening.signatures,...r.themes,...r.configurations,...r.hiddenPatterns,...r.closing.threads,...r.closing.questions]) {

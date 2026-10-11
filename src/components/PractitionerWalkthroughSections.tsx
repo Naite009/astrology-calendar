@@ -27,7 +27,7 @@ function ThemeSection({ theme, evidence, index }: { theme: PractitionerTheme; ev
     </div>
     <ul className="list-disc pl-4 space-y-1 text-xs leading-relaxed text-muted-foreground">{theme.examples.map(line => <li key={line}>{line}</li>)}</ul>
     <div className="border-t border-border/60 pt-3"><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Recognition check</p><p className="text-sm text-foreground">{theme.recognition}</p></div>
-    <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">How the ruler chain changes the meaning</p><p className="text-sm leading-relaxed text-foreground">{theme.integration}</p></div>
+    <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">The capacity and its limits</p><p className="text-sm leading-relaxed text-foreground">{theme.integration}</p></div>
   </article>;
 }
 
@@ -52,6 +52,15 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
       {reading.chartRuler.modernNote && <p className="text-xs text-muted-foreground">{reading.chartRuler.modernNote}</p>}
       <EvidenceTrail ids={reading.chartRuler.evidenceIds} evidence={evidence} reasoning={reading.chartRuler.reasoning} />
     </section>}
+    {reading.developmentalSections.map(section => <section key={section.id} className="space-y-5 border-t border-border pt-6">
+      <header className="space-y-2"><h2 className="text-xl font-serif text-foreground">{section.title}</h2>{section.framing && <p className="text-xs leading-relaxed text-muted-foreground">{section.framing}</p>}</header>
+      {section.conclusions.map(item => <article key={item.id} className="space-y-3 border-l-2 border-primary pl-5">
+        <h3 className="text-base font-medium text-foreground">{item.title}</h3>
+        <div className="space-y-2">{item.evidenceIds.flatMap(id => { const line=evidence.get(id); return line ? [<p key={id} className="text-xs leading-relaxed text-muted-foreground">{line.text}</p>] : []; })}</div>
+        <p className="text-sm leading-relaxed text-foreground">{item.text}</p>
+        <EvidenceTrail ids={item.evidenceIds} evidence={evidence} />
+      </article>)}
+    </section>)}
     {reading.expressionContrasts.length > 0 && <section className="space-y-5">
       <h2 className="text-xl font-serif text-foreground">What changes the obvious expression</h2>
       {reading.expressionContrasts.map(item => <article key={item.id} className="border-l-2 border-primary pl-5 space-y-3">
@@ -90,7 +99,7 @@ export function PractitionerWalkthroughSections({ reading }: { reading: Practiti
     {reading.hiddenPatterns.length > 0 && <section className="space-y-4"><h2 className="flex items-center gap-2 text-xl font-serif text-foreground"><Search className="h-4 w-4 text-primary" /> What the client may not notice</h2>{reading.hiddenPatterns.map(item => <article key={item.title} className="border-l-2 border-border pl-5 space-y-3"><h3 className="text-sm font-medium text-foreground">{item.title}</h3><p className="text-sm leading-relaxed text-foreground">{item.observation}</p><p className="text-xs text-primary">Ask: {item.check}</p><EvidenceTrail ids={item.evidenceIds} evidence={evidence} /></article>)}</section>}
     <section className="border-t-2 border-primary pt-6 space-y-5">
       <header><p className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-primary"><MessageCircle className="h-4 w-4" /> Practitioner summary</p><h2 className="mt-2 text-xl font-serif text-foreground">If I were reading this chart for the client, I would keep coming back to...</h2></header>
-      <ol className="space-y-4">{reading.closing.threads.map((thread,index) => <li key={thread.text} className="text-sm leading-relaxed text-foreground space-y-2"><p><span className="mr-2 text-primary">{index+1}.</span>{thread.text}</p><EvidenceTrail ids={thread.evidenceIds} evidence={evidence} /></li>)}</ol>
+      <ol className="space-y-4">{reading.closing.threads.map((thread,index) => <li key={thread.text} className="text-sm leading-relaxed text-foreground space-y-2"><p><span className="mr-2 text-primary">{index+1}.</span>{thread.text}</p><ul className="space-y-1">{thread.evidenceIds.flatMap(id => { const line=evidence.get(id); return line ? [<li key={id} className="text-xs leading-relaxed text-muted-foreground">{line.text}</li>] : []; })}</ul><EvidenceTrail ids={thread.evidenceIds} evidence={evidence} /></li>)}</ol>
       <div className="space-y-3"><h3 className="text-[10px] uppercase tracking-widest text-primary">Client questions worth asking</h3><ul className="space-y-4 text-sm text-foreground">{reading.closing.questions.map(q => <li key={q.text} className="space-y-2"><p>{q.text}</p><details><summary className="cursor-pointer text-xs text-primary">Chart hypothesis behind this question</summary><p className="mt-2 text-xs leading-relaxed text-muted-foreground">{q.hypothesis}</p></details><EvidenceTrail ids={q.evidenceIds} evidence={evidence} /></li>)}</ul></div>
     </section>
     <details className="border-t border-border pt-4"><summary className="cursor-pointer text-xs text-muted-foreground">Reading priorities and limits</summary><div className="mt-3 space-y-2">{reading.methodology.map(line => <p key={line} className="text-xs leading-relaxed text-muted-foreground">{line}</p>)}</div></details>
