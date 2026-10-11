@@ -70,4 +70,16 @@ describe('Developmental practitioner synthesis',()=>{
   it('produces distinct supported central hypotheses instead of one fixed personality story',()=>{
     expect(read(saturn).developmentalSections.find(s=>s.id==='contradiction')?.conclusions[0]?.id).not.toEqual(read(modifiedLibra).developmentalSections.find(s=>s.id==='contradiction')?.conclusions[0]?.id);
   });
+  it('builds combined private-visible signatures for signs other than Libra and preserves actual angular houses',()=>{
+    const r=read(fixture({Sun:['Leo',20],Moon:['Leo',10],Mercury:['Leo',5],Mars:['Virgo',8],Uranus:['Virgo',9]},'Virgo'));
+    const center=r.developmentalSections.find(s=>s.id==='contradiction')?.conclusions[0];
+    expect(center?.text).toMatch(/Repeated Leo functions/);
+    expect(center?.text).toMatch(/House 12/);
+    expect(center?.text).toMatch(/House 1/);
+    expect(center?.text).not.toMatch(/Libra|both sides/);
+    const tenth=read(fixture({Sun:['Libra',20],Moon:['Libra',10],Mars:['Leo',8],Uranus:['Leo',9]},'Scorpio'));
+    const internal=tenth.developmentalSections.find(s=>s.id==='internalized')?.conclusions[0];
+    expect(internal?.text).toMatch(/House 10/);
+    expect(internal?.text).not.toMatch(/first-house functions/);
+  });
 });
