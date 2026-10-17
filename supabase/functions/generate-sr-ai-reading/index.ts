@@ -524,7 +524,7 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-4-argon",
+        model: "google/gemini-3.1-pro-preview",
         messages: [
           { role: "system", content: withInterpretationStandard(`${systemPrompt}\n${repairRules}`, { fullChart: false }) },
           { role: "user", content: userPrompt },

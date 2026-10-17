@@ -13,4 +13,4 @@
 - Sign-expression contrasts must consume canonical practitioner evidence through `readingGuide/signExpressionModifiers.ts`, require specific primary modifiers, and retain per-conclusion evidence IDs; why: prevents sign stereotypes, unrelated outer-planet claims, and UI/export drift without changing natal math.
 
 - Solar Return UI and JSON must share `solarReturnEvidenceSynthesis.ts` and `solarReturnProvenance.ts`, with schema validation from the function-shared validator; why: chart identity, separate technique roles, and derived-versus-stored metadata stay consistent without corrupting machine fields.
-- Lunar phase classification must use `lunarPhaseConvention.ts` with centered eight-phase sectors; why: natal, return, and progression labels cannot disagree for the same angle.
+- Lunar phase labels must use `lunarPhaseConvention.ts`: astrological cycle phase uses the labelled Rudhyar 0-degree-start sectors, and the centred astronomical appearance applies only to a real sky Moon, never progressions; why: cycle phase and visible appearance are different facts and must not be conflated.

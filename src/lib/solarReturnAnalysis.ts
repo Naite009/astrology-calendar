@@ -1,4 +1,4 @@
-import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS } from './lunarPhaseConvention';
+import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
@@ -361,6 +361,10 @@ export interface SRMoonPhase {
   description: string;
   isEclipse: boolean;
   phaseAngle: number;
+  /** Named convention used for `phase` (astrological cycle phase). */
+  convention?: string;
+  /** What the real sky Moon looks like at this angle (centred sectors). */
+  astronomicalAppearance?: string;
 }
 
 export interface SRStellium {
@@ -1119,7 +1123,7 @@ export const analyzeSolarReturn = (
         if (overlapWithLotY) overlapSystems.push('the natal chart ruler (natal Ascendant ruler)');
         if (overlapWithSRAsc) overlapSystems.push('SR Ascendant ruler');
         const overlapDescription = overlapSystems.length > 0
-          ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
+          ? `${timeLord} is both your profection lord and your ${overlapSystems.join(' and ')}. When ${overlapSystems.length > 1 ? 'three' : 'two'} techniques point to the same planet, its themes are worth weighting more heavily, though that is an interpretive convention rather than proof.`
           : '';
 
         const ordLocal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
@@ -1128,7 +1132,7 @@ export const analyzeSolarReturn = (
           timeLord, houseNumber, timeLordSRHouse, timeLordSRSign, timeLordSRRetro,
         );
         const profFocusText = profectionHouseThemes[houseNumber] || 'this year\'s themes';
-        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year — ${profFocusText} are the year's primary focus. ${timeLord} is your Time Lord, currently in the SR ${srHouseText}. ${synthesis}`;
+        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year, so ${profFocusText} are a primary focus. ${timeLord} is your Time Lord, currently in the SR ${srHouseText}. ${synthesis}`;
 
         profectionYear = {
           age,
@@ -1176,7 +1180,7 @@ export const analyzeSolarReturn = (
           }
         }
       }
-      moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100 };
+      moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100, convention: LUNAR_PHASE_CONVENTION, astronomicalAppearance: astronomicalAppearance(diff) };
     }
   }
 
@@ -1296,8 +1300,8 @@ export const analyzeSolarReturn = (
 
   // Modality-Moon phase bridging logic
   const currentPhase = moonPhase?.phase || '';
-  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous'];
-  const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous'];
+  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous', 'Disseminating'];
+  const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Crescent', 'Gibbous'];
   const isClosingMoon = closingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
   const isOpeningMoon = openingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
 

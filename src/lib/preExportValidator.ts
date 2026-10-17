@@ -85,6 +85,20 @@ const EXPORT_PLANET_NAMES = [
   'Chiron', 'North Node', 'South Node', 'Juno', 'Lilith', 'Ascendant', 'Descendant', 'Midheaven', 'IC',
 ];
 
+/**
+ * Machine values (ISO dates/timestamps, URLs, emails, enum/identifier tokens,
+ * numbers) are never prose and must pass through byte-for-byte.
+ */
+export const isMachineString = (text: string): boolean => {
+  const t = text.trim();
+  if (!t) return true;
+  if (/^\d{4}-\d{2}-\d{2}([T ][\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/.test(t)) return true;
+  if (/^(https?:\/\/|mailto:|data:)/i.test(t)) return true;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t)) return true;
+  if (/^[A-Za-z0-9_./:+-]+$/.test(t)) return true; // single token: enum, id, slug, number
+  return !/[a-z]{2,}\s+[a-z]{2,}/i.test(t); // prose needs at least two words
+};
+
 const splitExportSentences = (text: string): string[] =>
   text
     .replace(/([.!?])\s+([A-Z][a-z]+\s+(?:conjunction|conjunct|opposition|opposite|square|trine|sextile|quincunx|inconjunct|semisextile|semisquare|sesquisquare|sesquiquadrate|quintile|biquintile)\s+[A-Z])/g, '$1\n$2')
@@ -136,7 +150,7 @@ const sanitizeReadingForExport = (reading: { sections?: unknown[] }) => {
   const firstSeenSentence = new Map<string, string>();
 
   const cleanField = (text: string, sectionTitle: string): string => {
-    if (!text || text.length < 20) return text;
+    if (!text || text.length < 20 || isMachineString(text)) return text;
     const sentences = splitExportSentences(text);
     const kept: string[] = [];
     let lastDropped = false;

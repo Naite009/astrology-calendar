@@ -1,4 +1,4 @@
-import { lunarPhaseIndex, LUNAR_PHASE_NAMES } from './lunarPhaseConvention';
+import { astronomicalAppearanceIndex as lunarPhaseIndex, ASTRONOMICAL_APPEARANCE_NAMES as LUNAR_PHASE_NAMES } from './lunarPhaseConvention';
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
 import { getAccurateAsteroidPosition, getAsteroidPosition, type AsteroidBody } from './asteroidEphemeris';

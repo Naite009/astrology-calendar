@@ -24,13 +24,16 @@ export interface LunarFlow {
 const MOON_PHASE_THEMES: Record<string, { theme: string; reset: boolean }> = {
   'New Moon':        { theme: 'A year of new emotional beginnings. Your feelings are fresh and uncertain — trust the instinct to plant seeds rather than harvest.', reset: true },
   'Waxing Crescent': { theme: 'Emerging emotional clarity after a quiet period. This year you start to see what you want and take tentative steps toward it.', reset: true },
-  'First Quarter':   { theme: 'Emotional tension that demands action. This year you can\'t stay comfortable — feelings push you to make decisions and commit.', reset: false },
+  'First Quarter':   { theme: 'Plans may ask for concrete decisions. Friction can sharpen priorities rather than signal failure.', reset: false },
   'Waxing Gibbous':  { theme: 'Building emotional momentum. Your feelings gain structure and direction — this is a year of refinement, not revolution.', reset: false },
-  'Full Moon':       { theme: 'Maximum emotional visibility and intensity. Whatever you feel this year, everyone sees it. Relationships peak or complete.', reset: false },
+  'Full Moon':       { theme: 'Results and other people\'s responses may be easier to see. Relationships can act as a mirror.', reset: false },
   'Waning Gibbous':  { theme: 'Sharing what you\'ve learned emotionally. This year you teach, mentor, or integrate hard-won emotional wisdom.', reset: false },
-  'Last Quarter':    { theme: 'Releasing emotional patterns that no longer serve you. A year of letting go — relationships, habits, or identities reach their expiration.', reset: true },
+  'Last Quarter':    { theme: 'Releasing emotional patterns that no longer serve you. Some habits or commitments may be questioned. Sorting what to keep from what to change is the work.', reset: true },
   'Waning Crescent': { theme: 'Deep emotional rest before a new cycle. This year favors solitude, reflection, and tying up loose ends before the next chapter.', reset: true },
-  'Balsamic':        { theme: 'The ending phase. Something emotional completes this year. Trust the void — emptiness precedes rebirth.', reset: true },
+  'Crescent':        { theme: 'Early effort on recent beginnings. Some plans may need patience before they feel settled.', reset: true },
+  'Gibbous':         { theme: 'Refining what already exists. Adjustments may matter more than new starts.', reset: false },
+  'Disseminating':   { theme: 'Sharing what experience has taught you. Explaining or mentoring may feel natural.', reset: false },
+  'Balsamic':        { theme: 'Finishing and reflecting may matter more than starting. This does not predict isolation or low energy.', reset: true },
 };
 
 const SIGN_EMOTIONAL_FLAVOR: Record<string, string> = {
