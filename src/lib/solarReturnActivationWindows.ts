@@ -238,7 +238,7 @@ export function calculateActivationWindows(
   // Sort by date
   for (const hit of transitHits) {
     const body = BODY_MAP[hit.transitPlanet];
-    const definition = ASPECTS.find(a => a.name === hit.aspect);
+    const definition = ASPECT_DEFS.find(a => a.name === hit.aspect);
     if (body && definition) hit.orb = aspectOrb(getPlanetLongitudeExact(body, hit.exactDate), hit.srTargetDegree, definition.angle);
     hit.timingMethod = hit.orb < 0.001 ? 'Numerically refined exact ephemeris contact; orb-window boundaries sampled daily' : 'Closest approach, not an exact pass; orb-window boundaries sampled daily';
   }

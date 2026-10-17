@@ -80,7 +80,7 @@ describe('Solar Return concrete integrity regressions', () => {
     expect(validateSolarReturnReading('## Story\n'+'This is fated. '.repeat(30))).toContain('Reading contains unsupported or generic claims');
   });
   it('a second rising chart profects by whole signs rather than quadrant cusps',()=>{
-    const natal={...laurenNatal,houseCusps:{...laurenNatal.houseCusps,house1:pos(236.95)}};
+    const natal={...laurenNatal,houseCusps:{...laurenNatal.houseCusps,house1:{sign:'Scorpio',degree:26,minutes:57}}};
     expect(analyzeSolarReturn(laurenReturn,natal).profectionYear).toMatchObject({natalCuspSign:'Capricorn',timeLord:'Saturn'});
   });
 });
