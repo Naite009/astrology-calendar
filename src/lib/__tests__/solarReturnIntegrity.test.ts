@@ -8,7 +8,7 @@ import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/sec
 import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { SOLAR_RETURN_REPORT_VERSION, validateSolarReturnReport, validateSolarReturnReading } from '../../../supabase/functions/_shared/solarReturnReportValidation';
-import { calculateEclipseSensitivity } from '@/lib/solarReturnT4Analysis';
+import { calculateEclipseSensitivity, calculateEnhancedRetrogrades } from '@/lib/solarReturnT4Analysis';
 import { computeBody } from '@/lib/ephemerisEngine';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
 
@@ -75,6 +75,12 @@ describe('Solar Return concrete integrity regressions', () => {
     expect(eclipses.some(e => e.eclipseDate === '2027-08-02' && e.eclipseSign === 'Leo' && Math.abs(e.eclipseDegree - 9.918) < 0.01)).toBe(true);
     expect(eclipses.some(e => e.eclipseDate === '2027-07-18' && e.eclipseSign === 'Capricorn' && Math.abs(e.eclipseDegree - 25.961) < 0.01)).toBe(true);
     expect(eclipses.every(e => e.eclipseDate > '2026-10-21' && e.eclipseDate < '2027-10-22')).toBe(true);
+  });
+  it('does not attach an unrelated static Venus retrograde period to the 2026 return', () => {
+    const venus=calculateEnhancedRetrogrades(laurenReturn,2026).find(p=>p.planet==='Venus');
+    expect(venus?.retrograde).toBe(true);
+    expect(venus?.stationRetroDate).toBe('');
+    expect(venus?.stationDirectDate).toBe('');
   });
   it('rejects incorrect aspect geometry even if the name and source are present', () => {
     const report=buildFullJsonStandalone(analyzeSolarReturn(laurenReturn,laurenNatal),laurenReturn,laurenNatal);

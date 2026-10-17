@@ -62,7 +62,7 @@ export function validateSolarReturnReading(text: string): string[] {
   const errors: string[] = [];
   if (text.trim().length < 200) errors.push('Reading is empty or incomplete');
   if (!/^## /m.test(text)) errors.push('Reading lacks the required sections');
-  if (/(?:uses? (?:a )?\w+ style|good place to steer|two valid needs|trust (?:the )?process|crisis.in.action|fated|destined|guaranteed|illness|trauma|your mother|you will (?:lose|suffer|become ill))/i.test(text)) errors.push('Reading contains unsupported or generic claims');
+  if (/(?:uses? (?:a )?\w+ style|good place to steer|two valid needs|trust (?:the )?process|crisis.in.action|fated|destined|guaranteed|unavoidable|human wound|profound psychological breakthroughs|makes this unavoidable|illness|trauma|your mother|you will (?:lose|suffer|become ill))/i.test(text)) errors.push('Reading contains unsupported or generic claims');
   if (/[\u2014\u2013]/.test(text)) errors.push('Reading contains prohibited dashes');
   return errors;
 }

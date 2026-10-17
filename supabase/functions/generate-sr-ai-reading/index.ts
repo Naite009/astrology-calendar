@@ -499,24 +499,22 @@ serve(async (req) => {
     const ageInstructions = ageContextInstructions(group, age);
     // Only validated evidence reaches the prose writer. Legacy tables and
     // unverified eclipse/quarter templates are not treated as calculated facts.
-    const ctx = JSON.stringify({ reportVersion: d.reportVersion, name: d.name, birthDate: d.birthDate, year: d.solarReturnYear,
-      rulers: d.rulers, profectionYear: d.profectionYear, moonPhase: d.moonPhase,
-      provenance: d.calculationMetadata, prioritizedSynthesis: d.prioritizedSynthesis,
-      solarReturnPositions: d.chartWheelData?.srPlanets, natalPositions: d.chartWheelData?.natalPlanets,
-      returnCusps: d.chartWheelData?.srCusps, natalCusps: d.chartWheelData?.natalCusps,
-      houseOverlays: (d.houseOverlays || []).filter((o: any) => ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(o.planet)).map((o: any) => ({ planet:o.planet, srHouse:o.srHouse, natalHouse:o.natalHouse })),
-      primaryContacts: [...(d.srToNatalAspects || []), ...(d.srInternalAspects || [])].filter((a: any) => ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(a.planet1) && ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(a.planet2) && a.orb <= 3).sort((a: any,b: any)=>a.orb-b.orb).slice(0,8).map((a: any)=>({label:a.label,source:a.source,orb:a.orb})),
-      timingStatus:'Legacy eclipse dates and month labels have not been independently certified and are withheld from the reading. No event dates may be invented.' });
+    const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
+      rulers:{natalChartRuler:d.rulers?.natalChartRuler,solarReturnChartRuler:d.rulers?.solarReturnChartRuler,profectionLord:d.rulers?.profectionLord},
+      moonPhase:d.moonPhase,
+      provenance:d.calculationMetadata,
+      prioritizedSynthesis:{themes:d.prioritizedSynthesis?.themes,longerTerm:d.prioritizedSynthesis?.longerTerm},
+      timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
     const repairRules = `Lead with 3 to 5 evidence-linked themes, not a list of every technique. For each, explain the exact signature, recognizable experience, and useful implication. No standalone sign stereotype, uses Libra style, steer reading, two valid needs, trust process, slogans, crisis-in-action, illness, trauma, mother claims or guaranteed future events. Never use em/en dashes. Natal, return, progressed and transiting factors are distinct. Profection lord is not either Ascendant ruler. Unknown metadata remains unknown. No uncomputed default peak months, Metonic recurrence claims, or VOC inference from an unaspected Moon. Progressed Moon sign and natal-house changes are longer-term context. Use only supplied dated events. Scores are app-defined activity/tone signals, not chances of success. All section headings start ##. Prioritized synthesis is the factual hierarchy; older generic glossaries cannot override it.`;
 
     const systemPrompt = `Write a concise, evidence-grounded annual reading. ${ageInstructions}
 Use 5 sections: ## The main story, ## What modifies it, ## The central tension, ## The longer emotional chapter, ## What matters most.
-Each section has at most 3 sentences and 80 words. Connect rather than list placements. The Sun house and whole-sign profection lead; the ruler placement explains how their arenas meet. Major contacts modify those themes, never a minor-body headline. In the longer chapter, include supplied progressed Moon sign, natal house, reference date and real ingress date, distinctly labelled. Explain uncertainty honestly.
+Each section has at most 3 sentences and 80 words. Connect rather than list placements. The Sun house and whole-sign profection lead; the ruler placement explains how their arenas meet. Major contacts modify those themes, never a minor-body headline. In the longer chapter, include supplied progressed Moon sign, natal house, reference date and real ingress date, distinctly labelled. Explain uncertainty honestly. Never add a placement, retrograde claim, aspect, orb, house, dignity or interpretation that is absent from the supplied theme evidence. Name the natal chart ruler only by name, without attaching a Solar Return placement to it. Do not infer new aspects from positions.
 ${mode === 'astro' ? 'Include exact supplied chart-layer contact labels and orbs as brief evidence, plus the three distinct rulers.' : 'Use ordinary language for experience, then a brief Evidence line naming the supplied chart factors. Never silently remove chart provenance.'}
 Do not include eclipse dates, month forecasts, health claims, invented biography, therapy recommendations, automatic shared-house compatibility, Chiron healing milestones, or claims that co-located rulers perfectly support each other. The astrology suggests possibilities, not facts about what happened or will happen.`;
 
     const userPrompt = mode === 'astro'
-      ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
+      ? `Write a concise Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Use only the supplied theme evidence and distinct ruler names.\n\n${ctx}`
       : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use the prioritized evidence below. Choose only the strongest themes; do not recite every technique or score. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
