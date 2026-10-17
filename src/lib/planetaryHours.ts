@@ -1,3 +1,5 @@
+import tzLookup from '@photostructure/tz-lookup';
+import { civilPartsInZone, localToUtc } from './time/zonedTime';
 import * as Astronomy from 'astronomy-engine';
 
 // Chaldean order of planets (repeating cycle)
@@ -64,7 +66,7 @@ export const PLANETARY_HOUR_MEANINGS: Record<ChaldeanPlanet, {
   },
   Mars: {
     symbol: '♂',
-    bestFor: ['Physical activity', 'Competition', 'Surgery', 'Starting battles', 'Assertive action', 'Breaking obstacles', 'Courage-requiring tasks'],
+    bestFor: ['Physical activity', 'Competition', 'Starting a demanding project', 'Assertive action', 'Breaking obstacles', 'Courage-requiring tasks'],
     avoid: ['Delicate negotiations', 'Patience-required tasks', 'Seeking peace'],
     keywords: ['action', 'energy', 'courage', 'conflict'],
     element: 'Fire',
@@ -86,39 +88,15 @@ export const PLANETARY_HOUR_MEANINGS: Record<ChaldeanPlanet, {
 };
 
 // Calculate sunrise and sunset for a location
-export const getSunTimes = (date: Date, latitude: number, longitude: number): { sunrise: Date; sunset: Date } => {
-  try {
-    const observer = new Astronomy.Observer(latitude, longitude, 0);
-    
-    // Set search start to midnight
-    const searchStart = new Date(date);
-    searchStart.setHours(0, 0, 0, 0);
-    
-    // Search for sunrise
-    const sunriseSearch = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, searchStart, 1);
-    const sunsetSearch = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, searchStart, 1);
-    
-    if (!sunriseSearch || !sunsetSearch) {
-      // Default fallback (6 AM / 6 PM)
-      const sunrise = new Date(date);
-      sunrise.setHours(6, 0, 0, 0);
-      const sunset = new Date(date);
-      sunset.setHours(18, 0, 0, 0);
-      return { sunrise, sunset };
-    }
-    
-    return {
-      sunrise: sunriseSearch.date,
-      sunset: sunsetSearch.date,
-    };
-  } catch {
-    // Fallback for extreme latitudes or errors
-    const sunrise = new Date(date);
-    sunrise.setHours(6, 0, 0, 0);
-    const sunset = new Date(date);
-    sunset.setHours(18, 0, 0, 0);
-    return { sunrise, sunset };
-  }
+export const getSunTimes = (date: Date, latitude: number, longitude: number, timezone = tzLookup(latitude, longitude)): { sunrise: Date; sunset: Date } => {
+  const local = civilPartsInZone(timezone, date.getTime());
+  const midnight = localToUtc({ ...local, hour: 0, minute: 0, second: 0 }, timezone).resolved?.utc;
+  if (!midnight) throw new Error('Cannot resolve local sunrise date');
+  const observer = new Astronomy.Observer(latitude, longitude, 0);
+  const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, midnight, 1)?.date;
+  const sunset = sunrise ? Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, sunrise, 1)?.date : null;
+  if (!sunrise || !sunset) throw new Error('Sunrise or sunset unavailable, no artificial hours substituted');
+  return { sunrise, sunset };
 };
 
 export interface PlanetaryHour {
@@ -137,13 +115,21 @@ export const calculatePlanetaryHours = (
   latitude: number = 40.7128, // Default NYC
   longitude: number = -74.0060
 ): PlanetaryHour[] => {
-  const { sunrise, sunset } = getSunTimes(date, latitude, longitude);
-  
-  // Calculate next sunrise for night hours
-  const nextDay = new Date(date);
-  nextDay.setDate(nextDay.getDate() + 1);
-  const { sunrise: nextSunrise } = getSunTimes(nextDay, latitude, longitude);
-  
+  const timezone = tzLookup(latitude, longitude);
+  let solarDate = new Date(date);
+  let times: { sunrise: Date; sunset: Date };
+  try {
+    times = getSunTimes(solarDate, latitude, longitude, timezone);
+    if (date < times.sunrise) {
+      solarDate = new Date(times.sunrise.getTime() - 12 * 3600000);
+      times = getSunTimes(solarDate, latitude, longitude, timezone);
+    }
+  } catch { return []; }
+  const { sunrise, sunset } = times;
+  const observer = new Astronomy.Observer(latitude, longitude, 0);
+  const nextSunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, new Date(sunset.getTime() + 1000), 2)?.date;
+  if (!nextSunrise) return [];
+
   // Day duration and night duration in ms
   const dayDuration = sunset.getTime() - sunrise.getTime();
   const nightDuration = nextSunrise.getTime() - sunset.getTime();
@@ -153,7 +139,8 @@ export const calculatePlanetaryHours = (
   const nightHourLength = nightDuration / 12;
   
   // Get day ruler (first hour ruler)
-  const dayOfWeek = date.getDay();
+  const local = civilPartsInZone(timezone, sunrise.getTime());
+  const dayOfWeek = new Date(Date.UTC(local.year, local.month - 1, local.day)).getUTCDay();
   const dayRuler = DAY_RULERS[dayOfWeek];
   const startIndex = CHALDEAN_ORDER.indexOf(dayRuler);
   
@@ -161,7 +148,7 @@ export const calculatePlanetaryHours = (
   
   // Day hours (sunrise to sunset)
   for (let i = 0; i < 12; i++) {
-    const planetIndex = (startIndex + (7 - (i % 7))) % 7;
+    const planetIndex = (startIndex + i) % 7;
     const planet = CHALDEAN_ORDER[planetIndex];
     
     hours.push({
@@ -177,7 +164,7 @@ export const calculatePlanetaryHours = (
   
   // Night hours (sunset to next sunrise)
   for (let i = 0; i < 12; i++) {
-    const planetIndex = (startIndex + (7 - ((12 + i) % 7))) % 7;
+    const planetIndex = (startIndex + 12 + i) % 7;
     const planet = CHALDEAN_ORDER[planetIndex];
     
     hours.push({

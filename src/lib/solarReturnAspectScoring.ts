@@ -65,8 +65,7 @@ function getLifeArea(srPlanet: string, natalPlanet: string): ScoredAspect['lifeA
 }
 
 function getPeakMonths(srPlanet: string, birthdayMonth: number): string[] {
-  const offsets = PLANET_PEAK_MONTH[srPlanet] || [0];
-  return offsets.map(offset => MONTHS_FULL[(birthdayMonth + offset) % 12]);
+  return []; // No computed transit date, so no invented peak months.
 }
 
 // Bodies that may reinforce a theme but must never create one

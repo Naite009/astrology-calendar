@@ -1,3 +1,5 @@
+import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
+import { validateSolarReturnReport } from '../../supabase/functions/_shared/solarReturnReportValidation';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -590,24 +592,15 @@ function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPla
 
 // ─── Planetary Hours at SR Moment ───────────────────────────────────
 function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
-  const locationStr = srChart.solarReturnLocation || srChart.birthLocation || '';
-  const lat = parseLatitudeFromLocation(locationStr);
-  if (!lat) return null;
-
-  // Estimate longitude from location (rough)
-  let lng = 0;
-  const coordMatch = locationStr.match(/([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)/);
-  if (coordMatch) lng = parseFloat(coordMatch[2]);
-
-  const srDateTime = srChart.solarReturnDateTime || srChart.birthDate;
-  if (!srDateTime) return null;
-
-  const srDate = new Date(srDateTime);
-  if (isNaN(srDate.getTime())) return null;
+  // Only an explicit instant and coordinates can produce sunrise-based hours.
+  const lat = srChart.latitude, lng = srChart.longitude;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat === undefined || lng === undefined || !srChart.solarReturnDateTime) return null;
+  const srDate = new Date(srChart.solarReturnDateTime);
+  if (!Number.isFinite(srDate.getTime()) || srDate.getUTCFullYear() !== srChart.solarReturnYear) return null;
 
   try {
     const hours = calculatePlanetaryHours(srDate, lat, lng);
-    const dayRuler = getDayRuler(srDate);
+    const dayRuler = hours.length ? { planet: hours[0].planet, symbol: hours[0].symbol, dayName: new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: srChart.timezoneId || 'UTC' }).format(hours[0].start) } : getDayRuler(srDate);
 
     // Find which planetary hour the SR moment falls in
     const srHour = hours.find(h => srDate >= h.start && srDate < h.end);
@@ -638,19 +631,8 @@ function buildPlanetaryHoursAtSR(srChart: SolarReturnChart) {
 }
 
 function getSolarReturnReferenceDate(srChart: SolarReturnChart, natalChart: NatalChart) {
-  if (srChart.solarReturnDateTime) {
-    const parsed = new Date(srChart.solarReturnDateTime);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
-  }
-
-  if (natalChart.birthDate) {
-    const [, month, day] = natalChart.birthDate.split('-').map(Number);
-    if (month && day) {
-      return new Date(Date.UTC(srChart.solarReturnYear, month - 1, day, 12, 0, 0));
-    }
-  }
-
-  return new Date();
+  const metadata = resolveSolarReturnProvenance(srChart, natalChart);
+  return metadata.returnInstantUTC ? new Date(metadata.returnInstantUTC) : null;
 }
 
 function buildPsychologicalProfileExport(natalChart: NatalChart, srChart: SolarReturnChart) {
@@ -662,6 +644,7 @@ function buildPsychologicalProfileExport(natalChart: NatalChart, srChart: SolarR
 
 function buildSecondaryProgressionsExport(natalChart: NatalChart, srChart: SolarReturnChart) {
   const referenceDate = getSolarReturnReferenceDate(srChart, natalChart);
+  if (!referenceDate) return null;
   const progressions = calculateSecondaryProgressions(natalChart, referenceDate);
   if (!progressions) return null;
 
@@ -676,6 +659,8 @@ function buildSecondaryProgressionsExport(natalChart: NatalChart, srChart: Solar
     moonInfo: moonInfo ? {
       sign: moonInfo.sign,
       degree: moonInfo.degree,
+      exactDegree: moonInfo.exactDegree,
+      houseChange: moonInfo.houseChange,
       house: moonInfo.house,
       phase: moonInfo.phase,
       detailedPhase: moonInfo.detailedPhase,
@@ -703,279 +688,16 @@ export function downloadBirthdayJSONStandalone(
   natalChart: NatalChart,
   aiReadings?: { plain: string; astro: string }
 ) {
-  // Correct Ascendant in planet positions — houseCusps.house1 is definitive
-  const correctedNatalPlanets = { ...natalChart.planets };
-  if (natalChart.houseCusps?.house1?.sign && correctedNatalPlanets.Ascendant) {
-    correctedNatalPlanets.Ascendant = { ...correctedNatalPlanets.Ascendant, sign: natalChart.houseCusps.house1.sign, degree: natalChart.houseCusps.house1.degree, minutes: natalChart.houseCusps.house1.minutes || 0 };
-  }
-  const correctedSrPlanets = { ...srChart.planets };
-  if (srChart.houseCusps?.house1?.sign && (correctedSrPlanets as any).Ascendant) {
-    (correctedSrPlanets as any).Ascendant = { ...(correctedSrPlanets as any).Ascendant, sign: srChart.houseCusps.house1.sign, degree: srChart.houseCusps.house1.degree, minutes: srChart.houseCusps.house1.minutes || 0 };
-  }
-
-  const mappedPlanetPositions = Object.entries(correctedNatalPlanets || {}).map(([planet, data]) => ({
-    planet,
-    natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
-    natalHouse: String((data as any).house || '').replace(/^H/, ''),
-    srPosition: (() => {
-      const srPlanet = (correctedSrPlanets as any)?.[planet];
-      return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
-    })(),
-    srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
-    shift: (() => {
-      const natal = (data as any).sign;
-      const sr = (correctedSrPlanets as any)?.[planet]?.sign;
-      return (!sr || natal === sr) ? 'Same sign' : `${natal} → ${sr}`;
-    })(),
-  }));
-
-  const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => {
-    const base: Record<string, any> = {
-      srPlanet: a.planet1 || a.srPlanet || '',
-      natalPlanet: a.planet2 || a.natalPlanet || '',
-      aspectType: a.type || a.aspect || a.aspectType || '',
-      orb: a.orb ?? null,
-      interpretation: a.interpretation || '',
-    };
-    if (a.exactDate) base.exactDate = a.exactDate;
-    return base;
-  });
-
-  // Permanent cake image URL from cloud storage
-  const natalSun = natalChart.planets?.Sun?.sign || '';
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-  const cakeImageUrl = natalSun
-    ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png`
-    : '';
-
-  // Calculate the effective Solar Return year. If srChart.solarReturnYear is missing,
-  // invalid, or matches the birth year (which would mean age 0 — never a real SR),
-  // fall back to the current calendar year so we never export a birth-year SR.
-  const birthYear = natalChart.birthDate ? parseInt(natalChart.birthDate.slice(0, 4), 10) : NaN;
-  const rawSrYear = Number(srChart.solarReturnYear);
-  const currentYear = new Date().getFullYear();
-  const isValidSrYear = Number.isFinite(rawSrYear)
-    && rawSrYear > 1900 && rawSrYear < 2200
-    && (isNaN(birthYear) || rawSrYear !== birthYear);
-  const effectiveSrYear = isValidSrYear ? rawSrYear : currentYear;
-  const srAge = !isNaN(birthYear) ? effectiveSrYear - birthYear : null;
-
-  const profYear = analysis.profectionYear;
-  // Recompute profection house number from the corrected age — guards
-  // against a stale age=0 / wrong-year shipped from analysis.profectionYear
-  // before the source-layer guard landed. If both sources are valid they
-  // agree; if they disagree the corrected srAge wins.
-  const correctedProfectionAge = srAge ?? (profYear?.age ?? null);
-  const correctedProfectionHouse = correctedProfectionAge != null
-    ? (correctedProfectionAge % 12) + 1
-    : (profYear?.houseNumber ?? null);
-  const mappedProfectionYear = profYear ? {
-    ...profYear,
-    age: correctedProfectionAge ?? profYear.age,
-    houseNumber: correctedProfectionHouse ?? profYear.houseNumber,
-    house: correctedProfectionHouse || (profYear as any).house || (profYear as any).houseNumber || null,
-  } : null;
-
-  const natalRisingSign = natalChart.houseCusps?.house1?.sign || '';
-  const srRisingSign = analysis.yearlyTheme?.ascendantSign || '';
-
-  const payload = {
-    report_type: "solar_return_birthday",
-    data: {
-      name: natalChart.name || '',
-      cakeImageUrl,
-      birthDate: natalChart.birthDate || '',
-      birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: effectiveSrYear,
-      solarReturnYearSpan: '',
-      solarReturnAge: srAge,
-      solarReturnLabel: srAge !== null
-        ? `Solar Return Year ${srAge}`
-        : `Solar Return`,
-      natalSun: natalChart.planets?.Sun?.sign || '',
-      natalSunDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Sun?.sign || '']?.sun || '',
-      natalMoon: natalChart.planets?.Moon?.sign || '',
-      natalMoonDesc: SIGN_DESCRIPTIONS[natalChart.planets?.Moon?.sign || '']?.moon || '',
-      natalRising: natalRisingSign,
-      natalRisingDesc: SIGN_DESCRIPTIONS[natalRisingSign]?.rising || '',
-      srSun: natalChart.planets?.Sun?.sign || '',
-      srMoon: analysis.moonSign || '',
-      srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
-      srRising: srRisingSign,
-      srRisingDesc: SIGN_DESCRIPTIONS[srRisingSign]?.rising || '',
-      // Plain-language contrast between natal and SR Rising. Empty string
-      // when SR Rising matches natal Rising — in that case the static
-      // srRisingDesc is sufficient and any contrast prose would be misleading.
-      srRisingContrast: buildSrRisingContrast(natalRisingSign, srRisingSign),
-      yearlyTheme: analysis.yearlyTheme,
-      sunHouse: analysis.sunHouse,
-      sunNatalHouse: analysis.sunNatalHouse,
-      moonHouse: analysis.moonHouse,
-      moonNatalHouse: analysis.moonNatalHouse,
-      profectionYear: mappedProfectionYear,
-      lordOfTheYear: analysis.lordOfTheYear,
-      moonPhase: analysis.moonPhase,
-      moonAngularity: analysis.moonAngularity,
-      moonLateDegree: analysis.moonLateDegree,
-      moonVOC: analysis.moonVOC,
-      moonMetonicAges: analysis.moonMetonicAges,
-      srMoonAspects: analysis.srMoonAspects,
-      stelliums: analysis.stelliums,
-      srToNatalAspects: mappedSrToNatalAspects,
-      srInternalAspects: analysis.srInternalAspects,
-      angularPlanets: analysis.angularPlanets,
-      angularPlanetsDetailed: analysis.angularPlanetsDetailed,
-      planetPositions: mappedPlanetPositions,
-      houseOverlays: analysis.houseOverlays,
-      elementBalance: analysis.elementBalance,
-      modalityBalance: analysis.modalityBalance,
-      hemisphericEmphasis: analysis.hemisphericEmphasis,
-      saturnFocus: analysis.saturnFocus,
-      nodesFocus: analysis.nodesFocus,
-      retrogrades: analysis.retrogrades,
-      srAscRulerInNatal: analysis.srAscRulerInNatal,
-      srAscInNatalHouse: analysis.srAscInNatalHouse,
-      natalDegreeConduits: analysis.natalDegreeConduits,
-      repeatedThemes: analysis.repeatedThemes,
-      planetSRHouses: analysis.planetSRHouses,
-      vertex: analysis.vertex,
-      // Tier 4
-      mutualReceptions: analysis.mutualReceptions,
-      dignityReport: analysis.dignityReport,
-      healthOverlay: analysis.healthOverlay,
-      eclipseSensitivity: analysis.eclipseSensitivity,
-      enhancedRetrogrades: analysis.enhancedRetrogrades,
-      quarterlyFocus: analysis.quarterlyFocus,
-      dominantPlanets: analysis.dominantPlanets,
-      // Tier 5
-      fixedStars: analysis.fixedStars,
-      arabicParts: analysis.arabicParts,
-      firdaria: analysis.firdaria,
-      antisciaContacts: analysis.antisciaContacts,
-      solarArcs: analysis.solarArcs,
-      synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
-      midpointHits: analysis.midpointHits,
-      prenatalEclipse: analysis.prenatalEclipse,
-      planetarySpeeds: analysis.planetarySpeeds,
-      heliacalRising: analysis.heliacalRising,
-      // New: Executive Summary, Action Guidance, Activation Windows
-      executiveSummary: generateExecutiveSummary(analysis, natalChart),
-      actionGuidance: (() => {
-        const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
-        for (const [key, val] of Object.entries(srChart.planets || {})) {
-          if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
-        }
-        return generateActionGuidance(analysis.planetSRHouses, srPlanets);
-      })(),
-      activationWindows: (() => {
-        const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-        const toAbs = (pos: any): number | null => {
-          if (!pos?.sign) return null;
-          const idx = SIGNS.indexOf(pos.sign);
-          if (idx < 0) return null;
-          return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
-        };
-        const srPositions: Record<string, number> = {};
-        const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
-        for (const p of keyTargets) {
-          const pos = srChart.planets?.[p as keyof typeof srChart.planets];
-          const deg = pos ? toAbs(pos) : null;
-          if (deg !== null) srPositions[p] = deg;
-        }
-        const bd = natalChart.birthDate || '';
-        const parts = bd.split('-');
-        const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
-        const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
-        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
-        // Serialize dates to strings for JSON
-        return {
-          peakPeriods: data.peakPeriods,
-          monthlyThemes: data.monthlyThemes.map(m => ({
-            ...m,
-            transitHits: m.transitHits.map(h => ({
-              ...h,
-              exactDate: h.exactDate.toISOString(),
-              windowStart: h.windowStart.toISOString(),
-              windowEnd: h.windowEnd.toISOString(),
-            })),
-          })),
-          transitHitCount: data.transitHits.length,
-          windowCount: data.activationWindows.length,
-        };
-      })(),
-      identityShift: generateIdentityShift(analysis, srChart, natalChart),
-      lifeDomainScores: calculateLifeDomainScores(analysis),
-      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
-      domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart).map(d => ({
-        ...d,
-        narrative: d.synthesis.paragraph,
-        drivers: d.keyPlanets.map(p => ({ planet: p.planet, sign: p.sign, house: p.house, role: p.role, tone: p.tone })),
-      })),
-      psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
-      secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
-      sabianSymbols: (() => {
-        const results: Record<string, { degree: number; sign: string; symbol: string; meaning: string; interpretation: string }> = {};
-        const targets = [
-          { key: 'srSun', pos: srChart.planets?.Sun, label: 'Solar Return Sun' },
-          { key: 'srMoon', pos: srChart.planets?.Moon, label: 'Solar Return Moon' },
-          { key: 'srAscendant', pos: srChart.houseCusps?.house1, label: 'Solar Return Ascendant' },
-          { key: 'natalSun', pos: natalChart.planets?.Sun, label: 'Natal Sun' },
-          { key: 'natalMoon', pos: natalChart.planets?.Moon, label: 'Natal Moon' },
-          { key: 'natalAscendant', pos: natalChart.houseCusps?.house1, label: 'Natal Ascendant' },
-        ];
-        for (const { key, pos, label } of targets) {
-          if (pos?.sign && pos?.degree != null) {
-            const sabian = getSabianSymbol(pos.degree, pos.sign);
-            const interpText = sabian.meaning
-              ? `Your ${label} at ${Math.floor(pos.degree)}° ${pos.sign} carries this symbol's energy. ${sabian.meaning}`
-              : `This degree activates subtle ${pos.sign} themes through your ${label}.`;
-            results[key] = { degree: Math.floor(pos.degree), sign: pos.sign, ...sabian, interpretation: interpText };
-          }
-        }
-        return results;
-      })(),
-      contradictions: detectContradictions(analysis, srChart),
-      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
-      astrocartography: calculateAstrocartography(srChart, natalChart),
-      chartWheelData: buildChartWheelData(srChart, natalChart, analysis),
-      planetaryHoursAtSR: buildPlanetaryHoursAtSR(srChart),
-      // AI-generated readings (both modes, if available)
-      aiReadingPlain: aiReadings?.plain || null,
-      aiReadingAstro: aiReadings?.astro || null,
-      // ─── Structured summary objects ───
-      yearSummary: buildYearSummary(analysis, natalChart, srChart),
-      yearStory: buildYearStory(analysis),
-      scoredAspects: (() => {
-        const bd = natalChart.birthDate || '';
-        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
-      })(),
-      topThemes: (() => {
-        const bd = natalChart.birthDate || '';
-        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
-      })(),
-      houseEmphasis: buildHouseEmphasis(analysis),
-      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
-      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
-      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
-      reportStructureOrder: [
-        'yearSummary', 'topThemes', 'identityDirection', 'relationships',
-        'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
-        'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
-        'advancedTechniques', 'patternTracking', 'finalAdvice',
-      ],
-    }
-  };
-
-  const cleaned = stripDashesDeep(stripEmpty(payload) || payload, natalChart.name);
-  const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
+  const full = buildFullJsonStandalone(analysis, srChart, natalChart, aiReadings);
+  const problems = validateSolarReturnReport(full);
+  if (problems.length) throw new Error(`Report blocked: ${problems.join('; ')}`);
+  const payload = { schemaVersion: 2, reportVersion: SR_REPORT_VERSION, ...full, report: full };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${effectiveSrYear}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `SolarReturn_Birthday_${(natalChart.name || 'chart').replace(/\s+/g, '_')}_${srChart.solarReturnYear}.json`;
+  link.click(); URL.revokeObjectURL(url);
 }
 
 // ── Build full JSON data object (reusable, no download) ──
@@ -997,11 +719,12 @@ export function buildFullJsonStandalone(
 
   const mappedPlanetPositions = Object.entries(correctedNatalPlanets2 || {}).map(([planet, data]) => ({
     planet,
-    natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
+    natalPosition: `${(data as any).sign} ${(data as any).degree || 0}°${(data as any).minutes || 0}′`,
+    natalRetrograde: !!(data as any).isRetrograde,
     natalHouse: String((data as any).house || '').replace(/^H/, ''),
     srPosition: (() => {
       const srPlanet = (correctedSrPlanets2 as any)?.[planet];
-      return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
+      return srPlanet ? `${srPlanet.sign} ${srPlanet.degree || 0}°${srPlanet.minutes || 0}′${srPlanet.isRetrograde ? ' ℞' : ''}` : '';
     })(),
     srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
     shift: (() => {
@@ -1013,6 +736,9 @@ export function buildFullJsonStandalone(
 
   const mappedSrToNatalAspects = (analysis.srToNatalAspects || []).map((a: any) => {
     const base: Record<string, any> = {
+      ...a,
+      source: 'sr-to-natal',
+      label: a.label,
       srPlanet: a.planet1 || a.srPlanet || '',
       natalPlanet: a.planet2 || a.natalPlanet || '',
       aspectType: a.type || a.aspect || a.aspectType || '',
@@ -1058,6 +784,11 @@ export function buildFullJsonStandalone(
   const srRisingSign2 = analysis.yearlyTheme?.ascendantSign || '';
 
   return {
+    reportVersion: SR_REPORT_VERSION,
+    calculationMetadata: resolveSolarReturnProvenance(srChart, natalChart),
+    rulers: { natalChartRuler: analysis.natalChartRuler?.planet || analysis.lordOfTheYear?.planet || null, solarReturnChartRuler: analysis.yearlyTheme?.ascendantRuler || null, profectionLord: analysis.profectionYear?.timeLord || null, profectionSystem: 'whole-sign', returnCuspSigns: analysis.srCuspSigns },
+    moonVOCStatus: 'not-calculated',
+    metonicStatus: 'Arithmetic intervals are not verified lunar returns; no same-placement claims supplied.',
     name: natalChart.name || '',
     cakeImageUrl,
     birthDate: natalChart.birthDate || '',
@@ -1086,7 +817,8 @@ export function buildFullJsonStandalone(
     moonHouse: analysis.moonHouse,
     moonNatalHouse: analysis.moonNatalHouse,
     profectionYear: mappedProfectionYear,
-    lordOfTheYear: analysis.lordOfTheYear,
+    natalChartRuler: analysis.lordOfTheYear,
+    lordOfTheYear: analysis.profectionYear?.timeLord ? { planet: analysis.profectionYear.timeLord, technique: 'annual-whole-sign-profection' } : null,
     moonPhase: analysis.moonPhase,
     moonAngularity: analysis.moonAngularity,
     moonLateDegree: analysis.moonLateDegree,
@@ -1280,7 +1012,7 @@ export function buildFullJsonStandalone(
     chartWheelData: buildChartWheelData(srChart, natalChart, analysis),
 
     // Planetary hours at the SR moment
-    planetaryHoursAtSR: buildPlanetaryHoursAtSR(srChart),
+    planetaryHoursAtSR: (() => { const m = resolveSolarReturnProvenance(srChart, natalChart); return m.returnInstantUTC && m.latitude !== null && m.longitude !== null ? buildPlanetaryHoursAtSR({ ...srChart, latitude: m.latitude, longitude: m.longitude, timezoneId: m.timezone || undefined, solarReturnDateTime: m.returnInstantUTC }) : null; })(),
 
     // AI-generated readings (both modes)
     aiReadingPlain: aiReadings?.plain || null,
@@ -1395,19 +1127,12 @@ function expandFragments(text: string): string {
 
 // ── Recursively clean all string values in an object ──
 function stripDashesDeep(obj: any, personName?: string): any {
-  if (typeof obj === 'string') return expandFragments(stripDashes(obj));
+  // Machine strings are immutable. Only named prose fields may be edited.
+  const prose = new Set(['aiReadingPlain', 'aiReadingAstro', 'description', 'interpretation', 'narrative', 'content', 'coreStory', 'summary', 'body']);
   if (Array.isArray(obj)) return obj.map(v => stripDashesDeep(v, personName));
   if (obj && typeof obj === 'object' && !(obj instanceof Date)) {
-    const result: any = {};
-    for (const [k, v] of Object.entries(obj)) {
-      let cleaned = stripDashesDeep(v, personName);
-      // Deduplicate name specifically in AI reading fields
-      if (personName && typeof cleaned === 'string' && (k === 'aiReadingPlain' || k === 'aiReadingAstro')) {
-        cleaned = deduplicateName(cleaned, personName);
-      }
-      result[k] = cleaned;
-    }
-    return result;
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key,
+      typeof value === 'string' && prose.has(key) ? value.replace(/\s*[\u2014\u2013]\s*/g, ', ') : typeof value === 'object' ? stripDashesDeep(value, personName) : value]));
   }
   return obj;
 }
@@ -2804,11 +2529,12 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
     const mappedPlanetPositions = Object.entries(cNatal || {}).map(([planet, data]) => ({
       planet,
-      natalPosition: `${(data as any).sign} ${Math.floor((data as any).degree || 0)}°`,
+      natalPosition: `${(data as any).sign} ${(data as any).degree || 0}°${(data as any).minutes || 0}′`,
+    natalRetrograde: !!(data as any).isRetrograde,
       natalHouse:    String((data as any).house || '').replace(/^H/, ''),
       srPosition:    (() => {
         const srPlanet = (cSr as any)?.[planet];
-        return srPlanet ? `${srPlanet.sign} ${Math.floor(srPlanet.degree || 0)}°` : '';
+        return srPlanet ? `${srPlanet.sign} ${srPlanet.degree || 0}°${srPlanet.minutes || 0}′${srPlanet.isRetrograde ? ' ℞' : ''}` : '';
       })(),
       srHouse: String(analysis.planetSRHouses?.[planet] || '').replace(/^H/, ''),
       shift: (() => {
@@ -2871,7 +2597,8 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       moonHouse:    analysis.moonHouse,
       moonNatalHouse:analysis.moonNatalHouse,
       profectionYear: mappedProfectionYear,
-      lordOfTheYear: analysis.lordOfTheYear,
+      natalChartRuler: analysis.lordOfTheYear,
+    lordOfTheYear: analysis.profectionYear?.timeLord ? { planet: analysis.profectionYear.timeLord, technique: 'annual-whole-sign-profection' } : null,
       moonPhase:           analysis.moonPhase,
       moonAngularity:      analysis.moonAngularity,
       moonLateDegree:      analysis.moonLateDegree,
