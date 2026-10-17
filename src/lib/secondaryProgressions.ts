@@ -395,7 +395,7 @@ const getDetailedProgressedMoonPhase = (
 ): ProgressedMoonPhase => {
   const angle = ((moonLongitude - sunLongitude) % 360 + 360) % 360;
   const index = lunarPhaseIndex(angle);
-  return { phaseName: `${lunarPhaseName(angle)} Phase`, phaseAngle: angle, description: LUNAR_PHASE_MEANINGS[index], lifeTheme: LUNAR_PHASE_MEANINGS[index], timing: 'Eight centred 45-degree sectors; phase duration varies with actual progressed motion.' };
+  return { phaseName: `${lunarPhaseName(angle)} Phase`, phaseAngle: angle, description: LUNAR_PHASE_MEANINGS[index], lifeTheme: LUNAR_PHASE_MEANINGS[index], timing: 'Rudhyar eight-phase cycle (45-degree sectors from 0 degrees); a progressed cycle has no visible sky appearance, and phase duration varies with actual progressed motion.' };
 };
 
 // Calculate house change info
@@ -698,7 +698,7 @@ const getProgressedInterpretation = (progPlanet: string, natalPlanet: string, as
     
     // Squares
     'Moon-Sun-square': "Progressed Moon square natal Sun — Friction between feelings and identity. A turning point requiring action. Inner tension demands resolution.",
-    'Moon-Moon-square': "Progressed Moon square natal Moon — Emotional crisis point. Your current emotional needs conflict with your natural patterns. Adjustment required.",
+    'Moon-Moon-square': "Progressed Moon square natal Moon: current emotional needs may rub against familiar habits, which can prompt adjustments.",
     
     // Other progressed planets
     'Sun-Moon-conjunction': "Progressed Sun conjunct natal Moon = Core identity touches emotional foundations. Major integration of self and feelings.",
@@ -731,13 +731,13 @@ export interface ProgressedLunationPhase {
 
 const PROG_LUNATION_PHASES = [
   { boundary: 0, name: 'New Moon', emoji: '🌑', stage: 'Beginning', theme: 'A new ~29-year chapter begins. You feel pulled to start something entirely fresh — a new direction that comes from instinct, not planning. Seeds planted now grow for decades.' },
-  { boundary: 45, name: 'Crescent', emoji: '🌒', stage: 'Emergence', theme: 'The new direction meets resistance from the past. Old habits, old identities pull backward. This is the struggle phase — push through or lose momentum. The effort you invest now determines whether the seed survives.' },
-  { boundary: 90, name: 'First Quarter', emoji: '🌓', stage: 'Crisis of Action', theme: 'A decisive turning point. External circumstances force you to commit and build concrete structures for your vision. No more dreaming — act or lose the thread. Relationships and career may demand clear choices.' },
+  { boundary: 45, name: 'Crescent', emoji: '🌒', stage: 'Emergence', theme: 'The new direction meets resistance from the past. Old habits, old identities pull backward. Steady effort may matter more than speed while older patterns still pull.' },
+  { boundary: 90, name: 'First Quarter', emoji: '🌓', stage: 'Concrete Choices', theme: 'Plans may ask to become concrete. Commitments and structures that support a direction can come into focus, and choices in work or relationships may feel more pressing.' },
   { boundary: 135, name: 'Gibbous', emoji: '🌔', stage: 'Refinement', theme: 'The final preparation before results become visible. You refine your skills, analyze what\'s working, and perfect your approach. The harvest is close but not yet here. Patience and precision matter.' },
-  { boundary: 180, name: 'Full Moon', emoji: '🌕', stage: 'Culmination', theme: 'Maximum illumination. What you\'ve been building reaches peak expression. Relationships serve as mirrors — you see yourself clearly through others. This is harvest time: fulfillment if you built well, reckoning if you didn\'t.' },
+  { boundary: 180, name: 'Full Moon', emoji: '🌕', stage: 'Culmination', theme: 'Maximum illumination. What you\'ve been building reaches peak expression. Relationships serve as mirrors — you see yourself clearly through others. Results become easier to see and evaluate.' },
   { boundary: 225, name: 'Disseminating', emoji: '🌖', stage: 'Distribution', theme: 'Time to share what you\'ve gathered. Teaching, mentoring, publishing, contributing your experience to others. Meaning comes through generosity and passing on what you know.' },
-  { boundary: 270, name: 'Last Quarter', emoji: '🌗', stage: 'Crisis of Consciousness', theme: 'The structures you built no longer fit. A fundamental reorientation of values and beliefs. You must let go of what no longer serves — even things that once defined you. This is pruning season.' },
-  { boundary: 315, name: 'Balsamic', emoji: '🌘', stage: 'Completion', theme: 'The final phase before rebirth. Deep inward turning. Release, surrender, and clearing. You may feel isolated or drawn to solitude — this is preparation, not depression. Seeds for the next 29-year cycle are forming in the dark.' },
+  { boundary: 270, name: 'Last Quarter', emoji: '🌗', stage: 'Reorientation', theme: 'Some structures that once fit may be questioned. Values and beliefs can be re-examined, and sorting what to keep from what to change becomes the practical work.' },
+  { boundary: 315, name: 'Balsamic', emoji: '🌘', stage: 'Completion', theme: 'The final phase before rebirth. Deep inward turning. Release, surrender, and clearing. Quieter reflection may feel more useful than new starts. Seeds for the next 29-year cycle are forming in the dark.' },
 ];
 
 export function computeProgressedLunationTimeline(

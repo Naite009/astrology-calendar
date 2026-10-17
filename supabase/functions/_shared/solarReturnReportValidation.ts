@@ -2,7 +2,8 @@
 export const SOLAR_RETURN_REPORT_VERSION = 'sr-integrity-2026-10-17-v1';
 const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const rulers = ['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
-const phases = ['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Balsamic'];
+// Rudhyar eight-phase cycle: 45-degree sectors starting at 0 degrees.
+const phases = ['New Moon','Crescent','First Quarter','Gibbous','Full Moon','Disseminating','Last Quarter','Balsamic'];
 export function validateSolarReturnReport(report: Record<string, any>): string[] {
   const errors: string[] = [];
   if (report.reportVersion !== SOLAR_RETURN_REPORT_VERSION) errors.push('This report needs regeneration with the corrected version');
@@ -16,7 +17,7 @@ export function validateSolarReturnReport(report: Record<string, any>): string[]
   if (report.lordOfTheYear?.planet && report.lordOfTheYear.planet !== p?.timeLord) errors.push('Lord of the year differs from the profection lord');
   const m = report.moonPhase;
   if (m && Number.isFinite(m.phaseAngle)) {
-    const index = Math.floor(((((m.phaseAngle % 360) + 360 + 22.5) % 360)) / 45);
+    const index = Math.min(7, Math.floor((((m.phaseAngle % 360) + 360) % 360) / 45));
     if (m.phase !== phases[index]) errors.push('Moon phase label conflicts with its angle');
   }
   const identity = report.calculationMetadata;

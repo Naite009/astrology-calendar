@@ -130,39 +130,20 @@ export const srMoonAspects: Record<string, { hard: string; soft: string }> = {
 
 // ─── SR Moon Phase Meaning ──────────────────────────────────────────
 export const srMoonPhaseInterp: Record<string, { theme: string; description: string }> = {
-  'New Moon': {
-    theme: 'The Seed Year',
-    description: 'The SR Moon near the Sun (New Moon phase) indicates a year of NEW BEGINNINGS. Your emotions and will are aligned for a fresh start. This is a planting year — what you initiate now will develop over the coming years. Trust your instincts about what to begin.',
-  },
-  'Waxing Crescent': {
-    theme: 'Building Momentum',
-    description: 'The SR Moon in waxing crescent phase suggests a year of gathering resources and building on recent beginnings. Emotional commitment to new directions is growing. Perseverance through early challenges is key.',
-  },
-  'First Quarter': {
-    theme: 'The Action Crisis',
-    description: 'The SR Moon at first quarter (square to Sun) creates a year of ACTION and TENSION. You must make decisive moves. Emotional friction between what you want and what others expect drives you to take a stand. A turning-point year.',
-  },
-  'Waxing Gibbous': {
-    theme: 'Refinement & Adjustment',
-    description: 'The SR Moon in waxing gibbous phase indicates a year of refining what you have built. Emotional analysis, adjustment, and improvement dominate. You are perfecting your approach before the culmination.',
-  },
-  'Full Moon': {
-    theme: 'The Harvest Year',
-    description: 'The SR Moon opposite the Sun (Full Moon phase) brings a year of CULMINATION, VISIBILITY, and RELATIONSHIP. What you have been building reaches its peak. Emotions are heightened and relationships are the mirror. Objectivity is possible — you can see yourself clearly through others\' eyes.',
-  },
-  'Waning Gibbous': {
-    theme: 'Sharing & Teaching',
-    description: 'The SR Moon in waning gibbous (disseminating) phase indicates a year of sharing wisdom, teaching from experience, and distributing what you have harvested. Generosity and social contribution are emotionally fulfilling.',
-  },
-  'Last Quarter': {
-    theme: 'The Reorientation Crisis',
-    description: 'The SR Moon at last quarter (square to Sun) creates a year of LETTING GO and REORIENTING. Old structures, beliefs, or relationships that no longer serve you must be released. The tension is between holding on and moving forward.',
-  },
-  'Waning Crescent': {
-    theme: 'The Surrender Year',
-    description: 'The SR Moon in balsamic (waning crescent) phase indicates a year of ENDINGS, REST, and PREPARATION. The current cycle is completing. Emotional closure, forgiveness, and surrender are the work. Seeds for the next cycle are gestating in the dark. Trust the quiet.',
-  },
+  'New Moon': { theme: 'Starting Point', description: 'The Solar Return Moon is within 45 degrees ahead of the Sun (Rudhyar New phase). Instinct may run ahead of a plan, so it can help to notice what you want to begin before explaining why.' },
+  'Crescent': { theme: 'Early Effort', description: 'The Solar Return Moon is 45 to 90 degrees ahead of the Sun (Rudhyar Crescent phase). Recent beginnings may need steady effort while older habits still pull, so notice which plans keep their meaning after the first push.' },
+  'First Quarter': { theme: 'Concrete Choices', description: 'The Solar Return Moon is 90 to 135 degrees ahead of the Sun (Rudhyar First Quarter phase). Plans may ask for concrete decisions and visible effort. Friction between what you want and what is practical can sharpen priorities rather than signal failure.' },
+  'Gibbous': { theme: 'Refinement', description: 'The Solar Return Moon is 135 to 180 degrees ahead of the Sun (Rudhyar Gibbous phase). Attention may go to adjusting and improving what already exists before showing it more widely.' },
+  'Full Moon': { theme: 'Seeing Clearly', description: 'The Solar Return Moon is 180 to 225 degrees from the Sun (Rudhyar Full phase). Results and other people\'s responses may be easier to see, which can make relationships a useful mirror for what you have been building.' },
+  'Disseminating': { theme: 'Sharing What You Learned', description: 'The Solar Return Moon is 225 to 270 degrees from the Sun (Rudhyar Disseminating phase). Explaining, teaching or passing on what experience has shown you may feel more natural.' },
+  'Last Quarter': { theme: 'Reorienting', description: 'The Solar Return Moon is 270 to 315 degrees from the Sun (Rudhyar Last Quarter phase). Routines or beliefs that once fit may be questioned. Sorting what to keep from what to change is the practical work.' },
+  'Balsamic': { theme: 'Completing', description: 'The Solar Return Moon is 315 to 360 degrees from the Sun (Rudhyar Balsamic phase). Finishing, reflecting and leaving room between commitments may matter more. This does not predict isolation or low energy.' },
 };
+// Legacy astronomical-appearance keys map to the same cycle descriptions.
+srMoonPhaseInterp['Waxing Crescent'] = srMoonPhaseInterp['Crescent'];
+srMoonPhaseInterp['Waxing Gibbous'] = srMoonPhaseInterp['Gibbous'];
+srMoonPhaseInterp['Waning Gibbous'] = srMoonPhaseInterp['Disseminating'];
+srMoonPhaseInterp['Waning Crescent'] = srMoonPhaseInterp['Balsamic'];
 
 // ─── Moon Phase Sign Blending ───────────────────────────────────────
 // What the Moon sign is releasing vs. what the Sun sign is calling forward

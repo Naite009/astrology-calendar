@@ -1,4 +1,4 @@
-import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS } from './lunarPhaseConvention';
+import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
@@ -361,6 +361,10 @@ export interface SRMoonPhase {
   description: string;
   isEclipse: boolean;
   phaseAngle: number;
+  /** Named convention used for `phase` (astrological cycle phase). */
+  convention?: string;
+  /** What the real sky Moon looks like at this angle (centred sectors). */
+  astronomicalAppearance?: string;
 }
 
 export interface SRStellium {
@@ -1176,7 +1180,7 @@ export const analyzeSolarReturn = (
           }
         }
       }
-      moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100 };
+      moonPhase = { phase: phase.name, description: phase.desc, isEclipse, phaseAngle: Math.round(diff * 100) / 100, convention: LUNAR_PHASE_CONVENTION, astronomicalAppearance: astronomicalAppearance(diff) };
     }
   }
 
@@ -1296,8 +1300,8 @@ export const analyzeSolarReturn = (
 
   // Modality-Moon phase bridging logic
   const currentPhase = moonPhase?.phase || '';
-  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous'];
-  const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous'];
+  const closingPhases = ['Balsamic', 'Waning Crescent', 'Last Quarter', 'Waning Gibbous', 'Disseminating'];
+  const openingPhases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Crescent', 'Gibbous'];
   const isClosingMoon = closingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
   const isOpeningMoon = openingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
 
