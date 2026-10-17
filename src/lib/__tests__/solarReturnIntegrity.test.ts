@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import type { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { lunarPhaseName } from '@/lib/lunarPhaseConvention';
+import { lunarPhaseName, astronomicalAppearance, LUNAR_PHASE_MEANINGS } from '@/lib/lunarPhaseConvention';
+import { isMachineString } from '@/lib/preExportValidator';
+import { longitudeToSignPosition } from '@/lib/ephemerisEngine';
 import { analyzeSolarReturn } from '@/lib/solarReturnAnalysis';
 import { resolveSolarReturnProvenance } from '@/lib/solarReturnProvenance';
 import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/secondaryProgressions';
@@ -13,14 +15,17 @@ import { computeBody } from '@/lib/ephemerisEngine';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
 
 describe('Solar Return concrete integrity regressions', () => {
-  it.each([[0,'New Moon'],[22.499,'New Moon'],[22.5,'Waxing Crescent'],[67.5,'First Quarter'],[112.5,'Waxing Gibbous'],[122.45,'Waxing Gibbous'],[157.5,'Full Moon'],[202.5,'Waning Gibbous'],[221.98,'Waning Gibbous'],[247.5,'Last Quarter'],[292.5,'Balsamic'],[337.5,'New Moon'],[360,'New Moon']] as const)('phase %s is %s', (angle,label) => expect(lunarPhaseName(angle)).toBe(label));
+  it.each([[0,'New Moon'],[44.99,'New Moon'],[45,'Crescent'],[90,'First Quarter'],[122.45,'First Quarter'],[135,'Gibbous'],[180,'Full Moon'],[221.98,'Full Moon'],[225,'Disseminating'],[270,'Last Quarter'],[315,'Balsamic'],[345,'Balsamic'],[359.99,'Balsamic'],[360,'New Moon']] as const)('Rudhyar phase %s is %s', (angle,label) => expect(lunarPhaseName(angle)).toBe(label));
+  it.each([[122.45,'Waxing Gibbous'],[221.98,'Waning Gibbous'],[345,'New Moon']] as const)('sky appearance %s is %s', (angle,label) => expect(astronomicalAppearance(angle)).toBe(label));
   it('keeps age-50 whole-sign profection and all three ruler roles distinct', () => {
     const a = analyzeSolarReturn(laurenReturn,laurenNatal);
     expect(a.profectionYear).toMatchObject({ age:50, houseNumber:3, natalCuspSign:'Sagittarius', timeLord:'Jupiter' });
     expect(a.natalChartRuler?.planet).toBe('Venus');
     expect(a.yearlyTheme?.ascendantRuler).toBe('Mars');
     expect(a.srCuspSigns?.[10]).toBe('Virgo');
-    expect(a.moonPhase?.phase).toBe('Waxing Gibbous');
+    expect(a.moonPhase?.phase).toBe('First Quarter');
+    expect(a.moonPhase?.astronomicalAppearance).toBe('Waxing Gibbous');
+    expect(a.moonPhase?.convention).toMatch(/Rudhyar/);
     expect(a.moonMetonicAges).toEqual([]);
   });
   it('does not pretend an absent imported return time or house system was stored', () => {
@@ -68,7 +73,7 @@ describe('Solar Return concrete integrity regressions', () => {
     expect(validateSolarReturnReport(json)).toEqual([]);
     expect(validateSolarReturnReport({...json,birthDate:'1976-10-21.'})).toContain('Invalid birth date');
     expect(validateSolarReturnReport({...json,lordOfTheYear:{planet:'Venus'}})).toContain('Lord of the year differs from the profection lord');
-    expect(validateSolarReturnReport({...json,moonPhase:{phase:'First Quarter',phaseAngle:122.45}})).toContain('Moon phase label conflicts with its angle');
+    expect(validateSolarReturnReport({...json,moonPhase:{phase:'Gibbous',phaseAngle:122.45}})).toContain('Moon phase label conflicts with its angle');
   });
   it('uses calculated eclipses inside the actual 2026 return interval', () => {
     const eclipses = calculateEclipseSensitivity(laurenReturn, laurenNatal, 2026);
@@ -102,3 +107,15 @@ describe('Solar Return concrete integrity regressions', () => {
     expect(analyzeSolarReturn(laurenReturn,natal).profectionYear).toMatchObject({natalCuspSign:'Capricorn',timeLord:'Saturn'});
   });
 });
+
+describe('audit follow-up regressions', () => {
+  it('phase meanings carry no crisis wording', () => { for (const m of LUNAR_PHASE_MEANINGS) expect(m).not.toMatch(/crisis/i); });
+  it('rounding carries 59.99 minutes into the next degree', () => {
+    const p = longitudeToSignPosition(29 + 59.9999 / 60);
+    expect([p.sign, p.degree, p.minutes]).toEqual(['Taurus', 0, 0]);
+    expect(longitudeToSignPosition(10 + 59.995/60).minutes).toBeLessThan(60);
+  });
+  it.each(['2026-10-21T13:48:18.650Z','1976-10-21','https://example.com/a','sr-internal','Waxing_Gibbous','208.18'])('machine string %s untouched', v => expect(isMachineString(v)).toBe(true));
+  it('prose is still cleanable', () => expect(isMachineString('Mars square Saturn adds pressure.')).toBe(false));
+});
+
