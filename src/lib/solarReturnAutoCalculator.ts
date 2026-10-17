@@ -1,3 +1,4 @@
+import { computeBody, longitudeToSignPosition } from './ephemerisEngine';
 /**
  * Solar Return Auto-Calculator
  *
@@ -10,8 +11,6 @@
 
 import * as Astronomy from 'astronomy-engine';
 import { calculatePlacidusHouses } from './placidusHouses';
-import { getAccurateAsteroidPosition } from './asteroidEphemeris';
-import { trueNodeLongitude } from './ephemeris/slowBodies';
 
 const ZODIAC_SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -19,37 +18,7 @@ const ZODIAC_SIGNS = [
 ];
 
 function lonToPos(lon: number): { sign: string; degree: number; minutes: number } {
-  const norm = ((lon % 360) + 360) % 360;
-  const signIdx = Math.floor(norm / 30);
-  const degFloat = norm % 30;
-  const degree = Math.floor(degFloat);
-  const minutes = Math.min(59, Math.round((degFloat - degree) * 60));
-  return { sign: ZODIAC_SIGNS[signIdx], degree, minutes };
-}
-
-function isBodyRetrograde(body: Astronomy.Body, date: Date): boolean {
-  const before = new Date(date.getTime() - 12 * 3600_000);
-  const after  = new Date(date.getTime() + 12 * 3600_000);
-  const lonBefore = Astronomy.Ecliptic(Astronomy.GeoVector(body, before, false)).elon;
-  const lonAfter  = Astronomy.Ecliptic(Astronomy.GeoVector(body, after, false)).elon;
-  let diff = lonAfter - lonBefore;
-  if (diff >  180) diff -= 360;
-  if (diff < -180) diff += 360;
-  return diff < 0;
-}
-
-function getPlanetLon(body: Astronomy.Body, date: Date): number {
-  if (body === Astronomy.Body.Moon) {
-    return Astronomy.Ecliptic(Astronomy.GeoMoon(date)).elon;
-  }
-  return Astronomy.Ecliptic(Astronomy.GeoVector(body, date, false)).elon;
-}
-
-function getMeanNodeLon(date: Date): number {
-  const jd = date.getTime() / 86_400_000 + 2_440_587.5;
-  const T = (jd - 2_451_545.0) / 36_525;
-  const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + T * T * T / 450_000;
-  return ((omega % 360) + 360) % 360;
+  return longitudeToSignPosition(lon);
 }
 
 export interface AutoSRPlanet {
@@ -96,44 +65,21 @@ export function calculateSolarReturnAuto(
   // 2. Seed the search: start 15 days before the birthday in the target year
   const parts = natalBirthDate.split('-').map(Number);
   const bMonth = (parts[1] ?? 1) - 1; // 0-based month
-  const bDay   = Math.max(1, (parts[2] ?? 1) - 15);
-  const startDate = new Date(Date.UTC(targetYear, bMonth, bDay));
+  const bDay   = parts[2] ?? 1;
+  const startDate = new Date(Date.UTC(targetYear, bMonth, bDay) - 15 * 86400000);
 
   // 3. Find exact SR moment (search up to 35 days forward)
   const srTime = Astronomy.SearchSunLongitude(natalSunLong, startDate, 35);
   if (!srTime) throw new Error('Could not find solar return moment — check natal Sun position and year');
   const srDate = srTime.date;
 
-  // 4. Planetary positions at SR moment
-  const outerPlanets: Array<[string, Astronomy.Body]> = [
-    ['Mercury', Astronomy.Body.Mercury],
-    ['Venus',   Astronomy.Body.Venus],
-    ['Mars',    Astronomy.Body.Mars],
-    ['Jupiter', Astronomy.Body.Jupiter],
-    ['Saturn',  Astronomy.Body.Saturn],
-    ['Uranus',  Astronomy.Body.Uranus],
-    ['Neptune', Astronomy.Body.Neptune],
-    ['Pluto',   Astronomy.Body.Pluto],
-  ];
-
-  const planets: Record<string, AutoSRPlanet> = {
-    Sun:  { ...lonToPos(getPlanetLon(Astronomy.Body.Sun,  srDate)) },
-    Moon: { ...lonToPos(getPlanetLon(Astronomy.Body.Moon, srDate)) },
-  };
-
-  for (const [name, body] of outerPlanets) {
-    planets[name] = {
-      ...lonToPos(getPlanetLon(body, srDate)),
-      isRetrograde: isBodyRetrograde(body, srDate),
-    };
+  // Canonical apparent positions and retrograde flags, without a parallel fallback engine.
+  const planets: Record<string, AutoSRPlanet> = {};
+  for (const name of ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'SouthNode', 'Chiron'] as const) {
+    const body = computeBody(name, srDate);
+    if (!body.ok) throw new Error(`Position unavailable for ${name}`);
+    planets[name] = { ...lonToPos(body.longitude), isRetrograde: name === 'NorthNode' || name === 'SouthNode' ? undefined : body.retrograde };
   }
-
-  // North Node: true node, with the mean node only as a fallback.
-  planets['NorthNode'] = { ...lonToPos(trueNodeLongitude(srDate) ?? getMeanNodeLon(srDate)) };
-
-  // Chiron from ephemeris lookup
-  const chironRaw = getAccurateAsteroidPosition('chiron', srDate);
-  planets['Chiron'] = { sign: chironRaw.sign, degree: chironRaw.degree, minutes: chironRaw.minutes };
 
   // 5. Placidus house cusps
   const houses = calculatePlacidusHouses(srDate, lat, lng);

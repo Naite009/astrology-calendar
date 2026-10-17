@@ -1,3 +1,4 @@
+import { getHouseLivedInterpretation } from './interpretation/psychologicalFunctions';
 /**
  * Life Domain Scores, nature-weighted, tone-aware scoring
  *
@@ -10,19 +11,19 @@ import { SolarReturnAnalysis } from './solarReturnAnalysis';
 
 const HOUSE_PLAIN_LDS: Record<number, string> = {
   1: 'identity and self-image', 2: 'finances and self-worth', 3: 'communication and learning',
-  4: 'home and family', 5: 'creativity and romance', 6: 'health and daily routines',
+  4: 'home and family', 5: 'creativity and romance', 6: 'workload and daily routines',
   7: 'partnerships and relationships', 8: 'shared resources and deep change', 9: 'travel and big-picture goals',
   10: 'career and public role', 11: 'friendships and community', 12: 'inner work and quiet reflection',
 };
 
 /* ── Planet Nature Classification ── */
 
-type PlanetNature = 'benefic' | 'malefic' | 'outer' | 'wound-healer' | 'neutral' | 'luminary';
+type PlanetNature = 'benefic' | 'malefic' | 'outer' | 'sensitivity' | 'neutral' | 'luminary';
 
 const PLANET_NATURE: Record<string, PlanetNature> = {
   Sun: 'luminary', Moon: 'luminary', Mercury: 'neutral', Venus: 'benefic',
   Jupiter: 'benefic', Mars: 'malefic', Saturn: 'malefic', Uranus: 'outer',
-  Neptune: 'outer', Pluto: 'outer', Chiron: 'wound-healer', NorthNode: 'neutral',
+  Neptune: 'outer', Pluto: 'outer', Chiron: 'sensitivity', NorthNode: 'neutral',
   Juno: 'neutral', Ceres: 'neutral', Pallas: 'neutral', Vesta: 'neutral', MC: 'neutral',
 };
 
@@ -85,9 +86,9 @@ function dignityMultiplier(planet: string, dignity: Dignity): number {
 
 const PLANET_EFFECT: Record<string, string> = {
   Venus: 'attraction & harmony', Jupiter: 'expansion & opportunity',
-  Saturn: 'restriction & hard lessons', Mars: 'conflict & drive',
-  Uranus: 'sudden change & disruption', Neptune: 'confusion & dissolving boundaries',
-  Pluto: 'power struggles & transformation', Chiron: 'surfacing old wounds',
+  Saturn: 'structure & commitments', Mars: 'initiative & assertion',
+  Uranus: 'independence & alternatives', Neptune: 'imagination & uncertainty',
+  Pluto: 'depth & strong investment', Chiron: 'sensitivity & vulnerability',
   Sun: 'core focus & identity', Moon: 'emotional needs',
   Mercury: 'communication & analysis', NorthNode: 'growth direction',
   Juno: 'partnership commitment', Ceres: 'nurturing & loss/return',
@@ -187,7 +188,7 @@ const DOMAIN_CONFIG: Record<DomainKey, {
     },
   },
   health: {
-    label: 'Health & Vitality',
+    label: 'Workload & Daily Routines',
     houses: [1, 6],
     houseReasons: {
       1: 'your physical body and vitality',
@@ -319,11 +320,11 @@ const DOMAIN_CONFIG: Record<DomainKey, {
 const PLANET_PLAIN: Record<string, string> = {
   Sun: 'your identity and sense of self', Moon: 'your emotions and daily feelings',
   Mercury: 'how you think and communicate', Venus: 'what you love and value',
-  Mars: 'your drive, energy, and desire', Jupiter: 'where you get lucky and expand',
+  Mars: 'your drive, energy, and desire', Jupiter: 'how you seek opportunities and broader understanding',
   Saturn: 'where you work hardest and face tests', Uranus: 'where sudden changes happen',
   Neptune: 'your intuition, illusions, and confusion', Pluto: 'deep transformation and power shifts',
   NorthNode: 'your growth direction this lifetime', Juno: 'what you need in committed partnership',
-  Chiron: 'where an area of deep sensitivity for you becomes your greatest healing',
+  Chiron: 'where sensitivity may deserve careful attention',
   Ceres: 'nurturing and cycles of loss and return', Pallas: 'strategic intelligence',
   Vesta: 'sacred focus and devotion', MC: 'your career direction and public role',
 };
@@ -424,15 +425,17 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     let houseOccupantCount = 0;
     const housesCounted = new Set<number>();
     const countedPlanets = new Set<string>();
-    for (const overlay of analysis.houseOverlays) {
+    const majorBodies = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']);
+    const overlays = analysis.houseOverlays.filter(o => majorBodies.has(o.planet)).sort((a,b) => ((b.planet === 'Sun' ? 3 : b.planet === 'Moon' ? 2 : activityWeights[b.planet] || 0) - (a.planet === 'Sun' ? 3 : a.planet === 'Moon' ? 2 : activityWeights[a.planet] || 0)));
+    for (const overlay of overlays) {
       const h = overlay.srHouse || 0;
       if (houses.includes(h)) {
         const explicitWeight = activityWeights[overlay.planet];
-        if (explicitWeight && explicitWeight > 0) {
-          const diminish = housesCounted.has(h) ? 0.4 : houseOccupantCount >= 2 ? 0.5 : 1;
+        if (explicitWeight && explicitWeight > 0 || overlay.planet === 'Sun' || overlay.planet === 'Moon') {
+          const diminish = housesCounted.has(h) ? 0 : houseOccupantCount >= 2 ? 0.5 : 1;
           housesCounted.add(h);
           countedPlanets.add(overlay.planet);
-          const w = Math.min(explicitWeight, 1.5) * diminish;
+          const w = Math.min(overlay.planet === 'Sun' ? 2 : overlay.planet === 'Moon' ? 1.5 : explicitWeight || 0.15, 2) * diminish;
           activity += w;
           houseOccupantCount++;
           const nature = getNature(overlay.planet);
@@ -517,7 +520,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     }
 
     // 4. Aspects (capped at 2 pts activity)
-    const allAspects = [...analysis.srToNatalAspects, ...analysis.srInternalAspects];
+    const allAspects = [...analysis.srInternalAspects, ...analysis.srToNatalAspects].filter(a => (activityWeights[a.planet1] || 0) >= 0.1 && (activityWeights[a.planet2] || 0) >= 0.1).sort((a, b) => a.orb - b.orb);
     let aspectBoost = 0;
     let aspectToneBoost = 0;
     const aspectDetails: string[] = [];
@@ -526,7 +529,8 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       if (aspectBoost >= MAX_ASPECT) break;
       // A planet already counted through house occupancy does not get counted again
       // through its aspects. Aspects only add NEW information.
-      if (countedPlanets.has(asp.planet1) && countedPlanets.has(asp.planet2)) continue;
+      if (asp.source === 'sr-internal' && countedPlanets.has(asp.planet1) && countedPlanets.has(asp.planet2)) continue;
+      if (!houses.includes(analysis.planetSRHouses[asp.planet1] ?? -1) && !houses.includes(analysis.planetSRHouses[asp.planet2] ?? -1)) continue;
       const p1w = countedPlanets.has(asp.planet1) ? 0 : (activityWeights[asp.planet1] || 0);
       const p2w = countedPlanets.has(asp.planet2) ? 0 : (activityWeights[asp.planet2] || 0);
       if (p1w > 0 || p2w > 0) {
@@ -536,7 +540,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         aspectBoost += weight;
         const aspectTone = BENEFIC_ASPECTS.includes(asp.type) ? 0.2 : -0.2;
         aspectToneBoost += aspectTone;
-        aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type}`);
+        aspectDetails.push(asp.label);
       }
     }
     if (aspectBoost > 0) {
@@ -600,7 +604,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       label: activityLabel(finalActivity, tone),
       drivers: allDrivers,
       driverSummaries: allDrivers.filter(d => d.house > 0).slice(0, 6).map(d => `${d.planet} in ${ordinal(d.house)} House`),
-      advice: adviceMap[adviceKey] || adviceMap.mixed || '',
+      advice: finalActivity > 0 ? `This is an app-defined activity and tone signal, not a probability or outcome forecast. Attention may return to ${houses.map(h=>getHouseLivedInterpretation(h)?.attention).filter(Boolean).join('; ')}. Compare that possibility with your actual situation.` : 'No strong house-based activity signature was counted here. A quiet score does not predict health, success or an absence of important events.',
       breakdown,
     };
   }

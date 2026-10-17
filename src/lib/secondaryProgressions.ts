@@ -1,3 +1,5 @@
+import { lunarPhaseIndex, lunarPhaseName, LUNAR_PHASE_MEANINGS } from './lunarPhaseConvention';
+import { computeBody } from './ephemerisEngine';
 import * as Astronomy from 'astronomy-engine';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { resolveBirthMomentSync, birthInputFromChart } from './birthDataNormalization';
@@ -264,6 +266,7 @@ export interface ProgressedAspect {
 }
 
 export interface SecondaryProgressions {
+  referenceDate?: Date;
   progressedDate: Date;
   ageInYears: number;
   planets: Record<string, ProgressedPlanet>;
@@ -332,7 +335,7 @@ export const calculateSecondaryProgressions = (
         longitude,
         sign: getSignFromLongitude(longitude),
         degree: getDegreeInSign(longitude),
-        retrograde: false,
+        retrograde: planetName === 'Sun' || planetName === 'Moon' ? false : (() => { const position = computeBody(planetName as 'Mercury' | 'Venus' | 'Mars', progressedDate); return position.ok && position.retrograde; })(),
       };
     } catch (e) {
       console.warn(`Failed to calculate progressed ${planetName}:`, e);
@@ -341,6 +344,7 @@ export const calculateSecondaryProgressions = (
   
   return {
     progressedDate,
+    referenceDate: new Date(currentDate),
     ageInYears,
     planets: progressedPlanets,
   };
@@ -389,75 +393,9 @@ const getDetailedProgressedMoonPhase = (
   moonLongitude: number,
   sunLongitude: number
 ): ProgressedMoonPhase => {
-  let angle = moonLongitude - sunLongitude;
-  if (angle < 0) angle += 360;
-  
-  // 8 phases of ~45° each
-  if (angle < 45) {
-    return {
-      phaseName: 'New Moon Phase',
-      phaseAngle: angle,
-      description: 'Subjective, instinctive, new beginnings emerging from the dark',
-      lifeTheme: 'A new cycle is beginning. You may feel pulled to start something entirely new, break from the past, or plant seeds for the future. This is a time of emergence — trust your instincts even when you cannot see clearly.',
-      timing: 'Duration: ~3.5 years from the progressed New Moon'
-    };
-  } else if (angle < 90) {
-    return {
-      phaseName: 'Crescent Moon Phase',
-      phaseAngle: angle,
-      description: 'Struggle, breakthrough, asserting the new against the old',
-      lifeTheme: 'What you started at the New Moon now meets resistance. The past pulls at you. This is a testing phase where you must fight for your vision. Crisis of momentum — push through or fall back.',
-      timing: 'Duration: ~3.5 years | Building phase'
-    };
-  } else if (angle < 135) {
-    return {
-      phaseName: 'First Quarter Phase',
-      phaseAngle: angle,
-      description: 'Crisis in action, decisive turning point, building structures',
-      lifeTheme: 'A decisive moment. The first quarter square demands action and commitment. You must make real-world choices that structure your path. No more dreaming — build something concrete.',
-      timing: 'Duration: ~3.5 years | Action required'
-    };
-  } else if (angle < 180) {
-    return {
-      phaseName: 'Gibbous Moon Phase',
-      phaseAngle: angle,
-      description: 'Refinement, perfecting, preparing for culmination',
-      lifeTheme: 'Analysis and refinement dominate. You are preparing for something to come to fruition. Improve your methods, study, train, perfect. The harvest approaches but is not yet here.',
-      timing: 'Duration: ~3.5 years | Preparation phase'
-    };
-  } else if (angle < 225) {
-    return {
-      phaseName: 'Full Moon Phase',
-      phaseAngle: angle,
-      description: 'Culmination, maximum illumination, relationship awareness',
-      lifeTheme: 'Maximum visibility. What you have been building is now seen clearly — by you and others. Relationships come into sharp focus. Fulfillment OR disillusionment, depending on what you built. Clarity about whether the path is right.',
-      timing: 'Duration: ~3.5 years | Culmination'
-    };
-  } else if (angle < 270) {
-    return {
-      phaseName: 'Disseminating Moon Phase',
-      phaseAngle: angle,
-      description: 'Sharing, teaching, distributing what was learned',
-      lifeTheme: 'Time to share what you have learned. Teaching, mentoring, publishing, spreading your message. You have wisdom from the Full Moon experience — now pass it on. Meaning comes through contribution.',
-      timing: 'Duration: ~3.5 years | Distribution phase'
-    };
-  } else if (angle < 315) {
-    return {
-      phaseName: 'Last Quarter Phase',
-      phaseAngle: angle,
-      description: 'Crisis in consciousness, reorientation, letting go',
-      lifeTheme: 'A crisis of meaning. The old structures no longer satisfy. You must reorient your consciousness, question beliefs, let go of what no longer serves. Clearing and pruning for the next cycle.',
-      timing: 'Duration: ~3.5 years | Reorientation'
-    };
-  } else {
-    return {
-      phaseName: 'Balsamic Moon Phase',
-      phaseAngle: angle,
-      description: 'Release, endings, seed planting for the future',
-      lifeTheme: 'The darkest phase before the new beginning. Endings, completions, surrender. Release the past. You may feel isolated or drawn inward. Seeds are being planted in the dark for the next 28-year cycle.',
-      timing: 'Duration: ~3.5 years | Completion phase'
-    };
-  }
+  const angle = ((moonLongitude - sunLongitude) % 360 + 360) % 360;
+  const index = lunarPhaseIndex(angle);
+  return { phaseName: `${lunarPhaseName(angle)} Phase`, phaseAngle: angle, description: LUNAR_PHASE_MEANINGS[index], lifeTheme: LUNAR_PHASE_MEANINGS[index], timing: 'Eight centred 45-degree sectors; phase duration varies with actual progressed motion.' };
 };
 
 // Calculate house change info
@@ -581,19 +519,42 @@ export const getProgressedMoonInfo = (
   
   if (!progMoon) return null;
   
-  // Progressed Moon moves ~13° per year = ~1.08° per month
-  // More accurate calculation for sign change
   const currentDegree = progMoon.degree;
-  const degreesUntilSignChange = 30 - currentDegree;
-  const monthsUntilSignChange = Math.round(degreesUntilSignChange / 1.08);
-  
-  const signChangeDate = new Date();
-  signChangeDate.setMonth(signChangeDate.getMonth() + monthsUntilSignChange);
-  
-  // Determine house and house change info
+  const referenceDate = progressions.referenceDate || (() => {
+    const birth = parseBirthDate(natalChart);
+    return birth ? new Date(birth.getTime() + progressions.ageInYears * 365.25 * 86400000) : new Date(progressions.progressedDate);
+  })();
+  // Search the real progressed ephemeris, then map ephemeris days back to elapsed years.
+  const findIngress = (target: number): Date | null => {
+    const start = progressions.progressedDate.getTime();
+    const residual = (ms: number) => {
+      const body = computeBody('Moon', new Date(ms));
+      if (!body.ok) return NaN;
+      return ((body.longitude - target + 540) % 360) - 180;
+    };
+    let prev = residual(start);
+    for (let step = 1; step <= 12 * 24; step++) {
+      const hi0 = start + step * 3600000;
+      const next = residual(hi0);
+      if (prev < 0 && next >= 0 && next - prev < 10) {
+        let lo = hi0 - 3600000, hi = hi0;
+        for (let n = 0; n < 35; n++) { const mid = (lo + hi) / 2; if (residual(mid) < 0) lo = mid; else hi = mid; }
+        return new Date(referenceDate.getTime() + ((lo + hi) / 2 - start) * 365.25);
+      }
+      prev = next;
+    }
+    return null;
+  };
+  const signChangeDate = findIngress((Math.floor(progMoon.longitude / 30) * 30 + 30) % 360) || referenceDate;
+  const monthsUntilSignChange = Math.max(0, (signChangeDate.getTime() - referenceDate.getTime()) / (365.25 / 12 * 86400000));
   const house = getPlanetHouse(progMoon.longitude, natalChart.houseCusps);
   const houseChange = calculateHouseChange(progMoon.longitude, natalChart.houseCusps);
-  
+  const nextCusp = house ? natalChart.houseCusps?.[`house${house === 12 ? 1 : house + 1}` as keyof typeof natalChart.houseCusps] : null;
+  const nextCuspLon = nextCusp ? natalPositionToLongitude(nextCusp as NatalPlanetPosition) : null;
+  const houseIngress = nextCuspLon === null ? null : findIngress(nextCuspLon);
+  houseChange.houseChangeDate = houseIngress;
+  houseChange.monthsUntilHouseChange = houseIngress ? (houseIngress.getTime() - referenceDate.getTime()) / (365.25 / 12 * 86400000) : null;
+
   // Determine phase (waxing/waning based on relationship to Progressed Sun)
   let phase: 'Waxing' | 'Waning' = 'Waxing';
   let phaseDescription = 'Growth and building phase';

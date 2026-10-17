@@ -22,11 +22,10 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
       {/* Explanatory note */}
       <div className="bg-secondary/50 rounded-sm p-4">
         <p className="text-xs text-foreground leading-relaxed">
-          <strong>Two techniques, two rulers:</strong> the Profection Time Lord (
-          {analysis.profectionYear ? <>{PLANET_SYMBOLS[analysis.profectionYear.timeLord]} {analysis.profectionYear.timeLord}</> : '—'}
-          ) comes from the activated house cusp sign; the natal chart ruler (
-          {analysis.lordOfTheYear ? <>{PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}</> : '—'}
-          ) comes from the SR Ascendant's natal ruler. Both are active this year.
+          <strong>Three distinct roles:</strong> natal chart ruler: {analysis.natalChartRuler?.planet || analysis.lordOfTheYear?.planet || 'unknown'} (natal Ascendant).
+          Solar Return chart ruler: {analysis.yearlyTheme?.ascendantRuler || 'unknown'} (return Ascendant).
+          Annual profection lord: {analysis.profectionYear?.timeLord || 'unknown'} (activated whole sign, not the quadrant cusp).
+
         </p>
       </div>
 
@@ -51,7 +50,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
             <svg viewBox="0 0 500 500" className="w-full max-w-[520px]">
               {Array.from({ length: 12 }, (_, i) => {
                 const houseNum = i + 1;
-                const isActive = houseNum === analysis.profectionYear!.houseNumber;
+                const isActive = houseNum === analysis.profectionYear?.houseNumber;
                 const startAngle = 180 - i * 30;
                 const endAngle = startAngle - 30;
                 const midAngle = (startAngle + endAngle) / 2;
@@ -75,7 +74,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
                 const ax = cx + agesR * cosM;
                 const ay = cy - agesR * sinM;
                 const path = `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
-                const currentAge = analysis.profectionYear!.age;
+                const currentAge = analysis.profectionYear?.age;
                 return (
                   <g key={i}>
                     <path d={path} fill={isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted))'} stroke="hsl(var(--border))" strokeWidth="1" opacity={isActive ? 1 : 0.5} />
@@ -108,7 +107,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
               <tbody>
                 {Array.from({ length: 100 }, (_, age) => {
                   const house = (age % 12) + 1;
-                  const isCurrentAge = age === analysis.profectionYear!.age;
+                  const isCurrentAge = age === analysis.profectionYear?.age;
                   return (
                     <tr key={age} className={`border-b border-border/50 ${isCurrentAge ? 'bg-primary/10 font-medium' : age % 2 === 0 ? 'bg-muted/20' : ''}`}>
                       <td className={`px-2 py-1 ${isCurrentAge ? 'text-primary font-bold' : 'text-foreground'}`}>{age}{isCurrentAge ? ' ←' : ''}</td>

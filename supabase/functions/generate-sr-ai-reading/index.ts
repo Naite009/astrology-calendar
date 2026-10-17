@@ -1,3 +1,4 @@
+import { validateSolarReturnReport, validateSolarReturnReading } from '../_shared/solarReturnReportValidation.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
@@ -81,8 +82,8 @@ function buildContext(d: any, age: number | null): string {
     ctx += `SR Asc Ruler: ${d.yearlyTheme.ascendantRuler} in ${d.yearlyTheme.ascendantRulerSign} (house ${d.yearlyTheme.ascendantRulerHouse || '—'})\n\n`;
   }
 
-  if (d.lordOfTheYear) {
-    ctx += `Natal Chart Ruler (ruler of the NATAL Ascendant, NOT the profection Time Lord): ${d.lordOfTheYear.planet} in ${d.lordOfTheYear.srSign} (house ${d.lordOfTheYear.srHouse || '—'}), dignity: ${d.lordOfTheYear.dignity}${d.lordOfTheYear.isRetrograde ? ' (Rx)' : ''}\n`;
+  if (d.natalChartRuler) {
+    ctx += `Natal Chart Ruler (ruler of the NATAL Ascendant, NOT the profection Time Lord): ${d.natalChartRuler.planet} in ${d.natalChartRuler.srSign} (house ${d.natalChartRuler.srHouse || '—'}), dignity: ${d.natalChartRuler.dignity}${d.natalChartRuler.isRetrograde ? ' (Rx)' : ''}\n`;
   }
 
   if (d.profectionYear) {
@@ -107,7 +108,7 @@ function buildContext(d: any, age: number | null): string {
   ctx += `Sun: SR house ${d.sunHouse?.house || '—'}, overlays natal house ${d.sunNatalHouse?.house || '—'}\n`;
   ctx += `Moon: ${d.srMoon} in SR house ${d.moonHouse?.house || '—'}, phase: ${d.moonPhase?.phase || '—'}\n`;
   if (d.moonAngularity) ctx += `Moon angularity: ${d.moonAngularity}\n`;
-  if (d.moonVOC) ctx += `Moon is void of course — emotional independence/isolation theme\n`;
+  ctx += 'Moon void-of-course status: not certified unless a future applying-aspect search was supplied.\n';
 
   if (d.srMoonAspects?.length > 0) {
     ctx += `\n--- MOON ASPECTS ---\n`;
@@ -216,7 +217,7 @@ function buildContext(d: any, age: number | null): string {
   if (d.srToNatalAspects?.length > 0) {
     ctx += `\n--- SR-TO-NATAL ASPECTS ---\n`;
     d.srToNatalAspects.slice(0, 12).forEach((a: any) => {
-      ctx += `- SR ${a.srPlanet || a.planet1} ${a.aspect || a.type || ''} Natal ${a.natalPlanet || a.planet2} (${a.orb}°)${a.interpretation ? ': ' + a.interpretation : ''}\n`;
+      ctx += `- SR ${a.srPlanet || a.planet1} ${a.aspectType || a.aspect || a.type || ''} Natal ${a.natalPlanet || a.planet2} (${a.orb}°)${a.interpretation ? ': ' + a.interpretation : ''}\n`;
     });
   }
 
@@ -306,6 +307,13 @@ function buildContext(d: any, age: number | null): string {
     });
   }
 
+  if (d.srInternalAspects?.length) {
+    ctx += '\n--- SOLAR RETURN INTERNAL ASPECTS, NOT NATAL CONTACTS ---\n';
+    for (const a of d.srInternalAspects.slice(0, 12)) ctx += `${a.label}; orb ${a.orb} degrees.\n`;
+  }
+  if (d.calculationMetadata) ctx += `\nRETURN PROVENANCE: ${JSON.stringify(d.calculationMetadata)}\n`;
+  if (d.prioritizedSynthesis) ctx += `\nPRIORITIZED EVIDENCE SYNTHESIS: ${JSON.stringify(d.prioritizedSynthesis)}\n`;
+  if (d.secondaryProgressions) ctx += `\nSECONDARY PROGRESSIONS, LONGER-TERM CONTEXT, NOT RETURN PLACEMENTS: ${JSON.stringify(d.secondaryProgressions)}\n`;
   return ctx;
 }
 
@@ -479,6 +487,9 @@ serve(async (req) => {
 
   try {
     const { fullJson, mode = 'plain' } = await req.json();
+    if (!fullJson || typeof fullJson !== 'object' || !['plain', 'astro'].includes(mode)) return new Response(JSON.stringify({ error: 'Invalid report request' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const errors = validateSolarReturnReport(fullJson);
+    if (errors.length) return new Response(JSON.stringify({ error: `Report blocked: ${errors.join('; ')}` }), { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -486,15 +497,25 @@ serve(async (req) => {
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
     const group = ageGroup(age);
     const ageInstructions = ageContextInstructions(group, age);
-    const ctx = buildContext(d, age);
+    // Only validated evidence reaches the prose writer. Legacy tables and
+    // unverified eclipse/quarter templates are not treated as calculated facts.
+    const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
+      rulers:{natalChartRuler:d.rulers?.natalChartRuler,solarReturnChartRuler:d.rulers?.solarReturnChartRuler,profectionLord:d.rulers?.profectionLord},
+      moonPhase:d.moonPhase,
+      provenance:d.calculationMetadata,
+      prioritizedSynthesis:{themes:d.prioritizedSynthesis?.themes,longerTerm:d.prioritizedSynthesis?.longerTerm},
+      timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
+    const repairRules = `Lead with 3 to 5 evidence-linked themes, not a list of every technique. For each, explain the exact signature, recognizable experience, and useful implication. No standalone sign stereotype, uses Libra style, steer reading, two valid needs, trust process, slogans, crisis-in-action, illness, trauma, mother claims or guaranteed future events. Never use em/en dashes. Natal, return, progressed and transiting factors are distinct. Profection lord is not either Ascendant ruler. Unknown metadata remains unknown. No uncomputed default peak months, Metonic recurrence claims, or VOC inference from an unaspected Moon. Progressed Moon sign and natal-house changes are longer-term context. Use only supplied dated events. Scores are app-defined activity/tone signals, not chances of success. All section headings start ##. Prioritized synthesis is the factual hierarchy; older generic glossaries cannot override it.`;
 
-    const systemPrompt = mode === 'astro'
-      ? astroSystemPrompt(ageInstructions)
-      : plainSystemPrompt(ageInstructions);
+    const systemPrompt = `Write a concise, evidence-grounded annual reading. ${ageInstructions}
+Use 5 sections: ## The main story, ## What modifies it, ## The central tension, ## The longer emotional chapter, ## What matters most.
+Each section has at most 3 sentences and 80 words. Connect rather than list placements. The Sun house and whole-sign profection lead; the ruler placement explains how their arenas meet. Major contacts modify those themes, never a minor-body headline. In the longer chapter, include supplied progressed Moon sign, natal house, reference date and real ingress date, distinctly labelled. Explain uncertainty honestly. Never add a placement, retrograde claim, aspect, orb, house, dignity or interpretation that is absent from the supplied theme evidence. Name the natal chart ruler only by name, without attaching a Solar Return placement to it. Do not infer new aspects from positions.
+${mode === 'astro' ? 'Include exact supplied chart-layer contact labels and orbs as brief evidence, plus the three distinct rulers.' : 'Use ordinary language for experience, then a brief Evidence line naming the supplied chart factors. Never silently remove chart provenance.'}
+Do not include eclipse dates, month forecasts, health claims, invented biography, therapy recommendations, automatic shared-house compatibility, Chiron healing milestones, or claims that co-located rulers perfectly support each other. The astrology suggests possibilities, not facts about what happened or will happen.`;
 
     const userPrompt = mode === 'astro'
-      ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and reference every relevant placement, aspect, and dignity condition from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
-      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use ALL the data below — every score, every theme, every timing window. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
+      ? `Write a concise Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Use only the supplied theme evidence and distinct ruler names.\n\n${ctx}`
+      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use the prioritized evidence below. Choose only the strongest themes; do not recite every technique or score. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -503,14 +524,15 @@ serve(async (req) => {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-3.1-pro-preview",
+        model: "google/gemini-4-argon",
         messages: [
-          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: true }) },
+          { role: "system", content: withInterpretationStandard(`${systemPrompt}\n${repairRules}`, { fullChart: false }) },
           { role: "user", content: userPrompt },
         ],
         temperature: mode === 'astro' ? 0.3 : 0.4,
         stream: true,
       }),
+      signal: req.signal,
     });
 
     if (!response.ok) {
@@ -526,14 +548,48 @@ serve(async (req) => {
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: (() => { try { const e = JSON.parse(errorText); return e.message || e.error?.message || "AI service rejected the request"; } catch { return "AI service rejected the request"; } })() }), {
+        status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    // Consume the upstream stream, but never display unvalidated prose to the client.
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const reader = response.body?.getReader();
+          if (!reader) throw new Error('Missing model response');
+          const decoder = new TextDecoder(); let buffer = '', text = '';
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let end: number;
+            while ((end = buffer.indexOf('\n')) >= 0) {
+              const line = buffer.slice(0, end).trim(); buffer = buffer.slice(end + 1);
+              if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+              const data = JSON.parse(line.slice(6));
+              if (data.error) throw new Error('Model response failed');
+              text += data.choices?.[0]?.delta?.content || '';
+            }
+          }
+          const faults = validateSolarReturnReading(text);
+          if (faults.length) {
+            // Transparent deterministic fallback, not invented replacement AI prose.
+            const themes = d.prioritizedSynthesis?.themes || [];
+            text = themes.map((t: any) => `## ${t.title}\n\n${t.meaning}\n\nEvidence: ${(t.evidence || []).join(' ')}`).join('\n\n');
+            const longer = d.prioritizedSynthesis?.longerTerm;
+            if (longer) text += `\n\n## ${longer.title}\n\n${longer.meaning}\n\nEvidence: ${(longer.evidence || []).join(' ')}`;
+            if (validateSolarReturnReading(text).length) throw new Error(`Reading withheld: ${faults.join('; ')}`);
+            text = `## Evidence-based fallback\n\nThe AI reading did not pass validation. The following is the supplied deterministic interpretation, not a regenerated AI reading.\n\n${text}`;
+          }
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`));
+        } catch (error) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Reading withheld' })}\n\n`));
+        } finally { controller.close(); }
+      }
     });
+    return new Response(stream, { headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'X-SR-Model': 'google/gemini-4-argon' } });
   } catch (error) {
     console.error("generate-sr-ai-reading error:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {

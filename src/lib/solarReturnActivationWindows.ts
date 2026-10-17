@@ -36,6 +36,7 @@ export interface TransitHit {
   windowEnd: Date;
   significance: 'high' | 'medium' | 'low';
   interpretation: string;
+  timingMethod?: string;
 }
 
 export interface ActivationWindow {
@@ -130,10 +131,13 @@ export function calculateActivationWindows(
   srYear: number,
   birthdayMonth: number,  // 0-indexed
   birthdayDay: number,
+  returnInstant?: Date | null,
 ): SRActivationData {
   // SR year runs birthday to birthday
-  const startDate = new Date(srYear, birthdayMonth, birthdayDay);
-  const endDate = new Date(srYear + 1, birthdayMonth, birthdayDay);
+  if (!Number.isFinite(srPlanetPositions.Sun)) return { transitHits: [], activationWindows: [], monthlyThemes: [], peakPeriods: [] };
+  const startDate = returnInstant || Astronomy.SearchSunLongitude(srPlanetPositions.Sun, new Date(Date.UTC(srYear, birthdayMonth, birthdayDay) - 20 * 86400000), 40)?.date;
+  if (!startDate) return { transitHits: [], activationWindows: [], monthlyThemes: [], peakPeriods: [] };
+  const endDate = Astronomy.SearchSunLongitude(srPlanetPositions.Sun, new Date(startDate.getTime() + 350 * 86400000), 30)?.date || new Date(startDate.getTime() + 365.25 * 86400000);
 
   const transitHits: TransitHit[] = [];
 
@@ -177,7 +181,15 @@ export function calculateActivationWindows(
                 srTarget: targetLabel,
                 srTargetDegree: srDeg,
                 aspect: aspDef.name,
-                exactDate: new Date(bestMs),
+                exactDate: (() => {
+                  let lo = Math.max(startDate.getTime(), bestMs - stepMs), hi = Math.min(endDate.getTime(), bestMs + stepMs);
+                  for (let n = 0; n < 40; n++) {
+                    const left = lo + (hi - lo) / 3, right = hi - (hi - lo) / 3;
+                    if (aspectOrb(getPlanetLongitudeExact(body, new Date(left)), srDeg, aspDef.angle) < aspectOrb(getPlanetLongitudeExact(body, new Date(right)), srDeg, aspDef.angle)) hi = right; else lo = left;
+                  }
+                  return new Date((lo + hi) / 2);
+                })(),
+                timingMethod: 'Daily ephemeris scan with numerical minimum refinement; orb-window boundaries sampled daily', 
                 orb: Math.round(bestOrb * 100) / 100,
                 windowStart: new Date(windowStartMs),
                 windowEnd: new Date(windowEndMs),
@@ -203,7 +215,15 @@ export function calculateActivationWindows(
             srTarget: targetLabel,
             srTargetDegree: srDeg,
             aspect: aspDef.name,
-            exactDate: new Date(bestMs),
+            exactDate: (() => {
+                  let lo = Math.max(startDate.getTime(), bestMs - stepMs), hi = Math.min(endDate.getTime(), bestMs + stepMs);
+                  for (let n = 0; n < 40; n++) {
+                    const left = lo + (hi - lo) / 3, right = hi - (hi - lo) / 3;
+                    if (aspectOrb(getPlanetLongitudeExact(body, new Date(left)), srDeg, aspDef.angle) < aspectOrb(getPlanetLongitudeExact(body, new Date(right)), srDeg, aspDef.angle)) hi = right; else lo = left;
+                  }
+                  return new Date((lo + hi) / 2);
+                })(),
+                timingMethod: 'Daily ephemeris scan with numerical minimum refinement; orb-window boundaries sampled daily', 
             orb: Math.round(bestOrb * 100) / 100,
             windowStart: new Date(windowStartMs),
             windowEnd: new Date(endDate.getTime()),
@@ -216,21 +236,28 @@ export function calculateActivationWindows(
   }
 
   // Sort by date
+  for (const hit of transitHits) {
+    const body = BODY_MAP[hit.transitPlanet];
+    const definition = ASPECT_DEFS.find(a => a.name === hit.aspect);
+    if (body && definition) hit.orb = aspectOrb(getPlanetLongitudeExact(body, hit.exactDate), hit.srTargetDegree, definition.angle);
+    hit.timingMethod = hit.orb < 0.001 ? 'Numerically refined exact ephemeris contact; orb-window boundaries sampled daily' : 'Closest approach, not an exact pass; orb-window boundaries sampled daily';
+  }
   transitHits.sort((a, b) => a.exactDate.getTime() - b.exactDate.getTime());
 
   // Build monthly themes
   const monthlyThemes: MonthlyTheme[] = [];
   for (let m = 0; m < 12; m++) {
     const monthDate = new Date(startDate);
-    monthDate.setMonth(monthDate.getMonth() + m);
-    const monthNum = monthDate.getMonth();
-    const yearNum = monthDate.getFullYear();
+    monthDate.setUTCDate(1);
+    monthDate.setUTCMonth(startDate.getUTCMonth() + m);
+    const monthNum = monthDate.getUTCMonth();
+    const yearNum = monthDate.getUTCFullYear();
 
-    const monthStart = new Date(yearNum, monthNum, 1);
-    const monthEnd = new Date(yearNum, monthNum + 1, 0);
+    const monthStart = new Date(Date.UTC(yearNum, monthNum, 1));
+    const monthEnd = new Date(Date.UTC(yearNum, monthNum + 1, 1));
 
     const hits = transitHits.filter(h =>
-      h.exactDate >= monthStart && h.exactDate <= monthEnd
+      h.exactDate >= monthStart && h.exactDate < monthEnd
     );
 
     const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);

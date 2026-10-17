@@ -1,6 +1,7 @@
 // 29-Year Solar Return Lunar Phase Timeline Engine
 // Uses astronomy-engine to compute the exact SR Moon position for each year
 
+import { lunarPhaseIndex } from './lunarPhaseConvention';
 import * as Astronomy from 'astronomy-engine';
 
 const ZODIAC_SIGNS = [
@@ -25,7 +26,7 @@ export const PHASE_DEFINITIONS: PhaseDefinition[] = [
   { name: 'Full Moon', range: [157.5, 202.5], cycleStage: 'Culmination', shortMeaning: 'A year of visibility, relationship focus, revelation, and harvest.', colorLabel: 'culmination' },
   { name: 'Disseminating', range: [202.5, 247.5], cycleStage: 'Sharing', shortMeaning: 'A year of teaching, distributing, contributing, and expressing what has been learned.', colorLabel: 'sharing' },
   { name: 'Last Quarter', range: [247.5, 292.5], cycleStage: 'Reevaluation', shortMeaning: 'A year of restructuring, rethinking, and challenging old systems.', colorLabel: 'reevaluation' },
-  { name: 'Balsamic', range: [292.5, 360], cycleStage: 'Completion', shortMeaning: 'A year of closure, release, healing, and spiritual preparation for the next beginning.', colorLabel: 'completion' },
+  { name: 'Balsamic', range: [292.5, 337.5], cycleStage: 'Completion', shortMeaning: 'A year of closure, release, healing, and spiritual preparation for the next beginning.', colorLabel: 'completion' },
 ];
 
 // ── Timeline entry ──────────────────────────────────────────────────
@@ -153,12 +154,7 @@ function findSolarReturn(targetLon: number, searchCenter: Date): Date {
 
 /** Determine phase from angle */
 function getPhaseFromAngle(angle: number): PhaseDefinition {
-  const normalized = ((angle % 360) + 360) % 360;
-  for (const phase of PHASE_DEFINITIONS) {
-    if (normalized >= phase.range[0] && normalized < phase.range[1]) return phase;
-  }
-  // Edge case: exactly 360 = New Moon
-  return PHASE_DEFINITIONS[0];
+  return PHASE_DEFINITIONS[lunarPhaseIndex(angle)];
 }
 
 /** Detect pattern tags for an entry */

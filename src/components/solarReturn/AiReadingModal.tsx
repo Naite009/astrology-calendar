@@ -1,3 +1,4 @@
+import { validateSolarReturnReport, validateSolarReturnReading } from '../../../supabase/functions/_shared/solarReturnReportValidation';
 import { useState, useRef, useCallback } from 'react';
 import { X, Sparkles, Loader2, RotateCcw, Download, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -19,6 +20,8 @@ export async function fetchReading(
   signal: AbortSignal,
   onDelta: (text: string) => void,
 ): Promise<string> {
+  const inputErrors = validateSolarReturnReport(fullJson);
+  if (inputErrors.length) throw new Error(`Report blocked: ${inputErrors.join('; ')}`);
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sr-ai-reading`;
   const resp = await fetch(url, {
     method: 'POST',
@@ -59,17 +62,21 @@ export async function fetchReading(
       if (jsonStr === '[DONE]') break;
       try {
         const parsed = JSON.parse(jsonStr);
+        if (parsed.error) throw new Error(parsed.error);
         const content = parsed.choices?.[0]?.delta?.content;
         if (content) {
           accumulated += content;
           onDelta(accumulated);
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && !(error instanceof SyntaxError)) throw error;
         buffer = line + '\n' + buffer;
         break;
       }
     }
   }
+  const errors = validateSolarReturnReading(accumulated);
+  if (errors.length) throw new Error(`Reading withheld: ${errors.join('; ')}`);
   return accumulated;
 }
 

@@ -1,3 +1,4 @@
+import { getHouseLivedInterpretation } from './interpretation/psychologicalFunctions';
 /**
  * Tier 5 Solar Return Analysis
  * - Fixed Star Conjunctions
@@ -666,244 +667,28 @@ export function calculateSynthesisSections(
   srToNatalAspects: any[],
   houseOverlays: any[]
 ): SRSynthesisSection[] {
-  const sections: SRSynthesisSection[] = [];
-  const PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
-
-  const planetsInHouses = (houses: number[]) => 
-    PLANETS.filter(p => houses.includes(planetSRHouses[p] ?? -1));
-
-  const aspectsInvolving = (planets: string[]) =>
-    srToNatalAspects.filter((a: any) => planets.includes(a.planet1) || planets.includes(a.planet2));
-
-  const getDignity = (planet: string): string => {
-    const pos = srChart.planets[planet as keyof typeof srChart.planets];
-    if (!pos) return '';
-    const d = getEssentialDignity(planet, (pos as any).sign);
-    return d === 'NotAssigned' || d === 'Peregrine' ? '' : d;
-  };
-
-  const isRetro = (planet: string): boolean => {
-    const pos = srChart.planets[planet as keyof typeof srChart.planets];
-    return !!(pos as any)?.isRetrograde;
-  };
-
-  // Plain-language planet description for birthday gift (no jargon)
-  const PLANET_PLAIN_ROLE: Record<string, string> = {
-    Sun: 'your core energy and sense of purpose', Moon: 'your emotional needs and inner comfort',
-    Mercury: 'how you think and communicate', Venus: 'your natural charm, social grace, and what you love',
-    Mars: 'your drive, motivation, and physical energy', Jupiter: 'where you feel lucky and where doors open',
-    Saturn: 'where you\'re building something lasting through commitment', Uranus: 'where exciting, unexpected changes happen',
-    Neptune: 'your imagination, intuition, and creative vision', Pluto: 'where deep personal evolution is happening',
-    Chiron: 'where your sensitive spots become your greatest strengths', NorthNode: 'the direction your life is naturally growing toward',
-  };
-
-  const HOUSE_PLAIN: Record<number, string> = {
-    1: 'your personal identity and how you show up', 2: 'your money, income, and self-worth',
-    3: 'your communication, learning, and daily connections', 4: 'your home, family, and emotional roots',
-    5: 'your creativity, romance, and self-expression', 6: 'your daily routines, work habits, and health',
-    7: 'your partnerships and closest relationships', 8: 'your shared finances, intimacy, and personal transformation',
-    9: 'your travel, education, and big-picture beliefs', 10: 'your career, public reputation, and life direction',
-    11: 'your friendships, community, and future goals', 12: 'your inner life, rest, and personal reflection',
-  };
-
-  const planetPlain = (planet: string): string => {
-    return PLANET_PLAIN_ROLE[planet] || planet.toLowerCase();
-  };
-
-  const housePlain = (house: number | null): string => {
-    if (!house) return '';
-    return HOUSE_PLAIN[house] || `house ${house}`;
-  };
-
-  const ordSuf = (n: number): string => {
-    const s = ['th','st','nd','rd'];
-    const v = n % 100;
-    return (s[(v - 20) % 10] || s[v] || s[0]);
-  };
-
-  // 1. Love & Relationship Synthesis
-  const relPlanets = planetsInHouses([5, 7, 8]);
-  const venusPos = srChart.planets.Venus;
-  const venusHouse = planetSRHouses['Venus'];
-  const marsHouse = planetSRHouses['Mars'];
-  const relStrength = relPlanets.length >= 3 ? 'strong' as const : relPlanets.length >= 1 ? 'moderate' as const : 'quiet' as const;
-
-  const relHighlights: string[] = [];
-  if (venusPos) relHighlights.push(`Your love language and attraction style are front and center this year`);
-  if (marsHouse) relHighlights.push(`Your drive and passion are focused on ${housePlain(marsHouse)}`);
-  if (relPlanets.length > 0) relHighlights.push(`${relPlanets.length} planets activate your relationship areas`);
-
-  const relNarrParts: string[] = [];
-  if (venusPos) {
-    const vd = getDignity('Venus');
-    const vr = isRetro('Venus');
-    relNarrParts.push(`Your natural charm and social grace are ${vd === 'Domicile' ? 'especially strong this year — connecting with people, attracting love, and enjoying beauty all come naturally' : vd === 'Detriment' ? 'working in unexpected ways — love may arrive through unconventional channels or require more intentional effort' : 'actively shaping how you connect with people and what you attract this year'}.${vr ? ' There may also be unfinished relationship stories from the past worth revisiting — old connections could resurface with new meaning.' : ''}`);
-  }
-  for (const p of ['Saturn', 'Neptune', 'Pluto', 'Uranus', 'Chiron']) {
-    const h = planetSRHouses[p];
-    if (h && [5, 7, 8].includes(h)) {
-      const desc: Record<string, string> = {
-        Saturn: `Your commitment area (${housePlain(h)}) invites honest evaluation — the relationships that matter most get stronger through real conversations`,
-        Neptune: `Your imagination is very active around ${h === 7 ? 'partnerships' : 'relationships'} — trust your intuition, but make sure you\'re seeing people clearly`,
-        Pluto: `${housePlain(h)} is going through a meaningful evolution — old relationship patterns are making room for deeper, more honest connections`,
-        Uranus: `Exciting, unexpected changes are happening around ${housePlain(h)} — stay open to surprises in how you connect`,
-        Chiron: `An old sensitive spot around ${h === 7 ? 'commitment' : h === 5 ? 'self-expression and romance' : 'trust and vulnerability'} is ready to heal this year`,
-      };
-      relNarrParts.push(desc[p] || '');
-    }
-  }
-  const relNarrative = relNarrParts.length > 0
-    ? relNarrParts.join('. ') + `. Overall: ${relStrength === 'strong' ? 'love and connection are a central story this year — expect meaningful moments and honest conversations' : relStrength === 'moderate' ? 'relationships play a supportive role, and the moments that are active carry real significance' : 'relationships are quieter this year, giving you space to focus on yourself while still enjoying genuine connection'}.`
-    : 'Relationships flow naturally this year without major drama — your social grace and warmth color your experience beautifully.';
-
-  sections.push({
-    title: 'Love & Relationship Synthesis',
-    theme: 'relationship',
-    keyPlanets: ['Venus', 'Mars', ...relPlanets.filter(p => p !== 'Venus' && p !== 'Mars')],
-    keyHouses: [5, 7, 8],
-    strength: relStrength,
-    highlights: relHighlights,
-    interpretation: relStrength === 'strong'
-      ? 'Relationships are a central theme this year with meaningful energy in your connection areas.'
-      : relStrength === 'moderate'
-      ? 'Relationships play an important supporting role this year.'
-      : 'Relationships are a quieter theme this year.',
-    narrative: relNarrative,
+  const groups = [
+    { title: 'Relationships and personal enjoyment', theme: 'relationship', houses: [5,7,8] },
+    { title: 'Work, responsibilities and future plans', theme: 'career', houses: [6,10,11] },
+    { title: 'Learning and private reflection', theme: 'spiritual', houses: [3,9,12] },
+    { title: 'Security and shared commitments', theme: 'money', houses: [2,8] },
+  ];
+  const majors = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+  return groups.map(group => {
+    const planets = majors.filter(p => group.houses.includes(planetSRHouses[p] ?? -1));
+    const contacts = srToNatalAspects.filter(a => planets.includes(a.planet1) && majors.includes(a.planet2) && a.orb <= 3).sort((a,b) => a.orb-b.orb).slice(0,2);
+    const occupied = [...new Set(planets.map(p => planetSRHouses[p]).filter((h): h is number => h !== null && h !== undefined))];
+    const highlights = planets.map(p => {
+      const pos = srChart.planets[p as keyof typeof srChart.planets];
+      return `Solar Return ${p} ${pos?.degree ?? '?'}°${pos?.minutes ?? 0}′ ${pos?.sign || 'unknown'}, House ${planetSRHouses[p]}.`;
+    });
+    highlights.push(...contacts.map(a => `${a.label}; orb ${a.orb}°.`));
+    const description = occupied.map(h => getHouseLivedInterpretation(h)?.attention || '').filter(Boolean).join(' ');
+    return { title: group.title, theme: group.theme, keyPlanets: planets, keyHouses: occupied,
+      strength: planets.some(p => p === 'Sun' || p === 'Moon') ? 'strong' : planets.length >= 2 ? 'moderate' : 'quiet',
+      highlights, interpretation: planets.length ? description : 'No major-planet house occupancy supports elevating this area above stronger themes.',
+      narrative: planets.length ? `${description} Compare these possible areas of attention with your actual situation. A quiet area is not a prediction that nothing important happens there.` : 'This area is not a leading house-based theme in the supplied chart. That does not establish ease, difficulty or a future outcome.' } as SRSynthesisSection;
   });
-
-  // 2. Career & Purpose Synthesis
-  const carPlanets = planetsInHouses([10, 6, 2]);
-  const sunHouse = planetSRHouses['Sun'];
-  const saturnHouse = planetSRHouses['Saturn'];
-  const carStrength = carPlanets.length >= 3 ? 'strong' as const : carPlanets.length >= 1 ? 'moderate' as const : 'quiet' as const;
-
-  const carHighlights: string[] = [];
-  if (sunHouse) carHighlights.push(`Your core purpose and energy are focused on ${housePlain(sunHouse)}`);
-  if (saturnHouse) carHighlights.push(`Your area of greatest commitment is ${housePlain(saturnHouse)}`);
-  if (carPlanets.length > 0) carHighlights.push(`${carPlanets.length} planets in your career and work areas`);
-
-  const carNarrParts: string[] = [];
-  if (sunHouse) carNarrParts.push(`Your core energy and sense of purpose are directed toward ${housePlain(sunHouse)} this year${sunHouse === 10 ? ' — this is a visible, achievement-oriented year where your work gets noticed' : sunHouse === 6 ? ' — daily routines, health habits, and being of service are where you shine' : sunHouse === 2 ? ' — building financial stability and knowing your own worth take center stage' : ''}`);
-  if (saturnHouse) {
-    const sr = isRetro('Saturn');
-    carNarrParts.push(`Your biggest area of commitment and growth is ${housePlain(saturnHouse)}${[10, 6, 2].includes(saturnHouse) ? ` — expect real, meaningful work in ${saturnHouse === 10 ? 'your public role and reputation' : saturnHouse === 6 ? 'your daily workload and health habits' : 'your finances and sense of self-worth'}` : ` — the discipline you bring to ${housePlain(saturnHouse)} indirectly strengthens your professional life`}${sr ? '. This is a time for internal review — reflecting on old commitments before building new ones' : ''}`);
-  }
-  for (const p of ['Jupiter', 'Pluto', 'Uranus', 'Neptune']) {
-    const h = planetSRHouses[p];
-    if (h && [10, 6, 2].includes(h)) {
-      const desc: Record<string, string> = {
-        Jupiter: `Doors are opening in ${housePlain(h)} — ${h === 10 ? 'your career and public standing are expanding' : h === 6 ? 'your daily work brings more opportunity' : 'your earning potential is growing'}`,
-        Pluto: `${housePlain(h)} is going through a meaningful evolution — ${h === 10 ? 'your professional identity is being renewed from the foundation' : h === 6 ? 'your work habits are being completely refreshed' : 'your relationship with money and worth is deepening'}`,
-        Uranus: `Exciting, unexpected changes are coming to ${housePlain(h)} — ${h === 10 ? 'your career path may surprise you' : h === 6 ? 'your daily routine is ready for innovation' : 'your financial situation may shift in unexpected ways'}`,
-        Neptune: `Your intuition and creativity are influencing ${housePlain(h)} — ${h === 10 ? 'trust your vision for your career, but stay grounded in practical steps' : h === 6 ? 'bring more imagination to your daily work, but keep clear records' : 'follow your instincts around money, but verify the details'}`,
-      };
-      carNarrParts.push(desc[p] || '');
-    }
-  }
-  const carNarrative = carNarrParts.length > 0
-    ? carNarrParts.join('. ') + '.'
-    : 'Your career continues steadily in the background this year. Your sense of purpose guides your choices, but major professional shifts are not the headline.';
-
-  sections.push({
-    title: 'Career & Purpose Synthesis',
-    theme: 'career',
-    keyPlanets: ['Sun', 'Saturn', ...carPlanets.filter(p => p !== 'Sun' && p !== 'Saturn')],
-    keyHouses: [10, 6, 2],
-    strength: carStrength,
-    highlights: carHighlights,
-    interpretation: carStrength === 'strong'
-      ? 'Career and professional ambition are a central theme this year.'
-      : carStrength === 'moderate'
-      ? 'Career matters require attention but don\'t dominate the year.'
-      : 'Career is a background theme this year.',
-    narrative: carNarrative,
-  });
-
-  // 3. Inner Growth Synthesis
-  const spirPlanets = planetsInHouses([9, 12]);
-  const neptuneHouse = planetSRHouses['Neptune'];
-  const spirStrength = spirPlanets.length >= 2 ? 'strong' as const : spirPlanets.length >= 1 || neptuneHouse === 12 || neptuneHouse === 9 ? 'moderate' as const : 'quiet' as const;
-
-  const spirHighlights: string[] = [];
-  if (neptuneHouse) spirHighlights.push(`Your imagination and intuition are focused on ${housePlain(neptuneHouse)}`);
-  if (spirPlanets.length > 0) spirHighlights.push(`${spirPlanets.length} planets in your growth and reflection areas`);
-  const nnHouse = planetSRHouses['NorthNode'] ?? planetSRHouses['Chiron'];
-  if (nnHouse) spirHighlights.push(`Your growth direction points toward ${housePlain(nnHouse)}`);
-
-  const spirNarrParts: string[] = [];
-  if (neptuneHouse) {
-    spirNarrParts.push(`Your imagination, intuition, and creative vision are ${neptuneHouse === 12 ? 'in their natural home — your inner life is vivid, dreams feel meaningful, and quiet time recharges you beautifully' : neptuneHouse === 9 ? 'expanding your worldview — you may be drawn to new perspectives, travel, or experiences that shift how you see the world' : `actively shaping ${housePlain(neptuneHouse)} — trust your gut feelings in this area`}`);
-  }
-  for (const p of spirPlanets) {
-    if (p !== 'Neptune') spirNarrParts.push(`${planetPlain(p)} is active in your growth area — ${p === 'Jupiter' ? 'expect an expansion of your sense of meaning and desire for deeper understanding' : p === 'Saturn' ? 'you\'re ready for a serious commitment to personal growth — not casual self-help, but real, lasting inner work' : p === 'Pluto' ? 'a profound inner shift is happening that will permanently change how you see yourself' : `bringing fresh energy to your personal development`}`);
-  }
-  const spirNarrative = spirNarrParts.length > 0
-    ? spirNarrParts.join('. ') + '.'
-    : 'Inner growth themes are gentle this year. The focus is more on your outer world, but your intuition is still quietly guiding you toward what feels right.';
-
-  sections.push({
-    title: 'Inner Growth Synthesis',
-    theme: 'spiritual',
-    keyPlanets: ['Neptune', ...spirPlanets.filter(p => p !== 'Neptune')],
-    keyHouses: [9, 12],
-    strength: spirStrength,
-    highlights: spirHighlights,
-    interpretation: spirStrength === 'strong'
-      ? 'Inner growth and personal understanding are major themes this year.'
-      : spirStrength === 'moderate'
-      ? 'Inner growth runs as a meaningful undercurrent this year.'
-      : 'Inner growth themes are gentle this year.',
-    narrative: spirNarrative,
-  });
-
-  // 4. Money & Resources Synthesis
-  const monPlanets = planetsInHouses([2, 8]);
-  const jupiterHouse = planetSRHouses['Jupiter'];
-  const monStrength = monPlanets.length >= 2 ? 'strong' as const : monPlanets.length >= 1 ? 'moderate' as const : 'quiet' as const;
-
-  const monHighlights: string[] = [];
-  if (venusHouse) monHighlights.push(`Your spending style and financial attraction are shaped by what you naturally love and value`);
-  if (jupiterHouse) monHighlights.push(`Doors are opening for abundance in ${housePlain(jupiterHouse)}`);
-  if (monPlanets.length > 0) monHighlights.push(`${monPlanets.length} planets in your financial areas`);
-
-  const monNarrParts: string[] = [];
-  if (venusHouse) {
-    const vd = getDignity('Venus');
-    monNarrParts.push(`Your spending and earning patterns are influenced by your natural social grace and values${vd === 'Domicile' ? ' — money flows more easily this year and you naturally attract financial opportunities' : vd === 'Detriment' ? ' — you may need to work a bit harder to understand what things are truly worth to you' : ''}`);
-  }
-  if (jupiterHouse) monNarrParts.push(`Doors are opening in ${housePlain(jupiterHouse)} — ${[2, 8].includes(jupiterHouse) ? `${jupiterHouse === 2 ? 'your earning potential is expanding — income opportunities grow' : 'shared financial matters like investments or joint resources may improve'}` : `growth energy in ${housePlain(jupiterHouse)} indirectly supports your financial confidence`}`);
-  for (const p of ['Saturn', 'Pluto', 'Uranus', 'Neptune']) {
-    const h = planetSRHouses[p];
-    if (h && [2, 8].includes(h)) {
-      const desc: Record<string, string> = {
-        Saturn: `Your commitment area around ${housePlain(h)} means financial discipline is rewarded — what you build with patience now lasts`,
-        Pluto: `Your ${h === 2 ? 'relationship with money and self-worth is evolving at a deep level' : 'shared financial arrangements are going through meaningful changes'}`,
-        Uranus: `Financial surprises are possible — ${h === 2 ? 'income may be exciting and unpredictable' : 'shared resources or arrangements may shift unexpectedly'}`,
-        Neptune: `Trust your financial intuition, but verify the details — ${h === 2 ? 'be mindful with spending and double-check financial information' : 'shared money matters need clear agreements, not just good intentions'}`,
-      };
-      monNarrParts.push(desc[p] || '');
-    }
-  }
-  const monNarrative = monNarrParts.length > 0
-    ? monNarrParts.join('. ') + '.'
-    : 'Finances are steady this year without major drama. Your natural values and sense of abundance still guide where money flows and where opportunities for growth exist.';
-
-  sections.push({
-    title: 'Money & Resources Synthesis',
-    theme: 'money',
-    keyPlanets: ['Venus', 'Jupiter', ...monPlanets.filter(p => p !== 'Venus' && p !== 'Jupiter')],
-    keyHouses: [2, 8],
-    strength: monStrength,
-    highlights: monHighlights,
-    interpretation: monStrength === 'strong'
-      ? 'Financial matters are a major theme this year.'
-      : monStrength === 'moderate'
-      ? 'Financial themes are active but manageable.'
-      : 'Finances are steady this year — consistent rather than dramatic.',
-    narrative: monNarrative,
-  });
-
-  return sections;
 }
 
 // ─────────────────────────────────────────────────────────────────────

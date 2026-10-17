@@ -1,3 +1,5 @@
+import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS } from './lunarPhaseConvention';
+import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
@@ -302,13 +304,8 @@ const ASPECT_ANGLES = [
 ];
 
 const detectAspect = (deg1: number, deg2: number): { type: string; orb: number } | null => {
-  let diff = Math.abs(deg1 - deg2);
-  if (diff > 180) diff = 360 - diff;
-  for (const a of ASPECT_ANGLES) {
-    const orb = Math.abs(diff - a.angle);
-    if (orb <= a.orb) return { type: a.name, orb: Math.round(orb * 10) / 10 };
-  }
-  return null;
+  const match = classifyAspect(angularSeparation(deg1, deg2), ASPECT_ANGLES, name => ASPECT_ANGLES.find(a => a.name === name)?.orb || 0);
+  return match ? { type: match.name, orb: Math.round(match.orb * 1000) / 1000 } : null;
 };
 
 // ─── Main Analysis types ────────────────────────────────────────────
@@ -442,6 +439,9 @@ export interface SolarReturnAnalysis {
   angularPlanets: string[];
   angularPlanetsDetailed: { planet: string; angle: string; sign: string; house: number; angleHouse?: number; straddlesCusp?: boolean; orb: number }[];
   relocationTip: string;
+  srCuspSigns?: Record<number, string>;
+  natalChartRuler?: SolarReturnAnalysis['lordOfTheYear'];
+  profectionLord?: string | null;
   lordOfTheYear: {
     planet: string;
     natalRisingSign: string;
@@ -1091,21 +1091,11 @@ export const analyzeSolarReturn = (
       let timeLordSRRetro = false;
       let natalCuspSign = '';
 
-      if (natalCusp) {
-        const cuspSign = (natalCusp as any).sign;
-        if (cuspSign && SIGNS.includes(cuspSign)) {
-          natalCuspSign = cuspSign;
-          timeLord = traditionalRuler[cuspSign] || '';
-        }
-      }
-      // Fallback: if no house cusps, use whole sign from ascendant
-      if (!timeLord && natalRisingSign) {
+      // Profections advance by whole signs, independent of quadrant cusps.
+      if (natalRisingSign) {
         const ascIdx = SIGNS.indexOf(natalRisingSign);
-        if (ascIdx >= 0) {
-          const profectionSignIdx = (ascIdx + houseNumber - 1) % 12;
-          natalCuspSign = SIGNS[profectionSignIdx];
-          timeLord = traditionalRuler[natalCuspSign] || '';
-        }
+        natalCuspSign = SIGNS[(ascIdx + houseNumber - 1) % 12];
+        timeLord = traditionalRuler[natalCuspSign] || '';
       }
 
       if (timeLord) {
@@ -1163,18 +1153,7 @@ export const analyzeSolarReturn = (
     if (sunDeg !== null && moonDeg !== null) {
       let diff = moonDeg - sunDeg;
       if (diff < 0) diff += 360;
-      const phases: { name: string; min: number; max: number; desc: string }[] = [
-        { name: 'New Moon', min: 0, max: 45, desc: 'A year of new beginnings, planting seeds, and fresh starts. Energy is raw and initiatory — you are starting a new personal cycle. Trust your instincts even when the path is unclear.' },
-        { name: 'Waxing Crescent', min: 45, max: 90, desc: 'A year of pushing through resistance to establish something new. You may encounter doubts or obstacles early but the momentum is building. Courage and persistence are required.' },
-        { name: 'First Quarter', min: 90, max: 135, desc: 'A year of crisis in action — decisions must be made, and you cannot remain passive. External events force you to commit or change direction. Action-oriented and sometimes tense.' },
-        { name: 'Waxing Gibbous', min: 135, max: 180, desc: 'A year of refinement and adjustment before a major culmination. You are fine-tuning, improving, and preparing for something to come to fruition. Patience and analysis are key.' },
-        { name: 'Full Moon', min: 180, max: 225, desc: 'A year of culmination, revelation, and maximum visibility. What you have been building reaches a peak. Relationships are highlighted — awareness of self and others is heightened.' },
-        { name: 'Waning Gibbous', min: 225, max: 270, desc: 'A year of sharing what you have learned and giving back. You are distributing wisdom, teaching, or reaping the harvest of previous efforts. Social engagement increases.' },
-        { name: 'Last Quarter', min: 270, max: 315, desc: 'A year of reorientation and releasing old structures. A crisis in consciousness — you are letting go of what no longer serves you. Internal shifts matter more than external events.' },
-        { name: 'Waning Crescent', min: 315, max: 345, desc: 'A year of retreat, reflection, and spiritual processing. The old cycle is winding down. Solitude and inner work prepare you for the renewal ahead.' },
-        { name: 'Balsamic', min: 345, max: 360, desc: 'A year of rest, reflection, and surrender. The old cycle is ending. Solitude, spiritual practice, and inner processing are needed. Trust the void — what emerges next will be powerful.' },
-      ];
-      const phase = phases.find(p => diff >= p.min && diff < p.max) || phases[0];
+      const phase = { name: lunarPhaseName(diff), desc: LUNAR_PHASE_MEANINGS[lunarPhaseIndex(diff)] };
       // Eclipse requires Sun-Moon alignment AND proximity to the nodal axis (within ~12° of nodes)
       let isEclipse = false;
       const nnPos = srChart.planets.NorthNode;
@@ -1790,7 +1769,7 @@ export const analyzeSolarReturn = (
   // If the SR Moon makes no major aspects (conjunction, sextile, square, trine, opposition)
   // to any other SR planet within orb, it is considered "void of course" in the SR chart.
   // This is a significant condition: the Moon operates independently, without planetary dialogue.
-  const moonVOC = srMoonAspects.length === 0 && moonPos !== undefined;
+  const moonVOC = false; // Unaspected is not void of course; VOC requires a future applying-aspect search.
 
   // ─── Moon Angularity (true degree-based, not house-based) ──
   // Check if Moon is within 5° of any angle cusp (ASC, IC, DSC, MC)
@@ -1833,13 +1812,8 @@ export const analyzeSolarReturn = (
   // Include past ages, current age, and next 3 future occurrences
   const currentAge = profectionYear?.age ?? 0;
   const moonMetonicAges: number[] = [];
-  if (currentAge > 0) {
-    const startRemainder = currentAge % 19;
-    const firstAge = startRemainder === 0 ? 19 : startRemainder;
-    for (let a = firstAge; a <= currentAge + 57; a += 19) {
-      if (a > 0) moonMetonicAges.push(a);
-    }
-  }
+  // Arithmetic Metonic intervals are not verified repetitions of the SR Moon.
+  // Withhold this list until the historical returns have actually been calculated.
 
   // Keep moonTimingEvents empty (deprecated — the technique was incorrectly attributed)
   const moonTimingEvents: SolarReturnAnalysis['moonTimingEvents'] = [];
@@ -1925,6 +1899,9 @@ export const analyzeSolarReturn = (
   const heliacalRising = calculateHeliacalRising(srChart);
 
   return {
+    srCuspSigns: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, normalizeSign(srChart.houseCusps?.[`house${i + 1}` as keyof typeof srChart.houseCusps]?.sign || '')])),
+    natalChartRuler: lordOfTheYear,
+    profectionLord: profectionYear?.timeLord || null,
     yearlyTheme,
     srAscRulerInNatal,
     sunHouse,

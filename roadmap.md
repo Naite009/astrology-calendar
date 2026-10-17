@@ -1,5 +1,12 @@
 # Roadmap
 
+## Comprehensive Solar Return repair
+- [x] Repair phase classification, distinct rulers, disclosed return metadata, planetary hours, progression context, and structured export integrity.
+- [x] Validate exported major-aspect geometry, calculate eclipse contacts and activation windows, remove assumed Metonic repeats, prioritize major evidence, upgrade and live-test the reading model, and reject old-version inputs.
+- [ ] Independent astronomical certification of imported positions/cusps, VOC, all advanced timing techniques, and comprehensive PDF prose remains incomplete; imported calculation metadata is missing.
+- [x] 557 tests pass; automatic type/build checks pass. Lauren reference-chart desktop/mobile view, JSON, and live AI response verified.
+- [ ] Regenerate Lauren in the actual signed-in account: preview-session minting is unavailable. The local reference verification is not a saved-account regeneration.
+
 ## Deeper Chart Walkthrough natal synthesis
 - [x] Structurally deepen evidence-linked identity themes, developmental possibilities, inner/outer contrasts, internalized rules, and central tensions without invented history or coaching.
 - [x] Preserve deeper schema-4 JSON output and add evidence, safety, distinct-chart, age, sparse-input, and non-Libra regressions.

@@ -1,3 +1,5 @@
+import * as Astronomy from 'astronomy-engine';
+import { resolveSolarReturnProvenance } from './solarReturnProvenance';
 /**
  * Tier 4 Solar Return Analysis
  * - Mutual Receptions
@@ -412,7 +414,7 @@ export function calculateHealthOverlay(
   // Check 6th house emphasis
   const sixthHousePlanets = PLANETS_CORE.filter(p => planetSRHouses[p] === 6);
   if (sixthHousePlanets.length >= 2) {
-    primaryConcerns.push('Your health and daily routine area is very active this year — make wellness habits a priority');
+    primaryConcerns.push('Major planets concentrate in the daily workload area. Consider pacing and routine, not a health prediction.');
   }
 
   return {
@@ -420,8 +422,8 @@ export function calculateHealthOverlay(
     primaryConcerns,
     supportiveFactors,
     interpretation: primaryConcerns.length === 0
-      ? 'No major health flags in your chart this year — maintain your regular wellness routines and listen to your body\'s signals.'
-      : `${primaryConcerns.length} area${primaryConcerns.length > 1 ? 's' : ''} of your health may benefit from extra attention this year. These aren\'t predictions — they\'re gentle nudges to take care of yourself in specific ways.`,
+      ? 'This chart does not assess health or identify medical flags. Routine and pacing interpretations are symbolic only.'
+      : 'The supplied factors may suggest reviewing workload and pacing. They do not identify health risks, illnesses or medical needs.',
   };
 }
 
@@ -435,30 +437,26 @@ export function calculateEclipseSensitivity(
   const results: SREclipseSensitivity[] = [];
   const ORB = 5; // degrees
 
-  const startDate = (() => {
-    if (solarReturnDateTime) {
-      const parsed = new Date(solarReturnDateTime);
-      if (!Number.isNaN(parsed.getTime())) return parsed;
-    }
-
-    if (birthDate) {
-      const [_, month, day] = birthDate.split('-').map(Number);
-      if (month && day) {
-        return new Date(Date.UTC(srYear, month - 1, day, 12, 0, 0));
-      }
-    }
-
-    return new Date(Date.UTC(srYear, 0, 1, 0, 0, 0));
-  })();
-
-  const endDate = new Date(startDate);
-  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
-
-  // Filter eclipses relevant to the Solar Return year window (birthday to birthday)
-  const relevantEclipses = ECLIPSES_2025_2027.filter(e => {
-    const eclipseDate = new Date(`${e.date}T00:00:00Z`);
-    return eclipseDate >= startDate && eclipseDate < endDate;
-  });
+  const metadata = resolveSolarReturnProvenance(srChart, natalChart);
+  if (!metadata.returnInstantUTC) return [];
+  const startDate = new Date(metadata.returnInstantUTC);
+  const sunLongitude = toAbsDeg(natalChart.planets.Sun);
+  if (sunLongitude === null) return [];
+  const endDate = Astronomy.SearchSunLongitude(sunLongitude, new Date(startDate.getTime() + 350 * 86400000), 30)?.date;
+  if (!endDate) return [];
+  const relevantEclipses: EclipseData[] = [];
+  let solar = Astronomy.SearchGlobalSolarEclipse(startDate);
+  for (let n = 0; n < 8 && solar.peak.date < endDate; n++) {
+    const lon = Astronomy.SunPosition(solar.peak).elon;
+    relevantEclipses.push({type:'Solar',date:solar.peak.date.toISOString().slice(0,10),sign:SIGNS[Math.floor(lon/30)],degree:lon%30});
+    solar = Astronomy.NextGlobalSolarEclipse(solar.peak);
+  }
+  let lunar = Astronomy.SearchLunarEclipse(startDate);
+  for (let n = 0; n < 8 && lunar.peak.date < endDate; n++) {
+    const lon = Astronomy.Ecliptic(Astronomy.GeoMoon(lunar.peak)).elon;
+    relevantEclipses.push({type:'Lunar',date:lunar.peak.date.toISOString().slice(0,10),sign:SIGNS[Math.floor(lon/30)],degree:lon%30});
+    lunar = Astronomy.NextLunarEclipse(lunar.peak);
+  }
 
   for (const eclipse of relevantEclipses) {
     const eclipseAbsDeg = SIGNS.indexOf(eclipse.sign) * 30 + eclipse.degree;
@@ -575,6 +573,7 @@ export function calculateEclipseSensitivity(
   }
 
   results.sort((a, b) => a.orb - b.orb);
+  for (const result of results) result.interpretation = `Calculated ${result.eclipseType.toLowerCase()} eclipse on ${result.eclipseDate}, ${result.eclipseDegree.toFixed(2)}° ${result.eclipseSign}, near ${result.sensitizedPlanetSource} ${result.sensitizedPlanet} with orb ${result.orb}°. Some astrologers read this as a point where an existing theme becomes more noticeable. It does not establish an event or outcome.`;
   return results;
 }
 
@@ -589,38 +588,19 @@ export function calculateEnhancedRetrogrades(
     const pos = srChart.planets[planet as keyof typeof srChart.planets];
     if (!pos || !(pos as any).isRetrograde) continue;
 
-    // Find matching retrograde period
-    const period = RETRO_PERIODS.find(r => 
-      r.planet === planet && (r.year === srYear || r.year === srYear - 1)
-    );
-
-    const house = null; // will be filled by caller from planetSRHouses
-
-    const RETRO_PLAIN: Record<string, string> = {
-      Mercury: 'This is a period for slowing down communication, double-checking plans, and revisiting old ideas rather than launching new ones. Expect travel hiccups and contract delays. Use them as invitations to refine.',
-      Venus: 'Your relationship and financial patterns are up for review. Old connections may reappear, giving you a chance to find closure or reconnect. Take your time with big purchases and romantic decisions.',
-      Mars: 'Your drive and ambition are turned inward right now. You may feel frustrated that things aren\'t moving faster, but this is a powerful time for revising goals and redirecting energy toward what truly matters.',
-      Jupiter: 'Growth is happening on the inside this year. Outer opportunities may slow down, but your inner wisdom and philosophical understanding are expanding in important ways.',
-      Saturn: 'The structures and responsibilities in your life need internal reorganization. Progress feels slow because the real work is psychological. Reassess what commitments still serve you.',
-      Uranus: 'You\'re quietly questioning where you\'ve been playing it safe or being inauthentic. The changes brewing inside will become visible later. For now, trust the inner restlessness.',
-      Neptune: 'Your imagination, dreams, and intuition are especially vivid. Creative inspiration comes more easily, and your inner spiritual life deepens. Pay attention to what surfaces in quiet moments.',
-      Pluto: 'Deep personal transformation is happening beneath the surface. Power dynamics in your relationships are shifting internally. You\'re processing changes that will become clear over time.',
-    };
-
-    const keyDates = period ? ` Key dates to watch: the review period begins around ${period.shadowPre}, the most intense reflection runs from ${period.stationRx} to ${period.stationDirect}, and things clear up by ${period.shadowPost}.` : '';
-
+    const house = null;
     results.push({
       planet,
       retrograde: true,
       sign: pos.sign,
       house,
-      stationRetroDate: period?.stationRx || '',
-      stationDirectDate: period?.stationDirect || '',
-      retroDegree: period?.rxDegree || `${pos.degree}° ${pos.sign}`,
-      directDegree: period?.directDegree || '',
-      shadowPreStart: period?.shadowPre || '',
-      shadowPostEnd: period?.shadowPost || '',
-      interpretation: (RETRO_PLAIN[planet] || 'This area of your life is in a review and revision phase. Take your time before making big moves.') + keyDates,
+      stationRetroDate: '',
+      stationDirectDate: '',
+      retroDegree: `${pos.degree}° ${pos.sign}`,
+      directDegree: '',
+      shadowPreStart: '',
+      shadowPostEnd: '',
+      interpretation: `${planet} is recorded retrograde in the return chart. This can be read symbolically as revisiting how its themes are expressed, not as a prediction of delays or events. Station and shadow dates are withheld because the old lookup table was not tied to the actual return interval.`,
     });
   }
 
