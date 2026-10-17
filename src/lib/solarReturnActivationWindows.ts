@@ -134,6 +134,7 @@ export function calculateActivationWindows(
   returnInstant?: Date | null,
 ): SRActivationData {
   // SR year runs birthday to birthday
+  if (!Number.isFinite(srPlanetPositions.Sun)) return { transitHits: [], activationWindows: [], monthlyThemes: [], peakPeriods: [] };
   const startDate = returnInstant || Astronomy.SearchSunLongitude(srPlanetPositions.Sun, new Date(Date.UTC(srYear, birthdayMonth, birthdayDay) - 20 * 86400000), 40)?.date;
   if (!startDate) return { transitHits: [], activationWindows: [], monthlyThemes: [], peakPeriods: [] };
   const endDate = Astronomy.SearchSunLongitude(srPlanetPositions.Sun, new Date(startDate.getTime() + 350 * 86400000), 30)?.date || new Date(startDate.getTime() + 365.25 * 86400000);
@@ -235,6 +236,12 @@ export function calculateActivationWindows(
   }
 
   // Sort by date
+  for (const hit of transitHits) {
+    const body = BODY_MAP[hit.transitPlanet];
+    const definition = ASPECTS.find(a => a.name === hit.aspect);
+    if (body && definition) hit.orb = aspectOrb(getPlanetLongitudeExact(body, hit.exactDate), hit.srTargetDegree, definition.angle);
+    hit.timingMethod = hit.orb < 0.001 ? 'Numerically refined exact ephemeris contact; orb-window boundaries sampled daily' : 'Closest approach, not an exact pass; orb-window boundaries sampled daily';
+  }
   transitHits.sort((a, b) => a.exactDate.getTime() - b.exactDate.getTime());
 
   // Build monthly themes
