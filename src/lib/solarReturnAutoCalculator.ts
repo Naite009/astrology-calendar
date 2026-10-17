@@ -1,3 +1,4 @@
+import { computeBody, longitudeToSignPosition } from './ephemerisEngine';
 /**
  * Solar Return Auto-Calculator
  *
@@ -19,12 +20,7 @@ const ZODIAC_SIGNS = [
 ];
 
 function lonToPos(lon: number): { sign: string; degree: number; minutes: number } {
-  const norm = ((lon % 360) + 360) % 360;
-  const signIdx = Math.floor(norm / 30);
-  const degFloat = norm % 30;
-  const degree = Math.floor(degFloat);
-  const minutes = Math.min(59, Math.round((degFloat - degree) * 60));
-  return { sign: ZODIAC_SIGNS[signIdx], degree, minutes };
+  return longitudeToSignPosition(lon);
 }
 
 function isBodyRetrograde(body: Astronomy.Body, date: Date): boolean {
@@ -96,8 +92,8 @@ export function calculateSolarReturnAuto(
   // 2. Seed the search: start 15 days before the birthday in the target year
   const parts = natalBirthDate.split('-').map(Number);
   const bMonth = (parts[1] ?? 1) - 1; // 0-based month
-  const bDay   = Math.max(1, (parts[2] ?? 1) - 15);
-  const startDate = new Date(Date.UTC(targetYear, bMonth, bDay));
+  const bDay   = parts[2] ?? 1;
+  const startDate = new Date(Date.UTC(targetYear, bMonth, bDay) - 15 * 86400000);
 
   // 3. Find exact SR moment (search up to 35 days forward)
   const srTime = Astronomy.SearchSunLongitude(natalSunLong, startDate, 35);
@@ -128,12 +124,10 @@ export function calculateSolarReturnAuto(
     };
   }
 
-  // North Node: true node, with the mean node only as a fallback.
-  planets['NorthNode'] = { ...lonToPos(trueNodeLongitude(srDate) ?? getMeanNodeLon(srDate)) };
-
-  // Chiron from ephemeris lookup
-  const chironRaw = getAccurateAsteroidPosition('chiron', srDate);
-  planets['Chiron'] = { sign: chironRaw.sign, degree: chironRaw.degree, minutes: chironRaw.minutes };
+  for (const name of ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'SouthNode', 'Chiron'] as const) {
+    const body = computeBody(name, srDate);
+    if (body.ok) planets[name] = { ...lonToPos(body.longitude), isRetrograde: name === 'NorthNode' || name === 'SouthNode' ? undefined : body.retrograde };
+  }
 
   // 5. Placidus house cusps
   const houses = calculatePlacidusHouses(srDate, lat, lng);

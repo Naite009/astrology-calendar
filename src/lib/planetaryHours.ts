@@ -90,7 +90,7 @@ export const PLANETARY_HOUR_MEANINGS: Record<ChaldeanPlanet, {
 // Calculate sunrise and sunset for a location
 export const getSunTimes = (date: Date, latitude: number, longitude: number, timezone = tzLookup(latitude, longitude)): { sunrise: Date; sunset: Date } => {
   const local = civilPartsInZone(timezone, date.getTime());
-  const midnight = localToUtc({ ...local, hour: 0, minute: 0, second: 0 }, timezone).resolved?.utc;
+  const midnight = localToUtc(timezone, { ...local, hour: 0, minute: 0, second: 0 }).resolved?.utc;
   if (!midnight) throw new Error('Cannot resolve local sunrise date');
   const observer = new Astronomy.Observer(latitude, longitude, 0);
   const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, midnight, 1)?.date;

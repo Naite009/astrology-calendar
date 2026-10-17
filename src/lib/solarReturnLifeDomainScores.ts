@@ -517,7 +517,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
     }
 
     // 4. Aspects (capped at 2 pts activity)
-    const allAspects = [...analysis.srToNatalAspects, ...analysis.srInternalAspects];
+    const allAspects = [...analysis.srInternalAspects, ...analysis.srToNatalAspects].filter(a => (activityWeights[a.planet1] || 0) >= 0.1 && (activityWeights[a.planet2] || 0) >= 0.1).sort((a, b) => a.orb - b.orb);
     let aspectBoost = 0;
     let aspectToneBoost = 0;
     const aspectDetails: string[] = [];
@@ -526,7 +526,8 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       if (aspectBoost >= MAX_ASPECT) break;
       // A planet already counted through house occupancy does not get counted again
       // through its aspects. Aspects only add NEW information.
-      if (countedPlanets.has(asp.planet1) && countedPlanets.has(asp.planet2)) continue;
+      if (asp.source === 'sr-internal' && countedPlanets.has(asp.planet1) && countedPlanets.has(asp.planet2)) continue;
+      if (!houses.includes(analysis.planetSRHouses[asp.planet1] ?? -1) && !houses.includes(analysis.planetSRHouses[asp.planet2] ?? -1)) continue;
       const p1w = countedPlanets.has(asp.planet1) ? 0 : (activityWeights[asp.planet1] || 0);
       const p2w = countedPlanets.has(asp.planet2) ? 0 : (activityWeights[asp.planet2] || 0);
       if (p1w > 0 || p2w > 0) {
@@ -536,7 +537,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
         aspectBoost += weight;
         const aspectTone = BENEFIC_ASPECTS.includes(asp.type) ? 0.2 : -0.2;
         aspectToneBoost += aspectTone;
-        aspectDetails.push(`${asp.planet1}-${asp.planet2} ${asp.type}`);
+        aspectDetails.push(asp.label);
       }
     }
     if (aspectBoost > 0) {
