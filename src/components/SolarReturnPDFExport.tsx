@@ -1,3 +1,4 @@
+import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
 import { validateSolarReturnReport } from '../../supabase/functions/_shared/solarReturnReportValidation';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
@@ -786,6 +787,7 @@ export function buildFullJsonStandalone(
   return {
     reportVersion: SR_REPORT_VERSION,
     calculationMetadata: resolveSolarReturnProvenance(srChart, natalChart),
+    prioritizedSynthesis: buildSolarReturnEvidenceSynthesis(analysis, srChart, natalChart),
     rulers: { natalChartRuler: analysis.natalChartRuler?.planet || analysis.lordOfTheYear?.planet || null, solarReturnChartRuler: analysis.yearlyTheme?.ascendantRuler || null, profectionLord: analysis.profectionYear?.timeLord || null, profectionSystem: 'whole-sign', returnCuspSigns: analysis.srCuspSigns },
     moonVOCStatus: 'not-calculated',
     metonicStatus: 'Arithmetic intervals are not verified lunar returns; no same-placement claims supplied.',
@@ -888,7 +890,7 @@ export function buildFullJsonStandalone(
       const parts = bd.split('-');
       const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
       const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
-      const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+      const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay, getSolarReturnReferenceDate(srChart, natalChart));
       return {
         peakPeriods: data.peakPeriods,
         monthlyThemes: data.monthlyThemes.map(m => ({
@@ -2671,7 +2673,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         const parts = bd.split('-');
         const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
         const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
-        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay, getSolarReturnReferenceDate(srChart, natalChart));
         return {
           peakPeriods: data.peakPeriods,
           monthlyThemes: data.monthlyThemes.map(m => ({

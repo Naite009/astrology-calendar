@@ -1,5 +1,7 @@
+import { VerifiedYearSynthesis } from '@/components/solarReturn/VerifiedYearSynthesis';
+import { SR_REPORT_VERSION, resolveSolarReturnProvenance } from '@/lib/solarReturnProvenance';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
-import { useState, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { Sun, MapPin, ArrowRight, Compass, Star, Globe, ChevronDown, ChevronUp, Info, Upload, Loader2, Moon, Flame, Droplets, Wind, Mountain, RotateCcw, Repeat, Layers, Target, Sparkles, Zap, Download } from 'lucide-react';
 import { NatalChart, NatalPlanetPosition, HouseCusp } from '@/hooks/useNatalChart';
 import { SolarReturnChart, useSolarReturnChart } from '@/hooks/useSolarReturnChart';
@@ -128,7 +130,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   // For adding a new SR, we need access to all natal charts
   const [showAddForNewPerson, setShowAddForNewPerson] = useState(false);
 
-  const selectedNatal = allCharts.find(c => c.id === selectedNatalId) || allCharts[0] || null;
+  const selectedNatal = allCharts.find(c => c.id === selectedNatalId) || null;
 
   const srChartsForNatal = selectedNatal ? getSolarReturnsForChart(selectedNatal.id) : [];
 
@@ -146,6 +148,11 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
   const [editingSRId, setEditingSRId] = useState<string | null>(null);
   const [showAiReading, setShowAiReading] = useState(false);
   const [aiReadings, setAiReadings] = useState<{ plain: string; astro: string }>({ plain: '', astro: '' });
+  useEffect(() => {
+    abortExportRef.current?.abort();
+    setAiReadings({ plain: '', astro: '' });
+    setShowAiReading(false);
+  }, [selectedNatal?.id, selectedSR?.id, selectedSR?.solarReturnDateTime]);
   const [isGeneratingForExport, setIsGeneratingForExport] = useState(false);
   const abortExportRef = useRef<AbortController | null>(null);
   // Tier preview — which tier pill is currently expanded
@@ -187,8 +194,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       if (err.name !== 'AbortError') {
         console.error('Auto-generate AI error:', err);
         toast.error(err.message || 'Failed to generate AI readings');
-        // Download anyway with whatever we have
-        downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+        // Keep invalid/failed output out of the exported report.
       }
     } finally {
       setIsGeneratingForExport(false);
@@ -394,6 +400,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
       {/* Analysis */}
       {selectedSR && analysis && (
         <>
+        <VerifiedYearSynthesis analysis={analysis} srChart={selectedSR} natalChart={selectedNatal} />
         {/* Top-level export buttons */}
         <div className="flex items-center gap-3 p-3 border border-border rounded-sm bg-card/60">
           <button
@@ -458,6 +465,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           )}
 
           <AiReadingModal
+            key={`${selectedNatal.id}:${selectedSR.id}:${SR_REPORT_VERSION}`}
             open={showAiReading}
             onClose={() => setShowAiReading(false)}
             personName={selectedNatal.name || 'Chart'}
@@ -518,6 +526,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
   const [year, setYear] = useState(existingSR?.solarReturnYear || currentYear);
   const [location, setLocation] = useState(existingSR?.solarReturnLocation || '');
   const [srDateTime, setSrDateTime] = useState(existingSR?.solarReturnDateTime || '');
+  const [calculatedPlace, setCalculatedPlace] = useState<{ latitude: number; longitude: number } | null>(null);
   const [planets, setPlanets] = useState<Record<string, { sign: string; degree: number; minutes: number; isRetrograde?: boolean }>>(
     existingSR?.planets ? { ...existingSR.planets } as any : {}
   );
@@ -787,6 +796,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       setPlanets(result.planets as any);
       setHouseCusps(result.houseCusps as any);
       setSrDateTime(result.srDateTimeUTC);
+      setCalculatedPlace({ latitude: lat, longitude: lng });
       if (Object.keys(result.houseCusps).length > 0) setShowHouses(true);
       toast.success(`Solar return calculated: ${result.srDateTimeLabel}`);
     } catch (err: any) {
@@ -810,6 +820,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       solarReturnYear: year,
       solarReturnLocation: location,
       solarReturnDateTime: srDateTime,
+      ...(calculatedPlace ? { ...calculatedPlace, houseSystem: 'placidus' as const } : {}),
       planets: planets as any,
       houseCusps: Object.keys(houseCusps).length > 0 ? houseCusps as any : undefined,
     });
@@ -1116,7 +1127,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
     const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
     const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
 
-    return calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay);
+    return calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay, (() => { const m = resolveSolarReturnProvenance(srChart, natalChart); return m.returnInstantUTC ? new Date(m.returnInstantUTC) : null; })());
   }, [srChart, natalChart]);
 
   // Compute identity shift
