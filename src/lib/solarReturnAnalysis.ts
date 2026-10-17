@@ -1132,7 +1132,7 @@ export const analyzeSolarReturn = (
           timeLord, houseNumber, timeLordSRHouse, timeLordSRSign, timeLordSRRetro,
         );
         const profFocusText = profectionHouseThemes[houseNumber] || 'this year\'s themes';
-        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year — ${profFocusText} are the year's primary focus. ${timeLord} is your Time Lord, currently in the SR ${srHouseText}. ${synthesis}`;
+        const interpretation = `You are in a ${ordLocal(houseNumber)} house profection year, so ${profFocusText} are a primary focus. ${timeLord} is your Time Lord, currently in the SR ${srHouseText}. ${synthesis}`;
 
         profectionYear = {
           age,
