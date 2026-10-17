@@ -8,6 +8,7 @@ import { calculateSecondaryProgressions, getProgressedMoonInfo } from '@/lib/sec
 import { calculatePlanetaryHours } from '@/lib/planetaryHours';
 import { buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { SOLAR_RETURN_REPORT_VERSION, validateSolarReturnReport, validateSolarReturnReading } from '../../../supabase/functions/_shared/solarReturnReportValidation';
+import { calculateEclipseSensitivity } from '@/lib/solarReturnT4Analysis';
 import { computeBody } from '@/lib/ephemerisEngine';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
 
@@ -68,6 +69,17 @@ describe('Solar Return concrete integrity regressions', () => {
     expect(validateSolarReturnReport({...json,birthDate:'1976-10-21.'})).toContain('Invalid birth date');
     expect(validateSolarReturnReport({...json,lordOfTheYear:{planet:'Venus'}})).toContain('Lord of the year differs from the profection lord');
     expect(validateSolarReturnReport({...json,moonPhase:{phase:'First Quarter',phaseAngle:122.45}})).toContain('Moon phase label conflicts with its angle');
+  });
+  it('uses calculated eclipses inside the actual 2026 return interval', () => {
+    const eclipses = calculateEclipseSensitivity(laurenReturn, laurenNatal, 2026);
+    expect(eclipses.some(e => e.eclipseDate === '2027-08-02' && e.eclipseSign === 'Leo' && Math.abs(e.eclipseDegree - 9.918) < 0.01)).toBe(true);
+    expect(eclipses.some(e => e.eclipseDate === '2027-07-18' && e.eclipseSign === 'Capricorn' && Math.abs(e.eclipseDegree - 25.961) < 0.01)).toBe(true);
+    expect(eclipses.every(e => e.eclipseDate > '2026-10-21' && e.eclipseDate < '2027-10-22')).toBe(true);
+  });
+  it('rejects incorrect aspect geometry even if the name and source are present', () => {
+    const report=buildFullJsonStandalone(analyzeSolarReturn(laurenReturn,laurenNatal),laurenReturn,laurenNatal);
+    const aspects=report.srToNatalAspects.map((a,i)=>i===0?{...a,orb:a.orb+1}:a);
+    expect(validateSolarReturnReport({...report,srToNatalAspects:aspects})).toContain('Aspect geometry conflicts with exported positions');
   });
   it('rejects explicitly mixed chart identities and wrong stored return instants',()=>{
     expect(()=>resolveSolarReturnProvenance({...laurenReturn,natalChartId:'other'},laurenNatal)).toThrow('different natal chart');
