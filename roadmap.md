@@ -1,5 +1,10 @@
 # Roadmap
 
+## Comprehensive Solar Return repair
+- [ ] Repair phase classification, distinct rulers, return metadata, planetary hours, progression context, and structured export integrity.
+- [ ] Audit geometry, real timing, Metonic claims, evidence priorities, model configuration, report validation, and stale readings without deleting history.
+- [ ] Add concrete regressions, run full tests, regenerate Lauren 2026 in the signed-in UI, inspect JSON and prose, and report independently checked facts and blockers.
+
 ## Deeper Chart Walkthrough natal synthesis
 - [x] Structurally deepen evidence-linked identity themes, developmental possibilities, inner/outer contrasts, internalized rules, and central tensions without invented history or coaching.
 - [x] Preserve deeper schema-4 JSON output and add evidence, safety, distinct-chart, age, sparse-input, and non-Libra regressions.
