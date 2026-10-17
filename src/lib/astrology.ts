@@ -1,3 +1,4 @@
+import { lunarPhaseIndex, LUNAR_PHASE_NAMES } from './lunarPhaseConvention';
 import * as Astronomy from 'astronomy-engine';
 import { UserData } from '@/hooks/useUserData';
 import { getAccurateAsteroidPosition, getAsteroidPosition, type AsteroidBody } from './asteroidEphemeris';
@@ -587,27 +588,10 @@ export const getMoonPhase = (date: Date): MoonPhase => {
   // Full Moon: 180° (range: 174-186°)
   // Last Quarter: 270° (range: 264-276°)
   
-  if (phase >= 354 || phase < 6) {
-    phaseIcon = '🌑'; phaseName = 'New Moon';
-  } else if (phase >= 6 && phase < 84) {
-    phaseIcon = '🌒'; phaseName = 'Waxing Crescent';
-  } else if (phase >= 84 && phase < 96) {
-    phaseIcon = '🌓'; phaseName = 'First Quarter';
-  } else if (phase >= 96 && phase < 174) {
-    phaseIcon = '🌔'; phaseName = 'Waxing Gibbous';
-  } else if (phase >= 174 && phase < 186) {
-    phaseIcon = '🌕'; phaseName = 'Full Moon';
-  } else if (phase >= 186 && phase < 264) {
-    phaseIcon = '🌖'; phaseName = 'Waning Gibbous';
-  } else if (phase >= 264 && phase < 276) {
-    phaseIcon = '🌗'; phaseName = 'Last Quarter';
-  } else if (phase >= 276 && phase < 315) {
-    phaseIcon = '🌘'; phaseName = 'Waning Crescent';
-  } else {
-    phaseIcon = '🌘'; phaseName = 'Balsamic';
-  }
-
-  const isBalsamic = phase >= 315 && phase < 354;
+  const index = lunarPhaseIndex(phase);
+  phaseName = LUNAR_PHASE_NAMES[index];
+  phaseIcon = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][index];
+  const isBalsamic = index === 7;
 
   return {
     phaseIcon,

@@ -142,8 +142,6 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
 
   /* 1. SR Ascendant sign and its ruler */
   if (ascSign) {
-    add(SIGN_NATURAL_HOUSE[ascSign], 6, 'sr-ascendant',
-      `${ascSign} rising on the Solar Return sets the tone for how you meet the year.`);
     add(1, 4, 'sr-ascendant', `${ascSign} rising shapes your presence and approach this year.`);
   }
   if (ascRulerHouse) {
@@ -353,12 +351,7 @@ function dignityOf(analysis: SolarReturnAnalysis, planet: string): string {
 }
 
 function cuspSignOf(analysis: SolarReturnAnalysis, house: number): string {
-  if (house === 1) return analysis.yearlyTheme?.ascendantSign || '';
-  // Derive from whole-sign order off the SR Ascendant when cusp data is not exposed here.
-  const asc = analysis.yearlyTheme?.ascendantSign || '';
-  const idx = SIGNS.indexOf(asc);
-  if (idx < 0) return '';
-  return SIGNS[(idx + house - 1) % 12];
+  return analysis.srCuspSigns?.[house] || (house === 1 ? analysis.yearlyTheme?.ascendantSign || '' : '');
 }
 
 /* ── Copy builders (tentative language, no medical claims, no em dashes) ── */
@@ -382,7 +375,7 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
     case 10:
       parts.push('Career, direction and visibility can become one of the loudest stories of the year.');
       if (occupants.length >= 3) {
-        parts.push(`With ${list} gathered here, the chart places particular emphasis on being seen and taken seriously. The Sun makes identity and purpose visible, Mercury puts weight on how you communicate and decide, and Jupiter tends to widen the field of what is possible.`);
+        parts.push(`With ${list} gathered here, the chart places particular emphasis on being seen and taken seriously. Those planets connect their distinct concerns to your public responsibilities, rather than guaranteeing recognition.`);
       }
       parts.push('This can show up as recognition, more responsibility, a change of role, or a stronger need to build something that actually reflects who you are becoming. It does not promise a specific job event.');
       break;
@@ -461,7 +454,7 @@ function buildCoreStory(themes: YearTheme[], ctx: StoryContext): string {
     const d = ctx.definingAspects[0];
     parts.push(`The tightest contact of the return, ${d.label} at ${d.orb}°, is the one to actually listen to.`);
   }
-  parts.push('The honest summary is that this is a year to be intentional about the future you are heading toward and about the people who belong in it. What you choose deliberately will hold, and what you have only tolerated is likely to show its cost.');
+  parts.push('These are areas to compare with your actual circumstances, not promised events. The useful distinction is between what deserves more attention and what you do not need to change.');
 
   return parts.join(' ');
 }
@@ -487,7 +480,7 @@ function areaPhrase(house: number): string {
 function buildHierarchy(ctx: StoryContext): { label: string; detail: string }[] {
   const rows: { label: string; detail: string }[] = [];
   if (ctx.ascSign) rows.push({ label: 'Solar Return Ascendant', detail: `${ctx.ascSign} rising, which sets the tone for how you meet the year.` });
-  if (ctx.ascRuler) rows.push({ label: 'Ruler of the year (Solar Return Ascendant ruler)', detail: `${ctx.ascRuler}${ctx.ascRulerSign ? ` in ${ctx.ascRulerSign}` : ''}${ctx.ascRulerHouse ? `, ${ordinal(ctx.ascRulerHouse)} house` : ''}.` });
+  if (ctx.ascRuler) rows.push({ label: 'Solar Return chart ruler', detail: `${ctx.ascRuler}${ctx.ascRulerSign ? ` in ${ctx.ascRulerSign}` : ''}${ctx.ascRulerHouse ? `, ${ordinal(ctx.ascRulerHouse)} house` : ''}.` });
   if (ctx.sunHouse) rows.push({ label: 'Solar Return Sun', detail: `${ctx.sunSign || ''}${ctx.sunSign ? ', ' : ''}${ordinal(ctx.sunHouse)} house${ctx.sunDignity && STRONG_DIGNITY.has(ctx.sunDignity) ? `, in ${ctx.sunDignity.toLowerCase()}` : ''}.` });
   if (ctx.moonHouse) rows.push({ label: 'Solar Return Moon', detail: `${ctx.moonSign || ''}${ctx.moonSign ? ', ' : ''}${ordinal(ctx.moonHouse)} house.` });
   const ang = (ctx.analysis.angularPlanetsDetailed || []).filter(a => !MINOR_BODIES.has(a.planet));
