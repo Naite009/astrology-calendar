@@ -54,11 +54,8 @@ const TRAD_RULER: Record<string, string> = {
   Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
 };
 
-/** Sign to the house whose life area it naturally colors */
-const SIGN_NATURAL_HOUSE: Record<string, number> = {
-  Aries: 1, Taurus: 2, Gemini: 3, Cancer: 4, Leo: 5, Virgo: 6,
-  Libra: 7, Scorpio: 8, Sagittarius: 9, Capricorn: 10, Aquarius: 11, Pisces: 12,
-};
+/* Signs are never mapped to "natural" houses here: a sign describes style,
+   a house describes the life area, and only real cusps/placements score houses. */
 
 const HOUSE_TITLE: Record<number, string> = {
   1: 'Identity, Presence and How You Meet the World',
@@ -86,6 +83,9 @@ const PLANET_WEIGHT: Record<string, number> = {
   Sun: 10, Moon: 9, Mercury: 5, Venus: 6, Mars: 6, Jupiter: 7, Saturn: 7,
   Uranus: 5, Neptune: 4, Pluto: 5, Chiron: 3, NorthNode: 3, SouthNode: 2,
 };
+
+/** Secondary bodies: may reinforce, never lead a theme or a defining aspect. */
+const SECONDARY_BODIES = new Set(['Chiron', 'NorthNode', 'SouthNode']);
 
 const MINOR_BODIES = new Set([
   'Ceres','Pallas','Juno','Vesta','Lilith','Eris','Psyche','Eros','Amor','Hygiea',
@@ -166,7 +166,7 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
 
   /* 4. Angular planets, credited to the house they are actually in */
   for (const ang of analysis.angularPlanetsDetailed || []) {
-    if (MINOR_BODIES.has(ang.planet)) continue;
+    if (MINOR_BODIES.has(ang.planet) || SECONDARY_BODIES.has(ang.planet)) continue;
     const actual = houses[ang.planet] ?? ang.house;
     const w = (PLANET_WEIGHT[ang.planet] || 3) * 0.9;
     add(actual, w, 'angular',
@@ -231,35 +231,48 @@ export function buildYearStory(analysis: SolarReturnAnalysis): YearStory {
 
   /* 8. Very tight major aspects to the chart's key players */
   const keyPlayers = new Set(['Sun','Moon','Ascendant','MC',ascRuler,timeLord].filter(Boolean));
-  const aspectPool = [...(analysis.srInternalAspects || []), ...(analysis.srToNatalAspects || [])];
+  // Normalize both aspect families into one shape with explicit chart layers.
+  // Only a Solar Return body has a Solar Return house; a natal body never
+  // inherits the SR house of the same-named SR planet.
+  type PooledAspect = { body1: string; layer1: 'SR' | 'Natal'; body2: string; layer2: 'SR' | 'Natal'; type: string; orb: number; label: string };
+  const normType = (t: string) => { const v = String(t || '').trim().toLowerCase(); return v ? v[0].toUpperCase() + v.slice(1) : ''; };
+  const pool = (list: any[] | undefined, natalSecond: boolean): PooledAspect[] => (list || []).map((asp: any) => {
+    const body1 = asp.planet1 ?? asp.srPlanet ?? '';
+    const body2 = asp.planet2 ?? asp.natalPlanet ?? '';
+    const layer1: 'SR' | 'Natal' = asp.planet1Source === 'Natal' ? 'Natal' : 'SR';
+    const layer2: 'SR' | 'Natal' = asp.planet2Source ? (asp.planet2Source === 'Natal' ? 'Natal' : 'SR') : (natalSecond ? 'Natal' : 'SR');
+    const type = normType(asp.type ?? asp.aspectType);
+    const orb = Number.isFinite(asp.orb) ? asp.orb : 9;
+    const label = asp.label || `${layer1} ${body1} ${type.toLowerCase()} ${layer2} ${body2}`;
+    return { body1, layer1, body2, layer2, type, orb, label };
+  });
+  const aspectPool = [...pool(analysis.srInternalAspects as any[], false), ...pool(analysis.srToNatalAspects as any[], true)];
   const aspectCredit: Record<number, number> = {};
   const definingAspects: { label: string; orb: number; planets: string[] }[] = [];
+  const isLead = (b: string) => !MINOR_BODIES.has(b) && !SECONDARY_BODIES.has(b);
   for (const asp of aspectPool) {
-    const p1 = (asp as any).planet1 || '';
-    const p2 = (asp as any).planet2 || '';
-    const type = (asp as any).type || '';
-    const orb = (asp as any).orb ?? 9;
+    const { body1: p1, body2: p2, type, orb, label } = asp;
     if (!MAJOR_ASPECTS.has(type)) continue;
-    if (MINOR_BODIES.has(p1) || MINOR_BODIES.has(p2)) continue;
+    // Defining contacts are between primary factors only (no Chiron, Nodes or asteroids).
+    if (!isLead(p1) || !isLead(p2)) continue;
     if (!keyPlayers.has(p1) && !keyPlayers.has(p2)) continue;
-    // Contacts involving the Time Lord or a luminary stay defining out to 3 degrees.
-    const involvesLord = p1 === timeLord || p2 === timeLord || p1 === 'Sun' || p2 === 'Sun' || p1 === 'Moon' || p2 === 'Moon';
+    const involvesLord = [p1, p2].some(p => p === timeLord || p === 'Sun' || p === 'Moon');
     if (orb > (involvesLord ? 3 : 2)) continue;
-    const label = (asp as any).label || `${p1} ${type.toLowerCase()} ${p2}`;
     if (!definingAspects.some(d => d.label === label)) definingAspects.push({ label, orb, planets: [p1, p2] });
-    for (const p of [p1, p2]) {
+    const srBodies = [asp.layer1 === 'SR' ? p1 : null, asp.layer2 === 'SR' ? p2 : null].filter(Boolean) as string[];
+    for (const p of srBodies) {
       const h = houses[p];
       if (!h) continue;
       if ((aspectCredit[h] || 0) >= 8) continue; // cap so aspect count cannot dominate
       aspectCredit[h] = (aspectCredit[h] || 0) + 4;
-      add(h, 4, 'tight-aspect',
-        `${(asp as any).label || `${p1} ${type.toLowerCase()} ${p2}`} at ${orb}° is tight enough to be a defining contact of the year.`);
+      add(h, 4, 'tight-aspect', `${label} at ${orb}° is tight enough to be a defining contact of the year.`);
     }
   }
+  definingAspects.sort((a, b) => a.orb - b.orb);
 
   /* 10. Minor bodies may only reinforce a theme that already exists */
   for (const body of Object.keys(houses)) {
-    if (!MINOR_BODIES.has(body)) continue;
+    if (!MINOR_BODIES.has(body) && !SECONDARY_BODIES.has(body)) continue;
     const h = houses[body];
     if (!h) continue;
     if ((buckets[h]?.score || 0) < 8) continue;
@@ -350,8 +363,10 @@ function dignityOf(analysis: SolarReturnAnalysis, planet: string): string {
   return row?.dignity || '';
 }
 
+/** Sign on the real Solar Return cusp. No Ascendant-derived whole-sign fallback:
+ *  without a stored cusp, the ruler link is simply not made. */
 function cuspSignOf(analysis: SolarReturnAnalysis, house: number): string {
-  return analysis.srCuspSigns?.[house] || (house === 1 ? analysis.yearlyTheme?.ascendantSign || '' : '');
+  return analysis.srCuspSigns?.[house] || '';
 }
 
 /* ── Copy builders (tentative language, no medical claims, no em dashes) ── */
@@ -483,7 +498,7 @@ function buildHierarchy(ctx: StoryContext): { label: string; detail: string }[] 
   if (ctx.ascRuler) rows.push({ label: 'Solar Return chart ruler', detail: `${ctx.ascRuler}${ctx.ascRulerSign ? ` in ${ctx.ascRulerSign}` : ''}${ctx.ascRulerHouse ? `, ${ordinal(ctx.ascRulerHouse)} house` : ''}.` });
   if (ctx.sunHouse) rows.push({ label: 'Solar Return Sun', detail: `${ctx.sunSign || ''}${ctx.sunSign ? ', ' : ''}${ordinal(ctx.sunHouse)} house${ctx.sunDignity && STRONG_DIGNITY.has(ctx.sunDignity) ? `, in ${ctx.sunDignity.toLowerCase()}` : ''}.` });
   if (ctx.moonHouse) rows.push({ label: 'Solar Return Moon', detail: `${ctx.moonSign || ''}${ctx.moonSign ? ', ' : ''}${ordinal(ctx.moonHouse)} house.` });
-  const ang = (ctx.analysis.angularPlanetsDetailed || []).filter(a => !MINOR_BODIES.has(a.planet));
+  const ang = (ctx.analysis.angularPlanetsDetailed || []).filter(a => !MINOR_BODIES.has(a.planet) && !SECONDARY_BODIES.has(a.planet));
   if (ang.length) rows.push({ label: 'Angular planets', detail: ang.map(a => `${a.planet} near the ${a.angle} (${a.orb}°)`).join(', ') + '.' });
   const st = (ctx.analysis.stelliums || []).filter(s => (s.planets || []).filter(p => CORE_PLANETS.includes(p)).length >= 3);
   if (st.length) rows.push({ label: 'Concentrations', detail: st.map(s => `${s.location}: ${(s.planets || []).join(', ')}`).join(' | ') + '.' });

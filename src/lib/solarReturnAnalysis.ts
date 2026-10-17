@@ -1123,7 +1123,7 @@ export const analyzeSolarReturn = (
         if (overlapWithLotY) overlapSystems.push('the natal chart ruler (natal Ascendant ruler)');
         if (overlapWithSRAsc) overlapSystems.push('SR Ascendant ruler');
         const overlapDescription = overlapSystems.length > 0
-          ? `${timeLord} is both your Time Lord and your ${overlapSystems.join(' and ')} — ${overlapSystems.length > 1 ? 'three' : 'two'} independent timing systems confirm this planet drives the year.`
+          ? `${timeLord} is both your profection lord and your ${overlapSystems.join(' and ')}. When ${overlapSystems.length > 1 ? 'three' : 'two'} techniques point to the same planet, its themes are worth weighting more heavily, though that is an interpretive convention rather than proof.`
           : '';
 
         const ordLocal = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
