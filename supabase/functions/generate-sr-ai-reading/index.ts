@@ -505,8 +505,8 @@ serve(async (req) => {
       : plainSystemPrompt(ageInstructions);
 
     const userPrompt = mode === 'astro'
-      ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and reference every relevant placement, aspect, and dignity condition from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
-      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use ALL the data below — every score, every theme, every timing window. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
+      ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
+      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use the prioritized evidence below. Choose only the strongest themes; do not recite every technique or score. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -539,7 +539,7 @@ serve(async (req) => {
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
+      return new Response(JSON.stringify({ error: (() => { try { const e = JSON.parse(errorText); return e.message || e.error?.message || "AI service rejected the request"; } catch { return "AI service rejected the request"; } })() }), {
         status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

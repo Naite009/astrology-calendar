@@ -582,6 +582,9 @@ const PLANETARY_HOUR_VIBES: Record<string, { feel: string; double: string }> = {
 };
 
 function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
+  return `The return occurs in a ${hourPlanet} planetary hour on a ${dayPlanet} planetary day. This is a traditional symbolic timing technique, not a prediction of how the entire year will feel or turn out.`;
+}
+function legacyPersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
   if (hourPlanet === dayPlanet) {
     return PLANETARY_HOUR_VIBES[hourPlanet]?.double || `Your Solar Return occurs during a ${hourPlanet} hour on a ${dayPlanet} day — doubled planetary energy amplifies this planet's themes all year.`;
   }
@@ -2581,146 +2584,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
       house: correctedProfectionHouse3 || (profYear as any).house || (profYear as any).houseNumber || null,
     } : null;
 
-    return {
-      name: natalChart.name || '',
-      birthDate: natalChart.birthDate || '',
-      birthLocation: natalChart.birthLocation || '',
-      solarReturnYear: effectiveSrYear3,
-      natalSun:    natalChart.planets?.Sun?.sign   || '',
-      natalMoon:   natalChart.planets?.Moon?.sign  || '',
-      natalRising: natalChart.houseCusps?.house1?.sign || '',
-      srSun:       natalChart.planets?.Sun?.sign   || '',
-      srMoon:      analysis.moonSign               || '',
-      srRising:    analysis.yearlyTheme?.ascendantSign || '',
-      personalMessage: birthdayMode ? personalMessage : '',
-      yearlyTheme: analysis.yearlyTheme,
-      sunHouse:     analysis.sunHouse,
-      sunNatalHouse:analysis.sunNatalHouse,
-      moonHouse:    analysis.moonHouse,
-      moonNatalHouse:analysis.moonNatalHouse,
-      profectionYear: mappedProfectionYear,
-      natalChartRuler: analysis.lordOfTheYear,
-    lordOfTheYear: analysis.profectionYear?.timeLord ? { planet: analysis.profectionYear.timeLord, technique: 'annual-whole-sign-profection' } : null,
-      moonPhase:           analysis.moonPhase,
-      moonAngularity:      analysis.moonAngularity,
-      moonLateDegree:      analysis.moonLateDegree,
-      moonVOC:             analysis.moonVOC,
-      moonMetonicAges:     analysis.moonMetonicAges,
-      srMoonAspects:       analysis.srMoonAspects,
-      stelliums: analysis.stelliums,
-      srToNatalAspects:   mappedSrToNatalAspects,
-      srInternalAspects:  analysis.srInternalAspects,
-      angularPlanets:     analysis.angularPlanets,
-      angularPlanetsDetailed: analysis.angularPlanetsDetailed,
-      planetPositions:    mappedPlanetPositions,
-      houseOverlays: analysis.houseOverlays,
-      elementBalance:      analysis.elementBalance,
-      modalityBalance:     analysis.modalityBalance,
-      hemisphericEmphasis: analysis.hemisphericEmphasis,
-      saturnFocus: analysis.saturnFocus,
-      nodesFocus:  analysis.nodesFocus,
-      retrogrades: analysis.retrogrades,
-      vertex: analysis.vertex,
-      // Tier 4
-      mutualReceptions: analysis.mutualReceptions,
-      dignityReport: analysis.dignityReport,
-      healthOverlay: analysis.healthOverlay,
-      eclipseSensitivity: analysis.eclipseSensitivity,
-      enhancedRetrogrades: analysis.enhancedRetrogrades,
-      quarterlyFocus: analysis.quarterlyFocus,
-      dominantPlanets: analysis.dominantPlanets,
-      // Tier 5
-      fixedStars: analysis.fixedStars,
-      arabicParts: analysis.arabicParts,
-      firdaria: analysis.firdaria,
-      antisciaContacts: analysis.antisciaContacts,
-      solarArcs: analysis.solarArcs,
-      synthesisSections: buildSynthesisSectionsExport(analysis.synthesisSections),
-      midpointHits: analysis.midpointHits,
-      prenatalEclipse: analysis.prenatalEclipse,
-      planetarySpeeds: analysis.planetarySpeeds,
-      heliacalRising: analysis.heliacalRising,
-      // Strategy & Timing
-      cakeImageUrl: (() => {
-        const natalSun = natalChart.planets?.Sun?.sign || '';
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-        return natalSun ? `${SUPABASE_URL}/storage/v1/object/public/cakes/${natalSun.toLowerCase()}.png` : '';
-      })(),
-      executiveSummary: generateExecutiveSummary(analysis, natalChart),
-      actionGuidance: (() => {
-        const srPlanets: Record<string, { sign?: string; isRetrograde?: boolean }> = {};
-        for (const [key, val] of Object.entries(srChart.planets || {})) {
-          if (val) srPlanets[key] = { sign: (val as any).sign, isRetrograde: (val as any).isRetrograde };
-        }
-        return generateActionGuidance(analysis.planetSRHouses, srPlanets);
-      })(),
-      activationWindows: (() => {
-        const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-        const toAbs = (pos: any): number | null => {
-          if (!pos?.sign) return null;
-          const idx = SIGNS.indexOf(pos.sign);
-          if (idx < 0) return null;
-          return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
-        };
-        const srPositions: Record<string, number> = {};
-        const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
-        for (const p of keyTargets) {
-          const pos = srChart.planets?.[p as keyof typeof srChart.planets];
-          const deg = pos ? toAbs(pos) : null;
-          if (deg !== null) srPositions[p] = deg;
-        }
-        const bd = natalChart.birthDate || '';
-        const parts = bd.split('-');
-        const bMonth = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : 0;
-        const bDay = parts.length >= 3 ? parseInt(parts[2], 10) : 1;
-        const data = calculateActivationWindows(srPositions, srChart.solarReturnYear, bMonth, bDay, getSolarReturnReferenceDate(srChart, natalChart));
-        return {
-          peakPeriods: data.peakPeriods,
-          monthlyThemes: data.monthlyThemes.map(m => ({
-            ...m,
-            transitHits: m.transitHits.map(h => ({
-              ...h,
-              exactDate: h.exactDate.toISOString(),
-              windowStart: h.windowStart.toISOString(),
-              windowEnd: h.windowEnd.toISOString(),
-            })),
-          })),
-          transitHitCount: data.transitHits.length,
-          windowCount: data.activationWindows.length,
-        };
-      })(),
-      identityShift: generateIdentityShift(analysis, srChart, natalChart),
-      lifeDomainScores: calculateLifeDomainScores(analysis),
-      powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
-      domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart),
-      psychologicalProfile: buildPsychologicalProfileExport(natalChart, srChart),
-      secondaryProgressions: buildSecondaryProgressionsExport(natalChart, srChart),
-      contradictions: detectContradictions(analysis, srChart),
-      lunarWeatherMap: generateLunarWeatherMap(analysis, srChart, natalChart),
-      // New structured summary objects
-      yearSummary: buildYearSummary(analysis, natalChart, srChart),
-      yearStory: buildYearStory(analysis),
-      scoredAspects: (() => {
-        const bd = natalChart.birthDate || '';
-        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] });
-      })(),
-      topThemes: (() => {
-        const bd = natalChart.birthDate || '';
-        const bMonth = bd.split('-').length >= 2 ? parseInt(bd.split('-')[1], 10) - 1 : 0;
-        return generateTopThemes(scoreAspects(analysis.srToNatalAspects || [], bMonth, { chartRuler: analysis.yearlyTheme?.ascendantRuler || '', timeLord: analysis.profectionYear?.timeLord || '', angularPlanets: analysis.angularPlanets || [] }));
-      })(),
-      houseEmphasis: buildHouseEmphasis(analysis),
-      lunarFlow: buildLunarFlow(analysis, srChart, natalChart),
-      patternTracking: buildPatternTracking(analysis, natalChart, srChart),
-      finalAdvice: buildFinalAdvice(analysis, natalChart, srChart),
-      reportStructureOrder: [
-        'yearSummary', 'topThemes', 'identityDirection', 'relationships',
-        'careerMoney', 'emotionalMoon', 'healthEnergy', 'houseEmphasis',
-        'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
-        'advancedTechniques', 'patternTracking', 'finalAdvice',
-      ],
-    };
+    return { ...buildFullJsonStandalone(analysis, srChart, natalChart), personalMessage: birthdayMode ? personalMessage : '' };
   };
 
   const downloadFile = (data: object, suffix: string) => {

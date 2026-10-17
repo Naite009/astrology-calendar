@@ -286,8 +286,8 @@ export function generatePDFYearAtAGlance(
     for (const line of feltLines.slice(0, 2)) { doc.text(line, margin + 10, sy); sy += 9; }
 
     // ── Right: LORD OF THE YEAR (Natal ASC Ruler) ──
-    if (a.lordOfTheYear) {
-      const loty = a.lordOfTheYear;
+    if (a.natalChartRuler) {
+      const loty = a.natalChartRuler;
       const lotyName = P[loty.planet] || loty.planet;
       doc.setFillColor(...CARD_BG);
       doc.roundedRect(margin + col2W + col2Gap, stripY, col2W, stripH, 3, 3, 'F');
@@ -300,7 +300,7 @@ export function generatePDFYearAtAGlance(
       doc.setFont('times', 'bold'); doc.setFontSize(6);
       doc.setTextColor(...GOLD);
       doc.setCharSpace(2);
-      doc.text('LORD OF THE YEAR', margin + col2W + col2Gap + 10, ly);
+      doc.text('NATAL CHART RULER', margin + col2W + col2Gap + 10, ly);
       doc.setCharSpace(0);
       ly += 8;
       doc.setFont('times', 'italic'); doc.setFontSize(6.5);

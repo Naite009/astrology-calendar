@@ -8,6 +8,7 @@ import { calculateSecondaryProgressions, getProgressedMoonInfo, findProgressedAs
 export const SR_REPORT_VERSION = 'sr-integrity-2026-10-17-v1';
 /** Never reinterpret the copied natal birthDate/birthTime as a return instant. */
 export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalChart) {
+  if (sr.natalChartId && sr.natalChartId !== natal.id) throw new Error('Solar Return belongs to a different natal chart');
   const target = signPositionToLongitude(natal.planets.Sun);
   const location = sr.solarReturnLocation || '';
   const offline = location ? resolveBirthPlaceOffline(location) : null;
@@ -20,7 +21,9 @@ export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalC
   if (sr.solarReturnDateTime && /(?:Z|[+-]\d{2}:\d{2})$/.test(sr.solarReturnDateTime)) {
     const parsed = new Date(sr.solarReturnDateTime);
     if (Number.isFinite(parsed.getTime()) && parsed.getUTCFullYear() === sr.solarReturnYear) {
-      instant = parsed; instantSource = 'stored';
+      const longitude = Astronomy.SunPosition(parsed).elon;
+      const residual = target === null ? Infinity : Math.abs(((longitude - target + 540) % 360) - 180);
+      if (residual <= 0.02) { instant = parsed; instantSource = 'stored'; }
     }
   }
   if (!instant && target !== null && /^\d{4}-\d{2}-\d{2}$/.test(natal.birthDate)) {
@@ -30,6 +33,7 @@ export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalC
     if (instant) instantSource = 'recalculated-from-stored-natal-sun';
   }
   return {
+    natalChartId: natal.id, solarReturnChartId: sr.id, linkedNatalChartId: sr.natalChartId || null,
     returnInstantUTC: instant?.toISOString() || null, instantSource,
     storedReturnInstantUTC: sr.solarReturnDateTime || null,
     location: location || null,
@@ -38,7 +42,7 @@ export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalC
     houseSystem: sr.houseSystem || null,
     storedEphemeris: (sr as SolarReturnChart & { ephemeris?: string }).ephemeris || null,
     derivedTimingEphemeris: 'astronomy-engine 2.1.19, tropical apparent solar longitude',
-    warnings: [!sr.solarReturnDateTime ? 'Return instant was not stored; timing is recalculated from the stored natal Sun, not certified import metadata.' : '', !sr.houseSystem ? 'Imported house system was not recorded; stored cusps are used without relabelling them.' : '', !place ? 'Precise return coordinates are unavailable.' : !explicitCoordinates ? 'Coordinates and timezone resolved from the recorded return location, not from import metadata.' : ''].filter(Boolean),
+    warnings: [instantSource !== 'stored' ? 'Return instant was missing or rejected (year, UTC offset or solar-position mismatch); timing is recalculated from the stored natal Sun, not certified import metadata.' : '', !sr.houseSystem ? 'Imported house system was not recorded; stored cusps are used without relabelling them.' : '', !place ? 'Precise return coordinates are unavailable.' : !explicitCoordinates ? 'Coordinates and timezone resolved from the recorded return location, not from import metadata.' : ''].filter(Boolean),
   };
 }
 

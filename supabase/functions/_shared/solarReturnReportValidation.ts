@@ -19,6 +19,8 @@ export function validateSolarReturnReport(report: Record<string, any>): string[]
     const index = Math.floor(((((m.phaseAngle % 360) + 360 + 22.5) % 360)) / 45);
     if (m.phase !== phases[index]) errors.push('Moon phase label conflicts with its angle');
   }
+  const identity = report.calculationMetadata;
+  if (identity?.linkedNatalChartId && identity.linkedNatalChartId !== identity.natalChartId) errors.push('Return and natal chart identities differ');
   const instant = report.calculationMetadata?.returnInstantUTC;
   if (instant && (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(instant) || new Date(instant).getUTCFullYear() !== report.solarReturnYear)) errors.push('Invalid return timestamp');
   for (const hour of report.planetaryHoursAtSR?.allHours || []) {
@@ -33,7 +35,25 @@ export function validateSolarReturnReport(report: Record<string, any>): string[]
     const type = aspect.type || aspect.aspectType;
     if (!(type in targets)) errors.push('Unsupported aspect type');
   }
-  void wheel;
+  if (wheel?.srPlanets && wheel?.natalPlanets) {
+    for (const aspect of [...(report.srToNatalAspects || []), ...(report.srInternalAspects || [])]) {
+      const first = wheel.srPlanets[aspect.planet1 || aspect.srPlanet];
+      const pool = aspect.source === 'sr-to-natal' ? wheel.natalPlanets : wheel.srPlanets;
+      const second = pool[aspect.planet2 || aspect.natalPlanet];
+      const angle = targets[aspect.type || aspect.aspectType];
+      if (first && second && Number.isFinite(angle)) {
+        const separation = Math.abs(((first.absDeg - second.absDeg + 540) % 360) - 180);
+        if (Math.abs(Math.abs(separation - angle) - aspect.orb) > 0.025) errors.push('Aspect geometry conflicts with exported positions');
+      }
+    }
+    const sun = wheel.srPlanets.Sun, moon = wheel.srPlanets.Moon;
+    if (sun && moon && m && Math.abs((((moon.absDeg - sun.absDeg) % 360 + 360) % 360) - m.phaseAngle) > 0.025) errors.push('Moon phase angle conflicts with exported positions');
+    if (wheel.srPlanets.Sun?.retrograde || wheel.srPlanets.Moon?.retrograde) errors.push('Sun or Moon incorrectly marked retrograde');
+  }
+  for (const [key, position] of Object.entries(wheel?.srCusps || {}) as [string, any][]) {
+    const house = Number(key.replace('house',''));
+    if (report.rulers?.returnCuspSigns?.[house] && report.rulers.returnCuspSigns[house] !== position.sign) errors.push('Return cusp sign conflicts with ruler context');
+  }
   return [...new Set(errors)];
 }
 
