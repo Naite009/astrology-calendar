@@ -497,12 +497,23 @@ serve(async (req) => {
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
     const group = ageGroup(age);
     const ageInstructions = ageContextInstructions(group, age);
-    const ctx = buildContext(d, age);
+    // Only validated evidence reaches the prose writer. Legacy tables and
+    // unverified eclipse/quarter templates are not treated as calculated facts.
+    const ctx = JSON.stringify({ reportVersion: d.reportVersion, name: d.name, birthDate: d.birthDate, year: d.solarReturnYear,
+      rulers: d.rulers, profectionYear: d.profectionYear, moonPhase: d.moonPhase,
+      provenance: d.calculationMetadata, prioritizedSynthesis: d.prioritizedSynthesis,
+      solarReturnPositions: d.chartWheelData?.srPlanets, natalPositions: d.chartWheelData?.natalPlanets,
+      returnCusps: d.chartWheelData?.srCusps, natalCusps: d.chartWheelData?.natalCusps,
+      houseOverlays: (d.houseOverlays || []).filter((o: any) => ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(o.planet)).map((o: any) => ({ planet:o.planet, srHouse:o.srHouse, natalHouse:o.natalHouse })),
+      primaryContacts: [...(d.srToNatalAspects || []), ...(d.srInternalAspects || [])].filter((a: any) => ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(a.planet1) && ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'].includes(a.planet2) && a.orb <= 3).sort((a: any,b: any)=>a.orb-b.orb).slice(0,8).map((a: any)=>({label:a.label,source:a.source,orb:a.orb})),
+      timingStatus:'Legacy eclipse dates and month labels have not been independently certified and are withheld from the reading. No event dates may be invented.' });
     const repairRules = `Lead with 3 to 5 evidence-linked themes, not a list of every technique. For each, explain the exact signature, recognizable experience, and useful implication. No standalone sign stereotype, uses Libra style, steer reading, two valid needs, trust process, slogans, crisis-in-action, illness, trauma, mother claims or guaranteed future events. Never use em/en dashes. Natal, return, progressed and transiting factors are distinct. Profection lord is not either Ascendant ruler. Unknown metadata remains unknown. No uncomputed default peak months, Metonic recurrence claims, or VOC inference from an unaspected Moon. Progressed Moon sign and natal-house changes are longer-term context. Use only supplied dated events. Scores are app-defined activity/tone signals, not chances of success. All section headings start ##. Prioritized synthesis is the factual hierarchy; older generic glossaries cannot override it.`;
 
-    const systemPrompt = mode === 'astro'
-      ? astroSystemPrompt(ageInstructions)
-      : plainSystemPrompt(ageInstructions);
+    const systemPrompt = `Write a concise, evidence-grounded annual reading. ${ageInstructions}
+Use 5 sections: ## The main story, ## What modifies it, ## The central tension, ## The longer emotional chapter, ## What matters most.
+Each section has at most 3 sentences and 80 words. Connect rather than list placements. The Sun house and whole-sign profection lead; the ruler placement explains how their arenas meet. Major contacts modify those themes, never a minor-body headline. In the longer chapter, include supplied progressed Moon sign, natal house, reference date and real ingress date, distinctly labelled. Explain uncertainty honestly.
+${mode === 'astro' ? 'Include exact supplied chart-layer contact labels and orbs as brief evidence, plus the three distinct rulers.' : 'Use ordinary language for experience, then a brief Evidence line naming the supplied chart factors. Never silently remove chart provenance.'}
+Do not include eclipse dates, month forecasts, health claims, invented biography, therapy recommendations, automatic shared-house compatibility, Chiron healing milestones, or claims that co-located rulers perfectly support each other. The astrology suggests possibilities, not facts about what happened or will happen.`;
 
     const userPrompt = mode === 'astro'
       ? `Write a technically comprehensive Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Cross-reference profection, ruler chain, house overlays, and activation windows.\n\n${ctx}`
@@ -517,7 +528,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-4-argon",
         messages: [
-          { role: "system", content: withInterpretationStandard(`${systemPrompt}\n${repairRules}`, { fullChart: true }) },
+          { role: "system", content: withInterpretationStandard(`${systemPrompt}\n${repairRules}`, { fullChart: false }) },
           { role: "user", content: userPrompt },
         ],
         temperature: mode === 'astro' ? 0.3 : 0.4,
