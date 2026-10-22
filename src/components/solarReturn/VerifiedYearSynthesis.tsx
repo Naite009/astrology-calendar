@@ -9,6 +9,7 @@ export function VerifiedYearSynthesis({ analysis, srChart, natalChart }: { analy
   const m = result.calculationMetadata;
   return <section className="space-y-5 border-b border-border pb-6">
     <h3 className="text-lg font-medium text-foreground">The strongest threads of your year</h3>
+    <p className="text-xs text-muted-foreground">Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.</p>
     <p className="text-xs text-muted-foreground">Natal ruler: {analysis.natalChartRuler?.planet || 'unknown'}. Solar Return ruler: {analysis.yearlyTheme?.ascendantRuler || 'unknown'}. Profection lord: {analysis.profectionLord || 'unknown'}.</p>
     {[...result.themes, ...(result.longerTerm ? [result.longerTerm] : [])].map(item => <div key={item.title} className="space-y-2">
       <p className="text-xs text-primary">{item.layer}</p>

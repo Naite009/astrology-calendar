@@ -80,7 +80,11 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
   const moonHouse = analysis.moonHouse?.house;
 
   // Get top aspect for the "catalyst" paragraph
-  const topAspect = analysis.srToNatalAspects?.[0] || analysis.srInternalAspects?.[0];
+  // Scoped ranking: closest SR-to-natal contact first, otherwise closest SR-internal aspect.
+  const closestCross = [...(analysis.srToNatalAspects || [])].sort((a, b) => a.orb - b.orb)[0];
+  const closestInternal = [...(analysis.srInternalAspects || [])].sort((a, b) => a.orb - b.orb)[0];
+  const topAspect = closestCross || closestInternal;
+  const topIsCross = !!closestCross;
   const aspectNarrative = topAspect
     ? `${topAspect.planet1}–${topAspect.planet2} ${topAspect.type.toLowerCase()} (${topAspect.orb.toFixed(1)}°)`
     : null;
@@ -152,7 +156,7 @@ export function StoryOfTheYear({ analysis, natalChart, srChart }: Props) {
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">What Creates Momentum</p>
             <p className="text-sm text-foreground leading-relaxed">
-              The strongest connection in this year's chart is between <strong>{topAspect.planet1}</strong> and <strong>{topAspect.planet2}</strong> ({topAspect.type.toLowerCase()}, {topAspect.orb.toFixed(1)}° apart). {topAspect.type === 'Conjunction' ? 'These two forces blend together — when one activates, the other automatically comes along. You can\'t deal with one without dealing with the other.' :
+              {topIsCross ? <>One of the closest Solar Return-to-natal contacts is <strong>SR {topAspect.planet1}</strong> {topAspect.type.toLowerCase()} <strong>natal {topAspect.planet2}</strong> ({topAspect.orb.toFixed(1)}°).</> : <>One of the closest Solar Return-to-Solar Return aspects is <strong>SR {topAspect.planet1}</strong> {topAspect.type.toLowerCase()} <strong>SR {topAspect.planet2}</strong> ({topAspect.orb.toFixed(1)}°).</>} {topAspect.type === 'Conjunction' ? 'These two forces blend together — when one activates, the other automatically comes along. You can\'t deal with one without dealing with the other.' :
               topAspect.type === 'Opposition' ? 'These two forces pull in opposite directions, like a tug-of-war. You\'ll feel torn between them at times. The solution isn\'t choosing one — it\'s finding a way to honor both.' :
               topAspect.type === 'Square' ? 'These two forces create friction — like two people who disagree but force each other to be sharper. It\'s uncomfortable but it\'s what pushes you to actually act instead of staying still.' :
               topAspect.type === 'Trine' ? 'These two forces work together easily — things related to them come naturally this year. The only risk is taking the ease for granted and not making the most of it.' :

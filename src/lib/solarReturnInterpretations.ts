@@ -344,28 +344,19 @@ export const srPlanetInHouse: Record<string, Record<number, string>> = {
 
 // ─── SR Ascendant ruler condition narrative ──────────────────────────
 
-export const rulerConditionNarrative = (dignity: string, isRetrograde: boolean): string => {
-  let base = '';
-  switch (dignity) {
-    case 'Domicile':
-      base = 'The energy guiding your year is operating at peak capacity — it has full power and agency. The themes it touches are likely to go well with minimal resistance. This is an empowered year.';
-      break;
-    case 'Exaltation':
-      base = 'The energy guiding your year is operating from a place of strength and honor. The year carries a quality of recognition, achievement, or "things working in your favor" in the areas it touches.';
-      break;
-    case 'Detriment':
-      base = 'The energy guiding your year is operating in uncomfortable territory. The year\'s themes require extra effort, adaptation, and working against your natural grain. Challenges are learning opportunities, but they require conscious effort.';
-      break;
-    case 'Fall':
-      base = 'The energy guiding your year is in its most challenging position. This year may feel like an uphill climb in certain areas. Humility, patience, and accepting help from others are essential strategies.';
-      break;
-    default:
-      base = 'The energy guiding your year is operating without special advantage or disadvantage. The year\'s themes require your own effort and initiative to shape outcomes; nothing is handed to you, but nothing blocks you either.';
-  }
-  if (isRetrograde) {
-    base += ' Additionally, this guiding energy is in a review phase — indicating a year of revision, re-evaluation, and internal processing. Progress may feel slower or more indirect, but the inner work is essential.';
-  }
-  return base;
+/**
+ * Condition of the ACTUAL SR chart ruler. Returns '' when nothing is computed:
+ * dignity text only for explicit traditional Domicile/Exaltation/Detriment/Fall,
+ * review language only when that ruler is computed retrograde at the return moment.
+ */
+export const rulerConditionNarrative = (dignity: string | undefined, isRetrograde: boolean | undefined, ruler = 'The chart ruler'): string => {
+  const parts: string[] = [];
+  if (dignity === 'Domicile') parts.push(`${ruler} is in its own sign (traditional domicile), so its themes may be easier to act on directly.`);
+  else if (dignity === 'Exaltation') parts.push(`${ruler} is in its traditional exaltation, which may make its themes feel well supported.`);
+  else if (dignity === 'Detriment') parts.push(`${ruler} is in its traditional detriment, so its themes may take more deliberate adjustment.`);
+  else if (dignity === 'Fall') parts.push(`${ruler} is in its traditional fall, so its themes may need more patience and support.`);
+  if (isRetrograde) parts.push(`${ruler} is retrograde at the Solar Return moment, which may point to revisiting or reworking its themes before pushing them outward.`);
+  return parts.join(' ');
 };
 
 // ─── Angular planet significance ────────────────────────────────────

@@ -1231,10 +1231,10 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.yearlyTheme.yearTheme}</p>
           {/* Chart ruler condition */}
-          {analysis.lordOfTheYear && (
+          {rulerConditionNarrative(analysis.yearlyTheme.ascendantRulerDignity, analysis.yearlyTheme.ascendantRulerRetrograde, analysis.yearlyTheme.ascendantRuler) && (
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Chart Ruler Condition:</strong> {rulerConditionNarrative(analysis.lordOfTheYear.dignity, analysis.lordOfTheYear.isRetrograde)}
+                <strong className="text-foreground">Solar Return Chart Ruler Condition:</strong> {rulerConditionNarrative(analysis.yearlyTheme.ascendantRulerDignity, analysis.yearlyTheme.ascendantRulerRetrograde, analysis.yearlyTheme.ascendantRuler)}
               </p>
             </div>
           )}
@@ -1288,7 +1288,7 @@ const OverviewTab = ({ analysis, srChart, natalChart, onEdit, onDelete }: {
       )}
 
       {/* Natal chart ruler (not the profection Time Lord) */}
-      {analysis.lordOfTheYear && (
+      {rulerConditionNarrative(analysis.yearlyTheme.ascendantRulerDignity, analysis.yearlyTheme.ascendantRulerRetrograde, analysis.yearlyTheme.ascendantRuler) && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
             Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet] || ''} {analysis.lordOfTheYear.planet} in SR {analysis.lordOfTheYear.srHouse ? `${ordinalNumber(analysis.lordOfTheYear.srHouse)} House` : '—'}
