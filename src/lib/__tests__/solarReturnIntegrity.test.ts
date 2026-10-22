@@ -119,3 +119,30 @@ describe('audit follow-up regressions', () => {
   it('prose is still cleanable', () => expect(isMachineString('Mars square Saturn adds pressure.')).toBe(false));
 });
 
+
+describe('Placidus SR methodology regression (Lauren 2026)', () => {
+  const a = analyzeSolarReturn(laurenReturn, laurenNatal);
+  it('SR placements come from SR Placidus cusps', () => {
+    expect(a.yearlyTheme?.ascendantSign).toBe('Scorpio');
+    expect(a.planetSRHouses).toMatchObject({ Sun: 11, Moon: 3, Mars: 9, Jupiter: 9, Pluto: 2 });
+    expect(a.profectionYear).toMatchObject({ age: 50, houseNumber: 3, natalCuspSign: 'Sagittarius', timeLord: 'Jupiter' });
+  });
+  it('SR Moon square natal Venus is SR-to-natal, not internal', () => {
+    const cross = a.srToNatalAspects.find(x => x.planet1 === 'Moon' && x.planet2 === 'Venus' && x.type === 'Square');
+    expect(cross && cross.orb).toBeLessThan(0.5);
+    expect(cross?.label).toMatch(/natal/i);
+    expect(a.srInternalAspects.some(x => [x.planet1, x.planet2].includes('Moon') && [x.planet1, x.planet2].includes('Venus') && x.type === 'Square')).toBe(false);
+  });
+  it('ruler condition language only from the actual direct SR ruler', async () => {
+    const { rulerConditionNarrative } = await import('@/lib/solarReturnInterpretations');
+    expect(a.yearlyTheme?.ascendantRuler).toBe('Mars');
+    expect(a.yearlyTheme?.ascendantRulerRetrograde).toBe(false);
+    const text = rulerConditionNarrative(a.yearlyTheme?.ascendantRulerDignity, a.yearlyTheme?.ascendantRulerRetrograde, 'Mars');
+    expect(text).not.toMatch(/retrograde|review|re-evaluation|uncomfortable/i);
+    expect(rulerConditionNarrative('Peregrine', true, 'Mars')).toMatch(/retrograde at the Solar Return moment/);
+  });
+  it('export carries the house methodology note', () => {
+    const json = buildFullJsonStandalone(a, laurenReturn, laurenNatal) as any;
+    expect(json.methodology).toMatchObject({ solarReturnHouses: 'Placidus', annualProfection: 'Whole Sign' });
+  });
+});
