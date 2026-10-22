@@ -790,6 +790,7 @@ export function buildFullJsonStandalone(
   return {
     reportVersion: SR_REPORT_VERSION,
     calculationMetadata: resolveSolarReturnProvenance(srChart, natalChart),
+    methodology: { natalHouses: 'Placidus', solarReturnHouses: 'Placidus', annualProfection: 'Whole Sign', note: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.' },
     prioritizedSynthesis: buildSolarReturnEvidenceSynthesis(analysis, srChart, natalChart),
     rulers: { natalChartRuler: analysis.natalChartRuler?.planet || analysis.lordOfTheYear?.planet || null, solarReturnChartRuler: analysis.yearlyTheme?.ascendantRuler || null, profectionLord: analysis.profectionYear?.timeLord || null, profectionSystem: 'whole-sign', returnCuspSigns: analysis.srCuspSigns },
     moonVOCStatus: 'not-calculated',

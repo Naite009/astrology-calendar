@@ -79,9 +79,11 @@ function buildAspectTitle(p1: string, p2: string, aspectType: string, tightLabel
     Opposition: 'balances',
     Quincunx: 'fine-tunes',
   };
-  const verb = ASPECT_VERB[aspectType] || 'connects to';
+  let verb = ASPECT_VERB[aspectType] || 'connects to';
+  // Subject/verb agreement: plural nouns ("relationships", "partnership needs") take the base form.
+  if (/s$/.test(p1Noun) && !/ss$/.test(p1Noun)) verb = verb.replace(/^(\S+?)(es|s)\b/, (_m, stem, suf) => (suf === 'es' && /(ch|sh|x)$/.test(stem) ? stem : suf === 'es' ? stem + 'e' : stem));
   const tightTag = tightLabel === 'exact' || tightLabel === 'very tight' ? ' (strong)' : '';
-  return `Your ${p1Noun} ${verb} your ${p2Noun}${tightTag}`;
+  return `Your ${p1Noun} this year ${verb} your natal ${p2Noun}${tightTag}`;
 }
 
 // Natural prose descriptions — warm, opportunity-focused, no mad-libs
@@ -233,7 +235,7 @@ export function generateExecutiveSummary(
     if (!PLANET_NOUNS[asp.planet1] || !PLANET_NOUNS[asp.planet2]) continue;
 
     const tightLabel = asp.orb <= 0.5 ? 'exact' : asp.orb <= 1 ? 'very tight' : asp.orb <= 2 ? 'close' : 'present';
-    const tightNote = asp.orb <= 1 ? ' This is one of the strongest aspects in your chart this year — you\'ll feel it clearly.' : '';
+    const tightNote = asp.orb <= 1 ? ' This is one of the closest Solar Return-to-natal contacts this year, so it may be especially noticeable.' : '';
 
     items.push({
       type: isOpp ? 'opportunity' : 'challenge',

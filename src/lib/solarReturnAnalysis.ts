@@ -315,6 +315,10 @@ export interface SRYearlyTheme {
   ascendantRuler: string;
   ascendantRulerSign: string;
   ascendantRulerHouse: number | null;
+  /** Retrograde flag of the actual SR chart ruler at the return moment. */
+  ascendantRulerRetrograde?: boolean;
+  /** Traditional essential dignity of the SR chart ruler (computed, Sun..Saturn only). */
+  ascendantRulerDignity?: string;
   yearTheme: string;
 }
 
@@ -812,12 +816,14 @@ export const analyzeSolarReturn = (
 
     const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
     const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${ordinalNumber(rulerHouse)} house affairs` : '';
-    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. You'll feel this as a persistent pull: decisions, moods, and reactions will keep filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
+    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. This may show up as a recurring pull, with decisions and reactions often filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
       ascendantRulerSign: rulerSign,
       ascendantRulerHouse: rulerHouse,
+      ascendantRulerRetrograde: !!(rulerPos as { isRetrograde?: boolean } | undefined)?.isRetrograde,
+      ascendantRulerDignity: rulerPos ? getEssentialDignity(ruler, rulerSign) : 'NotAssigned',
       yearTheme: themeDesc,
     };
   }

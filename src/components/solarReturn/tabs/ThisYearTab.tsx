@@ -51,10 +51,10 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.yearlyTheme.yearTheme}</p>
-          {analysis.lordOfTheYear && (
+          {rulerConditionNarrative(analysis.yearlyTheme.ascendantRulerDignity, analysis.yearlyTheme.ascendantRulerRetrograde, analysis.yearlyTheme.ascendantRuler) && (
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Chart Ruler Condition:</strong> {rulerConditionNarrative(analysis.lordOfTheYear.dignity, analysis.lordOfTheYear.isRetrograde)}
+                <strong className="text-foreground">Solar Return Chart Ruler Condition:</strong> {rulerConditionNarrative(analysis.yearlyTheme.ascendantRulerDignity, analysis.yearlyTheme.ascendantRulerRetrograde, analysis.yearlyTheme.ascendantRuler)}
               </p>
             </div>
           )}
