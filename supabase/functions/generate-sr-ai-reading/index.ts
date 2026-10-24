@@ -1,3 +1,4 @@
+import { validateVerifiedReading, verifiedFactsFromSolarReturnReport } from "../_shared/verifiedReadingFacts.ts";
 import { validateSolarReturnReport, validateSolarReturnReading } from '../_shared/solarReturnReportValidation.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
@@ -494,6 +495,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const d = fullJson;
+    const verifiedFacts = verifiedFactsFromSolarReturnReport(d);
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
     const group = ageGroup(age);
     const ageInstructions = ageContextInstructions(group, age);
@@ -504,6 +506,7 @@ serve(async (req) => {
       moonPhase:d.moonPhase,
       provenance:d.calculationMetadata,
       prioritizedSynthesis:{themes:d.prioritizedSynthesis?.themes,longerTerm:d.prioritizedSynthesis?.longerTerm},
+      verifiedFacts,
       timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
     const repairRules = `Lead with 3 to 5 evidence-linked themes, not a list of every technique. For each, explain the exact signature, recognizable experience, and useful implication. No standalone sign stereotype, uses Libra style, steer reading, two valid needs, trust process, slogans, crisis-in-action, illness, trauma, mother claims or guaranteed future events. Never use em/en dashes. Natal, return, progressed and transiting factors are distinct. Profection lord is not either Ascendant ruler. Unknown metadata remains unknown. No uncomputed default peak months, Metonic recurrence claims, or VOC inference from an unaspected Moon. Progressed Moon sign and natal-house changes are longer-term context. Use only supplied dated events. Scores are app-defined activity/tone signals, not chances of success. All section headings start ##. Prioritized synthesis is the factual hierarchy; older generic glossaries cannot override it.`;
 
@@ -573,6 +576,8 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
               text += data.choices?.[0]?.delta?.content || '';
             }
           }
+          const factErrors = validateVerifiedReading(text, verifiedFacts);
+          if (factErrors.length) throw new Error(`Reading withheld by calculation check: ${factErrors.join('; ')}`);
           const faults = validateSolarReturnReading(text);
           if (faults.length) {
             // Transparent deterministic fallback, not invented replacement AI prose.
@@ -589,7 +594,7 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
         } finally { controller.close(); }
       }
     });
-    return new Response(stream, { headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'X-SR-Model': 'google/gemini-4-argon' } });
+    return new Response(stream, { headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'X-SR-Model': 'google/gemini-3.1-pro-preview' } });
   } catch (error) {
     console.error("generate-sr-ai-reading error:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {

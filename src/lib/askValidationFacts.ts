@@ -1,3 +1,4 @@
+import { signPositionToLongitude } from './ephemerisEngine';
 import { NatalChart } from "@/hooks/useNatalChart";
 import { lookupAspectMeaning } from "@/lib/aspectMeaningLibrary";
 
@@ -82,6 +83,8 @@ type SimplePosition = {
   degree: number;
   minutes?: number;
   isRetrograde?: boolean;
+  longitude?: number;
+  seconds?: number;
 };
 
 type PointRecord = {
@@ -97,7 +100,7 @@ type PointRecord = {
 const getAbsoluteDegree = (position: SimplePosition) => {
   const signIndex = ZODIAC.indexOf(position.sign as (typeof ZODIAC)[number]);
   if (signIndex < 0) return null;
-  return signIndex * 30 + position.degree + (position.minutes || 0) / 60;
+  return signPositionToLongitude(position);
 };
 
 const buildHouseCalculator = (chart: NatalChart) => {
@@ -139,7 +142,7 @@ const buildAnglePositions = (chart: NatalChart): Record<string, SimplePosition> 
   for (const [name, key] of mappings) {
     const cusp = houseCusps[key] as SimplePosition | undefined;
     if (cusp?.sign) {
-      angles[name] = { sign: cusp.sign, degree: cusp.degree, minutes: cusp.minutes || 0 };
+      angles[name] = { ...cusp };
       continue;
     }
     const fallback = chart.planets?.[name as keyof typeof chart.planets] as SimplePosition | undefined;

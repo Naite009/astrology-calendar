@@ -1,3 +1,4 @@
+import { validateVerifiedReading, verifiedFactsFromSolarReturnReport } from '../../../supabase/functions/_shared/verifiedReadingFacts';
 import { validateSolarReturnReport, validateSolarReturnReading } from '../../../supabase/functions/_shared/solarReturnReportValidation';
 import { useState, useRef, useCallback } from 'react';
 import { X, Sparkles, Loader2, RotateCcw, Download, CheckCircle2 } from 'lucide-react';
@@ -66,7 +67,7 @@ export async function fetchReading(
         const content = parsed.choices?.[0]?.delta?.content;
         if (content) {
           accumulated += content;
-          onDelta(accumulated);
+          // Withhold unvalidated prose until the complete fact gate passes.
         }
       } catch (error) {
         if (error instanceof Error && !(error instanceof SyntaxError)) throw error;
@@ -75,8 +76,9 @@ export async function fetchReading(
       }
     }
   }
-  const errors = validateSolarReturnReading(accumulated);
+  const errors = [...validateSolarReturnReading(accumulated), ...validateVerifiedReading(accumulated, verifiedFactsFromSolarReturnReport(fullJson))];
   if (errors.length) throw new Error(`Reading withheld: ${errors.join('; ')}`);
+  onDelta(accumulated);
   return accumulated;
 }
 

@@ -144,9 +144,11 @@ export const longitudeToSignPosition = (longitude: number): SignPosition => {
 
 /** Absolute longitude from a sign + degree + minutes (+ seconds) record. */
 export const signPositionToLongitude = (
-  pos: { sign: string; degree: number; minutes?: number; seconds?: number } | null | undefined,
+  pos: { sign: string; degree: number; minutes?: number; seconds?: number; longitude?: number } | null | undefined,
 ): number | null => {
-  if (!pos || !pos.sign) return null;
+  if (!pos) return null;
+  if (typeof pos.longitude === 'number' && Number.isFinite(pos.longitude)) return norm360(pos.longitude);
+  if (!pos.sign) return null;
   const idx = ZODIAC_SIGN_NAMES.findIndex(s => s.toLowerCase() === String(pos.sign).toLowerCase());
   if (idx < 0) return null;
   const deg = Number(pos.degree) || 0;

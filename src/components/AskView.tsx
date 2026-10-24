@@ -1,3 +1,4 @@
+import { buildVerifiedReadingFacts, verifiedReadingContext, assertVerifiedReading } from '@/lib/verifiedReadingContext';
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"; // deterministic correction v2
 import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -414,6 +415,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       let assistantEntry: ChatEntry;
       if (data.sections) {
         const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+        if (chartForRequest) assertVerifiedReading(data, buildVerifiedReadingFacts(chartForRequest, canonicalSR));
         const corrected = mergeDeterministicTimingSection(
           correctPlacementData(data, chartForRequest, canonicalSR),
           null,
@@ -1717,6 +1719,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     question: string,
   ): 'relationship' | 'relocation' | 'career' | 'health' | 'money' | 'spiritual' | 'general' => {
     const q = question.toLowerCase();
+    if (/finding a partner|i want to find (?:my|a) partner|help me find (?:my|a) partner/.test(q)) return 'relationship';
 
     // Score each domain by counting distinct keyword matches. This prevents
     // incidental words (e.g. "relationship with money" inside a career prompt,
@@ -2212,7 +2215,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Resolve the canonical SR (cloud overrides any stale localStorage copy)
       // ONCE per request and reuse for both context build and post-job correct.
       const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      const verifiedFacts = chartForRequest ? buildVerifiedReadingFacts(chartForRequest, canonicalSR) : null;
       let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR, portraitReadingType === 'natal');
+      if (verifiedFacts) chartContext += verifiedReadingContext(verifiedFacts);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
@@ -2280,6 +2285,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
         return;
       }
 
+      if (verifiedFacts) assertVerifiedReading(data, verifiedFacts);
       let assistantEntry: ChatEntry;
 
       if (data.sections) {
@@ -2506,7 +2512,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       // Resolve the canonical SR (cloud overrides any stale localStorage copy)
       // ONCE per request and reuse for both context build and post-job correct.
       const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      const verifiedFacts = chartForRequest ? buildVerifiedReadingFacts(chartForRequest, canonicalSR) : null;
       let chartContext = buildChartContext(chartForRequest, timingData.context, canonicalSR, portraitReadingType === 'natal');
+      if (verifiedFacts) chartContext += verifiedReadingContext(verifiedFacts);
       chartContext += buildNatalPortraitBlock(chartForRequest, portraitReadingType);
       if (portraitReadingType === 'solar_return') {
         chartContext += buildSolarReturnAnalysisBlock(chartForRequest, canonicalSR);
@@ -2548,6 +2556,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
       const data: any = normalizeAskResult(job.result || {});
       if (data.error) { toast.error(data.error); setIsLoading(false); return; }
+      if (verifiedFacts) assertVerifiedReading(data, verifiedFacts);
 
       let assistantEntry: ChatEntry;
       if (data.sections) {

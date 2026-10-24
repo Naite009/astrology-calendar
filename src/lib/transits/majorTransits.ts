@@ -125,18 +125,28 @@ export function getMajorTransitTargets(chart: NatalChart): Target[] {
 /** Exact hits of `body` to target longitude within [startMs, endMs]. */
 export function findExactHits(body: string, targetLon: number, startMs: number, endMs: number, lonAt: (ms: number) => number): { ms: number; motion: 'Direct' | 'Retrograde' }[] {
   const hits: { ms: number; motion: 'Direct' | 'Retrograde' }[] = [];
+  const add = (ms: number) => {
+    if (Math.abs(norm180(lonAt(ms) - targetLon)) > 0.000001) return;
+    if (hits.some(h => Math.abs(h.ms-ms) < 1000)) return;
+    const motion = norm180(lonAt(ms+3600000)-lonAt(ms-3600000)) >= 0 ? 'Direct' : 'Retrograde';
+    hits.push({ms,motion});
+  };
   let prevMs = startMs;
   let prev = norm180(lonAt(prevMs) - targetLon);
-  for (let ms = startMs + DAY; ms <= endMs; ms += DAY) {
+  if (Math.abs(prev) <= 0.000001) add(startMs);
+  const step = body === 'Moon' ? DAY/12 : DAY;
+  for (let next = startMs + step; prevMs < endMs; next += step) {
+    const ms = Math.min(next,endMs);
     const cur = norm180(lonAt(ms) - targetLon);
-    if (Math.abs(prev) < 5 && Math.abs(cur) < 5 && (prev === 0 || Math.sign(prev) !== Math.sign(cur))) {
+    if (Math.abs(cur) <= 0.000001) add(ms);
+    else if (prev !== 0 && Math.sign(prev) !== Math.sign(cur) && Math.abs(cur-prev)<30) {
       let lo = prevMs, hi = ms, flo = prev;
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 40 && hi-lo>1; i++) {
         const mid = (lo + hi) / 2;
-        const fm = norm180(getPlanetLongitudeExact(BODY[body], new Date(mid)) - targetLon);
+        const fm = norm180(lonAt(mid) - targetLon);
         if (Math.sign(fm) === Math.sign(flo)) { lo = mid; flo = fm; } else hi = mid;
       }
-      hits.push({ ms: (lo + hi) / 2, motion: cur > prev ? 'Direct' : 'Retrograde' });
+      add((lo+hi)/2);
     }
     prevMs = ms; prev = cur;
   }
@@ -260,7 +270,7 @@ export function computeMajorTransits(chart: NatalChart | null | undefined, opts:
         if (wStart > nowMs + horizon * DAY) continue;
         const winEnd = wEnd ?? endMs;
         const hits = pointLons
-          .flatMap(p => findExactHits(planet, p, Math.max(startMs, wStart! - DAY), winEnd, lonAt))
+          .flatMap(p => findExactHits(planet, p, Math.max(startMs, wStart - DAY), winEnd, lonAt))
           .sort((a, b) => a.ms - b.ms);
         if (!hits.length) continue; // a near-miss window without an exact hit is not a major exact transit
         const passes: ExactPassInfo[] = hits.map((h, i) => ({
@@ -276,7 +286,7 @@ export function computeMajorTransits(chart: NatalChart | null | undefined, opts:
 
         const orb = orbAt(nowMs);
         const orbNext = aspectOrb(lonTomorrow, t.lon, asp.angle);
-        const status: MajorTransitStatus = !isActiveNow ? 'Upcoming' : orb <= 0.25 ? 'Exact' : orbNext < orb ? 'Applying' : 'Separating';
+        const status: MajorTransitStatus = !isActiveNow ? 'Upcoming' : orb <= 0.000001 ? 'Exact' : orbNext < orb ? 'Applying' : 'Separating';
         const natalHouse = t.isAngle ? null : houseForLongitude(chart, t.lon);
         const transitHouse = houseForLongitude(chart, lonNow);
         const key = `${planet}-${asp.name}-${t.name}`;

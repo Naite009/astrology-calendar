@@ -1,3 +1,5 @@
+import { solveSolarReturn } from './solarReturnAutoCalculator';
+import { computeBody } from './ephemerisEngine';
 import * as Astronomy from 'astronomy-engine';
 import type { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import type { NatalChart } from '@/hooks/useNatalChart';
@@ -9,7 +11,7 @@ export const SR_REPORT_VERSION = 'sr-integrity-2026-10-17-v1';
 /** Never reinterpret the copied natal birthDate/birthTime as a return instant. */
 export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalChart) {
   if (sr.natalChartId && sr.natalChartId !== natal.id) throw new Error('Solar Return belongs to a different natal chart');
-  const target = signPositionToLongitude(natal.planets.Sun);
+  const target = sr.calculationMetadata?.targetLongitude ?? signPositionToLongitude(natal.planets.Sun);
   const location = sr.solarReturnLocation || '';
   const offline = location ? resolveBirthPlaceOffline(location) : null;
   const explicitCoordinates = Number.isFinite(sr.latitude) && Number.isFinite(sr.longitude);
@@ -21,7 +23,8 @@ export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalC
   if (sr.solarReturnDateTime && /(?:Z|[+-]\d{2}:\d{2})$/.test(sr.solarReturnDateTime)) {
     const parsed = new Date(sr.solarReturnDateTime);
     if (Number.isFinite(parsed.getTime()) && parsed.getUTCFullYear() === sr.solarReturnYear) {
-      const longitude = Astronomy.SunPosition(parsed).elon;
+      const sun = computeBody('Sun', parsed);
+      const longitude = sun.ok ? sun.longitude : NaN;
       const residual = target === null ? Infinity : Math.abs(((longitude - target + 540) % 360) - 180);
       if (residual <= 0.02) { instant = parsed; instantSource = 'stored'; }
     }
@@ -29,7 +32,7 @@ export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalC
   if (!instant && target !== null && /^\d{4}-\d{2}-\d{2}$/.test(natal.birthDate)) {
     const [, month, day] = natal.birthDate.split('-').map(Number);
     const seed = new Date(Date.UTC(sr.solarReturnYear, month - 1, day) - 20 * 86400000);
-    instant = Astronomy.SearchSunLongitude(target, seed, 40)?.date || null;
+    try { instant = solveSolarReturn(target, natal.birthDate, sr.solarReturnYear); } catch { instant = null; }
     if (instant) instantSource = 'recalculated-from-stored-natal-sun';
   }
   return {

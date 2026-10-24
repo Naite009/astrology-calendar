@@ -1,3 +1,4 @@
+import { signPositionToLongitude } from "./ephemerisEngine";
 // Transit-to-Natal Aspect Calculation System
 import { PlanetaryPositions, getPlanetSymbol } from './astrology';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -199,8 +200,8 @@ export function getNatalAngleTargets(natalChart: NatalChart): { name: string; si
   const cusps = natalChart.houseCusps as Record<string, { sign: string; degree: number; minutes?: number } | undefined> | undefined;
   const planets = natalChart.planets as Record<string, { sign?: string; degree?: number; minutes?: number } | undefined>;
   const SIGNS_L = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-  const lonOf = (p?: { sign?: string; degree?: number; minutes?: number }) =>
-    p?.sign && SIGNS_L.includes(p.sign) ? signToLongitude(p.sign, p.degree || 0, p.minutes || 0) : null;
+  const lonOf = (p?: { sign?: string; degree?: number; minutes?: number; seconds?: number; longitude?: number }) =>
+    p?.sign ? signPositionToLongitude({ ...p, sign: p.sign, degree: p.degree ?? 0 }) : null;
   const asc = lonOf(cusps?.house1) ?? lonOf(planets?.Ascendant);
   const mc = lonOf(cusps?.house10) ?? lonOf(planets?.Midheaven) ?? lonOf(planets?.MC);
   const ic = lonOf(cusps?.house4) ?? (mc !== null ? (mc + 180) % 360 : null);
@@ -349,7 +350,7 @@ export const calculateTransitAspects = (
             interpretation: detailed.header,
             detailedInterpretation: detailed,
             houseOverlay,
-            isExact: angleDiff < 1,
+            isExact: angleDiff <= 0.000001,
             applying,
             daysToExact: signedDaysToExact,
             feltDurationDays,

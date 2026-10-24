@@ -8,11 +8,14 @@ export interface NatalPlanetPosition {
   degree: number;
   minutes: number;
   seconds: number;
+  longitude?: number;
   isRetrograde?: boolean;
 }
 
 // House cusp position (sign + degree)
 export interface HouseCusp {
+  longitude?: number;
+  seconds?: number;
   sign: string;
   degree: number;
   minutes: number;
