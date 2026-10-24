@@ -1,3 +1,4 @@
+import { houseForLongitude } from './houseForLongitude';
 // House calculation utilities for transit-to-natal system
 import { NatalChart, HouseCusp } from '@/hooks/useNatalChart';
 
@@ -41,42 +42,10 @@ const getHouseCuspLongitude = (chart: NatalChart, houseNumber: number): number |
   return signDegreesToLongitude(cusp.sign, cusp.degree, cusp.minutes);
 };
 
-// Calculate which house a planet is in based on house cusps
-export const getHouseForLongitude = (longitude: number, chart: NatalChart): number | null => {
-  if (!chart.houseCusps) return null;
-  
-  // Get all house cusp longitudes
-  const cusps: { house: number; longitude: number }[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const lon = getHouseCuspLongitude(chart, i);
-    if (lon === null) return null; // Incomplete house data
-    cusps.push({ house: i, longitude: lon });
-  }
-  
-  // Normalize longitude to 0-360
-  let normLon = longitude % 360;
-  if (normLon < 0) normLon += 360;
-  
-  // Find which house contains this longitude
-  for (let i = 0; i < 12; i++) {
-    const currentCusp = cusps[i].longitude;
-    const nextCusp = cusps[(i + 1) % 12].longitude;
-    
-    // Handle wraparound at 0°
-    if (nextCusp < currentCusp) {
-      // This house spans 0° Aries
-      if (normLon >= currentCusp || normLon < nextCusp) {
-        return cusps[i].house;
-      }
-    } else {
-      if (normLon >= currentCusp && normLon < nextCusp) {
-        return cusps[i].house;
-      }
-    }
-  }
-  
-  return 1; // Default to 1st house if calculation fails
-};
+// Canonical house lookup lives in houseForLongitude.ts (full-precision cusps,
+// null when cusps are incomplete; never a silent 1st-house default).
+export const getHouseForLongitude = (longitude: number, chart: NatalChart): number | null =>
+  houseForLongitude(chart, longitude);
 
 // Get house for a natal planet
 export const getNatalPlanetHouse = (

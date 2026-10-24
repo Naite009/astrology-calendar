@@ -1,3 +1,4 @@
+import { toAbsoluteLongitude } from './houseForLongitude';
 // Personalized aspect ranking for a natal chart.
 // Surfaces every aspect (including dissociate / out-of-sign) ordered by importance,
 // not just orb tightness.
@@ -107,17 +108,14 @@ function isDissociate(aspect: AspectName, signA: string, signB: string): boolean
 
 function getBodyLongitude(chart: NatalChart, name: string): number | null {
   if (name === 'MC') {
-    const c = chart.houseCusps?.house10;
-    if (!c?.sign) return null;
-    return signDegreesToLongitude(c.sign, c.degree, c.minutes);
+    return toAbsoluteLongitude(chart.houseCusps?.house10);
   }
   if (name === 'Ascendant') {
-    const c = chart.houseCusps?.house1;
-    if (c?.sign) return signDegreesToLongitude(c.sign, c.degree, c.minutes);
+    const asc = toAbsoluteLongitude(chart.houseCusps?.house1);
+    if (asc != null) return asc;
   }
-  const p = chart.planets[name as keyof typeof chart.planets] as NatalPlanetPosition | undefined;
-  if (!p?.sign) return null;
-  return signDegreesToLongitude(p.sign, p.degree, p.minutes);
+  // Full precision: prefers stored .longitude, then degree/minutes/seconds.
+  return toAbsoluteLongitude(chart.planets[name as keyof typeof chart.planets] as NatalPlanetPosition | undefined);
 }
 
 function getBodySign(chart: NatalChart, name: string): string {
