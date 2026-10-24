@@ -8394,7 +8394,7 @@ const runPostProcessingPipeline = (
   safeRun("runPlacementTableValidator", () =>
     runPlacementTableValidator(parsedContent, ctx, log),
   );
-  const verifiedFacts = extractVerifiedReadingFacts(ctx.chartContext || '');
+  const verifiedFacts = extractVerifiedReadingFacts(ctx);
   if (verifiedFacts) {
     const errors = validateVerifiedReading(parsedContent, verifiedFacts);
     if (errors.length) throw new Error(`CALCULATION_FACT_MISMATCH: ${errors.join('; ')}`);
