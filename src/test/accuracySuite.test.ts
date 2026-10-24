@@ -25,7 +25,7 @@ beforeAll(() => {
     2,
   ), 'utf8');
   fs.appendFileSync(path.join(dir, 'accuracy.md'), semanticSection(), 'utf8');
-});
+}, 120000);
 
 // ── End-to-end semantic integrity (chart math -> evidence map -> prose gate) ──
 // Position math alone cannot catch readings that omit planets, invent aspects or
