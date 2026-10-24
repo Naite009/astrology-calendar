@@ -2208,7 +2208,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     try {
       const category = resolveReadingCategory(question, topic, resolvePortraitReadingType);
       const readingType = ['natal','narrative','sacred_directive','solar_return','parenting'].includes(category) ? 'general' : category;
-      const portraitReadingType = ['narrative','sacred_directive'].includes(category) ? 'natal' : category === 'parenting' ? 'general' : category;
+      const portraitReadingType = category === 'narrative' || category === 'sacred_directive' ? 'natal' : category === 'parenting' ? 'general' : category;
       // For natal-prompt requests, route the timing scanner through the
       // 'natal' lens so the AI's "Where You Are in Your Life Cycles"
       // section is fed the same pre-computed transit windows that
@@ -2513,7 +2513,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const topic = lastUserEntry?.topic;
       const category = resolveReadingCategory(lastUserQuestion, topic, resolvePortraitReadingType);
       const readingType = ['natal','narrative','sacred_directive','solar_return','parenting'].includes(category) ? 'general' : category;
-      const portraitReadingType = ['narrative','sacred_directive'].includes(category) ? 'natal' : category === 'parenting' ? 'general' : category;
+      const portraitReadingType = category === 'narrative' || category === 'sacred_directive' ? 'natal' : category === 'parenting' ? 'general' : category;
       // Mirror handleSubmitDirect: route natal-prompt regenerations through
       // the 'natal' timing lens so the same transit windows are injected.
       const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
