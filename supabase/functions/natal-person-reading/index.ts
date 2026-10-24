@@ -57,7 +57,7 @@ VOICE
 OUTPUT: only JSON, no markdown fences, exactly this shape:
 {"headline": "2-3 sentences naming the central dynamic of this person",
  "centralTension": "2-4 sentences",
- "signatures": [{"name": "The ...", "chainIds": [], "evidenceIds": [], "howItWorks": "4-6 sentences following the chain", "inWork": "2-3 sentences", "inRelationships": "2-3 sentences", "underStress": "2-3 sentences", "strength": "1-2 sentences", "stuckPoint": "1-2 sentences"}],
+ "signatures": [{"name": "The ...", "plainMeaning": "one everyday sentence", "chainIds": [], "evidenceIds": [], "howItWorks": "4-6 sentences following the chain", "inWork": "2-3 sentences", "inRelationships": "2-3 sentences", "underStress": "2-3 sentences", "strength": "1-2 sentences", "stuckPoint": "1-2 sentences"}],
  "collisions": [{"between": ["signature name", "signature name"], "description": "2-4 sentences", "evidenceIds": []}],
  "whenLost": "2-3 sentences", "whatSteadies": "2-3 sentences",
  "transitsNow": [{"transitId": "", "signatureName": "", "meaning": "2-3 sentences"}],
