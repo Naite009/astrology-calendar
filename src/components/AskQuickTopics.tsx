@@ -345,6 +345,39 @@ Synthesize the entire reading into honest, actionable guidance:
 Tone: Wise counsel, not a horoscope. Do not overpromise. Differentiate chemistry from compatibility. Be direct about contradictions.`,
   },
   {
+    id: "finding_partner",
+    label: "Finding a Partner",
+    icon: <Heart className="h-4 w-4" />,
+    prompt: (name, date, time, loc) =>
+      `${name}, born ${date} at ${time} in ${loc}, wants to find a partner. Using the full natal chart, the current solar return, and ephemeris-calculated transits, answer: WHO is the right partner, HOW she or he tends to attract and choose, WHERE (which life settings) a meeting is most supported, and WHEN the strongest windows are. Today's date is ${today()}. All timing must be future-relative to today. This is a relationship-only reading: no city or astrocartography analysis. Do NOT interpret Lilith or Juno unless valid sign, degree, and house data is provided.
+
+AGE RULE: If the person is under 18, keep every section age-appropriate and non-sexual: dating, friendship-first connection and feelings only, no marriage, cohabitation, sexuality, or family-building.
+
+EVIDENCE RULE: Every claim must name the exact placement, house, ruler chain, or aspect (with orb) it comes from, using only facts in the chart context. Trace the full ruler chain for the 7th and 5th houses (cusp sign, ruler, ruler's sign, house, retrograde status, tight aspects). Never invent aspects. Plain, concrete language: describe real situations, not traits.
+
+Cover each of the following as its own section:
+
+SECTION 1: WHO SHE IS DRAWN TO VS WHO ACTUALLY FITS
+Open with the Descendant sign, the 7th house ruler's sign and house, and Venus sign and house. Then describe the partner this chart points to: temperament, the kind of life they lead, what they may do for work or how they spend time (as tendencies, not certainties), and how they make her feel. Include planets in the 7th and aspects to the Descendant. Contrast who she tends to chase (Venus, Mars, 5th house) with who she can build with (7th house, its ruler, Moon, Saturn).
+
+SECTION 2: HOW SHE ATTRACTS AND CHOOSES
+How she shows up early (Rising, Venus, Mars), what she signals without realising it, and what she needs before she trusts (Moon and its aspects). Name the one repeating pattern most likely to block or delay partnership, tied to exact evidence, framed as a pattern she can change, never a flaw.
+
+SECTION 3: WHERE A MEETING IS MOST SUPPORTED
+Translate the 7th ruler's house, Venus's house, and the 5th, 11th, 9th, and 3rd houses into concrete settings: through friends or groups, work, classes or travel, the neighborhood, online, creative or social events. Rank the 2–3 strongest, each with its chart reason.
+
+SECTION 4: THIS YEAR IN LOVE (SOLAR RETURN)
+SR Venus sign and house, SR 7th cusp and its ruler, and any SR-to-natal contact within 3° of natal Venus, Mars, Moon, Descendant, or 7th ruler (label these "SR-to-natal"). Say whether this year leans toward meeting someone new, deepening a connection, or preparing first, and why.
+
+SECTION 5: WHEN: TIMING WINDOWS FOR THE NEXT 12–18 MONTHS
+Use only ephemeris-calculated transits within 1° of exact during the window. Prioritize: Jupiter to natal Venus, Descendant, 7th ruler, or 5th ruler; Saturn to the Descendant, Venus, or 7th ruler (commitment and seriousness); Uranus to Venus or the Descendant (sudden meeting); eclipses or the transiting Nodes on the 1st/7th or 5th/11th axis; Venus and Mars transits to the Descendant or natal Venus as short highlight windows. For each: what is transiting what, aspect type, exact dates (applying → exact → separating), which setting from Section 3 it activates, and what to actually do in that window. If there are only 2 real windows, report 2. Never pad or estimate dates.
+
+SECTION 6: THE PLAN
+A short summary: who to look for, where to go, the best windows with dates, the one pattern to change, and the one sign that a new person is a real fit rather than a familiar repeat.
+
+Tone: Wise, warm counsel. Windows show the most supported periods, never a guarantee of meeting someone. No fate, soulmate, or past-life certainty.`,
+  },
+  {
     id: "career",
     label: "Career & Purpose",
     icon: <Briefcase className="h-4 w-4" />,
@@ -756,6 +789,8 @@ export function AskQuickTopics({
                     ? 'e.g., "I\'m deciding whether to leave my job this year" or "We\'re trying to start a family"'
                     : activeTopic.id === "relationship"
                     ? 'e.g., "I met someone earthy, should I pursue it?"'
+                    : activeTopic.id === "finding_partner"
+                    ? 'e.g., "Single for 3 years, I work from home and rarely go out"'
                     : activeTopic.id === "relocation"
                     ? 'e.g., "I got a job offer in Denver"'
                     : activeTopic.id === "career"
