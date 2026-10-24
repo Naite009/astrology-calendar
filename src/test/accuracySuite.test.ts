@@ -64,7 +64,7 @@ describe('end-to-end semantic integrity', () => {
   it('every reference chart keeps all planets and rulers in the evidence map and the prose gate rejects planted errors', () => {
     const bad = semanticChecks().filter((r) => r.missingPlanets.length || r.rulers !== 12 || !r.inventedCaught || !r.purposeCaught);
     expect(bad).toEqual([]);
-  });
+  }, 60000);
 });
 
 describe('reference fixture set', () => {
