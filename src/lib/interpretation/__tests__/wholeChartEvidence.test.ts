@@ -219,3 +219,9 @@ describe('reinforcement clusters', () => {
     for (const r of m.reinforcements) for (const e of r.evidenceIds) expect(m.evidence[e]).toBeTruthy();
   });
 });
+
+describe('absolute behavioural wording seen in a live reading', () => {
+  it.each(['Micromanagement will cause her to rebel.', 'She acts often irreversibly.', 'She demands absolute autonomy.', 'A massive concentration in Libra.'])('rejects "%s"', (t) => {
+    expect(fails(reading({ inWork: t }), 'Fixed-fate')).toBe(true);
+  });
+});

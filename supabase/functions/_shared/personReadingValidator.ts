@@ -92,7 +92,7 @@ const ASPECT_WORDS: Record<string, string> = {
 };
 
 const DETERMINISM = [
-  /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
+  /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bwill (?:cause|make|force|always|never|destroy)\b/i, /\birreversibl/i, /\b(?:absolute|total|unyielding|uncompromising) (?:autonomy|independence|freedom|control|drive)\b/i, /\bmassive concentration\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
   /\byou are (?:not )?meant (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i,
 ];
 const PATHOLOGY = [
