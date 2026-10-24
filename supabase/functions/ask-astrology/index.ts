@@ -1,3 +1,4 @@
+import { extractVerifiedReadingFacts, validateVerifiedReading } from "../_shared/verifiedReadingFacts.ts";
 // Using built-in Deno.serve (no external std import needed)
 // Redeploy marker: 2026-04-22 — ensure Replit gate block (line ~4669) is live
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
@@ -8393,6 +8394,12 @@ const runPostProcessingPipeline = (
   safeRun("runPlacementTableValidator", () =>
     runPlacementTableValidator(parsedContent, ctx, log),
   );
+  const verifiedFacts = extractVerifiedReadingFacts(ctx.chartContext || '');
+  if (verifiedFacts) {
+    const errors = validateVerifiedReading(parsedContent, verifiedFacts);
+    if (errors.length) throw new Error(`CALCULATION_FACT_MISMATCH: ${errors.join('; ')}`);
+  }
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────
