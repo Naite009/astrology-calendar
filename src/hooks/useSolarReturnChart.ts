@@ -97,77 +97,62 @@ export const useSolarReturnChart = () => {
   const cloudRestoreDone = useRef(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Track auth
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      userIdRef.current = session?.user?.id ?? null;
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, session) => {
-      userIdRef.current = session?.user?.id ?? null;
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  // Load this account's (or, when signed out, this device's) Solar Returns and
+  // merge them in. Runs on mount AND on every sign-in, so a browser that opened
+  // signed out still picks up the account's saved returns once the session lands.
+  const restoreFromCloud = useRef(async (userId: string | null) => {
+    try {
+      let query = supabase
+        .from('device_charts')
+        .select('*')
+        .like('chart_id', 'sr_%')
+        .order('updated_at', { ascending: false });
+      query = userId ? query.eq('user_id', userId) : query.eq('device_id', deviceId.current);
 
-  // Restore from cloud on mount
+      const { data, error } = await query;
+      if (error) { console.error('[SolarReturn] Cloud restore error:', error); return; }
+      if (!data || data.length === 0) return;
+
+      const byId = new Map<string, SolarReturnChart>();
+      for (const row of data) {
+        const sr = row.chart_data as unknown as SolarReturnChart;
+        const localId = (row.chart_id as string).replace(/^sr_/, '');
+        if (!byId.has(localId)) byId.set(localId, { ...sr, id: localId });
+      }
+      const cloudSRs = Array.from(byId.values());
+      if (cloudSRs.length === 0) return;
+
+      // Merge: cloud wins for the same id; local-only charts are kept, never dropped.
+      setSolarReturnCharts(prev => {
+        const localById = new Map(prev.map(c => [c.id, c]));
+        for (const sr of cloudSRs) localById.set(sr.id, sr);
+        const merged = Array.from(localById.values());
+        try { localStorage.setItem(SR_STORAGE_KEY, JSON.stringify(merged)); } catch {}
+        console.log('[SolarReturn] Restored', cloudSRs.length, 'SR charts from cloud', userId ? '(account)' : '(device)');
+        return merged;
+      });
+    } catch (e) {
+      console.error('[SolarReturn] Cloud restore error:', e);
+    }
+  });
+
   useEffect(() => {
     if (cloudRestoreDone.current) return;
     cloudRestoreDone.current = true;
+    let lastRestoredFor: string | null | undefined;
 
-    const restore = async () => {
-      try {
-        // Wait for auth session to fully resolve (not just 500ms guess)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user?.id) {
-          userIdRef.current = session.user.id;
-        }
-
-        let query = supabase
-          .from('device_charts')
-          .select('*')
-          .like('chart_id', 'sr_%')
-          .order('updated_at', { ascending: false });
-
-        if (userIdRef.current) {
-          query = query.eq('user_id', userIdRef.current);
-        } else {
-          query = query.eq('device_id', deviceId.current);
-        }
-
-        const { data, error } = await query;
-        if (error || !data || data.length === 0) return;
-
-        // De-dupe by chart_id
-        const byId = new Map<string, SolarReturnChart>();
-        for (const row of data) {
-          const sr = row.chart_data as unknown as SolarReturnChart;
-          const localId = (row.chart_id as string).replace(/^sr_/, '');
-          if (!byId.has(localId)) {
-            byId.set(localId, { ...sr, id: localId });
-          }
-        }
-
-        const cloudSRs = Array.from(byId.values());
-        if (cloudSRs.length === 0) return;
-
-        // Merge with local: cloud wins for same IDs, add new ones
-        setSolarReturnCharts(prev => {
-          const localById = new Map(prev.map(c => [c.id, c]));
-          for (const sr of cloudSRs) {
-            localById.set(sr.id, sr); // cloud overwrites local
-          }
-          const merged = Array.from(localById.values());
-          try {
-            localStorage.setItem(SR_STORAGE_KEY, JSON.stringify(merged));
-          } catch {}
-          console.log('[SolarReturn] Restored', cloudSRs.length, 'SR charts from cloud');
-          return merged;
-        });
-      } catch (e) {
-        console.error('[SolarReturn] Cloud restore error:', e);
-      }
+    const run = (userId: string | null) => {
+      userIdRef.current = userId;
+      if (lastRestoredFor === userId) return;
+      lastRestoredFor = userId;
+      void restoreFromCloud.current(userId);
     };
 
-    restore();
+    supabase.auth.getSession().then(({ data: { session } }) => run(session?.user?.id ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, session) => {
+      run(session?.user?.id ?? null);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   // Debounced sync to cloud whenever charts change
