@@ -8,6 +8,8 @@ const MODEL = 'google/gemini-3.1-pro-preview';
 
 const Evidence = z.object({ id: z.string(), kind: z.string(), fact: z.string(), bodies: z.array(z.string()) }).passthrough();
 const Body = z.object({
+  /** Repair pass: a previous draft plus the checker's errors (keeps each call under the time limit). */
+  repair: z.object({ draft: z.unknown(), errors: z.array(z.string()).max(40) }).optional(),
   name: z.string().min(1).max(120),
   age: z.number().int().min(0).max(120).nullable().optional(),
   map: z.object({
@@ -125,7 +127,8 @@ Deno.serve(async (req) => {
   try {
     const parsed = Body.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, 400);
-    const { name, age, map } = parsed.data;
+    const { name, age, map, repair } = parsed.data;
+    const started = Date.now();
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) return json({ error: 'Reading service is not configured.' }, 500);
 
@@ -145,8 +148,19 @@ Deno.serve(async (req) => {
       { role: 'user', content: `Write the reading for ${name}. Evidence:\n${JSON.stringify(input)}` },
     ];
 
+    if (repair) {
+      messages.push(
+        { role: 'assistant', content: JSON.stringify(repair.draft).slice(0, 30000) },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 25).join('\n- ')}` },
+      );
+    }
     let lastErrors: string[] = [];
+    let lastDraft: unknown = null;
     for (let attempt = 1; attempt <= 2; attempt++) {
+      // Stay inside the function time limit: a slow first pass hands the repair to a second call.
+      if (attempt > 1 && Date.now() - started > 55000) {
+        return json({ needsRepair: true, draft: lastDraft, errors: lastErrors, model: MODEL });
+      }
       const out = await callModel(apiKey, messages, req.signal);
       if (!out.ok) return json({ error: out.message }, out.status === 402 || out.status === 429 || out.status === 403 ? out.status : 502);
       let reading: PersonReading;
@@ -156,8 +170,9 @@ Deno.serve(async (req) => {
         continue;
       }
       const errors = validatePersonReading(reading, ctx);
-      if (!errors.length) return json({ reading, model: MODEL, attempts: attempt });
+      if (!errors.length) return json({ reading, model: MODEL, attempts: attempt, repaired: !!repair });
       lastErrors = errors;
+      lastDraft = reading;
       messages.push(
         { role: 'assistant', content: JSON.stringify(reading) },
         { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}` },

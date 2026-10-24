@@ -33,13 +33,20 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
   const generate = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/natal-person-reading`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ name: chart.name, age: ageOn(chart.birthDate, new Date()), map }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || 'The reading could not be written.');
+      const call = async (extra: Record<string, unknown> = {}) => {
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/natal-person-reading`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ name: chart.name, age: ageOn(chart.birthDate, new Date()), map, ...extra }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || 'The reading could not be written.');
+        return body;
+      };
+      let body = await call();
+      // The server hands back a draft plus checker errors when a repair pass is needed.
+      for (let i = 0; i < 2 && body.needsRepair; i++) body = await call({ repair: { draft: body.draft, errors: body.errors } });
+      if (!body.reading) throw new Error('The written reading did not pass the accuracy check.');
       const r = body.reading as PersonReading;
       // Re-check in the browser with today's transit list.
       const errs = validatePersonReading({ ...r, transitsNow: [] }, validationContextFor(map));
