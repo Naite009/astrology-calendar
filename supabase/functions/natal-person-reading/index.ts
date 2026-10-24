@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
   try {
     const parsed = Body.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, 400);
-    const { name, age, map, repair } = parsed.data;
+    const { name, age, map, repair, evalModel } = parsed.data;
+    MODEL = evalModel ?? DEFAULT_MODEL;
     const started = Date.now();
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) return json({ error: 'Reading service is not configured.' }, 500);
