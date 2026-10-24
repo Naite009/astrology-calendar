@@ -92,7 +92,7 @@ const ASPECT_WORDS: Record<string, string> = {
 };
 
 const DETERMINISM = [
-  /\byou will\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
+  /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
   /\byou are (?:not )?meant (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i,
 ];
 const PATHOLOGY = [
@@ -111,7 +111,9 @@ const canonBody = (s: string) => {
 };
 const BODY_RE = BODIES.map((b) => b.replace(' ', '\\s')).join('|');
 const SIGN_RE = SIGNS.join('|');
-const ORD = '(\\d{1,2})(?:st|nd|rd|th)';
+const ORD_WORDS: Record<string, number> = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12 };
+const ORD = `(\\d{1,2}(?:st|nd|rd|th)|${Object.keys(ORD_WORDS).join('|')})`;
+const ordNum = (s: string) => ORD_WORDS[s.toLowerCase()] ?? parseInt(s, 10);
 
 function allText(r: PersonReading): { text: string; transit: boolean }[] {
   const plain = [
@@ -155,7 +157,21 @@ export function findAspectMentions(text: string): { a: string; b: string; type: 
   const out: { a: string; b: string; type: string; raw: string; index: number }[] = [];
   for (const m of text.matchAll(re1)) out.push({ a: canonBody(m[1]), b: canonBody(m[3]), type: ASPECT_WORDS[m[2].toLowerCase()], raw: m[0], index: m.index ?? 0 });
   for (const m of text.matchAll(re2)) out.push({ a: canonBody(m[1]), b: canonBody(m[2]), type: ASPECT_WORDS[m[3].toLowerCase()], raw: m[0], index: m.index ?? 0 });
-  return out;
+  // "Mars-Uranus conjunction", "Sun/Moon square"
+  const re3 = new RegExp(`\\b(${BODY_RE})\\s*[-/\u2013]\\s*(${BODY_RE})\\s+(?:tight\\s+|close\\s+|exact\\s+|wide\\s+)?(${word})\\b`, 'gi');
+  for (const m of text.matchAll(re3)) out.push({ a: canonBody(m[1]), b: canonBody(m[2]), type: ASPECT_WORDS[m[3].toLowerCase()], raw: m[0], index: m.index ?? 0 });
+  // Loose form with words in between: "Mars in its home sign of Scorpio exactly conjunct unpredictable Uranus".
+  const tok = new RegExp(`\\b(${BODY_RE})\\b|\\b(${word})\\b`, 'gi');
+  const toks = [...text.matchAll(tok)].map((m) => ({ body: m[1] ? canonBody(m[1]) : null, aspect: m[2] ? ASPECT_WORDS[m[2].toLowerCase()] : null, at: m.index ?? 0, len: m[0].length }));
+  toks.forEach((t, i) => {
+    if (!t.aspect) return;
+    const prev = [...toks.slice(0, i)].reverse().find((x) => x.body);
+    const next = toks.slice(i + 1).find((x) => x.body || x.aspect);
+    if (!prev || !next?.body || t.at - prev.at > 70 || next.at - (t.at + t.len) > 30) return;
+    out.push({ a: prev.body!, b: next.body, type: t.aspect, raw: text.slice(prev.at, next.at + next.len), index: prev.at });
+  });
+  const seen = new Set<string>();
+  return out.filter((m) => { const k = `${m.type}|${[m.a, m.b].sort().join('|')}`; if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
 /** Placement claims: body followed (same clause, no other body between) by a degree+sign, "in <Sign>", or "in the Nth". */
@@ -170,7 +186,7 @@ export function findPlacementClaims(text: string): { body: string; sign?: string
     if (!last || at - last.at > 40) continue;
     if (m[4]) out.push({ body: last.body, sign: m[4], degree: Number(m[2]) + (m[3] ? Number(m[3]) / 60 : 0), raw: text.slice(last.at, at + m[0].length) });
     else if (m[5]) out.push({ body: last.body, sign: m[5], raw: text.slice(last.at, at + m[0].length) });
-    else if (m[6]) out.push({ body: last.body, house: Number(m[6]), raw: text.slice(last.at, at + m[0].length) });
+    else if (m[6]) out.push({ body: last.body, house: ordNum(m[6]), raw: text.slice(last.at, at + m[0].length) });
   }
   return out;
 }
@@ -180,9 +196,9 @@ export function findRulerClaims(text: string): { house: number; body: string; mo
   const out: { house: number; body: string; modernOk: boolean; raw: string }[] = [];
   const modernOk = /\bco-?ruler|\bmodern\b/i.test(text);
   const pats: [RegExp, (m: RegExpMatchArray) => [number, string]][] = [
-    [new RegExp(`\\b${ORD}[- ]house ruler,?\\s+(?:is\\s+)?(${BODY_RE})\\b`, 'gi'), (m) => [Number(m[1]), m[2]]],
-    [new RegExp(`\\b${ORD}[- ]house (?:is )?ruled by\\s+(${BODY_RE})\\b`, 'gi'), (m) => [Number(m[1]), m[2]]],
-    [new RegExp(`\\b(${BODY_RE}),?\\s+(?:which |who )?(?:rules|ruler of)\\s+(?:the |your |her |his |their )?${ORD}\\b`, 'gi'), (m) => [Number(m[2]), m[1]]],
+    [new RegExp(`\\b${ORD}[- ]house ruler,?\\s+(?:is\\s+)?(${BODY_RE})\\b`, 'gi'), (m) => [ordNum(m[1]), m[2]]],
+    [new RegExp(`\\b${ORD}[- ]house (?:is )?ruled by\\s+(${BODY_RE})\\b`, 'gi'), (m) => [ordNum(m[1]), m[2]]],
+    [new RegExp(`\\b(${BODY_RE}),?\\s+(?:which |who )?(?:rules|ruler of)\\s+(?:the |your |her |his |their )?${ORD}\\b`, 'gi'), (m) => [ordNum(m[2]), m[1]]],
     [new RegExp(`\\bchart ruler,?\\s+(?:is\\s+)?(${BODY_RE})\\b`, 'gi'), (m) => [1, m[1]]],
     [new RegExp(`\\b(${BODY_RE}),?\\s+(?:is\\s+)?(?:the|her|his|their|your)\\s+chart ruler\\b`, 'gi'), (m) => [1, m[1]]],
   ];
@@ -263,6 +279,9 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
         if (!a) { errors.push(`Aspect not in the chart: "${m.raw}"`); continue; }
         const orb = sentence.slice(m.index).match(/\(?\s*(\d{1,2}(?:\.\d+)?)°\s*(?:\d{1,2}['′]\s*)?orb/i) ?? sentence.slice(m.index).match(/\bwithin\s+(\d{1,2}(?:\.\d+)?)°/i);
         if (orb && typeof a.orb === 'number' && mentions.length === 1 && Math.abs(Number(orb[1]) - a.orb) > 0.25) errors.push(`Wrong orb for "${m.raw}": said ${orb[1]}°, verified ${a.orb.toFixed(1)}°`);
+      }
+      if (/\btight(?:ly|est)?\b/i.test(sentence) && !transitish) {
+        for (const m of mentions) { const a = allowed.get(`${m.type}|${[m.a, m.b].sort().join('|')}`); if (a && typeof a.orb === 'number' && a.orb >= 2.5 && mentions.length === 1) errors.push(`"tight" used for a ${a.orb.toFixed(1)}° orb: "${m.raw}"`); }
       }
       if (/\bexact(?:ly)?\b/i.test(sentence) && !transitish) {
         for (const m of mentions) { const a = allowed.get(`${m.type}|${[m.a, m.b].sort().join('|')}`); if (a && typeof a.orb === 'number' && a.orb >= 1) errors.push(`"exact" used for a ${a.orb.toFixed(1)}° orb: "${m.raw}"`); }
