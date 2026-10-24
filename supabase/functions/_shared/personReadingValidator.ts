@@ -7,6 +7,8 @@ export interface PersonSignature {
   name: string;
   chainIds: string[];
   evidenceIds: string[];
+  /** One everyday sentence explaining the name. */
+  plainMeaning?: string;
   /** What the combination does, following the chain step by step. */
   howItWorks: string;
   inWork: string;

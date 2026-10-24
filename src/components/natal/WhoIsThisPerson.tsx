@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { buildChartStoryMap, storyMapChartHash, type ChartStoryMap } from '@/lib/interpretation/chartStoryMap';
 import { validatePersonReading, validationContextFor, type PersonReading } from '@/lib/interpretation/personReadingValidator';
 import { formatLocalDateKey } from '@/lib/localDate';
+import { buildCoreThreeSummary } from '@/lib/interpretation/coreThreeSummary';
 
-const CACHE_PREFIX = 'person-reading:v1:';
+const CACHE_PREFIX = 'person-reading:v2:';
 
 function ageOn(birthDate: string, now: Date): number | null {
   const [y, m, d] = birthDate.split('-').map(Number);
@@ -23,6 +24,7 @@ function readCache(key: string): PersonReading | null {
 export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
   const todayKey = formatLocalDateKey(new Date());
   const map: ChartStoryMap = useMemo(() => buildChartStoryMap(chart), [chart, todayKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const core = useMemo(() => buildCoreThreeSummary(chart), [chart]);
   const cacheKey = `${CACHE_PREFIX}${chart.id}:${storyMapChartHash(chart)}`;
   const [reading, setReading] = useState<PersonReading | null>(() => readCache(cacheKey));
   const [loading, setLoading] = useState(false);
@@ -84,6 +86,19 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
         </div>
       </div>
 
+      {core && (
+        <div className="border border-border rounded-sm p-4 space-y-2">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Sun, Moon and Rising</p>
+          <ul className="text-sm text-foreground space-y-0.5">
+            {core.lines.map((l) => (
+              <li key={l.label}><span className="font-medium">{l.label}</span> {l.degree} {l.sign} <span className="text-muted-foreground">({l.element}, {l.modality})</span></li>
+            ))}
+          </ul>
+          <p className="text-sm font-medium text-primary">{core.pattern}</p>
+          <p className="text-sm leading-relaxed text-foreground">{core.meaning}</p>
+        </div>
+      )}
+
       {loading && !reading && (
         <p className="text-sm text-muted-foreground">Reading the chart as one story. This can take up to two minutes…</p>
       )}
@@ -104,6 +119,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
             {reading.signatures.map((s, i) => (
               <article key={s.name} className="border border-border rounded-sm p-4 space-y-2">
                 <h3 className="font-serif text-lg text-foreground">{i + 1}. {s.name}</h3>
+                {s.plainMeaning && <p className="text-sm italic text-muted-foreground">In plain words: {s.plainMeaning}</p>}
                 <p className="text-sm leading-relaxed text-foreground">{s.howItWorks}</p>
                 <dl className="grid gap-2 sm:grid-cols-2 text-sm">
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{ageOn(chart.birthDate, new Date())! < 18 ? 'School and direction' : 'In work'}</dt><dd className="text-foreground">{s.inWork}</dd></div>
