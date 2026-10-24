@@ -13142,7 +13142,7 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
 
         const srChartBlock = srPositionsForCall.length > 0
           ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}${srCuspBlock}${srAnalysisSection}\n${structuredFacts ? relationshipFactContext(structuredFacts,'sr') : ''}`
-          : "(no Solar Return chart provided for this reading)";
+          : `Solar Return data unavailable. Stop SR interpretation.\n${structuredFacts ? relationshipFactContext(structuredFacts,'sr') : ''}`;
 
         console.info(
           `[ask-astrology] 3-call: built Call A natal block from structured parser`,
