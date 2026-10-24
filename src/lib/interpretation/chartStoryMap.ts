@@ -394,7 +394,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   }
   tensions.sort((x, y) => y.salience - x.salience);
   // The strongest contradictions (aspect-based, orb under 3°) must be addressed.
-  tensions.filter((t) => t.evidenceIds.some((e) => e.startsWith('aspect:'))).slice(0, 2).forEach((t) => { t.mustAddress = true; });
+  tensions.filter((t) => t.evidenceIds.some((e) => e.startsWith('aspect:') && (evidence[e]?.aspect?.orb ?? 99) < 3)).slice(0, 2).forEach((t) => { t.mustAddress = true; });
 
   // ── Current major transits linked to chains ──
   const now = opts.now ?? new Date();
