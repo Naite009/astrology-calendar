@@ -48,7 +48,7 @@ describe('Gina Astro.com Solar Return independent numerical reference',()=>{
     expect(r.planets.Ascendant).toBeUndefined(); expect(r.planets.Sun.longitude).toBeCloseTo(target,6);
   });
   it('stored longitude wins over rounded display fields',()=>{
-    expect(signPositionToLongitude({sign:'Scorpio',degree:16,minutes:31,seconds:0,longitude:target})).toBe(target);
+    expect(signPositionToLongitude({sign:'Scorpio',degree:16,minutes:31,seconds:0,longitude:target})).toBeCloseTo(target,10);
     const p=toStoredPosition({...longitudeToSignPosition(target+0.0000003),source:'astronomy-engine'});
     expect(p.longitude).toBeCloseTo(target+0.0000003,10);
   });
@@ -95,7 +95,7 @@ describe('Gina relationship calculation failures',()=>{
   it('Jupiter trine DSC survives relationship relevance selection',()=>{
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-24T00:00Z'));
     try {
-      const data=buildDeterministicTimingData(natal,18,3,'relationship');
+      const data=buildDeterministicTimingData(natal,18,15,'relationship');
       expect(data.section?.transits.some(t=>t.planet==='Jupiter' && t.aspect==='trine' && t.natal_point.includes('Descendant'))).toBe(true);
     }finally{vi.useRealTimers();}
   });

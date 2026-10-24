@@ -33,7 +33,7 @@ export function validateVerifiedReading(reading: unknown, facts: VerifiedReading
     else if (value && typeof value === 'object') for (const [k,v] of Object.entries(value)) { if (!k.startsWith('_')) walk(v,k); }
   };
   walk(reading);
-  for (const text of strings) {
+  for (const text of strings.flatMap(s => s.split(/(?<=[.!?])\s+|\n/))) {
     for (const match of text.matchAll(/\[evidence:([^\]]+)\]/g)) if (!ids.has(match[1])) errors.push('Unknown evidence reference');
     if (/\byou (?:keep choosing|always choose|have repeatedly chosen|have always attracted)\b/i.test(text)) errors.push('Unsupported behavioral history');
     if (!facts.solarReturnAvailable && /\b(?:SR|solar return)\b/i.test(text) && !/(?:unavailable|not available|missing|not provided|no solar return|cannot|needs? (?:a |the )?solar return)/i.test(text)) errors.push('Solar Return claims without Solar Return data');
