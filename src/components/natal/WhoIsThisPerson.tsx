@@ -72,10 +72,16 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
             <h2 className="text-xl font-serif text-foreground">Who {chart.name} Is</h2>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={generate} disabled={loading}>
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          <span className="ml-1.5">{reading ? 'Rewrite' : 'Write reading'}</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const blob = new Blob([JSON.stringify({ report: 'Who This Person Is', generated: new Date().toISOString(), person: { name: chart.name, birthDate: chart.birthDate }, reading, storyMap: map }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${chart.name} - Who This Person Is.json`; a.click(); URL.revokeObjectURL(a.href);
+          }}>JSON</Button>
+          <Button variant="outline" size="sm" onClick={generate} disabled={loading}>
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <span className="ml-1.5">{reading ? 'Rewrite' : 'Write reading'}</span>
+          </Button>
+        </div>
       </div>
 
       {loading && !reading && (
