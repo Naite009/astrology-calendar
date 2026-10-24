@@ -1,6 +1,9 @@
 # Roadmap
 
 ## Gina Solar Return and relationship accuracy
+- [ ] Route every structured topic explicitly by ID/category through submission, regeneration and server pipeline; keywords only for free-form questions.
+- [ ] Supply structured natal/SR relationship facts and require local checks regardless of external gate availability.
+- [ ] Verify Gina relationship output contains Moon square DSC and Jupiter trine DSC, and Saturn opposite Mars near miss; do not close rebuild before numerical and output checks both pass.
 - [x] Preserve precision and repair same-engine Solar Return solving and location gating.
 - [x] Add deterministic relationship evidence, ruler chains, exact/near-miss distinction and fail-only validation of explicit claims.
 - [x] 629 tests pass; Gina saved-chart automatic generation verified signed-in on desktop/mobile without saving test data. Exact-target return is 22:24:21.909 UT; saved-chart recomputation is 22:24:26.749 UT.
