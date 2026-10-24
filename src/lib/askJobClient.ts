@@ -5,6 +5,7 @@
 // instead of losing progress.
 
 import { supabase } from "@/integrations/supabase/client";
+import type { TopicRouting } from '../../supabase/functions/_shared/quickTopicRouting';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-astrology`;
 const ACTIVE_JOB_KEY_PREFIX = "ask-active-job:";
@@ -40,7 +41,7 @@ export interface UserLocationsInput {
   considering2?: string;
 }
 
-interface SubmitArgs {
+interface SubmitArgs extends TopicRouting {
   messages: any[];
   chartContext: string;
   currentDate: string;

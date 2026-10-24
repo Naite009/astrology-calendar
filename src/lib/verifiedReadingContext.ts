@@ -49,7 +49,14 @@ export function buildVerifiedReadingFacts(chart: NatalChart, sr: SolarReturnChar
     }
   }
   contacts.sort((a,b)=>relationshipTargetPriority(chart,a.planet2)-relationshipTargetPriority(chart,b.planet2)||a.orb-b.orb);
-  return {version:1,chartId:chart.id,solarReturnAvailable:!!sr,placements:[...natal,...returned,...transiting],contacts,rulerChains:buildAllRulerChains(chart)};
+  const relevant = (name: string) => relationshipTargetPriority(chart,name) < 5;
+  const qualifyingTransits = contacts.filter(c => c.layer === 'transit-to-natal' && relevant(c.planet2));
+  const requiredEvidenceIds = contacts.filter(c =>
+    (c.layer === 'natal' && c.orb <= 1 && [c.planet1,c.planet2].includes('Moon') && [c.planet1,c.planet2].includes('Descendant')) ||
+    (c.layer === 'transit-to-natal' && c.planet1 === 'Jupiter' && c.planet2 === 'Descendant' && c.exactDates.length > 0) ||
+    (c.layer === 'transit-to-natal' && c.planet1 === 'Saturn' && c.planet2 === 'Mars' && c.classification === 'close-approach' && c.orb <= 1)
+  ).map(c => c.id);
+  return {version:1,chartId:chart.id,solarReturnAvailable:!!sr,placements:[...natal,...returned,...transiting],contacts,rulerChains:buildAllRulerChains(chart),relationship:{natalPoints:natal.filter(p=>relevant(p.planet)),solarReturn:sr?{available:true,placements:returned,contacts:contacts.filter(c=>c.layer.startsWith('sr-') && (relevant(c.planet1)||relevant(c.planet2))),rulerChains:buildAllRulerChains(sr)}:null,qualifyingTransits,requiredEvidenceIds}};
 }
 export function verifiedReadingContext(facts: VerifiedReadingFacts): string {
   return `\nEPHEMERIS FACT CHECK: STRUCTURED CALCULATION CONTRACT\nThese facts override any older text/timing estimates. Interpret only supplied facts. Never calculate/discover placements, aspects, ruler chains or dates yourself. Contacts are relationship-relevance ordered. An empty exactDates list means no supplied exact hit; close-approach is NOT exact. Never substitute natal prose for a missing Solar Return section. Do not invent personal history. Use conditional behavioral possibilities. For every named contact, include [evidence:<id>]. Numeric facts must use these values, retaining natal/SR/transit layer. A missing SR must produce only a brief unavailable notice for the SR section.\n${VERIFIED_FACTS_START}\n${JSON.stringify(facts)}\n${VERIFIED_FACTS_END}\n`;
