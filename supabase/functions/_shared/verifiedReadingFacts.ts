@@ -61,3 +61,22 @@ export function validateVerifiedReading(reading: unknown, facts: VerifiedReading
   }
   return [...new Set(errors)];
 }
+
+/** Build the same gate contract from the validated Solar Return export. */
+export function verifiedFactsFromSolarReturnReport(report: Record<string, any>): VerifiedReadingFacts {
+  const placements: VerifiedPlacement[] = [];
+  for (const [layer, pool] of [['natal',report.natalPlanetsRaw],['sr',report.srPlanetsRaw]] as const) {
+    for (const [planet,p] of Object.entries(pool || {}) as [string,any][]) {
+      const index=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'].indexOf(p.sign);
+      if (index<0) continue;
+      const longitude=Number.isFinite(p.longitude)?p.longitude:index*30+(p.degree||0)+(p.minutes||0)/60+(p.seconds||0)/3600;
+      placements.push({id:`${layer}:${planet}`,layer,planet,sign:p.sign,longitude,house:layer==='sr'?(report.planetSRHouses?.[planet]??null):(report.houseOverlays?.find((x:any)=>x.planet===planet)?.natalHouse??null),retrograde:p.isRetrograde??null});
+    }
+  }
+  const contacts: VerifiedContact[] = [];
+  for (const [layer,pool] of [['sr-internal',report.srInternalAspects],['sr-to-natal',report.srToNatalAspects]] as const) for (const a of pool||[]) {
+    const planet1=a.planet1||a.srPlanet,planet2=a.planet2||a.natalPlanet,aspect=aspectName(a.type||a.aspectType||a.aspect);
+    contacts.push({id:`${layer}:${planet1}:${aspect}:${planet2}`,layer,planet1,planet2,aspect,orb:a.orb,exactDates:[]});
+  }
+  return {version:1,chartId:report.calculationMetadata?.natalChartId||'',solarReturnAvailable:true,placements,contacts,rulerChains:report.rulerChains||[]};
+}

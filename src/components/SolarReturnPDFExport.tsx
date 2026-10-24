@@ -1,3 +1,5 @@
+import { signPositionToLongitude } from '@/lib/ephemerisEngine';
+import { buildAllRulerChains } from '@/lib/rulerChains';
 import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
 import { validateSolarReturnReport } from '../../supabase/functions/_shared/solarReturnReportValidation';
@@ -511,7 +513,7 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
     if (!pos?.sign) return null;
     const idx = SIGNS_LIST.indexOf(pos.sign);
     if (idx < 0) return null;
-    return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+    return signPositionToLongitude(pos);
   };
 
   // SR planet positions in absolute degrees
@@ -521,7 +523,7 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
     if (!pos) continue;
     const abs = toAbs(pos);
     if (abs === null) continue;
-    srPlanets[p] = { absDeg: Math.round(abs * 100) / 100, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0, retrograde: !!(pos as any).isRetrograde };
+    srPlanets[p] = { absDeg: abs, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0, retrograde: !!(pos as any).isRetrograde };
   }
 
   // Natal planet positions
@@ -531,7 +533,7 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
     if (!pos) continue;
     const abs = toAbs(pos);
     if (abs === null) continue;
-    natalPlanets[p] = { absDeg: Math.round(abs * 100) / 100, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0 };
+    natalPlanets[p] = { absDeg: abs, sign: pos.sign, degree: Math.floor(pos.degree), minutes: (pos as any).minutes || 0 };
   }
 
   // SR house cusps in absolute degrees
@@ -541,7 +543,7 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
     const cusp = srChart.houseCusps?.[key];
     if (cusp) {
       const abs = toAbs(cusp);
-      if (abs !== null) srCusps[`house${i}`] = { absDeg: Math.round(abs * 100) / 100, sign: cusp.sign, degree: Math.floor(cusp.degree) };
+      if (abs !== null) srCusps[`house${i}`] = { absDeg: abs, sign: cusp.sign, degree: Math.floor(cusp.degree) };
     }
   }
 
@@ -552,7 +554,7 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
     const cusp = natalChart.houseCusps?.[key];
     if (cusp) {
       const abs = toAbs(cusp);
-      if (abs !== null) natalCusps[`house${i}`] = { absDeg: Math.round(abs * 100) / 100, sign: cusp.sign, degree: Math.floor(cusp.degree) };
+      if (abs !== null) natalCusps[`house${i}`] = { absDeg: abs, sign: cusp.sign, degree: Math.floor(cusp.degree) };
     }
   }
 
@@ -881,7 +883,7 @@ export function buildFullJsonStandalone(
         if (!pos?.sign) return null;
         const idx = SIGNS.indexOf(pos.sign);
         if (idx < 0) return null;
-        return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+        return signPositionToLongitude(pos);
       };
       const srPositions: Record<string, number> = {};
       const keyTargets = ['Sun', 'Moon', 'Ascendant', 'Mars', 'Jupiter', 'Saturn', 'Venus', 'Mercury'];
@@ -1016,6 +1018,7 @@ export function buildFullJsonStandalone(
 
     // Chart wheel rendering data (positions in absolute degrees for SVG rendering)
     chartWheelData: buildChartWheelData(srChart, natalChart, analysis),
+    rulerChains: { natal: buildAllRulerChains(natalChart), solarReturn: buildAllRulerChains(srChart) },
 
     // Planetary hours at the SR moment
     planetaryHoursAtSR: (() => { const m = resolveSolarReturnProvenance(srChart, natalChart); return m.returnInstantUTC && m.latitude !== null && m.longitude !== null ? buildPlanetaryHoursAtSR({ ...srChart, latitude: m.latitude, longitude: m.longitude, timezoneId: m.timezone || undefined, solarReturnDateTime: m.returnInstantUTC }) : null; })(),
