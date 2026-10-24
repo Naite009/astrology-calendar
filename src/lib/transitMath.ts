@@ -19,7 +19,7 @@ export const aspectOrb = (transitLon: number, natalLon: number, aspectAngle: num
 
 export const getPlanetLongitudeExact = (body: Astronomy.Body, date: Date): number => {
   const result = computeBody(String(body) as BodyKey, date);
-  if (!result.ok) throw new Error(result.reason);
+  if (result.ok === false) throw new Error(result.reason);
   return result.longitude;
 };
 

@@ -18,7 +18,7 @@ export interface AutoSRResult {
 const DAY = 86400000;
 const sunAt = (ms: number): number => {
   const result = computeBody('Sun', new Date(ms));
-  if (!result.ok) throw new Error(result.reason);
+  if (result.ok === false) throw new Error(result.reason);
   return result.longitude;
 };
 export function solveSolarReturn(targetLongitude: number, birthDate: string, year: number): Date {
@@ -51,7 +51,7 @@ export function calculateSolarReturnFromLongitude(targetLongitude: number, birth
   const planets: Record<string, AutoSRPlanet> = {};
   for (const name of ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','SouthNode','Chiron'] as const) {
     const body = computeBody(name, date);
-    if (!body.ok) throw new Error(body.reason);
+    if (body.ok === false) throw new Error(body.reason);
     planets[name] = { ...longitudeToSignPosition(body.longitude), ...(name === 'NorthNode' || name === 'SouthNode' ? {} : { isRetrograde: body.retrograde }) };
   }
   const houseCusps: Record<string, SignPosition> = {};
