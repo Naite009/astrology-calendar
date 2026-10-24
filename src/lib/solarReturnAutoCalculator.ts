@@ -1,3 +1,4 @@
+import { resolveBirthMomentSync } from './birthDataNormalization';
 /** Solar Returns use the SAME apparent Sun longitude as the chart engine. */
 import { computeBody, computeAngles, longitudeToSignPosition, signedCircularDelta, signPositionToLongitude, ENGINE_INFO, type SignPosition } from './ephemerisEngine';
 import type { NatalChart } from '@/hooks/useNatalChart';
@@ -67,7 +68,19 @@ export function calculateSolarReturnFromLongitude(targetLongitude: number, birth
   return { srDateTimeUTC: date.toISOString(), srDateTimeLabel: date.toISOString().replace('T',' ').replace('Z',' UTC'), planets, houseCusps, housesAvailable: Object.keys(houseCusps).length === 12, houseSystem: Object.keys(houseCusps).length === 12 ? 'placidus' : null, targetLongitude, residualDegrees: Math.abs(signedCircularDelta(planets.Sun.longitude, targetLongitude)), ephemeris: ENGINE_INFO };
 }
 export function calculateSolarReturnForChart(chart: NatalChart, year: number, coords: { latitude: number; longitude: number } | null = null): AutoSRResult {
-  const target = signPositionToLongitude(chart.planets.Sun);
+  const storedSun = chart.planets.Sun;
+  let target = signPositionToLongitude(storedSun);
+  // Legacy imports often saved only minute-rounded positions. Recompute the
+  // natal Sun from the normalized birth instant, never from browser time.
+  if (!Number.isFinite(storedSun?.longitude) && !storedSun?.seconds) {
+    const moment = resolveBirthMomentSync(chart);
+    if (moment.status === 'ok' && moment.utc && !moment.timeAssumed) {
+      const sun = computeBody('Sun', moment.utc);
+      if (sun.ok) target = sun.longitude;
+    } else {
+      throw new Error('The natal Sun is rounded and the exact birth moment cannot be verified. Supply exact Sun seconds or verified birth data.');
+    }
+  }
   if (target === null) throw new Error('Natal Sun position is unavailable');
   return calculateSolarReturnFromLongitude(target, chart.birthDate, year, coords);
 }

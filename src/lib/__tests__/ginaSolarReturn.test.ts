@@ -47,6 +47,12 @@ describe('Gina Astro.com Solar Return independent numerical reference',()=>{
     expect(r.houseCusps).toEqual({}); expect(r.houseSystem).toBeNull(); expect(r.housesAvailable).toBe(false);
     expect(r.planets.Ascendant).toBeUndefined(); expect(r.planets.Sun.longitude).toBeCloseTo(target,6);
   });
+  it('recomputes a legacy minute-only natal Sun from the historical birth instant',()=>{
+    const legacy={...natal,latitude:40.7282,longitude:-73.7949,placeConfidence:'high' as const,planets:{...natal.planets,Sun:{sign:'Scorpio',degree:16,minutes:31,seconds:0}}};
+    const r=calculateSolarReturnForChart(legacy,2026,coords);
+    expect(Math.abs(Date.parse(r.srDateTimeUTC)-referenceUTC)).toBeLessThan(30000);
+    expect(r.targetLongitude).not.toBe(210+16+31/60);
+  });
   it('stored longitude wins over rounded display fields',()=>{
     expect(signPositionToLongitude({sign:'Scorpio',degree:16,minutes:31,seconds:0,longitude:target})).toBeCloseTo(target,10);
     const p=toStoredPosition({...longitudeToSignPosition(target+0.0000003),source:'astronomy-engine'});
