@@ -80,7 +80,7 @@ export function sampleReading(map: ReturnType<typeof buildChartStoryMap>, text =
   const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]);
   const sig = (name: string) => ({
     name, plainMeaning: 'She has the signature of someone who wants harmony, but takes over when relying on others feels uncertain.',
-    chainIds: [rising.id, sun.id], evidenceIds: [rising.steps[0], sun.steps[0]],
+    chainIds: [rising.id, sun.id], evidenceIds: [rising.steps[0], sun.steps[0], sun.steps[1] ?? rising.steps[1]],
     howItWorks: text, inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: must.length ? must : [sun.steps[0]], healthyExpression: text,
   });
   return { headline: text, centralTension: text, signatures: [sig('The A'), sig('The B'), sig('The C')], collisions: [], whenLost: text, whatSteadies: text, transitsNow: [], clientQuestions: ['Does this fit?'] };
