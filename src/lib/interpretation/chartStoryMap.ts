@@ -409,7 +409,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     const id = aspectEvidence(a);
     reinforcements.push({ id: `reinforce:${id.slice(7)}`, fact: `${displayBody(a.a)} ${a.type} ${displayBody(a.b)} (${a.orb.toFixed(1)}° orb): these two work together and amplify each other`, chainIds: [A.id, B.id], evidenceIds: [A.steps[0], B.steps[0], id] });
   }
-  for (const [x, y] of [['Sun', 'Moon'], ['Venus', 'Jupiter'], ['Mars', 'Venus'], ['Mercury', 'Jupiter'], ['Saturn', 'Moon'], ['Sun', 'Saturn'], ['Mars', 'Jupiter'], ['Mercury', 'Venus'], ['Moon', 'Venus'], ['Sun', 'Mars'], ['Mars', 'Saturn'], ['Jupiter', 'Saturn'], ['Mercury', 'Mars'], ['Mercury', 'Saturn'], ['Moon', 'Mercury'], ['Moon', 'Mars'], ['Moon', 'Jupiter'], ['Sun', 'Mercury'], ['Sun', 'Venus'], ['Sun', 'Jupiter'], ['Venus', 'Saturn']] as const) {
+  for (const [x, y] of PLANETS.flatMap((x, i) => PLANETS.slice(i + 1).map((y) => [x, y] as const))) {
     const px = pos[x], py = pos[y];
     if (!px || !py || TRADITIONAL_RULER[px.sign] !== y || TRADITIONAL_RULER[py.sign] !== x) continue;
     const A = chainFor(x), B = chainFor(y);

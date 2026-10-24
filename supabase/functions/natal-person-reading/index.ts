@@ -16,6 +16,7 @@ const Body = z.object({
     version: z.number().optional(),
     evidence: z.record(Evidence),
     chains: z.array(z.object({ id: z.string(), anchor: z.string(), label: z.string(), steps: z.array(z.string()), bodies: z.array(z.string()), salience: z.number().optional() })).max(40),
+    reinforcements: z.array(z.object({ id: z.string(), fact: z.string(), chainIds: z.array(z.string()), evidenceIds: z.array(z.string()) })).max(12).optional(),
     tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(12),
     placements: z.record(z.object({ sign: z.string(), longitude: z.number(), house: z.number().nullable() }).passthrough()).optional(),
     houseRulers: z.record(z.object({ traditional: z.string(), modern: z.string().optional() })).optional(),
@@ -45,6 +46,8 @@ HOW TO READ
 - tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
 - healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
 - A big life-purpose statement ("here to change the world", "life purpose", "mission") is allowed only when the full chain (placement, ruler, aspect, at least 4 evidence ids) earns it. Otherwise describe the placement, its house, ruler and aspects and stop there.
+- Reinforcements are verified places where separate chains point the same way; use them to explain why a pattern is strong. Each signature cites at least 3 evidence ids from at least 2 chains.
+- Start from the Big Three / strongest baseline, then show which verified placements sharpen or complicate it.
 - Tensions marked mustAddress are the strongest contradictions in the chart. Each one MUST be cited (its aspect evidence id) in a signature's tensionEvidenceIds or a collision.
 - Collisions: where one signature wants what another resists.
 - Name what they likely do when they feel lost and what genuinely steadies them.
@@ -138,6 +141,7 @@ Deno.serve(async (req) => {
       chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
       houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,
+      reinforcements: map.reinforcements ?? [],
       balance: ['balance:elements', 'balance:modalities'].map((id) => map.evidence[id]).filter(Boolean),
       transitsNow: map.transits.map((t) => ({ id: t.id, fact: t.fact, nextExact: t.nextExact, activeNow: t.isActiveNow, chainIds: t.chainIds })),
       allowedAspects: map.allowedAspects.map((a) => `${a.a} ${a.type} ${a.b} (${typeof a.orb === 'number' ? a.orb.toFixed(1) : '?'}° orb)`),
