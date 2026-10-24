@@ -214,7 +214,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     if (list.length < 3) continue;
     const steps = [add({ id: `concentration:house-${house}`, kind: 'concentration', fact: `${list.length} major planets in the ${ordinalHouse(house)} (${list.join(', ')}); the app counts 3+ major planets as a house concentration`, bodies: list })];
     for (const b of list) { const id = placementId(b); if (id) steps.push(id); }
-    pushChain({ id: `chain:house-${house}`, anchor: 'Concentration', label: `${ordinalHouse(house)} house concentration`, steps, bodies: list });
+    pushChain({ id: `chain:house-${house}`, anchor: 'Concentration', label: `${ordinalHouse(house)} concentration`, steps, bodies: list });
   }
   for (const [sign, list] of bySign) {
     if (list.length < 3) continue;
