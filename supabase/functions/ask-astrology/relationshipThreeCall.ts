@@ -565,12 +565,12 @@ const buildCallBUserMessage = (srChartBlock: string, userQuestion: string): stri
   return `User's question: ${userQuestion}
 
 =========================================================
-SOLAR RETURN CHART — the only chart data available for this call
+SOLAR RETURN AND PRECOMPUTED RELATIONSHIP TIMING
 =========================================================
 
 ${srChartBlock}
 
-(No natal chart data is provided for this call. Do not reference natal positions.)`;
+Use natal targets only from the supplied structured relationship facts for transit and cross-chart interpretation. Never calculate or discover dates or aspects. If Solar Return is unavailable, stop only the Solar Return sections with an unavailable notice; relationship transit timing remains independently available.`;
 };
 
 const buildCallCUserMessage = (

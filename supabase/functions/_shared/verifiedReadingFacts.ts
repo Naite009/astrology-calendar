@@ -2,7 +2,7 @@
 export const VERIFIED_FACTS_START = 'VERIFIED_READING_FACTS_START';
 export const VERIFIED_FACTS_END = 'VERIFIED_READING_FACTS_END';
 export interface VerifiedPlacement { id: string; layer: string; planet: string; sign: string; longitude: number; house: number | null; retrograde: boolean | null }
-export interface VerifiedContact { id: string; layer: string; planet1: string; planet2: string; aspect: string; orb: number; exactDates: string[]; classification?: string }
+export interface VerifiedContact { id: string; layer: string; planet1: string; planet2: string; aspect: string; orb: number; exactDates: string[]; classification?: string; windows?: { classification: string; closestDate: string; closestOrb: number; exactDates: string[] }[] }
 export interface VerifiedReadingFacts {
   version: number;
   chartId: string;

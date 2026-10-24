@@ -44,8 +44,9 @@ export function buildVerifiedReadingFacts(chart: NatalChart, sr: SolarReturnChar
     for (const w of windows) {
       const id=`transit-to-natal:${w.transitPlanet}:${w.aspect}:${w.natalPlanet}`;
       const old=contacts.find(c=>c.id===id);
-      if (old) { old.exactDates.push(...w.exactDates.map(d=>d.date)); old.classification=w.classification; }
-      else contacts.push({id,layer:'transit-to-natal',planet1:w.transitPlanet,planet2:w.natalPlanet,aspect:w.aspect,orb:w.closestOrb,exactDates:w.exactDates.map(d=>d.date),classification:w.classification});
+      const window = {classification:w.classification,closestDate:w.closestDate,closestOrb:w.closestOrb,exactDates:w.exactDates.map(d=>d.date)};
+      if (old) { old.exactDates.push(...window.exactDates); old.classification=old.exactDates.length?'exact-hit':'close-approach'; old.windows=[...(old.windows??[]),window]; }
+      else contacts.push({id,layer:'transit-to-natal',planet1:w.transitPlanet,planet2:w.natalPlanet,aspect:w.aspect,orb:w.closestOrb,exactDates:window.exactDates,classification:w.classification,windows:[window]});
     }
   }
   contacts.sort((a,b)=>relationshipTargetPriority(chart,a.planet2)-relationshipTargetPriority(chart,b.planet2)||a.orb-b.orb);
@@ -54,7 +55,7 @@ export function buildVerifiedReadingFacts(chart: NatalChart, sr: SolarReturnChar
   const requiredEvidenceIds = contacts.filter(c =>
     (c.layer === 'natal' && c.orb <= 1 && [c.planet1,c.planet2].includes('Moon') && [c.planet1,c.planet2].includes('Descendant')) ||
     (c.layer === 'transit-to-natal' && c.planet1 === 'Jupiter' && c.planet2 === 'Descendant' && c.exactDates.length > 0) ||
-    (c.layer === 'transit-to-natal' && c.planet1 === 'Saturn' && c.planet2 === 'Mars' && c.classification === 'close-approach' && c.orb <= 1)
+    (c.layer === 'transit-to-natal' && c.planet1 === 'Saturn' && c.planet2 === 'Mars' && c.windows?.some(w=>w.classification==='close-approach' && w.closestOrb<=1))
   ).map(c => c.id);
   return {version:1,chartId:chart.id,solarReturnAvailable:!!sr,placements:[...natal,...returned,...transiting],contacts,rulerChains:buildAllRulerChains(chart),relationship:{natalPoints:natal.filter(p=>relevant(p.planet)),solarReturn:sr?{available:true,placements:returned,contacts:contacts.filter(c=>c.layer.startsWith('sr-') && (relevant(c.planet1)||relevant(c.planet2))),rulerChains:buildAllRulerChains(sr)}:null,qualifyingTransits,requiredEvidenceIds}};
 }
