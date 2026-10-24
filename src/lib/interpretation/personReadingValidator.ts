@@ -4,6 +4,8 @@ export {
   cleanPersonReading,
   cleanPersonText,
   findAspectMentions,
+  findPlacementClaims,
+  findRulerClaims,
 } from '../../../supabase/functions/_shared/personReadingValidator';
 export type {
   PersonReading,
@@ -14,13 +16,9 @@ export type {
 } from '../../../supabase/functions/_shared/personReadingValidator';
 
 import type { ChartStoryMap } from './chartStoryMap';
+import { contextFromStoryMap } from '../../../supabase/functions/_shared/personReadingContext';
 import type { ValidationContext } from '../../../supabase/functions/_shared/personReadingValidator';
 
 export function validationContextFor(map: ChartStoryMap): ValidationContext {
-  return {
-    evidenceIds: Object.keys(map.evidence),
-    chainIds: map.chains.map((c) => c.id),
-    transitIds: map.transits.map((t) => t.id),
-    allowedAspects: map.allowedAspects.filter(Boolean) as ValidationContext['allowedAspects'],
-  };
+  return contextFromStoryMap(map);
 }
