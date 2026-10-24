@@ -11,7 +11,7 @@ export const SR_REPORT_VERSION = 'sr-integrity-2026-10-17-v1';
 /** Never reinterpret the copied natal birthDate/birthTime as a return instant. */
 export function resolveSolarReturnProvenance(sr: SolarReturnChart, natal: NatalChart) {
   if (sr.natalChartId && sr.natalChartId !== natal.id) throw new Error('Solar Return belongs to a different natal chart');
-  const target = signPositionToLongitude(natal.planets.Sun);
+  const target = sr.calculationMetadata?.targetLongitude ?? signPositionToLongitude(natal.planets.Sun);
   const location = sr.solarReturnLocation || '';
   const offline = location ? resolveBirthPlaceOffline(location) : null;
   const explicitCoordinates = Number.isFinite(sr.latitude) && Number.isFinite(sr.longitude);

@@ -350,7 +350,7 @@ export const calculateTransitAspects = (
             interpretation: detailed.header,
             detailedInterpretation: detailed,
             houseOverlay,
-            isExact: angleDiff < 1,
+            isExact: angleDiff <= 0.000001,
             applying,
             daysToExact: signedDaysToExact,
             feltDurationDays,

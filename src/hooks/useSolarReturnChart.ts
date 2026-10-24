@@ -11,6 +11,7 @@ export interface SolarReturnChart extends NatalChart {
   solarReturnDateTime?: string;
   /** The natal chart ID this SR belongs to */
   natalChartId?: string;
+  calculationMetadata?: { targetLongitude: number; residualDegrees: number; ephemeris: unknown };
 }
 
 const SR_STORAGE_KEY = 'solarReturnCharts';

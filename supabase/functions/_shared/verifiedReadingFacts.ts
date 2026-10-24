@@ -78,5 +78,5 @@ export function verifiedFactsFromSolarReturnReport(report: Record<string, any>):
     const planet1=a.planet1||a.srPlanet,planet2=a.planet2||a.natalPlanet,aspect=aspectName(a.type||a.aspectType||a.aspect);
     contacts.push({id:`${layer}:${planet1}:${aspect}:${planet2}`,layer,planet1,planet2,aspect,orb:a.orb,exactDates:[]});
   }
-  return {version:1,chartId:report.calculationMetadata?.natalChartId||'',solarReturnAvailable:true,placements,contacts,rulerChains:report.rulerChains||[]};
+  return {version:1,chartId:report.calculationMetadata?.natalChartId||'',solarReturnAvailable:true,placements,contacts,rulerChains:Array.isArray(report.rulerChains)?report.rulerChains:Object.values(report.rulerChains||{})};
 }

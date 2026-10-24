@@ -527,6 +527,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
   const [year, setYear] = useState(existingSR?.solarReturnYear || currentYear);
   const [location, setLocation] = useState(existingSR?.solarReturnLocation || '');
   const [srDateTime, setSrDateTime] = useState(existingSR?.solarReturnDateTime || '');
+  const [calculationMetadata, setCalculationMetadata] = useState<{ targetLongitude: number; residualDegrees: number; ephemeris: unknown } | null>(null);
   const [calculatedPlace, setCalculatedPlace] = useState<{ latitude: number; longitude: number } | null>(null);
   const [planets, setPlanets] = useState<Record<string, { sign: string; degree: number; minutes: number; isRetrograde?: boolean }>>(
     existingSR?.planets ? { ...existingSR.planets } as any : {}
@@ -758,6 +759,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       setPlanets(result.planets as any);
       setHouseCusps(result.houseCusps as any);
       setSrDateTime(result.srDateTimeUTC);
+      setCalculationMetadata({ targetLongitude: result.targetLongitude, residualDegrees: result.residualDegrees, ephemeris: result.ephemeris });
       setCalculatedPlace(lat !== null && lng !== null ? { latitude: lat, longitude: lng } : null);
       if (!result.housesAvailable) toast.message('Planets calculated. Houses and angles are unavailable until you supply the return location.');
       if (Object.keys(result.houseCusps).length > 0) setShowHouses(true);
@@ -783,6 +785,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       solarReturnYear: year,
       solarReturnLocation: location,
       solarReturnDateTime: srDateTime,
+      ...(calculationMetadata ? { calculationMetadata } : {}),
       ...(calculatedPlace ? { ...calculatedPlace, houseSystem: 'placidus' as const } : {}),
       planets: planets as any,
       houseCusps: Object.keys(houseCusps).length > 0 ? houseCusps as any : undefined,
@@ -791,12 +794,12 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
 
   const renderPlanetRow = (planet: string) => (
     <div key={planet} className="flex items-center gap-2 bg-secondary/30 rounded-sm p-2">
-      <span className="w-8 text-center text-sm">{PLANET_SYMBOLS[planet] || planet.slice(0, 3)}</span>
-      <span className="w-20 text-xs text-muted-foreground truncate">{planet}</span>
+      <span className="w-8 shrink-0 text-center text-sm">{PLANET_SYMBOLS[planet] || planet.slice(0, 3)}</span>
+      <span className="hidden sm:block w-20 shrink-0 text-xs text-muted-foreground truncate">{planet}</span>
       <select
         value={planets[planet]?.sign || ''}
         onChange={(e) => updatePlanet(planet, 'sign', e.target.value)}
-        className="flex-1 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs"
+        className="flex-1 min-w-0 border border-border bg-background text-foreground rounded-sm px-2 py-1 text-xs"
       >
         <option value="">—</option>
         {ZODIAC_SIGNS.map(s => <option key={s} value={s}>{SIGN_SYMBOLS[s]} {s}</option>)}
