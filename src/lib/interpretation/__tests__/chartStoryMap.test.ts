@@ -36,7 +36,7 @@ describe('chart story map', () => {
     expect(map.evidence['rulership:chart-ruler'].fact).toContain('makes Mars the chart ruler');
     expect(map.evidence['rulership:chart-ruler'].fact).toContain('Pluto as modern co-ruler');
     expect(rising.steps).toContain('placement:Mars');
-    expect(map.evidence['placement:Mars'].fact).toMatch(/Mars 26°42′ Cancer in the 9th house.*traditional fall/);
+    expect(map.evidence['placement:Mars'].fact).toMatch(/Mars 26°42′ Cancer in the 9th House.*traditional fall/);
   });
 
   it('Harrison: Midheaven chain uses the Leo MC and its ruler the Sun', () => {

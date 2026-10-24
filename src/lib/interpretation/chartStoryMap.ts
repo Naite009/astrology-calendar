@@ -125,7 +125,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     return add({
       id: `placement:${body}`,
       kind: 'placement',
-      fact: `${displayBody(body)} ${fmtDeg(p.degree, p.minutes)} ${p.sign}${p.house ? ` in the ${ordinalHouse(p.house)} house` : ''}${p.retro ? ', retrograde' : ''}${digText}`,
+      fact: `${displayBody(body)} ${fmtDeg(p.degree, p.minutes)} ${p.sign}${p.house ? ` in the ${ordinalHouse(p.house)}` : ''}${p.retro ? ', retrograde' : ''}${digText}`,
       bodies: [body],
     });
   };
@@ -212,7 +212,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   }
   for (const [house, list] of byHouse) {
     if (list.length < 3) continue;
-    const steps = [add({ id: `concentration:house-${house}`, kind: 'concentration', fact: `${list.length} major planets in the ${ordinalHouse(house)} house (${list.join(', ')}); the app counts 3+ major planets as a house concentration`, bodies: list })];
+    const steps = [add({ id: `concentration:house-${house}`, kind: 'concentration', fact: `${list.length} major planets in the ${ordinalHouse(house)} (${list.join(', ')}); the app counts 3+ major planets as a house concentration`, bodies: list })];
     for (const b of list) { const id = placementId(b); if (id) steps.push(id); }
     pushChain({ id: `chain:house-${house}`, anchor: 'Concentration', label: `${ordinalHouse(house)} house concentration`, steps, bodies: list });
   }
