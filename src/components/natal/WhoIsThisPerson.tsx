@@ -7,7 +7,7 @@ import { validatePersonReading, validationContextFor, type PersonReading } from 
 import { formatLocalDateKey } from '@/lib/localDate';
 import { buildCoreThreeSummary } from '@/lib/interpretation/coreThreeSummary';
 
-const CACHE_PREFIX = 'person-reading:v2:';
+const CACHE_PREFIX = 'person-reading:v3:';
 
 function ageOn(birthDate: string, now: Date): number | null {
   const [y, m, d] = birthDate.split('-').map(Number);
@@ -119,21 +119,27 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
             {reading.signatures.map((s, i) => (
               <article key={s.name} className="border border-border rounded-sm p-4 space-y-2">
                 <h3 className="font-serif text-lg text-foreground">{i + 1}. {s.name}</h3>
-                {s.plainMeaning && <p className="text-sm italic text-muted-foreground">In plain words: {s.plainMeaning}</p>}
-                <p className="text-sm leading-relaxed text-foreground">{s.howItWorks}</p>
+                {s.plainMeaning && <p className="text-base leading-relaxed text-foreground font-serif">{s.plainMeaning}</p>}
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">The astrology</p>
+                  <p className="text-sm leading-relaxed text-foreground">{s.howItWorks}</p>
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">How it shows up</p>
                 <dl className="grid gap-2 sm:grid-cols-2 text-sm">
-                  <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{ageOn(chart.birthDate, new Date())! < 18 ? 'School and direction' : 'In work'}</dt><dd className="text-foreground">{s.inWork}</dd></div>
+                  {s.inLife && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Everyday life</dt><dd className="text-foreground">{s.inLife}</dd></div>}
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">In relationships</dt><dd className="text-foreground">{s.inRelationships}</dd></div>
+                  <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{ageOn(chart.birthDate, new Date())! < 18 ? 'School and direction' : 'In work'}</dt><dd className="text-foreground">{s.inWork}</dd></div>
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Under stress</dt><dd className="text-foreground">{s.underStress}</dd></div>
-                  <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">The strength</dt><dd className="text-foreground">{s.strength}</dd></div>
+                  {s.inDecisions && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Making decisions</dt><dd className="text-foreground">{s.inDecisions}</dd></div>}
                 </dl>
-                <p className="text-sm text-foreground"><span className="font-medium">Where it can get stuck: </span>{s.stuckPoint}</p>
+                {(s.tension || s.stuckPoint) && <p className="text-sm text-foreground border-l-2 border-primary pl-3"><span className="font-medium">The tension: </span>{s.tension ?? s.stuckPoint}</p>}
+                {(s.healthyExpression || s.strength) && <p className="text-sm text-foreground"><span className="font-medium">Healthy expression: </span>{s.healthyExpression ?? s.strength}</p>}
                 <details>
                   <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs font-medium text-primary">
                     <ChevronDown className="h-3.5 w-3.5" /> The chart evidence
                   </summary>
                   <ul className="mt-2 list-disc pl-5 space-y-0.5 text-xs text-muted-foreground">
-                    {s.evidenceIds.map((id) => <li key={id}>{map.evidence[id]?.fact ?? id}</li>)}
+                    {[...new Set([...s.evidenceIds, ...(s.tensionEvidenceIds ?? [])])].map((id) => <li key={id}>{map.evidence[id]?.fact ?? id}</li>)}
                   </ul>
                 </details>
               </article>
