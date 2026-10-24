@@ -1,4 +1,6 @@
 import { extractVerifiedReadingFacts, validateVerifiedReading } from "../_shared/verifiedReadingFacts.ts";
+import { explicitTopicCategory, type TopicRouting } from '../_shared/quickTopicRouting.ts';
+import { relationshipFactContext } from '../_shared/relationshipFactContext.ts';
 // Using built-in Deno.serve (no external std import needed)
 // Redeploy marker: 2026-04-22 — ensure Replit gate block (line ~4669) is live
 import { dedupWindows } from "../_shared/timingWindowDedup.ts";
@@ -12475,7 +12477,7 @@ Deno.serve(async (req) => {
 
     // Kick off background processing — survives client disconnect / tab switch / HMR
     // @ts-ignore — EdgeRuntime is available in Supabase Edge Runtime
-    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations, replayCaptureId }));
+    EdgeRuntime.waitUntil(processJob({ jobId, messages, chartContext, currentDate, deterministicTiming, userLocations, replayCaptureId, topicId: body.topicId, category: body.category }));
 
     return new Response(JSON.stringify({ jobId, status: "queued" }), {
       status: 202,
@@ -12503,6 +12505,8 @@ async function processJob(args: {
   deterministicTiming: any;
   userLocations?: { current?: string; considering1?: string; considering2?: string } | null;
   replayCaptureId?: string | null;
+  topicId?: string;
+  category?: TopicRouting['category'];
 }) {
   const { jobId, messages, chartContext, currentDate, deterministicTiming, userLocations, replayCaptureId } = args;
   const svc = getServiceClient();
@@ -12579,22 +12583,26 @@ async function processJob(args: {
       const dm = narrativeDirectiveRe.exec(txt);
       if (dm?.[1]) directiveQt = dm[1].toLowerCase().trim();
     }
-    const isNarrativeQuestion = directiveQt === "narrative";
+    const explicitCategory = explicitTopicCategory(args);
+    if (explicitCategory) directiveQt = explicitCategory;
+    const isNarrativeQuestion = explicitCategory ? explicitCategory === 'narrative' : directiveQt === "narrative";
 
     const isRelationshipQuestion =
-      !isNarrativeQuestion &&
+      explicitCategory ? explicitCategory === 'relationship' : !args.topicId && !isNarrativeQuestion &&
       relationshipScore > 0 &&
       relationshipScore > careerScore &&
       relationshipScore > moneyScore &&
       relationshipScore > healthScore;
 
-    const isLocationQuestion = /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
+    const isLocationQuestion = explicitCategory ? explicitCategory === 'relocation' || explicitCategory === 'career' : !args.topicId && /(where should i live|where to live|best city|best cities|astrocartography|\brelocat\w*\b|\bmove\w*\b|\bcity\b|\bcities\b|\btravel\b|\bvisit\b|\bvacation\b|\blocation\b)/.test(normalizedQuestion);
     const wantsFocusedReading = /(compact mode|please be brief|keep it short|relationship-only compact)/.test(normalizedQuestion);
     const compactRelationshipMode = isRelationshipQuestion && wantsFocusedReading;
     console.info(
       `[ask-astrology] question routing: narrative=${isNarrativeQuestion} relationship=${relationshipScore} career=${careerScore} money=${moneyScore} health=${healthScore} → ${isNarrativeQuestion ? "NARRATIVE" : isRelationshipQuestion ? "RELATIONSHIP_3CALL" : "SINGLE_CALL"}`,
     );
 
+    const structuredFacts = extractVerifiedReadingFacts(typeof chartContext === 'string' ? chartContext : '');
+    if (isRelationshipQuestion && !structuredFacts?.relationship) throw new Error('Structured relationship calculations are required. Please resubmit from the updated app.');
     let sanitizedChartContext = typeof chartContext === 'string' ? chartContext : '';
     sanitizedChartContext = sanitizedChartContext
       .replace(/^- [A-Za-z][A-Za-z\s]*: 0°0'\s{2,}\(House \d+\)\s*$/gm, '')
@@ -12607,6 +12615,7 @@ async function processJob(args: {
         sanitizedChartContext = sanitizedChartContext.slice(0, astrocartographyIndex).trim();
       }
     }
+    if (explicitCategory) sanitizedChartContext += `\nAUTHORITATIVE TOPIC CATEGORY: ${explicitCategory}. Set question_type to exactly "${explicitCategory}". This metadata overrides every keyword or example in the user prompt.\n`;
 
     // ───────────────────────────────────────────────────────────────────
     // VERBATIM PLACEMENT REMINDER (Rule 1 — Source of Truth)
@@ -13104,7 +13113,7 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
         const truthBlockSection = truthBlockMatch
           ? `\n\n${truthBlockMatch[0].trimEnd()}`
           : "";
-        const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}${truthBlockSection}`;
+        const natalChartBlock = `Natal Planetary Positions:\n${natalPlanetBlock}${natalCuspBlock}${truthBlockSection}\n${structuredFacts ? relationshipFactContext(structuredFacts,'natal') : ''}`;
 
         // ── SR CONTEXT PASS-THROUGH (Replit audit pass 3, 2026-05-02) ──
         // Calls B and C historically received only the SR positions bullets,
@@ -13132,8 +13141,8 @@ UNIQUENESS RULE: The "Your Location Choices" section is about the SPECIFIC user-
           : "";
 
         const srChartBlock = srPositionsForCall.length > 0
-          ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}${srCuspBlock}${srAnalysisSection}`
-          : "(no Solar Return chart provided for this reading)";
+          ? `SR Planetary Positions:\n${srPositionsForCall.map(fmtSrLine).join("\n")}${srCuspBlock}${srAnalysisSection}\n${structuredFacts ? relationshipFactContext(structuredFacts,'sr') : ''}`
+          : `Solar Return data unavailable. Stop SR interpretation.\n${structuredFacts ? relationshipFactContext(structuredFacts,'sr') : ''}`;
 
         console.info(
           `[ask-astrology] 3-call: built Call A natal block from structured parser`,
@@ -13274,6 +13283,7 @@ ${natalGroundTruthLines}`
           // Non-fatal — Call C falls back to no activations block (legacy behavior).
         }
 
+        if (structuredFacts) callCActivationsBlock = relationshipFactContext(structuredFacts,'timing');
         const tcStarted = Date.now();
         const tcResult = await runThreeCallRelationship({
           jobId,
@@ -15747,6 +15757,15 @@ ${natalGroundTruthLines}`
       console.warn("[ask-astrology][final-gate] DISABLED via ASK_GATE_BLOCKING=false");
     }
 
+    // Always validate the FINAL result locally, including any external gate patches.
+    // The external service is optional for mathematics and cannot bypass this gate.
+    const finalFacts = extractVerifiedReadingFacts(typeof chartContext === 'string' ? chartContext : '');
+    if (explicitCategory && parsedContent.question_type !== explicitCategory) throw new Error('TOPIC_CATEGORY_MISMATCH');
+    if (finalFacts) {
+      const errors = validateVerifiedReading(parsedContent, finalFacts);
+      if (errors.length) throw new Error(`CALCULATION_FACT_MISMATCH: ${errors.join('; ')}`);
+      parsedContent._local_calculation_validation = { status: 'passed', independentOfExternalGate: true, factVersion: finalFacts.version };
+    }
     // Persist final result to the ask_jobs row. The client (which may have
     // disconnected, switched tabs, or fully reloaded) will pick this up via
     // polling on its activeJobId.

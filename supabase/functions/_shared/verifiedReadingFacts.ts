@@ -2,7 +2,7 @@
 export const VERIFIED_FACTS_START = 'VERIFIED_READING_FACTS_START';
 export const VERIFIED_FACTS_END = 'VERIFIED_READING_FACTS_END';
 export interface VerifiedPlacement { id: string; layer: string; planet: string; sign: string; longitude: number; house: number | null; retrograde: boolean | null }
-export interface VerifiedContact { id: string; layer: string; planet1: string; planet2: string; aspect: string; orb: number; exactDates: string[]; classification?: string }
+export interface VerifiedContact { id: string; layer: string; planet1: string; planet2: string; aspect: string; orb: number; exactDates: string[]; classification?: string; windows?: { classification: string; closestDate: string; closestOrb: number; exactDates: string[] }[] }
 export interface VerifiedReadingFacts {
   version: number;
   chartId: string;
@@ -10,6 +10,12 @@ export interface VerifiedReadingFacts {
   placements: VerifiedPlacement[];
   contacts: VerifiedContact[];
   rulerChains: unknown[];
+  relationship?: {
+    natalPoints: VerifiedPlacement[];
+    solarReturn: { available: boolean; placements: VerifiedPlacement[]; contacts: VerifiedContact[]; rulerChains: unknown[] } | null;
+    qualifyingTransits: VerifiedContact[];
+    requiredEvidenceIds: string[];
+  };
 }
 export function extractVerifiedReadingFacts(context: string): VerifiedReadingFacts | null {
   const start = context.indexOf(VERIFIED_FACTS_START), end = context.indexOf(VERIFIED_FACTS_END);
@@ -18,7 +24,7 @@ export function extractVerifiedReadingFacts(context: string): VerifiedReadingFac
 }
 const BODY = '(?:North ?Node|South ?Node|Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Ascendant|Descendant|Midheaven|ASC|DSC|MC|IC)';
 const SIGN = '(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)';
-const canonical = (s: string) => ({ asc: 'Ascendant', dsc: 'Descendant', mc: 'Midheaven', northnode: 'NorthNode', southnode: 'SouthNode' }[s.toLowerCase().replace(/\s/g,'')] ?? s[0].toUpperCase()+s.slice(1).toLowerCase());
+const canonical = (s: string) => ({ asc: 'Ascendant', dsc: 'Descendant', mc: 'Midheaven', ic: 'IC', northnode: 'NorthNode', southnode: 'SouthNode' }[s.toLowerCase().replace(/\s/g,'')] ?? s[0].toUpperCase()+s.slice(1).toLowerCase());
 const delta = (a: number, b: number) => Math.abs(((a-b+540)%360)-180);
 const aspectName = (s: string) => ({ conjunct: 'conjunction', opposite: 'opposition', '☌':'conjunction', '☍':'opposition', '□':'square', '△':'trine', '⚹':'sextile' }[s.toLowerCase()] ?? s.toLowerCase());
 /** Validate supported explicit claim grammar and evidence references, withhold on any mismatch. */
@@ -33,6 +39,11 @@ export function validateVerifiedReading(reading: unknown, facts: VerifiedReading
     else if (value && typeof value === 'object') for (const [k,v] of Object.entries(value)) { if (!k.startsWith('_')) walk(v,k); }
   };
   walk(reading);
+  if ((reading as { question_type?: string } | null)?.question_type === 'relationship') {
+    for (const id of facts.relationship?.requiredEvidenceIds ?? []) {
+      if (!strings.some(s => s.includes(`[evidence:${id}]`))) errors.push(`Required relationship evidence omitted: ${id}`);
+    }
+  }
   for (const text of strings.flatMap(s => s.split(/(?<=[.!?])\s+|\n/))) {
     for (const match of text.matchAll(/\[evidence:([^\]]+)\]/g)) if (!ids.has(match[1])) errors.push('Unknown evidence reference');
     if (/\byou (?:keep choosing|always choose|have repeatedly chosen|have always attracted)\b/i.test(text)) errors.push('Unsupported behavioral history');

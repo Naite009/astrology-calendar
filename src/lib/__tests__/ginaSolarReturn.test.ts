@@ -8,6 +8,8 @@ import { validateVerifiedReading } from '../../../supabase/functions/_shared/ver
 import { scanFutureTransits } from '../futureTransitScanner';
 import { buildDeterministicTimingData } from '../deterministicTiming';
 import { findExactHits } from '../transits/majorTransits';
+import { relationshipFactContext } from '../../../supabase/functions/_shared/relationshipFactContext';
+import { extractVerifiedReadingFacts } from '../../../supabase/functions/_shared/verifiedReadingFacts';
 import type { NatalChart } from '@/hooks/useNatalChart';
 
 const target = 210+16+31/60+42/3600;
@@ -104,6 +106,29 @@ describe('Gina relationship calculation failures',()=>{
       const data=buildDeterministicTimingData(natal,18,15,'relationship');
       expect(data.section?.transits.some(t=>t.planet==='Jupiter' && t.aspect==='trine' && t.natal_point.includes('Descendant'))).toBe(true);
     }finally{vi.useRealTimers();}
+  });
+  it('all three required Gina contacts reach isolated relationship calls and cannot be omitted locally',()=>{
+    vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-24T00:00Z'));
+    try {
+      const facts=buildVerifiedReadingFacts(natal,null,new Date(),18);
+      const natalCall=extractVerifiedReadingFacts(relationshipFactContext(facts,'natal'));
+      const timingCall=extractVerifiedReadingFacts(relationshipFactContext(facts,'sr'));
+      expect(natalCall?.contacts.some(c=>c.id==='natal:Moon:square:Descendant' && Math.abs(c.orb-10/60)<1e-8)).toBe(true);
+      const jupiter=timingCall?.contacts.find(c=>c.id==='transit-to-natal:Jupiter:trine:Descendant');
+      expect(jupiter?.exactDates.length).toBeGreaterThan(0);
+      const saturn=timingCall?.contacts.find(c=>c.id==='transit-to-natal:Saturn:opposition:Mars');
+      const december=saturn?.windows?.find(w=>w.closestDate.startsWith('2026-12'));
+      expect(december?.classification).toBe('close-approach');
+      expect(december?.exactDates).toEqual([]);
+      expect(facts.relationship?.requiredEvidenceIds).toEqual(expect.arrayContaining(['natal:Moon:square:Descendant','transit-to-natal:Jupiter:trine:Descendant','transit-to-natal:Saturn:opposition:Mars']));
+      const errors=validateVerifiedReading({question_type:'relationship',sections:[{body:'No contacts discussed.'}]},facts);
+      expect(errors).toContain('Required relationship evidence omitted: natal:Moon:square:Descendant');
+      expect(errors).toContain('Required relationship evidence omitted: transit-to-natal:Jupiter:trine:Descendant');
+      expect(errors).toContain('Required relationship evidence omitted: transit-to-natal:Saturn:opposition:Mars');
+      // Local validation has no network dependency, even if the external checker is unavailable.
+      const response={question_type:'relationship',sections:[{body:facts.relationship?.requiredEvidenceIds.map(id=>`[evidence:${id}]`).join('\n')}]};
+      expect(validateVerifiedReading(response,facts)).toEqual([]);
+    } finally {vi.useRealTimers();}
   });
 });
 

@@ -231,7 +231,7 @@ Every bullet/transition in this section ("What you're attracted to vs. what you 
 const DIRECTIVE_B = buildDirective(
   CALL_B_SECTIONS,
   "SR-ONLY",
-  `This is the SR-ONLY call. The user message contains SOLAR RETURN chart data only. There is NO natal chart data in your context for this call. Write the sections as a portrait of THIS YEAR'S relational weather based on the Solar Return chart only. You may say "this year" / "the next 12 months" / "Solar Return". Do not reference natal placements — they aren't in your context for this call.`,
+  `This call receives Solar Return facts plus separately labelled precomputed relationship transits to natal targets. Use SR placements only for This Year in Love. Use supplied transit contacts, exactDates and per-window classification for Relationship Timing Windows. Never discover aspects, ruler chains or dates. Explain every requiredEvidenceId with its exact contact and evidence citation. A close-approach window is a near miss, even if a later window perfects. If SR is missing, write an unavailable notice for SR sections, but still interpret independently supplied relationship transits. Never substitute natal-only prose for the missing SR section.`,
 );
 
 /**
@@ -247,7 +247,7 @@ const buildDirectiveC = (pinnedConstraints: string, hasRightNowBlock: boolean): 
   "OVERLAY",
   `ABSOLUTE CONSTRAINT FOR THIS CALL — NON-NEGOTIABLE:
 
-The VERIFIED CROSS-CHART ACTIVATIONS block in the user
+The STRUCTURED RELATIONSHIP FACTS block in the user
 message is the ONLY source of cross-chart aspects you
 are permitted to reference.
 
@@ -255,14 +255,12 @@ You MUST NOT:
 - Identify any aspect not in the verified list
 - State any orb not taken directly from the verified list
 - Reference any natal point not in the verified list
-- Write "natal Venus at X" unless X matches the
-  natalPosition field in the verified list exactly
-- Write "natal Pluto at X" unless X matches the
-  natalPosition field in the verified list exactly
+- Write a natal position unless it matches the natal-layer
+  placement in the structured facts exactly
 
 You MUST:
-- For each activation you interpret, copy the srPosition
-  and natalPosition values verbatim from the verified list
+- For each contact you interpret, retain its layer, orb,
+  placement longitudes and [evidence:ID] from the structured facts
 - If asked to discuss an activation not in the list,
   write "no significant activation this year" instead
 ${pinnedConstraints}
@@ -565,12 +563,12 @@ const buildCallBUserMessage = (srChartBlock: string, userQuestion: string): stri
   return `User's question: ${userQuestion}
 
 =========================================================
-SOLAR RETURN CHART — the only chart data available for this call
+SOLAR RETURN AND PRECOMPUTED RELATIONSHIP TIMING
 =========================================================
 
 ${srChartBlock}
 
-(No natal chart data is provided for this call. Do not reference natal positions.)`;
+Use natal targets only from the supplied structured relationship facts for transit and cross-chart interpretation. Never calculate or discover dates or aspects. If Solar Return is unavailable, stop only the Solar Return sections with an unavailable notice; relationship transit timing remains independently available.`;
 };
 
 const buildCallCUserMessage = (
@@ -595,11 +593,9 @@ const buildCallCUserMessage = (
 
 CURRENT DATE (use this for the "Right Now" item): ${effectiveCurrentDate}
 
-REMINDER: You may only interpret activations from the
-VERIFIED CROSS-CHART ACTIVATIONS list below. Every
-planet degree you write must come from that list.
-Do not use degrees from the natal or SR placement
-tables for overlay prose — use only the verified list.
+REMINDER: Interpret contacts only from STRUCTURED RELATIONSHIP FACTS below.
+Planet degrees, aspect orbs, exact dates and per-window near misses must come
+from the labelled placements and contacts. Never calculate them yourself.
 
 You have BOTH charts in this call. They describe the same planets at different positions and are NEVER interchangeable. When you write about a natal placement, pull the value from the NATAL CHART block. When you write about an SR placement, pull the value from the SOLAR RETURN CHART block.
 

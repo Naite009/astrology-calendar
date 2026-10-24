@@ -1,11 +1,14 @@
 # Roadmap
 
 ## Gina Solar Return and relationship accuracy
+- [x] Route every structured topic explicitly by ID/category through submission, regeneration and server pipeline; keywords only for free-form questions. Live request confirms finding_partner -> relationship.
+- [x] Supply structured natal/SR relationship facts and require local checks regardless of external gate availability; local final gate also checks external patches.
+- [ ] Verify Gina relationship output contains Moon square DSC and Jupiter trine DSC, and Saturn opposite Mars near miss; live generation failed local validation on omitted evidence and unsupported claims. Must repair authoring/postprocessing and rerun, not close rebuild.
 - [x] Preserve precision and repair same-engine Solar Return solving and location gating.
 - [x] Add deterministic relationship evidence, ruler chains, exact/near-miss distinction and fail-only validation of explicit claims.
 - [x] 629 tests pass; Gina saved-chart automatic generation verified signed-in on desktop/mobile without saving test data. Exact-target return is 22:24:21.909 UT; saved-chart recomputation is 22:24:26.749 UT.
 - [ ] Complete arbitrary-prose claim coverage and full Node/eclipse relationship timing scan; existing explicit-claim validator and Jupiter-to-Pluto scan do not establish universal coverage.
-- [ ] Certify Gina angles at the source coordinates and a newly generated AI relationship reading. Exact Astro.com coordinates are missing; live regenerated reading was not exercised.
+- [ ] Certify Gina angles at the source coordinates. Exact Astro.com coordinates are missing. Live Gina relationship request ran but was withheld for local fact failures; actual saved Gina SR was unavailable to Ask.
 
 ## Comprehensive Solar Return repair
 - [x] Repair phase classification, distinct rulers, disclosed return metadata, planetary hours, progression context, and structured export integrity.

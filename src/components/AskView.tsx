@@ -1,4 +1,5 @@
 import { buildVerifiedReadingFacts, verifiedReadingContext, assertVerifiedReading } from '@/lib/verifiedReadingContext';
+import { explicitTopicCategory, resolveReadingCategory, type TopicRouting } from '../../supabase/functions/_shared/quickTopicRouting';
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"; // deterministic correction v2
 import { Send, Loader2, Sparkles, User, Trash2, Search, Star, ChevronDown, Download, History, X, Plus, RefreshCw, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -49,6 +50,7 @@ interface ChatEntry {
   role: "user" | "assistant";
   content: string; // user question text
   reading?: StructuredReading; // structured data for assistant
+  topic?: TopicRouting;
 }
 
 interface SavedConversation {
@@ -411,11 +413,11 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       }
       const data: any = normalizeAskResult(job.result || {});
       if (data.error) { toast.error(data.error); return; }
+      const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
+      if (chartForRequest) assertVerifiedReading(data, buildVerifiedReadingFacts(chartForRequest, canonicalSR));
 
       let assistantEntry: ChatEntry;
       if (data.sections) {
-        const canonicalSR = await fetchCanonicalSolarReturn(chartForRequest, chartIdForRequest);
-        if (chartForRequest) assertVerifiedReading(data, buildVerifiedReadingFacts(chartForRequest, canonicalSR));
         const corrected = mergeDeterministicTimingSection(
           correctPlacementData(data, chartForRequest, canonicalSR),
           null,
@@ -1408,12 +1410,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
 
   const handleQuickTopic = (
     prompt: string,
-    extras?: {
+    extras?: TopicRouting & {
       userLocations?: { current?: string; considering1?: string; considering2?: string };
       childChartId?: string;
     },
   ) => {
-    void handleSubmitDirect(prompt, extras?.userLocations, extras?.childChartId);
+    void handleSubmitDirect(prompt, extras?.userLocations, extras?.childChartId, extras);
   };
 
   // Deterministic post-correction: overwrites ALL placement table data (sign, degrees, house, retrograde)
@@ -1754,8 +1756,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     // strictly more matches OR when career and relationship are tied (because
     // "relationship" is frequently a metaphorical word inside non-relational
     // prompts).
-    const career = scores.find(s => s.type === 'career')!.score;
-    const rel = scores.find(s => s.type === 'relationship')!.score;
+    const career = scores.find(s => s.type === 'career')?.score ?? 0;
+    const rel = scores.find(s => s.type === 'relationship')?.score ?? 0;
     if (career > 0 && rel > 0 && career >= rel) return 'career';
 
     return top.type;
@@ -2177,6 +2179,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     directQuestion?: string,
     userLocations?: { current?: string; considering1?: string; considering2?: string },
     childChartId?: string,
+    topic?: TopicRouting,
   ) => {
     const question = (directQuestion || input).trim();
     if (!question || isLoading) return;
@@ -2184,7 +2187,7 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     const chartIdForRequest = activeChartId;
     const chartForRequest = selectedChart;
     const chartNameForRequest = chartForRequest?.name || "Unknown";
-    const userEntry: ChatEntry = { role: "user", content: question };
+    const userEntry: ChatEntry = { role: "user", content: question, topic };
     // Each new ask is a fresh conversation — clear previous Q&A from the screen
     // so the old reading doesn't visually persist, and so accumulated prior
     // questions can't bias server-side routing (e.g. an earlier relationship
@@ -2203,8 +2206,9 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     window.__askInFlight = true;
 
     try {
-      const readingType = detectReadingType(question);
-      const portraitReadingType = resolvePortraitReadingType(question);
+      const category = resolveReadingCategory(question, topic, resolvePortraitReadingType);
+      const readingType = ['natal','narrative','sacred_directive','solar_return','parenting'].includes(category) ? 'general' : category;
+      const portraitReadingType = category === 'narrative' || category === 'sacred_directive' ? 'natal' : category === 'parenting' ? 'general' : category;
       // For natal-prompt requests, route the timing scanner through the
       // 'natal' lens so the AI's "Where You Are in Your Life Cycles"
       // section is fed the same pre-computed transit windows that
@@ -2254,6 +2258,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
           chartId: chartIdForRequest,
+          topicId: topic?.topicId,
+          category: explicitTopicCategory(topic) ?? undefined,
           userLocations,
         },
         {
@@ -2502,9 +2508,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
       const chartForRequest = selectedChart;
       const chartIdForRequest = activeChartId;
       const chartNameForRequest = chartForRequest?.name || "Unknown";
-      const lastUserQuestion = [...trimmedEntries].reverse().find(e => e.role === "user")?.content || "";
-      const readingType = detectReadingType(lastUserQuestion);
-      const portraitReadingType = resolvePortraitReadingType(lastUserQuestion);
+      const lastUserEntry = [...trimmedEntries].reverse().find(e => e.role === "user");
+      const lastUserQuestion = lastUserEntry?.content || "";
+      const topic = lastUserEntry?.topic;
+      const category = resolveReadingCategory(lastUserQuestion, topic, resolvePortraitReadingType);
+      const readingType = ['natal','narrative','sacred_directive','solar_return','parenting'].includes(category) ? 'general' : category;
+      const portraitReadingType = category === 'narrative' || category === 'sacred_directive' ? 'natal' : category === 'parenting' ? 'general' : category;
       // Mirror handleSubmitDirect: route natal-prompt regenerations through
       // the 'natal' timing lens so the same transit windows are injected.
       const timingReadingType = (portraitReadingType === 'natal' ? 'natal' : readingType) as Parameters<typeof buildDeterministicTimingData>[3];
@@ -2534,6 +2543,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
           currentDate: formatLocalDateKey(new Date()),
           deterministicTiming: timingData.section,
           chartId: chartIdForRequest,
+          topicId: topic?.topicId,
+          category: explicitTopicCategory(topic) ?? undefined,
         },
         {
           signal: controller.signal,

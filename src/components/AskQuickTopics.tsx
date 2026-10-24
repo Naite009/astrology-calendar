@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { QUICK_TOPIC_CATEGORIES, type ReadingCategory, type TopicRouting } from '../../supabase/functions/_shared/quickTopicRouting';
 import { MapPin, Heart, Briefcase, Activity, DollarSign, Compass, Send, Sparkles, Sun, Users, CloudSun } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,8 @@ const sanitizeCityField = (raw: string): string =>
   raw.replace(/[^A-Za-z0-9 ,.\-'()]/g, "").slice(0, 80);
 
 export interface QuickTopic {
-  id: string;
+  id: keyof typeof QUICK_TOPIC_CATEGORIES;
+  category?: ReadingCategory;
   label: string;
   icon: React.ReactNode;
   prompt: (name: string, birthDate: string, birthTime: string, birthLocation: string) => string;
@@ -488,7 +490,7 @@ function buildPromptWithContext(
 interface AskQuickTopicsProps {
   onSelect: (
     prompt: string,
-    extras?: { userLocations?: UserLocationsInput; childChartId?: string },
+    extras?: TopicRouting & { userLocations?: UserLocationsInput; childChartId?: string },
   ) => void;
   chartName: string;
   birthDate: string;
@@ -573,7 +575,7 @@ export function AskQuickTopics({
         undefined,
       );
       setActiveTopic(null);
-      onSelect(prompt, {});
+      onSelect(prompt, { topicId: topic.id, category: QUICK_TOPIC_CATEGORIES[topic.id] });
     }
   };
 
@@ -626,6 +628,8 @@ export function AskQuickTopics({
     setRelocCity2("");
     setChildChartId("");
     onSelect(prompt, {
+      topicId: activeTopic.id,
+      category: QUICK_TOPIC_CATEGORIES[activeTopic.id],
       userLocations,
       childChartId: selectedChildId || undefined,
     });
