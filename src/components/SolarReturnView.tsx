@@ -552,7 +552,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
   const updatePlanet = (name: string, field: string, value: any) => {
     setPlanets(prev => ({
       ...prev,
-      [name]: { ...prev[name], sign: prev[name]?.sign || 'Aries', degree: prev[name]?.degree || 0, minutes: prev[name]?.minutes || 0, [field]: value }
+      [name]: { ...prev[name], ...(['sign', 'degree', 'minutes'].includes(field) ? { longitude: undefined, seconds: 0 } : {}), sign: prev[name]?.sign || 'Aries', degree: prev[name]?.degree || 0, minutes: prev[name]?.minutes || 0, [field]: value }
     }));
   };
 
@@ -560,7 +560,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
     const key = `house${num}`;
     setHouseCusps(prev => ({
       ...prev,
-      [key]: { ...prev[key], sign: prev[key]?.sign || 'Aries', degree: prev[key]?.degree || 0, minutes: prev[key]?.minutes || 0, [field]: value }
+      [key]: { ...prev[key], longitude: undefined, seconds: 0, sign: prev[key]?.sign || 'Aries', degree: prev[key]?.degree || 0, minutes: prev[key]?.minutes || 0, [field]: value }
     }));
   };
 

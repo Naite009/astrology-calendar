@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Gina Solar Return and relationship accuracy
-- [ ] Preserve precision and repair same-engine Solar Return solving and location gating.
-- [ ] Add deterministic relationship evidence, ruler chains, exact/near-miss distinction and display validation.
-- [ ] Run Gina numerical regressions and verify automatic calculation through the UI; report tolerances and limitations.
+- [x] Preserve precision and repair same-engine Solar Return solving and location gating.
+- [x] Add deterministic relationship evidence, ruler chains, exact/near-miss distinction and fail-only validation of explicit claims.
+- [x] 629 tests pass; Gina saved-chart automatic generation verified signed-in on desktop/mobile without saving test data. Exact-target return is 22:24:21.909 UT; saved-chart recomputation is 22:24:26.749 UT.
+- [ ] Complete arbitrary-prose claim coverage and full Node/eclipse relationship timing scan; existing explicit-claim validator and Jupiter-to-Pluto scan do not establish universal coverage.
+- [ ] Certify Gina angles at the source coordinates and a newly generated AI relationship reading. Exact Astro.com coordinates are missing; live regenerated reading was not exercised.
 
 ## Comprehensive Solar Return repair
 - [x] Repair phase classification, distinct rulers, disclosed return metadata, planetary hours, progression context, and structured export integrity.
