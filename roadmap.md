@@ -1,5 +1,13 @@
 # Roadmap
 
+## Full accuracy audit and whole-chart Natal Portrait
+- [x] Single-source-of-truth map and root causes in `qa-reports/full-audit-2026-10.md`.
+- [x] Whole-chart story map (all 10 planets, 4 angles, 12 house rulers, dispositor chains, derived DSC/IC aspects, salience, mustAddress contradictions).
+- [x] Validator: sign/degree/house/ruler/orb/"exact"/"tight" claims, loose and hyphenated aspect claims, 2-chain independence, life-purpose gate, ignored-contradiction gate; shared context server+client.
+- [x] New signature shape (plain meaning, astrology walkthrough, how it shows up, tension, healthy expression) in UI; repair pass split across calls to avoid timeouts.
+- [x] Tests: cusps, angles, boundaries, ruler chains, full-precision orbs, Gina/Lauren evidence; live Lauren reading passed both gates.
+- [ ] Consolidate ~40 remaining independent aspect/house calculators (listed in the audit) onto canonical helpers; not done in this pass.
+
 ## Gina Solar Return and relationship accuracy
 - [x] Route every structured topic explicitly by ID/category through submission, regeneration and server pipeline; keywords only for free-form questions. Live request confirms finding_partner -> relationship.
 - [x] Supply structured natal/SR relationship facts and require local checks regardless of external gate availability; local final gate also checks external patches.
