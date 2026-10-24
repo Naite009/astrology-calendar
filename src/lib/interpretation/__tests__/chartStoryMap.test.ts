@@ -74,9 +74,15 @@ describe('chart story map', () => {
   });
 });
 
-function sampleReading(map: ReturnType<typeof buildChartStoryMap>, text = 'You may notice this.'): PersonReading {
+export function sampleReading(map: ReturnType<typeof buildChartStoryMap>, text = 'She may notice this.'): PersonReading {
   const rising = map.chains.find((c) => c.id === 'chain:rising')!;
-  const sig = (name: string) => ({ name, chainIds: [rising.id], evidenceIds: rising.steps.slice(0, 2), howItWorks: text, inWork: text, inRelationships: text, underStress: text, strength: text, stuckPoint: text });
+  const sun = map.chains.find((c) => c.id === 'chain:sun')!;
+  const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]);
+  const sig = (name: string) => ({
+    name, plainMeaning: 'She has the signature of someone who wants harmony, but takes over when relying on others feels uncertain.',
+    chainIds: [rising.id, sun.id], evidenceIds: [rising.steps[0], sun.steps[0]],
+    howItWorks: text, inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: must.length ? must : [sun.steps[0]], healthyExpression: text,
+  });
   return { headline: text, centralTension: text, signatures: [sig('The A'), sig('The B'), sig('The C')], collisions: [], whenLost: text, whatSteadies: text, transitsNow: [], clientQuestions: ['Does this fit?'] };
 }
 

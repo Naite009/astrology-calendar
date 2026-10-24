@@ -2,19 +2,25 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3.23.8';
 import { withInterpretationStandard } from '../_shared/interpretationStandard.ts';
 import { cleanPersonReading, validatePersonReading, type PersonReading } from '../_shared/personReadingValidator.ts';
+import { contextFromStoryMap } from '../_shared/personReadingContext.ts';
 
 const MODEL = 'google/gemini-3.1-pro-preview';
 
 const Evidence = z.object({ id: z.string(), kind: z.string(), fact: z.string(), bodies: z.array(z.string()) }).passthrough();
 const Body = z.object({
+  /** Repair pass: a previous draft plus the checker's errors (keeps each call under the time limit). */
+  repair: z.object({ draft: z.unknown(), errors: z.array(z.string()).max(40) }).optional(),
   name: z.string().min(1).max(120),
   age: z.number().int().min(0).max(120).nullable().optional(),
   map: z.object({
+    version: z.number().optional(),
     evidence: z.record(Evidence),
-    chains: z.array(z.object({ id: z.string(), anchor: z.string(), label: z.string(), steps: z.array(z.string()), bodies: z.array(z.string()) })).max(20),
-    tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()) })).max(12),
+    chains: z.array(z.object({ id: z.string(), anchor: z.string(), label: z.string(), steps: z.array(z.string()), bodies: z.array(z.string()), salience: z.number().optional() })).max(40),
+    tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(12),
+    placements: z.record(z.object({ sign: z.string(), longitude: z.number(), house: z.number().nullable() }).passthrough()).optional(),
+    houseRulers: z.record(z.object({ traditional: z.string(), modern: z.string().optional() })).optional(),
     transits: z.array(z.object({ id: z.string(), headline: z.string(), fact: z.string(), nextExact: z.string().nullable(), isActiveNow: z.boolean(), chainIds: z.array(z.string()) }).passthrough()).max(12),
-    allowedAspects: z.array(z.object({ a: z.string(), b: z.string(), type: z.string() }).passthrough()).max(200),
+    allowedAspects: z.array(z.object({ a: z.string(), b: z.string(), type: z.string(), orb: z.number().optional() }).passthrough()).max(300),
   }),
 });
 
@@ -29,18 +35,26 @@ function systemPrompt(age: number | null | undefined): string {
   return `You are a master natal astrologer writing for a practitioner who is about to read for this client. Your job: show who this person is, in depth, so specifically that they recognize themselves.
 
 HOW TO READ
-- Follow CHAINS, not lists. Each chain starts at an anchor (Rising, Midheaven, Sun, Moon, or a concentration) and runs through its ruler to that ruler's sign, house, condition and aspects. Explain each step as the cause of the next: "Because X, Y; and because Y sits in Z, ..."
-- Combine several chains into 4 to 6 NAMED SIGNATURES. A signature name is a plain, literal title in the form "The ___" that a stranger understands instantly without explanation, naming a recognizable kind of person or behavior (good: "The Perpetual Student", "The Peacekeeper Who Keeps Score", "The Planner Who Hates Being Rushed"). NO metaphors or poetic images (banned: velvet, silk, glass, mirror, fire, storm, shadow, garden, alchemist, labyrinth, cathedral). Never copy example names; invent from this chart. The name must be earned by at least two pieces of evidence that reinforce each other.
-- Each signature's "plainMeaning" is ONE short sentence saying what the name means in everyday words, and the first sentence of "howItWorks" must list the exact placements with degrees (for example "Sun 28° Libra in the 10th, ruled by Venus at 3° Scorpio in the 11th...").
-- Every signature ends in BEHAVIOR: what the person actually does, says, chooses, avoids, repeats. Concrete scenes beat adjectives. "When a job turns routine, they start browsing courses" beats "they are restless".
-- Show COLLISIONS: where one signature wants what another resists. Use the supplied tensions.
+- The evidence is the WHOLE chart: every major planet has its own chain (placement, sign ruler, the houses it rules, its dispositor chain, its tight aspects), plus the angles (Rising, Descendant, Midheaven, IC), all twelve house rulers, concentrations and balance. Chains carry a salience score; start from the most salient, but use any planet whose evidence matters. Do not ignore Mercury, Mars or Saturn just because they are not the Sun, Moon or Rising.
+- Read every signature through this chain: PLACEMENT -> what the SIGN does -> the HOUSE arena -> the RULER / DISPOSITOR chain -> TIGHT ASPECTS -> what REINFORCES or CONTRADICTS it elsewhere -> concrete BEHAVIOR.
+- 4 to 6 NAMED SIGNATURES. Name: plain and memorable, a stranger understands it instantly ("Fierce Independent", "The Peacekeeper Who Keeps Score"). No metaphors (banned: velvet, silk, glass, mirror, storm, shadow, garden, alchemist, labyrinth, cathedral, tapestry, ember, tide). Invent from this chart, never copy examples.
+- Every signature must draw on at least TWO DIFFERENT chains (different planets), e.g. a Venus chain plus a Saturn aspect. One placement never earns a signature.
+- plainMeaning: 1-2 everyday sentences stating the defining pattern or the apparent contradiction, e.g. "{Name} has the signature of someone who craves partnership and harmony, but when relying on someone feels uncertain, she would rather take over and do it herself." No astrology words here.
+- howItWorks (THE ASTROLOGY): a walkthrough in the form "Because X ... then Y ... but Z ...", naming exact placements with degrees, houses, the ruler or dispositor chain and the aspect with its orb exactly as supplied.
+- inLife, inRelationships, inWork, underStress, inDecisions (HOW IT SHOWS UP): concrete scenes of what the person does, says, chooses, avoids. "When a plan changes last minute, she quietly redoes it herself" beats "she is independent".
+- tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
+- healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
+- A big life-purpose statement ("here to change the world", "life purpose", "mission") is allowed only when the full chain (placement, ruler, aspect, at least 4 evidence ids) earns it. Otherwise describe the placement, its house, ruler and aspects and stop there.
+- Tensions marked mustAddress are the strongest contradictions in the chart. Each one MUST be cited (its aspect evidence id) in a signature's tensionEvidenceIds or a collision.
+- Collisions: where one signature wants what another resists.
 - Name what they likely do when they feel lost and what genuinely steadies them.
-- Link each supplied current transit to the signature it presses on, saying what may be stirred now. Use only supplied transit ids and dates. Skip transits that do not connect.
+- Link each supplied current transit to the signature it presses on. Use only supplied transit ids and dates. Skip transits that do not connect.
 - 3 to 5 client questions a practitioner could ask to check the reading.
 
 ACCURACY
 - Use ONLY the supplied evidence. Every signature cites evidenceIds (at least 2) and chainIds from the input.
-- Name an aspect only if it appears in allowedAspects, with the same type. If an aspect is out of sign, say the degrees connect across different signs. Never call planets in different signs conjunct unless the aspect is listed.
+- Name an aspect only if it appears in allowedAspects, with the same type and the supplied orb. Descendant and IC contacts are listed explicitly.
+- A sign, degree, house or ruler you mention must match the supplied facts exactly. The checker compares every one. If an aspect is out of sign, say the degrees connect across different signs. Never call planets in different signs conjunct unless the aspect is listed.
 - Houses are Placidus from the supplied facts. Sign is not house.
 - Chart ruler is the traditional ruler; a modern co-ruler is a second layer.
 - Tight orb means "may be especially noticeable", never certainty.
@@ -57,7 +71,7 @@ VOICE
 OUTPUT: only JSON, no markdown fences, exactly this shape:
 {"headline": "2-3 sentences naming the central dynamic of this person",
  "centralTension": "2-4 sentences",
- "signatures": [{"name": "The ...", "plainMeaning": "one everyday sentence", "chainIds": [], "evidenceIds": [], "howItWorks": "4-6 sentences following the chain", "inWork": "2-3 sentences", "inRelationships": "2-3 sentences", "underStress": "2-3 sentences", "strength": "1-2 sentences", "stuckPoint": "1-2 sentences"}],
+ "signatures": [{"name": "...", "plainMeaning": "1-2 everyday sentences", "chainIds": [], "evidenceIds": [], "howItWorks": "4-7 sentences: Because... then... but...", "inLife": "2 sentences", "inRelationships": "2 sentences", "inWork": "2 sentences", "underStress": "2 sentences", "inDecisions": "1-2 sentences", "tension": "2-3 sentences", "tensionEvidenceIds": [], "healthyExpression": "2 sentences"}],
  "collisions": [{"between": ["signature name", "signature name"], "description": "2-4 sentences", "evidenceIds": []}],
  "whenLost": "2-3 sentences", "whatSteadies": "2-3 sentences",
  "transitsNow": [{"transitId": "", "signatureName": "", "meaning": "2-3 sentences"}],
@@ -113,23 +127,20 @@ Deno.serve(async (req) => {
   try {
     const parsed = Body.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, 400);
-    const { name, age, map } = parsed.data;
+    const { name, age, map, repair } = parsed.data;
+    const started = Date.now();
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) return json({ error: 'Reading service is not configured.' }, 500);
 
-    const ctx = {
-      evidenceIds: Object.keys(map.evidence),
-      chainIds: map.chains.map((c) => c.id),
-      transitIds: map.transits.map((t) => t.id),
-      allowedAspects: map.allowedAspects,
-    };
+    const ctx = contextFromStoryMap(map);
     const input = {
       client: { name, age: age ?? null },
-      chains: map.chains.map((c) => ({ id: c.id, label: c.label, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
+      chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
+      houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,
       balance: ['balance:elements', 'balance:modalities'].map((id) => map.evidence[id]).filter(Boolean),
       transitsNow: map.transits.map((t) => ({ id: t.id, fact: t.fact, nextExact: t.nextExact, activeNow: t.isActiveNow, chainIds: t.chainIds })),
-      allowedAspects: map.allowedAspects.map((a) => `${a.a} ${a.type} ${a.b}`),
+      allowedAspects: map.allowedAspects.map((a) => `${a.a} ${a.type} ${a.b} (${typeof a.orb === 'number' ? a.orb.toFixed(1) : '?'}° orb)`),
     };
 
     const messages = [
@@ -137,8 +148,19 @@ Deno.serve(async (req) => {
       { role: 'user', content: `Write the reading for ${name}. Evidence:\n${JSON.stringify(input)}` },
     ];
 
+    if (repair) {
+      messages.push(
+        { role: 'assistant', content: JSON.stringify(repair.draft).slice(0, 30000) },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 25).join('\n- ')}` },
+      );
+    }
     let lastErrors: string[] = [];
+    let lastDraft: unknown = null;
     for (let attempt = 1; attempt <= 2; attempt++) {
+      // Stay inside the function time limit: a slow first pass hands the repair to a second call.
+      if (attempt > 1 && Date.now() - started > 55000) {
+        return json({ needsRepair: true, draft: lastDraft, errors: lastErrors, model: MODEL });
+      }
       const out = await callModel(apiKey, messages, req.signal);
       if (!out.ok) return json({ error: out.message }, out.status === 402 || out.status === 429 || out.status === 403 ? out.status : 502);
       let reading: PersonReading;
@@ -148,8 +170,9 @@ Deno.serve(async (req) => {
         continue;
       }
       const errors = validatePersonReading(reading, ctx);
-      if (!errors.length) return json({ reading, model: MODEL, attempts: attempt });
+      if (!errors.length) return json({ reading, model: MODEL, attempts: attempt, repaired: !!repair });
       lastErrors = errors;
+      lastDraft = reading;
       messages.push(
         { role: 'assistant', content: JSON.stringify(reading) },
         { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}` },
