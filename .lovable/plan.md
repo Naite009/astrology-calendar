@@ -1,43 +1,35 @@
-# Natal Portrait: "Who Is This Person" deep reading + "What's Moving Now"
+# Natal Portrait: one connected reading of the whole person
 
-## Goal
-A new section at the very top of Natal Portrait that reads like the example screenshots: it finds the real combinations in the chart, gives each one a name ("The Perpetual Student"), explains in plain words why it happens, shows how the combinations pull against each other, and then shows which current transits are activating those same combinations. It should go further than the other app: every claim checked against the real chart math, exact orbs shown, nothing stated as fate.
+## Why the other reading was better
+The other app wrote one story about one person. Your app builds many small pieces and joins them.
 
-## What the reader will see
-1. **The headline**: two or three sentences naming the central tension of this person (e.g. "a restless learner who needs to build something lasting").
-2. **4 to 6 named signatures**: each one has:
-   - a name in brackets, like the other app
-   - the exact placements behind it (sign, degree, house, aspect, orb, out-of-sign flag)
-   - how it shows up in daily life, in work, and in relationships
-   - the strength it gives and the place it can get stuck
-3. **How the signatures collide**: the two or three places where one part of the chart wants something the other part resists ("your Rising wants movement, your Taurus Sun wants roots").
-4. **Life areas**: short, specific answers for work and calling (Midheaven, its ruler, aspects to the MC), relationships (Descendant, Venus, Moon), and money and security.
-5. **What's moving now**: the Jupiter through Pluto transits currently hitting the planets and angles above, with real exact dates, linked by name to the signature they activate ("Saturn is crossing your Midheaven, which activates The Idealist's Dilemma").
-6. **Questions to ask the client**: 3 to 5 recognition questions.
+- **It follows chains, not lists.** Its first point goes: Gemini Rising, then Rising's ruler Mercury, then Mercury in Aries in the 11th, then Mercury's tight link to Venus and Mars. Each step explains the last. Your app describes Rising, Mercury and Venus/Mars in separate places, so the links never get made.
+- **The patterns get named by combining things.** "The Perpetual Student" comes from Saturn in the 9th (structure around learning) plus a restless Rising (new things feel good at first). A lookup table can't produce that. It takes reading the factors together.
+- **Each point ends in a behavior.** "Learning feels safe, so when you're lost you enrol in a course." Your pieces often end at a description of the placement.
+- **Nothing was squeezing it.** Your plain readings are capped at 80 words per section with 3rd-grade wording and many banned phrases. Those caps stop a long chain from fitting.
+- **It gives one answer.** Your page gives many sections that repeat each other, which is why it feels like patchwork.
 
-## How it works
-- **Chart math picks the evidence first.** A new evidence builder ranks the factors that carry the most weight:
-  - the Ascendant, and its ruler's sign, house, condition and tight aspects
-  - the MC, its ruler, and every planet aspecting the Ascendant or the MC
-  - the Sun's and Moon's houses
-  - the tightest major aspects
-  - real stelliums (3+ major planets) and validated patterns
-  - element and modality extremes
-  - current major transits from the existing transit calculator
+It also has gaps your app can beat. It says "tightly conjunct" across Aries and Pisces without checking the degrees. It gives no orbs or Midheaven aspects. And it says "you are not meant for..." as if it were fixed.
 
-  It also pairs factors that pull against each other. The AI gets only this checked list.
-- **The AI writes from that list only**, using the existing reading model, and must quote each signature's evidence IDs. Any signature citing a placement or aspect that isn't on the list is thrown out before it is shown.
-- **The usual standards still apply:** no fate wording, no diagnoses, no em dashes, constructive before challenging, age-aware for teens.
-- **The reading is saved per chart and refreshed only on request**, so it doesn't cost credits on every visit. The transit part refreshes when the date changes.
-- **JSON and PDF downloads** include the reading and its evidence.
-- The existing sections stay below it unchanged.
+## What I'll build
+Not another section on the page. The top of Natal Portrait becomes one connected reading:
+
+1. **Chart story map (calculated, no AI).** Starting from the Rising, Midheaven, Sun and Moon, the code follows each ruler to its sign and house, then to that planet's tightest aspects. It marks which links are real by exact angle and which only look close across signs. It also lists the places where two parts of the chart want opposite things. The result is a set of connected chains, each with exact evidence.
+2. **A named reading written from those chains.** The AI gets only the chains and writes:
+   - a central tension for the person
+   - 4 to 6 named signatures, each following its chain (placement, then what it does, then what it looks like in work, love and stress, then where it can get stuck)
+   - where the signatures pull against each other
+   - what the person likely does when they feel lost, and what steadies them
+3. **A check before anything is shown.** Every named pattern must cite chain IDs that exist. Invented placements, wrong aspect names, fate wording and diagnoses are rejected, with one retry.
+4. **What's moving now.** Current Jupiter to Pluto transits are matched to the named signatures, so you read "Saturn is crossing your Midheaven, which presses on The Idealist's Dilemma" with exact dates from the existing transit calculator.
+5. **Existing sections stay below.** They are no longer the first thing the client reads, and the portrait's duplicate openers are removed from the top.
+
+The longer limits apply only to this reading. Short surfaces stay short.
 
 ## Technical details
-- `src/lib/interpretation/personSignatureEvidence.ts`: a deterministic evidence pack. It uses `getChartRulers`, `computeRankedAspects` and `classifyAspect`, aspects to angles from cusps 1, 4, 7 and 10, the stellium and pattern helpers, `elementBalance`, and `majorTransits` filtered to signature bodies. Each item has a stable ID.
-- `supabase/functions/natal-person-reading/index.ts`: wrapped with `withInterpretationStandard(..., { fullChart: true })`, returns structured JSON (signatures[] with evidenceIds), streamed, with gateway error handling.
-- `src/lib/interpretation/personReadingValidator.ts`: rejects unknown evidence IDs, out-of-sign mislabels, banned wording and fate wording, with one repair attempt before falling back to deterministic text.
-- `src/components/natal/WhoIsThisPerson.tsx`: rendered at the top of `NatalPortraitView.tsx`, with expandable evidence per signature and a "Regenerate" button. Results are cached per chart in local storage, keyed by chart identity and data hash.
-- Tests:
-  - the evidence builder on Ava, Max, Harrison and Karina (ASC/MC aspects, ruler, tension pairs, transit linkage)
-  - the validator rejecting invented aspects, such as cross-sign "tight" conjunctions without degrees
+- `src/lib/interpretation/chartStoryMap.ts`: builds the chains from `getChartRulers`, `computeRankedAspects` / `classifyAspect`, cusps 1, 4, 7 and 10, stellium and pattern helpers, and `outOfSign`. It outputs chains with stable IDs and a tension list.
+- `supabase/functions/natal-person-reading/index.ts`: uses the existing model, wrapped in `withInterpretationStandard(..., { fullChart: true })`, with structured output citing chain IDs, streamed, and the gateway error rules applied.
+- `src/lib/interpretation/personReadingValidator.ts`: the check described above. On failure it falls back to a deterministic version made of the chains only, labeled as such.
+- `src/components/natal/WhoIsThisPerson.tsx`: the top of `NatalPortraitView.tsx`, with expandable evidence, regenerate, and JSON/PDF inclusion. The reading is cached per chart and the transit part refreshes daily.
+- Tests: chains and tensions on Ava, Max, Harrison and Karina, and the validator rejecting an invented or cross-sign "tight" aspect. I'll also run the reading on a saved chart and show you the result before calling it done.
 - Record the new module rule in `AGENTS.md`.
