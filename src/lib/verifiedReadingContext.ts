@@ -45,7 +45,7 @@ export function buildVerifiedReadingFacts(chart: NatalChart, sr: SolarReturnChar
       const id=`transit-to-natal:${w.transitPlanet}:${w.aspect}:${w.natalPlanet}`;
       const old=contacts.find(c=>c.id===id);
       const window = {classification:w.classification,closestDate:w.closestDate,closestOrb:w.closestOrb,exactDates:w.exactDates.map(d=>d.date)};
-      if (old) { old.exactDates.push(...window.exactDates); old.classification=old.exactDates.length?'exact-hit':'close-approach'; old.windows=[...(old.windows??[]),window]; }
+      if (old) { old.exactDates=[...new Set([...old.exactDates,...window.exactDates])]; old.classification=old.exactDates.length?'exact-hit':'close-approach'; old.windows=[...(old.windows??[]),window]; }
       else contacts.push({id,layer:'transit-to-natal',planet1:w.transitPlanet,planet2:w.natalPlanet,aspect:w.aspect,orb:w.closestOrb,exactDates:window.exactDates,classification:w.classification,windows:[window]});
     }
   }

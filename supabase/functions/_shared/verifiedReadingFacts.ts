@@ -24,7 +24,7 @@ export function extractVerifiedReadingFacts(context: string): VerifiedReadingFac
 }
 const BODY = '(?:North ?Node|South ?Node|Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto|Chiron|Ascendant|Descendant|Midheaven|ASC|DSC|MC|IC)';
 const SIGN = '(?:Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)';
-const canonical = (s: string) => ({ asc: 'Ascendant', dsc: 'Descendant', mc: 'Midheaven', northnode: 'NorthNode', southnode: 'SouthNode' }[s.toLowerCase().replace(/\s/g,'')] ?? s[0].toUpperCase()+s.slice(1).toLowerCase());
+const canonical = (s: string) => ({ asc: 'Ascendant', dsc: 'Descendant', mc: 'Midheaven', ic: 'IC', northnode: 'NorthNode', southnode: 'SouthNode' }[s.toLowerCase().replace(/\s/g,'')] ?? s[0].toUpperCase()+s.slice(1).toLowerCase());
 const delta = (a: number, b: number) => Math.abs(((a-b+540)%360)-180);
 const aspectName = (s: string) => ({ conjunct: 'conjunction', opposite: 'opposition', '☌':'conjunction', '☍':'opposition', '□':'square', '△':'trine', '⚹':'sextile' }[s.toLowerCase()] ?? s.toLowerCase());
 /** Validate supported explicit claim grammar and evidence references, withhold on any mismatch. */
