@@ -78,6 +78,8 @@ export interface ChartStoryMap {
   evidence: Record<string, StoryEvidence>;
   chains: StoryChain[];
   tensions: StoryTension[];
+  /** Verified clusters where separate chains point the same way (tight harmonious/conjunct aspects, mutual dispositors, shared house). */
+  reinforcements: { id: string; fact: string; chainIds: string[]; evidenceIds: string[] }[];
   transits: StoryTransit[];
   /** Every real aspect the reading may name (majors within allowed orb, quincunx under 3°, derived DSC/IC). */
   allowedAspects: AllowedAspect[];
@@ -398,6 +400,29 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   // The strongest contradictions (aspect-based, orb under 3°) must be addressed.
   tensions.filter((t) => t.evidenceIds.some((e) => e.startsWith('aspect:') && (evidence[e]?.aspect?.orb ?? 99) < 3)).slice(0, 2).forEach((t) => { t.mustAddress = true; });
 
+  // ── Reinforcement clusters ──
+  const reinforcements: ChartStoryMap['reinforcements'] = [];
+  for (const a of allowedAspects) {
+    if (a.derived || !['conjunction', 'trine', 'sextile'].includes(a.type) || a.orb >= 3) continue;
+    const A = chainFor(a.a), B = chainFor(a.b);
+    if (!A || !B || A.id === B.id) continue;
+    const id = aspectEvidence(a);
+    reinforcements.push({ id: `reinforce:${id.slice(7)}`, fact: `${displayBody(a.a)} ${a.type} ${displayBody(a.b)} (${a.orb.toFixed(1)}° orb): these two work together and amplify each other`, chainIds: [A.id, B.id], evidenceIds: [A.steps[0], B.steps[0], id] });
+  }
+  for (const [x, y] of PLANETS.flatMap((x, i) => PLANETS.slice(i + 1).map((y) => [x, y] as const))) {
+    const px = pos[x], py = pos[y];
+    if (!px || !py || TRADITIONAL_RULER[px.sign] !== y || TRADITIONAL_RULER[py.sign] !== x) continue;
+    const A = chainFor(x), B = chainFor(y);
+    if (!A || !B) continue;
+    reinforcements.push({ id: `reinforce:mutual-${x}-${y}`, fact: `${x} in ${px.sign} and ${y} in ${py.sign} rule each other's signs (mutual reception): each one's results run through the other`, chainIds: [A.id, B.id], evidenceIds: [A.steps[0], B.steps[0]] });
+  }
+  const byHouseR = new Map<number, string[]>();
+  for (const b of PLANETS) { const h = pos[b]?.house; if (h) byHouseR.set(h, [...(byHouseR.get(h) ?? []), b]); }
+  for (const [h, bodies] of byHouseR) if (bodies.length >= 3) {
+    const cs = bodies.map(chainFor).filter(Boolean) as StoryChain[];
+    reinforcements.push({ id: `reinforce:house-${h}`, fact: `${bodies.join(', ')} all in the ${ordinalHouse(h)}: several drives share one life area`, chainIds: cs.map((c) => c.id), evidenceIds: cs.map((c) => c.steps[0]) });
+  }
+
   // ── Current major transits linked to chains ──
   const now = opts.now ?? new Date();
   const horizon = opts.transitDays ?? 180;
@@ -444,6 +469,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     evidence,
     chains: kept,
     tensions: tensions.slice(0, 8),
+    reinforcements: reinforcements.slice(0, 8),
     transits,
     allowedAspects,
     placements,

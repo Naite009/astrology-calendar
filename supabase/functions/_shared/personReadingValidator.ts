@@ -92,7 +92,7 @@ const ASPECT_WORDS: Record<string, string> = {
 };
 
 const DETERMINISM = [
-  /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
+  /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bwill (?:cause|make|force|always|never|destroy)\b/i, /\birreversibl/i, /\b(?:absolute|total|unyielding|uncompromising) (?:autonomy|independence|freedom|control|drive)\b/i, /\bmassive concentration\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
   /\byou are (?:not )?meant (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i,
 ];
 const PATHOLOGY = [
@@ -231,7 +231,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
     if (/\b(velvet|silk|silken|glass|mirror|storm|shadow|garden|alchemist|labyrinth|cathedral|tapestry|ember|tide)\b/i.test(s.name ?? '')) errors.push(`"${s.name}" uses a metaphor name; use a plain literal title`);
     if (typeof s.plainMeaning !== 'string' || s.plainMeaning.trim().length < 30) errors.push(`"${s.name}" needs a plain-language meaning sentence right under the name`);
     else if (sentences(s.plainMeaning.trim()).length > 2) errors.push(`"${s.name}" plain meaning must be 1-2 sentences`);
-    if (!Array.isArray(s.evidenceIds) || s.evidenceIds.length < 2) errors.push(`"${s.name}" must cite at least 2 evidence ids`);
+    if (!Array.isArray(s.evidenceIds) || s.evidenceIds.length < 3) errors.push(`"${s.name}" must cite at least 3 concrete evidence items`);
     for (const id of s.evidenceIds ?? []) { if (!ev.has(id)) errors.push(`"${s.name}" cites unknown evidence ${id}`); cited.add(id); }
     for (const id of s.tensionEvidenceIds ?? []) { if (!ev.has(id)) errors.push(`"${s.name}" tension cites unknown evidence ${id}`); cited.add(id); }
     for (const id of s.chainIds ?? []) if (!ch.has(id)) errors.push(`"${s.name}" cites unknown chain ${id}`);

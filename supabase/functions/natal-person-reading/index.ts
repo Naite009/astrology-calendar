@@ -4,18 +4,23 @@ import { withInterpretationStandard } from '../_shared/interpretationStandard.ts
 import { cleanPersonReading, validatePersonReading, type PersonReading } from '../_shared/personReadingValidator.ts';
 import { contextFromStoryMap } from '../_shared/personReadingContext.ts';
 
-const MODEL = 'google/gemini-3.1-pro-preview';
+const DEFAULT_MODEL = 'google/gemini-3.1-pro-preview';
+/** Side-by-side evaluation only; the app always uses DEFAULT_MODEL. */
+const EVAL_MODELS = ['openai/gpt-5.2', 'openai/gpt-5', 'google/gemini-2.5-pro'];
+let MODEL = DEFAULT_MODEL;
 
 const Evidence = z.object({ id: z.string(), kind: z.string(), fact: z.string(), bodies: z.array(z.string()) }).passthrough();
 const Body = z.object({
   /** Repair pass: a previous draft plus the checker's errors (keeps each call under the time limit). */
   repair: z.object({ draft: z.unknown(), errors: z.array(z.string()).max(40) }).optional(),
+  evalModel: z.enum(EVAL_MODELS as [string, ...string[]]).optional(),
   name: z.string().min(1).max(120),
   age: z.number().int().min(0).max(120).nullable().optional(),
   map: z.object({
     version: z.number().optional(),
     evidence: z.record(Evidence),
     chains: z.array(z.object({ id: z.string(), anchor: z.string(), label: z.string(), steps: z.array(z.string()), bodies: z.array(z.string()), salience: z.number().optional() })).max(40),
+    reinforcements: z.array(z.object({ id: z.string(), fact: z.string(), chainIds: z.array(z.string()), evidenceIds: z.array(z.string()) })).max(12).optional(),
     tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(12),
     placements: z.record(z.object({ sign: z.string(), longitude: z.number(), house: z.number().nullable() }).passthrough()).optional(),
     houseRulers: z.record(z.object({ traditional: z.string(), modern: z.string().optional() })).optional(),
@@ -45,6 +50,8 @@ HOW TO READ
 - tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
 - healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
 - A big life-purpose statement ("here to change the world", "life purpose", "mission") is allowed only when the full chain (placement, ruler, aspect, at least 4 evidence ids) earns it. Otherwise describe the placement, its house, ruler and aspects and stop there.
+- Reinforcements are verified places where separate chains point the same way; use them to explain why a pattern is strong (cite their evidenceIds, never the reinforce: id itself). Each signature cites at least 3 evidence ids from at least 2 chains.
+- Start from the Big Three / strongest baseline, then show which verified placements sharpen or complicate it.
 - Tensions marked mustAddress are the strongest contradictions in the chart. Each one MUST be cited (its aspect evidence id) in a signature's tensionEvidenceIds or a collision.
 - Collisions: where one signature wants what another resists.
 - Name what they likely do when they feel lost and what genuinely steadies them.
@@ -127,7 +134,8 @@ Deno.serve(async (req) => {
   try {
     const parsed = Body.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, 400);
-    const { name, age, map, repair } = parsed.data;
+    const { name, age, map, repair, evalModel } = parsed.data;
+    MODEL = evalModel ?? DEFAULT_MODEL;
     const started = Date.now();
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) return json({ error: 'Reading service is not configured.' }, 500);
@@ -138,6 +146,7 @@ Deno.serve(async (req) => {
       chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
       houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,
+      reinforcements: map.reinforcements ?? [],
       balance: ['balance:elements', 'balance:modalities'].map((id) => map.evidence[id]).filter(Boolean),
       transitsNow: map.transits.map((t) => ({ id: t.id, fact: t.fact, nextExact: t.nextExact, activeNow: t.isActiveNow, chainIds: t.chainIds })),
       allowedAspects: map.allowedAspects.map((a) => `${a.a} ${a.type} ${a.b} (${typeof a.orb === 'number' ? a.orb.toFixed(1) : '?'}° orb)`),

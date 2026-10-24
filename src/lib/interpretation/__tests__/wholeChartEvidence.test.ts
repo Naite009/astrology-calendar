@@ -115,7 +115,7 @@ const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[
 function reading(over: Partial<PersonReading['signatures'][number]> = {}, text = 'She may notice this.'): PersonReading {
   const sig = (name: string) => ({
     name, plainMeaning: 'She wants closeness and fairness, yet when depending on someone feels shaky she quietly takes the job back.',
-    chainIds: ['chain:rising', 'chain:moon'], evidenceIds: ['angle:Ascendant', 'placement:Moon'],
+    chainIds: ['chain:rising', 'chain:moon'], evidenceIds: ['angle:Ascendant', 'placement:Moon', 'rulership:Moon-dispositor'],
     howItWorks: text, inWork: text, inRelationships: text, underStress: text,
     tension: text, tensionEvidenceIds: must.length ? must : ['placement:Moon'], healthyExpression: text, ...over,
   });
@@ -151,6 +151,7 @@ describe('person reading validator: evidence integrity', () => {
   });
   it('fails a signature supported by only one chain', () => {
     expect(fails(reading({ chainIds: ['chain:moon'], evidenceIds: ['placement:Moon', 'rulership:Moon-dispositor'] }), 'independent')).toBe(true);
+    expect(fails(reading({ evidenceIds: ['angle:Ascendant', 'placement:Moon'] }), 'at least 3 concrete')).toBe(true);
   });
   it('fails a large life-purpose claim resting on weak evidence', () => {
     expect(fails(reading({ healthyExpression: 'Saturn in her chart means she is here to change the world.' }), 'life-purpose')).toBe(true);
@@ -206,5 +207,21 @@ describe('Lauren (triple Libra) whole-chart evidence', () => {
   it('rejects "exactly conjunct" for the 1.7° Mars-Uranus conjunction', () => {
     const r = reading({ howItWorks: 'Mars in its home sign of Scorpio exactly conjunct unpredictable Uranus.' });
     expect(validatePersonReading(r, c).some((e) => e.includes('"exact" used'))).toBe(true);
+  });
+});
+
+describe('reinforcement clusters', () => {
+  const m = buildChartStoryMap(lauren, { now: NOW });
+  it('finds the verified Venus-Jupiter mutual reception and the 12th-house cluster, never invented ones', () => {
+    const ids = m.reinforcements.map((r) => r.id);
+    expect(ids).toContain('reinforce:mutual-Venus-Jupiter');
+    expect(ids.some((i) => i === 'reinforce:house-12' || i === 'reinforce:house-1')).toBe(true);
+    for (const r of m.reinforcements) for (const e of r.evidenceIds) expect(m.evidence[e]).toBeTruthy();
+  });
+});
+
+describe('absolute behavioural wording seen in a live reading', () => {
+  it.each(['Micromanagement will cause her to rebel.', 'She acts often irreversibly.', 'She demands absolute autonomy.', 'A massive concentration in Libra.'])('rejects "%s"', (t) => {
+    expect(fails(reading({ inWork: t }), 'Fixed-fate')).toBe(true);
   });
 });

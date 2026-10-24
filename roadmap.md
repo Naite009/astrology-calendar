@@ -6,6 +6,7 @@
 - [x] Validator: sign/degree/house/ruler/orb/"exact"/"tight" claims, loose and hyphenated aspect claims, 2-chain independence, life-purpose gate, ignored-contradiction gate; shared context server+client.
 - [x] New signature shape (plain meaning, astrology walkthrough, how it shows up, tension, healthy expression) in UI; repair pass split across calls to avoid timeouts.
 - [x] Tests: cusps, angles, boundaries, ruler chains, full-precision orbs, Gina/Lauren evidence; live Lauren reading passed both gates.
+- [x] Part 2: reinforcement clusters, 3-item evidence rule, absolute-wording gate, 20-chart semantic QA in accuracy.md, signed-in preview reading inspected, model side-by-side (kept Gemini).
 - [ ] Consolidate ~40 remaining independent aspect/house calculators (listed in the audit) onto canonical helpers; not done in this pass.
 
 ## Gina Solar Return and relationship accuracy

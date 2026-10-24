@@ -40,3 +40,25 @@ These surfaces are not covered by the new end-to-end gate.
 - Gina's Solar Return: the deterministic regression passes. Return time is about 21 s from Astro.com with assumed Mount Pocono coordinates; angles are within 0.1°.
 - The prose gate is pattern-based. Claims phrased outside the recognised grammar are not certified.
 - The live Gina Ask relationship reading was last withheld by the local gate. It has not been shown passing.
+
+## 5. Why `accuracy.md` showed 100% and still missed real reading errors
+- **Chart math** compared positions with reference values. It never looked at which facts reached the reading, so the anchors-only map, missing DSC/IC contacts and minute-rounded aspect inputs were all invisible to it.
+- **Invariants** checked the chart's internal structure (opposite cusps and similar). They didn't check the evidence map or the prose.
+- **Reading voice** linted local template text for banned words and readability. It never ran the AI reading or checked claims against the chart, so invented aspects, wrong houses, "exact" on wide orbs and one-placement life-purpose claims all scored 100%.
+- **Upgrade:** `accuracySuite.test.ts` now adds an end-to-end semantic section. For each of the 20 reference charts it checks that all 10 planets have chains and all 12 house rulers are present, plants an invented aspect, and plants a single-placement life-purpose claim. Both planted errors must be rejected. Results are appended to `accuracy.md`. Live AI prose quality is still judged by hand (section 6).
+
+## 6. Live Natal Portrait check (signed-in preview, Lauren Newman, 2026-10-24)
+- The preview wrote 4 signatures, each with a plain meaning, a causal astrology walkthrough, five life areas, tension and healthy expression. Both gates passed.
+- I hand-checked the cited facts against the saved chart:
+  - Sun in fall, conjunct the ASC (3.3°)
+  - Mars in domicile in the 1st, conjunct Uranus (1.7°)
+  - Venus opposite Jupiter (1.3°, out of sign) in mutual reception
+  - Sun square MC (0.7°), with the MC ruled by the 12th-house Moon
+  - Saturn in Leo, in detriment in the 10th, sextile Mercury in the 12th (1.3°)
+- The first preview draft used "will cause her to rebel", "irreversibly", "absolute independence" and "massive concentration". These are now rejected and covered by tests.
+
+## 7. Model evaluation (same verified Lauren map)
+- **gemini-3.1-pro-preview** (default): causal "Because… then… but…" walkthroughs, 4–5 evidence items per signature. Needed one correction pass for fate wording.
+- **gpt-5:** denser evidence (6–9 items) and broader coverage (Neptune–Pluto, angle contacts), but reads more like a fact list than a walkthrough. Also needed one correction pass.
+- **gpt-5.2:** failed twice on "she will" and invalid tension citations.
+- **Decision:** keep Gemini. GPT-5 is not a material synthesis gain. `evalModel` stays in the function for evaluation requests only; the app never sends it.

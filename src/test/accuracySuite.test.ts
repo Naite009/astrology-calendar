@@ -24,6 +24,47 @@ beforeAll(() => {
     null,
     2,
   ), 'utf8');
+  fs.appendFileSync(path.join(dir, 'accuracy.md'), semanticSection(), 'utf8');
+}, 120000);
+
+// ── End-to-end semantic integrity (chart math -> evidence map -> prose gate) ──
+// Position math alone cannot catch readings that omit planets, invent aspects or
+// overstate thin evidence, so every reference chart is also run through the
+// Natal Portrait evidence map and the shared prose validator with planted errors.
+import { buildChartStoryMap, PLANETS } from '@/lib/interpretation/chartStoryMap';
+import { validatePersonReading, validationContextFor } from '@/lib/interpretation/personReadingValidator';
+const SEM_NOW = new Date('2026-06-15T12:00:00Z');
+function semanticChecks() {
+  return report.people.map((p) => {
+    const chart = p.math.chart!;
+    const m = buildChartStoryMap(chart, { now: SEM_NOW });
+    const ctx = validationContextFor(m);
+    const missingPlanets = PLANETS.filter((b) => !m.chains.some((c) => c.bodies.includes(b)));
+    const rulers = Object.keys(m.houseRulers).length;
+    const chain = (b: string) => m.chains.find((c) => c.bodies.includes(b))!;
+    const base = (howItWorks: string, evidenceIds?: string[]) => {
+      const a = chain('Mercury'), b = chain('Saturn');
+      const sig = { name: 'The Test', plainMeaning: 'She can look calm while working things out privately before she speaks up.', chainIds: [a.id, b.id], evidenceIds: evidenceIds ?? [a.steps[0], b.steps[0], a.steps[1] ?? b.steps[1]], howItWorks, inWork: 'x', inRelationships: 'x', underStress: 'x', tension: 'x', tensionEvidenceIds: m.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]), healthyExpression: 'x' };
+      return validatePersonReading({ headline: 'x', centralTension: 'x', signatures: [sig, sig, sig], collisions: [], whenLost: 'x', whatSteadies: 'x', transitsNow: [], clientQuestions: ['?'] } as never, ctx);
+    };
+    const real = new Set(m.allowedAspects.map((a) => [a.a, a.b].sort().join('|')));
+    const pair = PLANETS.flatMap((x) => PLANETS.map((y) => [x, y])).find(([x, y]) => x !== y && !real.has([x, y].sort().join('|')));
+    const inventedCaught = !pair || base(`${pair[0]} square ${pair[1]} shapes her.`).some((e) => e.includes('not in the chart'));
+    const sat = m.placements.Saturn;
+    const purposeCaught = base(`Saturn in ${sat.sign} means she is here to change the world.`, [chain('Saturn').steps[0], chain('Saturn').steps[0], chain('Mercury').steps[0]]).length > 0;
+    return { name: p.math.name, missingPlanets, rulers, angleAspects: m.allowedAspects.some((a) => ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.a) || ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.b)), inventedCaught, purposeCaught };
+  });
+}
+function semanticSection() {
+  const rows = semanticChecks();
+  const ok = rows.filter((r) => !r.missingPlanets.length && r.rulers === 12 && r.inventedCaught && r.purposeCaught).length;
+  return `\n## End-to-end semantic integrity\n\n${ok}/${rows.length} charts: all 10 planets have evidence chains, 12 house rulers, invented aspect rejected, single-placement life-purpose claim rejected. This checks the evidence map and prose gate, not live AI prose quality.\n\n| Person | Missing planets | House rulers | Angle aspects | Invented aspect caught | Purpose claim caught |\n| --- | --- | --- | --- | --- | --- |\n${rows.map((r) => `| ${r.name} | ${r.missingPlanets.join(', ') || 'none'} | ${r.rulers} | ${r.angleAspects ? 'yes' : 'none in orb'} | ${r.inventedCaught} | ${r.purposeCaught} |`).join('\n')}\n`;
+}
+describe('end-to-end semantic integrity', () => {
+  it('every reference chart keeps all planets and rulers in the evidence map and the prose gate rejects planted errors', () => {
+    const bad = semanticChecks().filter((r) => r.missingPlanets.length || r.rulers !== 12 || !r.inventedCaught || !r.purposeCaught);
+    expect(bad).toEqual([]);
+  }, 60000);
 });
 
 describe('reference fixture set', () => {

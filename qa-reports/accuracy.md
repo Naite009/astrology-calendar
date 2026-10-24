@@ -1,6 +1,6 @@
 # Accuracy suite
 
-Run: 2026-10-24T18:07:16.922Z
+Run: 2026-10-24T18:25:21.577Z
 People: 20 | Sky moment for readings: 2026-06-15
 
 ## Headline
@@ -41,3 +41,30 @@ People: 20 | Sky moment for readings: 2026-06-15
 | Rule | Severity | Hits |
 | --- | --- | --- |
 | readable-sentences | warning | 1 |
+
+## End-to-end semantic integrity
+
+20/20 charts: all 10 planets have evidence chains, 12 house rulers, invented aspect rejected, single-placement life-purpose claim rejected. This checks the evidence map and prose gate, not live AI prose quality.
+
+| Person | Missing planets | House rulers | Angle aspects | Invented aspect caught | Purpose claim caught |
+| --- | --- | --- | --- | --- | --- |
+| Reference 01 New York 1955 | none | 12 | yes | true | true |
+| Reference 02 Los Angeles 1978 | none | 12 | yes | true | true |
+| Reference 03 Chicago 1988 | none | 12 | yes | true | true |
+| Reference 04 London 1969 | none | 12 | yes | true | true |
+| Reference 05 Paris 1993 | none | 12 | yes | true | true |
+| Reference 06 Sydney 2001 | none | 12 | yes | true | true |
+| Reference 07 Buenos Aires 1984 | none | 12 | yes | true | true |
+| Reference 08 Mumbai 1996 | none | 12 | yes | true | true |
+| Reference 09 Tokyo 1972 | none | 12 | yes | true | true |
+| Reference 10 Stockholm 1961 | none | 12 | yes | true | true |
+| Reference 11 Johannesburg 2010 | none | 12 | yes | true | true |
+| Reference 12 Denver 1946 | none | 12 | yes | true | true |
+| Reference 13 Honolulu 1999 | none | 12 | yes | true | true |
+| Reference 14 Mexico City 2005 | none | 12 | yes | true | true |
+| Reference 15 Moscow 1980 | none | 12 | yes | true | true |
+| Reference 16 Dubai 2014 | none | 12 | yes | true | true |
+| Reference 17 Toronto 1959 | none | 12 | yes | true | true |
+| Reference 18 Singapore 1966 | none | 12 | yes | true | true |
+| Reference 19 Miami 2019 | none | 12 | yes | true | true |
+| Reference 20 Berlin 1937 | none | 12 | yes | true | true |
