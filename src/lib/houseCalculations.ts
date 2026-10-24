@@ -1,4 +1,4 @@
-import { houseForLongitude } from './houseForLongitude';
+import { houseForLongitude, toAbsoluteLongitude } from './houseForLongitude';
 // House calculation utilities for transit-to-natal system
 import { NatalChart, HouseCusp } from '@/hooks/useNatalChart';
 
@@ -55,7 +55,7 @@ export const getNatalPlanetHouse = (
   const planet = chart.planets[planetName as keyof typeof chart.planets];
   if (!planet?.sign) return null;
   
-  const longitude = signDegreesToLongitude(planet.sign, planet.degree, planet.minutes);
+  const longitude = toAbsoluteLongitude(planet) ?? signDegreesToLongitude(planet.sign, planet.degree, planet.minutes);
   return getHouseForLongitude(longitude, chart);
 };
 
