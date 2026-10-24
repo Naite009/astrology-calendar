@@ -50,7 +50,7 @@ HOW TO READ
 - tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
 - healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
 - A big life-purpose statement ("here to change the world", "life purpose", "mission") is allowed only when the full chain (placement, ruler, aspect, at least 4 evidence ids) earns it. Otherwise describe the placement, its house, ruler and aspects and stop there.
-- Reinforcements are verified places where separate chains point the same way; use them to explain why a pattern is strong. Each signature cites at least 3 evidence ids from at least 2 chains.
+- Reinforcements are verified places where separate chains point the same way; use them to explain why a pattern is strong (cite their evidenceIds, never the reinforce: id itself). Each signature cites at least 3 evidence ids from at least 2 chains.
 - Start from the Big Three / strongest baseline, then show which verified placements sharpen or complicate it.
 - Tensions marked mustAddress are the strongest contradictions in the chart. Each one MUST be cited (its aspect evidence id) in a signature's tensionEvidenceIds or a collision.
 - Collisions: where one signature wants what another resists.
