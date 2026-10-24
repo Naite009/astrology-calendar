@@ -148,6 +148,8 @@ function aspectIdOf(a: { a: string; b: string; type: string }): string {
 export function usableAspects(chart: NatalChart): RankedAspect[] {
   return computeRankedAspects(chart).filter((a) =>
     a.a !== 'Lilith' && a.b !== 'Lilith' && !(a.a === 'NorthNode' && a.b === 'SouthNode') && !(a.a === 'SouthNode' && a.b === 'NorthNode') &&
+    // Ascendant–MC geometry is a property of the house system, not an aspect.
+    !([a.a, a.b].includes('Ascendant') && [a.a, a.b].includes('MC')) &&
     ((MAJOR.has(a.aspect) && !a.isWide) || (a.aspect === 'quincunx' && a.orb < 3)),
   );
 }
