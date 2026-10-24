@@ -7,6 +7,8 @@ export interface PersonSignature {
   name: string;
   chainIds: string[];
   evidenceIds: string[];
+  /** One everyday sentence explaining the name. */
+  plainMeaning?: string;
   /** What the combination does, following the chain step by step. */
   howItWorks: string;
   inWork: string;
@@ -69,7 +71,7 @@ const canonBody = (s: string) => (s === 'MC' ? 'Midheaven' : s.replace(' ', ''))
 function allText(r: PersonReading): string[] {
   return [
     r.headline, r.centralTension, r.whenLost, r.whatSteadies,
-    ...r.signatures.flatMap((s) => [s.name, s.howItWorks, s.inWork, s.inRelationships, s.underStress, s.strength, s.stuckPoint]),
+    ...r.signatures.flatMap((s) => [s.name, s.plainMeaning ?? '', s.howItWorks, s.inWork, s.inRelationships, s.underStress, s.strength, s.stuckPoint]),
     ...r.collisions.map((c) => c.description),
     ...r.transitsNow.map((t) => t.meaning),
     ...r.clientQuestions,
@@ -89,7 +91,7 @@ export function cleanPersonReading(r: PersonReading): PersonReading {
   const c = cleanPersonText;
   return {
     headline: c(r.headline), centralTension: c(r.centralTension), whenLost: c(r.whenLost), whatSteadies: c(r.whatSteadies),
-    signatures: r.signatures.map((s) => ({ ...s, name: c(s.name), howItWorks: c(s.howItWorks), inWork: c(s.inWork), inRelationships: c(s.inRelationships), underStress: c(s.underStress), strength: c(s.strength), stuckPoint: c(s.stuckPoint) })),
+    signatures: r.signatures.map((s) => ({ ...s, name: c(s.name), plainMeaning: s.plainMeaning ? c(s.plainMeaning) : s.plainMeaning, howItWorks: c(s.howItWorks), inWork: c(s.inWork), inRelationships: c(s.inRelationships), underStress: c(s.underStress), strength: c(s.strength), stuckPoint: c(s.stuckPoint) })),
     collisions: r.collisions.map((x) => ({ ...x, description: c(x.description) })),
     transitsNow: r.transitsNow.map((t) => ({ ...t, meaning: c(t.meaning) })),
     clientQuestions: r.clientQuestions.map(c),
@@ -126,6 +128,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
   const names = new Set(x.signatures.map((s) => s.name));
   x.signatures.forEach((s, i) => {
     if (!s.name?.trim()) errors.push(`Signature ${i + 1} has no name`);
+    if (/\b(velvet|silk|silken|glass|mirror|storm|shadow|garden|alchemist|labyrinth|cathedral|tapestry|ember|tide)\b/i.test(s.name ?? '')) errors.push(`"${s.name}" uses a metaphor name; use a plain literal title`);
     if (!Array.isArray(s.evidenceIds) || s.evidenceIds.length < 2) errors.push(`"${s.name}" must cite at least 2 evidence ids`);
     for (const id of s.evidenceIds ?? []) if (!ev.has(id)) errors.push(`"${s.name}" cites unknown evidence ${id}`);
     for (const id of s.chainIds ?? []) if (!ch.has(id)) errors.push(`"${s.name}" cites unknown chain ${id}`);

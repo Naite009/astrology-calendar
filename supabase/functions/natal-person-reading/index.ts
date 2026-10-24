@@ -30,7 +30,8 @@ function systemPrompt(age: number | null | undefined): string {
 
 HOW TO READ
 - Follow CHAINS, not lists. Each chain starts at an anchor (Rising, Midheaven, Sun, Moon, or a concentration) and runs through its ruler to that ruler's sign, house, condition and aspects. Explain each step as the cause of the next: "Because X, Y; and because Y sits in Z, ..."
-- Combine several chains into 4 to 6 NAMED SIGNATURES. A signature name is a short, vivid, human title in the form "The ___" (e.g. a pattern about safety in learning might be "The Perpetual Student"). Never copy example names; invent from this chart. The name must be earned by at least two pieces of evidence that reinforce each other.
+- Combine several chains into 4 to 6 NAMED SIGNATURES. A signature name is a plain, literal title in the form "The ___" that a stranger understands instantly without explanation, naming a recognizable kind of person or behavior (good: "The Perpetual Student", "The Peacekeeper Who Keeps Score", "The Planner Who Hates Being Rushed"). NO metaphors or poetic images (banned: velvet, silk, glass, mirror, fire, storm, shadow, garden, alchemist, labyrinth, cathedral). Never copy example names; invent from this chart. The name must be earned by at least two pieces of evidence that reinforce each other.
+- Each signature's "plainMeaning" is ONE short sentence saying what the name means in everyday words, and the first sentence of "howItWorks" must list the exact placements with degrees (for example "Sun 28° Libra in the 10th, ruled by Venus at 3° Scorpio in the 11th...").
 - Every signature ends in BEHAVIOR: what the person actually does, says, chooses, avoids, repeats. Concrete scenes beat adjectives. "When a job turns routine, they start browsing courses" beats "they are restless".
 - Show COLLISIONS: where one signature wants what another resists. Use the supplied tensions.
 - Name what they likely do when they feel lost and what genuinely steadies them.
@@ -56,7 +57,7 @@ VOICE
 OUTPUT: only JSON, no markdown fences, exactly this shape:
 {"headline": "2-3 sentences naming the central dynamic of this person",
  "centralTension": "2-4 sentences",
- "signatures": [{"name": "The ...", "chainIds": [], "evidenceIds": [], "howItWorks": "4-6 sentences following the chain", "inWork": "2-3 sentences", "inRelationships": "2-3 sentences", "underStress": "2-3 sentences", "strength": "1-2 sentences", "stuckPoint": "1-2 sentences"}],
+ "signatures": [{"name": "The ...", "plainMeaning": "one everyday sentence", "chainIds": [], "evidenceIds": [], "howItWorks": "4-6 sentences following the chain", "inWork": "2-3 sentences", "inRelationships": "2-3 sentences", "underStress": "2-3 sentences", "strength": "1-2 sentences", "stuckPoint": "1-2 sentences"}],
  "collisions": [{"between": ["signature name", "signature name"], "description": "2-4 sentences", "evidenceIds": []}],
  "whenLost": "2-3 sentences", "whatSteadies": "2-3 sentences",
  "transitsNow": [{"transitId": "", "signatureName": "", "meaning": "2-3 sentences"}],
