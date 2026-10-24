@@ -1,5 +1,10 @@
 # Roadmap
 
+## Gina Solar Return and relationship accuracy
+- [ ] Preserve precision and repair same-engine Solar Return solving and location gating.
+- [ ] Add deterministic relationship evidence, ruler chains, exact/near-miss distinction and display validation.
+- [ ] Run Gina numerical regressions and verify automatic calculation through the UI; report tolerances and limitations.
+
 ## Comprehensive Solar Return repair
 - [x] Repair phase classification, distinct rulers, disclosed return metadata, planetary hours, progression context, and structured export integrity.
 - [x] Validate exported major-aspect geometry, calculate eclipse contacts and activation windows, remove assumed Metonic repeats, prioritize major evidence, upgrade and live-test the reading model, and reject old-version inputs.
