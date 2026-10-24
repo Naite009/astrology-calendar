@@ -15,7 +15,6 @@ import { computeRankedAspects, type RankedAspect } from '@/lib/aspectRanking';
 import { houseForLongitude, toAbsoluteLongitude } from '@/lib/houseForLongitude';
 import { getEssentialDignity, isDignityAssigned } from '@/lib/essentialDignity';
 import { computeMajorTransits, type MajorTransit } from '@/lib/transits/majorTransits';
-import { buildRulerChain } from '@/lib/rulerChains';
 import { getChartRulers, TRADITIONAL_RULER, MODERN_CORULER } from './chartRuler';
 import { ordinalHouse } from './ordinals';
 import { SIGN_ELEMENT, SIGN_MODALITY } from '@/lib/aspects/outOfSign';
@@ -461,4 +460,3 @@ export function storyMapChartHash(chart: NatalChart): string {
   return (h >>> 0).toString(36);
 }
 
-export { buildRulerChain };
