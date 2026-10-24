@@ -175,4 +175,14 @@ describe('person reading validator: evidence integrity', () => {
     expect(findRulerClaims('Mars rules the 7th')[0]).toMatchObject({ body: 'Mars', house: 7 });
     expect(findRulerClaims('Saturn, her chart ruler, is strong')[0]).toMatchObject({ body: 'Saturn', house: 1 });
   });
+  it('catches loose and hyphenated aspect claims, spelled ordinals, "tight" and third-person fate wording', () => {
+    const notReal = ['Mercury', 'Neptune'].sort().join();
+    if (!map.allowedAspects.some((a) => [a.a, a.b].sort().join() === notReal && a.type === 'conjunction')) {
+      expect(fails(reading({ howItWorks: 'Mercury in its sign is closely conjunct dreamy Neptune.' }), 'Aspect not in the chart')).toBe(true);
+      expect(fails(reading({ howItWorks: 'The Mercury-Neptune conjunction may blur facts.' }), 'Aspect not in the chart')).toBe(true);
+    }
+    expect(findPlacementClaims('Saturn sits in the tenth house')[0]).toMatchObject({ body: 'Saturn', house: 10 });
+    expect(findPlacementClaims('Saturn came first in the first place')).toEqual([]);
+    expect(fails(reading({ underStress: 'She will snap.' }), 'Fixed-fate')).toBe(true);
+  });
 });

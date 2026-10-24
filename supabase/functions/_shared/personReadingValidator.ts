@@ -113,7 +113,9 @@ const BODY_RE = BODIES.map((b) => b.replace(' ', '\\s')).join('|');
 const SIGN_RE = SIGNS.join('|');
 const ORD_WORDS: Record<string, number> = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12 };
 const ORD = `(\\d{1,2}(?:st|nd|rd|th)|${Object.keys(ORD_WORDS).join('|')})`;
-const ordNum = (s: string) => ORD_WORDS[s.toLowerCase()] ?? parseInt(s, 10);
+const ordNum = (s: string) => { const w = s.toLowerCase().split(/[- ]/)[0]; return ORD_WORDS[w] ?? parseInt(w, 10); };
+/** House mention in a placement claim: numerals may omit "house"; spelled ordinals must say "house". */
+const HOUSE_ORD = `(\\d{1,2}(?:st|nd|rd|th)|(?:${Object.keys(ORD_WORDS).join('|')})[- ]house)`;
 
 function allText(r: PersonReading): { text: string; transit: boolean }[] {
   const plain = [
@@ -177,7 +179,7 @@ export function findAspectMentions(text: string): { a: string; b: string; type: 
 /** Placement claims: body followed (same clause, no other body between) by a degree+sign, "in <Sign>", or "in the Nth". */
 export function findPlacementClaims(text: string): { body: string; sign?: string; degree?: number; house?: number; raw: string }[] {
   const out: { body: string; sign?: string; degree?: number; house?: number; raw: string }[] = [];
-  const token = new RegExp(`\\b(${BODY_RE})\\b|(?:\\bat\\s+)?\\b(\\d{1,2})°\\s*(?:(\\d{1,2})\\s*['′]\\s*)?(${SIGN_RE})\\b|\\bin\\s+(${SIGN_RE})\\b|\\bin\\s+(?:the|your|her|his|their)\\s+${ORD}(?:[- ]house)?\\b|[.;:!?]|\\b(?:ruled by|rules|ruler|whose ruler|dispositor|while|but|and|with|opposite|square|trine|sextile|conjunct)\\b`, 'gi');
+  const token = new RegExp(`\\b(${BODY_RE})\\b|(?:\\bat\\s+)?\\b(\\d{1,2})°\\s*(?:(\\d{1,2})\\s*['′]\\s*)?(${SIGN_RE})\\b|\\bin\\s+(${SIGN_RE})\\b|\\bin\\s+(?:the|your|her|his|their)\\s+(?:hidden\\s+|private\\s+)?${HOUSE_ORD}(?:[- ]house)?\\b|[.;:!?]|\\b(?:ruled by|rules|ruler|whose ruler|dispositor|while|but|and|with|opposite|square|trine|sextile|conjunct)\\b`, 'gi');
   let last: { body: string; at: number } | null = null;
   for (const m of text.matchAll(token)) {
     const at = m.index ?? 0;
