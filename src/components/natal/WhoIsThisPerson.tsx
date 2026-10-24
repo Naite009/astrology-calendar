@@ -7,7 +7,7 @@ import { validatePersonReading, validationContextFor, type PersonReading } from 
 import { formatLocalDateKey } from '@/lib/localDate';
 import { buildCoreThreeSummary } from '@/lib/interpretation/coreThreeSummary';
 
-const CACHE_PREFIX = 'person-reading:v3:';
+const CACHE_PREFIX = 'person-reading:v4:';
 
 function ageOn(birthDate: string, now: Date): number | null {
   const [y, m, d] = birthDate.split('-').map(Number);
