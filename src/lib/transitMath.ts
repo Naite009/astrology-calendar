@@ -1,4 +1,5 @@
 import * as Astronomy from 'astronomy-engine';
+import { computeBody, type BodyKey } from './ephemerisEngine';
 
 // Shared angular math for transit calculations
 
@@ -17,9 +18,9 @@ export const aspectOrb = (transitLon: number, natalLon: number, aspectAngle: num
 };
 
 export const getPlanetLongitudeExact = (body: Astronomy.Body, date: Date): number => {
-  const vector = Astronomy.GeoVector(body, date, false);
-  const ecliptic = Astronomy.Ecliptic(vector);
-  return normalizeLongitude(ecliptic.elon);
+  const result = computeBody(String(body) as BodyKey, date);
+  if (!result.ok) throw new Error(result.reason);
+  return result.longitude;
 };
 
 /**

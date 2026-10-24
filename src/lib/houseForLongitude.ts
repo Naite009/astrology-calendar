@@ -4,6 +4,7 @@
 //
 // Also exports absolute-longitude helpers used across personalizers.
 
+import { signPositionToLongitude } from "./ephemerisEngine";
 import type { NatalChart } from "@/hooks/useNatalChart";
 
 export const SIGN_NAMES = [
@@ -17,16 +18,15 @@ export const signIndex = (sign?: string): number => {
 };
 
 export interface AbsPosInput {
+  longitude?: number;
+  seconds?: number;
   sign?: string;
   degree?: number;
   minutes?: number;
 }
 
 export const toAbsoluteLongitude = (p?: AbsPosInput | null): number | null => {
-  if (!p?.sign) return null;
-  const i = signIndex(p.sign);
-  if (i < 0) return null;
-  return i * 30 + (p.degree || 0) + (p.minutes || 0) / 60;
+  return p?.sign ? signPositionToLongitude({ ...p, sign: p.sign, degree: p.degree ?? 0 }) : null;
 };
 
 export const houseForLongitude = (

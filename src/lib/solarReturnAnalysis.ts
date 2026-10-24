@@ -1,3 +1,4 @@
+import { signPositionToLongitude } from "./ephemerisEngine";
 import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
@@ -41,7 +42,7 @@ const toAbsDeg = (pos: NatalPlanetPosition | HouseCusp | undefined): number | nu
   if (!pos) return null;
   const idx = SIGNS.indexOf(normalizeSign(pos.sign));
   if (idx < 0) return null;
-  return idx * 30 + (pos.degree || 0) + ((pos as any).minutes || 0) / 60;
+  return signPositionToLongitude({ ...pos, sign: normalizeSign(pos.sign) });
 };
 
 // Traditional rulerships (Step 2 requirement)

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { VerifiedYearSynthesis } from '@/components/solarReturn/VerifiedYearSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance } from '@/lib/solarReturnProvenance';
 import { ordinal as ordinalNumber } from '@/lib/interpretation/ordinals';
@@ -52,7 +53,7 @@ import { DomainDeepDiveCards } from '@/components/solarReturn/DomainDeepDiveCard
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading, type AiReadingMode } from '@/components/solarReturn/AiReadingModal';
 import { AstrocartographyMap } from '@/components/solarReturn/AstrocartographyMap';
-import { calculateSolarReturnAuto } from '@/lib/solarReturnAutoCalculator';
+import { calculateSolarReturnForChart } from '@/lib/solarReturnAutoCalculator';
 import { resolveBirthPlace } from '@/lib/geo/birthPlace';
 import { TierButtonRow } from '@/components/solarReturn/TierButtonRow';
 import { TierPreviewPanel } from '@/components/solarReturn/TierPreviewPanel';
@@ -730,73 +731,35 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       return;
     }
 
-    // Resolve precise lat/lng for the place the person will be on their
-    // birthday. Explicit "lat, lng" wins; otherwise the shared place resolver
-    // (city database, then online geocoder). Falls back to the natal chart's
-    // stored birthplace coordinates, then to resolving the birthplace name.
+    // Only the explicitly supplied physical return location may set houses.
     let lat: number | null = null;
     let lng: number | null = null;
     let placeNote = '';
-
     const coordMatch = location.match(/^\s*([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)\s*$/);
-    if (coordMatch) {
-      lat = parseFloat(coordMatch[1]);
-      lng = parseFloat(coordMatch[2]);
-    } else if (location.trim()) {
+    if (coordMatch) { lat = Number(coordMatch[1]); lng = Number(coordMatch[2]); }
+    else if (location.trim()) {
       setIsAutoCalc(true);
       try {
         const place = await resolveBirthPlace(location);
-        if (place && place.confidence !== 'low') {
+        if (place && !place.ambiguous && place.confidence !== 'low') {
           lat = place.latitude; lng = place.longitude; placeNote = place.canonicalName;
+        } else {
+          setAutoCalcError('That return location is not precise enough. Enter coordinates or a more specific town.');
+          setIsAutoCalc(false); return;
         }
-      } catch { /* fall through to birthplace */ }
-      setIsAutoCalc(false);
-    }
-
-    if (lat === null || lng === null) {
-      if (typeof natalChart.latitude === 'number' && typeof natalChart.longitude === 'number') {
-        lat = natalChart.latitude; lng = natalChart.longitude; placeNote = natalChart.birthLocation || '';
-      } else {
-        const birthCoordMatch = (natalChart.birthLocation || '').match(/^\s*([-]?\d+\.?\d*)\s*,\s*([-]?\d+\.?\d*)\s*$/);
-        if (birthCoordMatch) {
-          lat = parseFloat(birthCoordMatch[1]);
-          lng = parseFloat(birthCoordMatch[2]);
-        } else if (natalChart.birthLocation) {
-          try {
-            const birthPlace = await resolveBirthPlace(natalChart.birthLocation);
-            if (birthPlace && birthPlace.confidence !== 'low') {
-              lat = birthPlace.latitude; lng = birthPlace.longitude; placeNote = birthPlace.canonicalName;
-            }
-          } catch { /* handled below */ }
-        }
-      }
-      if (lat !== null && location.trim() && !coordMatch) {
-        toast.message(`Could not place "${location}" precisely; using the birthplace instead.`);
-      }
-    }
-
-    if (lat === null || lng === null) {
-      setAutoCalcError('Could not determine precise coordinates for that place. Enter a recognizable city (City, State/Country) or "lat, lng" coordinates in the SR Location field.');
-      return;
+      } catch { setAutoCalcError('The return location could not be verified.'); setIsAutoCalc(false); return; }
     }
     if (placeNote) toast.message(`Solar return location: ${placeNote}`);
 
     setIsAutoCalc(true);
     try {
-      const result = calculateSolarReturnAuto(
-        natalSun.sign,
-        natalSun.degree ?? 0,
-        natalSun.minutes ?? 0,
-        natalChart.birthDate || '',
-        year,
-        lat,
-        lng,
-      );
+      const result = calculateSolarReturnForChart(natalChart, year, lat !== null && lng !== null ? { latitude: lat, longitude: lng } : null);
 
       setPlanets(result.planets as any);
       setHouseCusps(result.houseCusps as any);
       setSrDateTime(result.srDateTimeUTC);
-      setCalculatedPlace({ latitude: lat, longitude: lng });
+      setCalculatedPlace(lat !== null && lng !== null ? { latitude: lat, longitude: lng } : null);
+      if (!result.housesAvailable) toast.message('Planets calculated. Houses and angles are unavailable until you supply the return location.');
       if (Object.keys(result.houseCusps).length > 0) setShowHouses(true);
       toast.success(`Solar return calculated: ${result.srDateTimeLabel}`);
     } catch (err: any) {
@@ -813,7 +776,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
       return;
     }
     onSave({
-      name: `SR ${year} – ${natalChart.name}`,
+      name: `SR ${year}: ${natalChart.name}`,
       birthDate: natalChart.birthDate,
       birthTime: srDateTime || natalChart.birthTime,
       birthLocation: location,
@@ -961,7 +924,7 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="City, Country (if relocated)"
+            placeholder="Physical location at the return, or leave blank for planets only"
             className="w-full border border-border bg-background text-foreground rounded-sm px-3 py-2 text-sm"
           />
         </div>
@@ -976,14 +939,14 @@ const SRInputForm = ({ natalChart, existingSR, existingSRYears = [], onSave, onC
               Uses your natal Sun position + SR year/location to compute the exact solar return moment and all planet positions automatically.
             </p>
           </div>
-          <button
+          <Button
             onClick={handleAutoCalculate}
             disabled={isAutoCalc}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-sm text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             {isAutoCalc ? <Loader2 size={12} className="animate-spin" /> : <Star size={12} />}
             {isAutoCalc ? 'Calculating…' : 'Auto-Calculate SR'}
-          </button>
+          </Button>
         </div>
         {autoCalcError && (
           <p className="text-xs text-destructive">{autoCalcError}</p>

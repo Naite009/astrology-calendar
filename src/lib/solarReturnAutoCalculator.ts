@@ -1,104 +1,79 @@
-import { computeBody, longitudeToSignPosition } from './ephemerisEngine';
-/**
- * Solar Return Auto-Calculator
- *
- * Uses astronomy-engine to find the exact moment the Sun returns to its natal
- * longitude (the Solar Return), then calculates all planetary positions and
- * Placidus house cusps for that moment and location.
- *
- * This replaces manual data entry with real astronomical computation.
- */
+/** Solar Returns use the SAME apparent Sun longitude as the chart engine. */
+import { computeBody, computeAngles, longitudeToSignPosition, signedCircularDelta, signPositionToLongitude, ENGINE_INFO, type SignPosition } from './ephemerisEngine';
+import type { NatalChart } from '@/hooks/useNatalChart';
 
-import * as Astronomy from 'astronomy-engine';
-import { calculatePlacidusHouses } from './placidusHouses';
-
-const ZODIAC_SIGNS = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
-];
-
-function lonToPos(lon: number): { sign: string; degree: number; minutes: number } {
-  return longitudeToSignPosition(lon);
-}
-
-export interface AutoSRPlanet {
-  sign: string;
-  degree: number;
-  minutes: number;
-  isRetrograde?: boolean;
-}
-
+export const SR_SOLVER_TOLERANCE_DEG = 0.000001;
+export interface AutoSRPlanet extends SignPosition { isRetrograde?: boolean }
 export interface AutoSRResult {
-  /** Exact SR moment as ISO UTC string, e.g. "2025-04-15T18:42:17.000Z" */
   srDateTimeUTC: string;
-  /** Human-readable local-time summary of SR moment (UTC) */
   srDateTimeLabel: string;
   planets: Record<string, AutoSRPlanet>;
-  houseCusps: Record<string, { sign: string; degree: number; minutes: number }>;
+  houseCusps: Record<string, SignPosition>;
+  housesAvailable: boolean;
+  houseSystem: string | null;
+  targetLongitude: number;
+  residualDegrees: number;
+  ephemeris: typeof ENGINE_INFO;
 }
-
-/**
- * Calculate the solar return for a given natal Sun position, target year, and location.
- *
- * @param natalSunSign   - e.g. "Leo"
- * @param natalSunDeg    - integer degree within sign, 0-29
- * @param natalSunMin    - arc minutes 0-59
- * @param natalBirthDate - "YYYY-MM-DD" string used to seed the search window
- * @param targetYear     - the year of the SR (e.g. 2025)
- * @param lat            - geographic latitude of SR location
- * @param lng            - geographic longitude of SR location
- */
-export function calculateSolarReturnAuto(
-  natalSunSign: string,
-  natalSunDeg: number,
-  natalSunMin: number,
-  natalBirthDate: string,
-  targetYear: number,
-  lat: number,
-  lng: number,
-): AutoSRResult {
-  // 1. Natal Sun absolute longitude
-  const signIdx = ZODIAC_SIGNS.indexOf(natalSunSign);
-  if (signIdx < 0) throw new Error(`Unknown sign: ${natalSunSign}`);
-  const natalSunLong = signIdx * 30 + natalSunDeg + natalSunMin / 60;
-
-  // 2. Seed the search: start 15 days before the birthday in the target year
-  const parts = natalBirthDate.split('-').map(Number);
-  const bMonth = (parts[1] ?? 1) - 1; // 0-based month
-  const bDay   = parts[2] ?? 1;
-  const startDate = new Date(Date.UTC(targetYear, bMonth, bDay) - 15 * 86400000);
-
-  // 3. Find exact SR moment (search up to 35 days forward)
-  const srTime = Astronomy.SearchSunLongitude(natalSunLong, startDate, 35);
-  if (!srTime) throw new Error('Could not find solar return moment — check natal Sun position and year');
-  const srDate = srTime.date;
-
-  // Canonical apparent positions and retrograde flags, without a parallel fallback engine.
+const DAY = 86400000;
+const sunAt = (ms: number): number => {
+  const result = computeBody('Sun', new Date(ms));
+  if (!result.ok) throw new Error(result.reason);
+  return result.longitude;
+};
+export function solveSolarReturn(targetLongitude: number, birthDate: string, year: number): Date {
+  if (!Number.isFinite(targetLongitude) || targetLongitude < 0 || targetLongitude >= 360) throw new Error('Invalid natal Sun longitude');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || !Number.isInteger(year)) throw new Error('A valid birth date and return year are required');
+  const [, month, day] = birthDate.split('-').map(Number);
+  const start = Date.UTC(year, month - 1, day) - 20 * DAY;
+  let lo = start;
+  let previous = signedCircularDelta(sunAt(lo), targetLongitude);
+  for (let i = 1; i <= 40; i++) {
+    let hi = start + i * DAY;
+    const current = signedCircularDelta(sunAt(hi), targetLongitude);
+    if (previous <= 0 && current >= 0 && current - previous < 5) {
+      for (let j = 0; j < 45 && hi - lo > 1; j++) {
+        const mid = (hi + lo) / 2;
+        const delta = signedCircularDelta(sunAt(mid), targetLongitude);
+        if (delta < 0) lo = mid; else hi = mid;
+      }
+      const result = new Date(Math.round((lo + hi) / 2));
+      if (Math.abs(signedCircularDelta(sunAt(result.getTime()), targetLongitude)) > SR_SOLVER_TOLERANCE_DEG) throw new Error('Solar Return solver did not reach exactitude');
+      return result;
+    }
+    lo = hi; previous = current;
+  }
+  throw new Error('No Solar Return found in the birthday search interval');
+}
+export function calculateSolarReturnFromLongitude(targetLongitude: number, birthDate: string, year: number, coords: { latitude: number; longitude: number } | null = null): AutoSRResult {
+  if (coords && (!Number.isFinite(coords.latitude) || Math.abs(coords.latitude) > 90 || !Number.isFinite(coords.longitude) || Math.abs(coords.longitude) > 180)) throw new Error('Invalid return coordinates');
+  const date = solveSolarReturn(targetLongitude, birthDate, year);
   const planets: Record<string, AutoSRPlanet> = {};
-  for (const name of ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'SouthNode', 'Chiron'] as const) {
-    const body = computeBody(name, srDate);
-    if (!body.ok) throw new Error(`Position unavailable for ${name}`);
-    planets[name] = { ...lonToPos(body.longitude), isRetrograde: name === 'NorthNode' || name === 'SouthNode' ? undefined : body.retrograde };
+  for (const name of ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','SouthNode','Chiron'] as const) {
+    const body = computeBody(name, date);
+    if (!body.ok) throw new Error(body.reason);
+    planets[name] = { ...longitudeToSignPosition(body.longitude), ...(name === 'NorthNode' || name === 'SouthNode' ? {} : { isRetrograde: body.retrograde }) };
   }
-
-  // 5. Placidus house cusps
-  const houses = calculatePlacidusHouses(srDate, lat, lng);
-  const houseCusps: Record<string, { sign: string; degree: number; minutes: number }> = {};
-  for (let i = 1; i <= 12; i++) {
-    houseCusps[`house${i}`] = (houses as unknown as Record<string, { sign: string; degree: number; minutes: number }>)[`house${i}`];
+  const houseCusps: Record<string, SignPosition> = {};
+  const angles = coords ? computeAngles(date, coords.latitude, coords.longitude, 'placidus') : null;
+  // Never mislabel the polar-circle fallback as Placidus.
+  if (angles?.systemUsed === 'placidus') {
+    for (let h = 1; h <= 12; h++) houseCusps[`house${h}`] = longitudeToSignPosition(angles.cusps[h]);
+    planets.Ascendant = { ...houseCusps.house1 };
+    planets.Midheaven = { ...houseCusps.house10 };
+    planets.Descendant = { ...houseCusps.house7 };
+    planets.IC = { ...houseCusps.house4 };
   }
-
-  // 6. Build human-readable label (UTC time)
-  const h  = srDate.getUTCHours().toString().padStart(2, '0');
-  const m  = srDate.getUTCMinutes().toString().padStart(2, '0');
-  const mo = (srDate.getUTCMonth() + 1).toString().padStart(2, '0');
-  const dy = srDate.getUTCDate().toString().padStart(2, '0');
-  const srDateTimeLabel = `${srDate.getUTCFullYear()}-${mo}-${dy} ${h}:${m} UTC`;
-
-  return {
-    srDateTimeUTC: srDate.toISOString(),
-    srDateTimeLabel,
-    planets,
-    houseCusps,
-  };
+  return { srDateTimeUTC: date.toISOString(), srDateTimeLabel: date.toISOString().replace('T',' ').replace('Z',' UTC'), planets, houseCusps, housesAvailable: Object.keys(houseCusps).length === 12, houseSystem: Object.keys(houseCusps).length === 12 ? 'placidus' : null, targetLongitude, residualDegrees: Math.abs(signedCircularDelta(planets.Sun.longitude, targetLongitude)), ephemeris: ENGINE_INFO };
+}
+export function calculateSolarReturnForChart(chart: NatalChart, year: number, coords: { latitude: number; longitude: number } | null = null): AutoSRResult {
+  const target = signPositionToLongitude(chart.planets.Sun);
+  if (target === null) throw new Error('Natal Sun position is unavailable');
+  return calculateSolarReturnFromLongitude(target, chart.birthDate, year, coords);
+}
+/** Backward-compatible adapter, including seconds and unrounded longitude. */
+export function calculateSolarReturnAuto(sign: string, degree: number, minutes: number, birthDate: string, year: number, lat?: number, lng?: number, seconds = 0, longitude?: number): AutoSRResult {
+  const target = signPositionToLongitude({ sign, degree, minutes, seconds, longitude });
+  if (target === null) throw new Error('Invalid natal Sun');
+  return calculateSolarReturnFromLongitude(target, birthDate, year, lat !== undefined && lng !== undefined ? { latitude: lat, longitude: lng } : null);
 }

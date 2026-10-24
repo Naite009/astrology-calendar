@@ -168,14 +168,14 @@ export const calculateNatalFromInputAsync = async (
  * Strip the calculation-only fields so a position can be stored on a chart
  * record exactly like a typed or imported one.
  */
-export const toStoredPosition = (p: CalculatedPosition): { sign: string; degree: number; minutes: number; seconds: number; isRetrograde?: boolean } => ({
-  sign: p.sign,
-  degree: p.degree,
+export const toStoredPosition = (p: CalculatedPosition): { sign: string; degree: number; minutes: number; seconds: number; longitude: number; isRetrograde?: boolean } => ({
+  longitude: p.longitude,
+  sign: p.sign,  degree: p.degree,
   minutes: p.minutes,
   seconds: p.seconds,
   ...(p.isRetrograde !== undefined ? { isRetrograde: p.isRetrograde } : {}),
 });
 
-export const toStoredCusp = (c: CalculatedCusp): { sign: string; degree: number; minutes: number; seconds: number } => ({
-  sign: c.sign, degree: c.degree, minutes: c.minutes, seconds: c.seconds,
+export const toStoredCusp = (c: CalculatedCusp): { sign: string; degree: number; minutes: number; seconds: number; longitude: number } => ({
+  longitude: c.longitude, sign: c.sign, degree: c.degree, minutes: c.minutes, seconds: c.seconds,
 });
