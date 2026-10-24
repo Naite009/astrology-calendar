@@ -85,7 +85,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
       </div>
 
       {loading && !reading && (
-        <p className="text-sm text-muted-foreground">Reading the chart as one story. This takes about a minute…</p>
+        <p className="text-sm text-muted-foreground">Reading the chart as one story. This can take up to two minutes…</p>
       )}
       {error && (
         <p className="text-sm text-destructive">{error} The chart chains below are still accurate.</p>

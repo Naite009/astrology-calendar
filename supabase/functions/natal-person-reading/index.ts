@@ -49,7 +49,8 @@ VOICE
 - Say "may", "often", "tends to", "can". Never "you will", "you are meant to", "you are built for", "destined".
 - No diagnoses, trauma, abuse, addiction or mental-health labels. No em dashes or en dashes.
 - Constructive expression before the challenge.
-- Address the reader as "you" (the client).
+- Write about the client in the third person by name (the practitioner reads this before the session). Client questions address the client as "you".
+- Use "exactly" only for orbs under 1 degree.
 - ${ageRule}
 
 OUTPUT: only JSON, no markdown fences, exactly this shape:

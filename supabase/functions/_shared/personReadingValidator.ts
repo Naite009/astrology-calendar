@@ -57,7 +57,7 @@ const ASPECT_WORDS: Record<string, string> = {
 
 const DETERMINISM = [
   /\byou will\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
-  /\byou are (?:not )?meant (?:to|for)\b/i, /\byou are built for\b/i, /\bnever able\b/i,
+  /\byou are (?:not )?meant (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i,
 ];
 const PATHOLOGY = [
   /\btrauma/i, /\bnarcissis/i, /\bdisorder\b/i, /\bADHD\b/, /\bautis/i, /\bbipolar\b/i,

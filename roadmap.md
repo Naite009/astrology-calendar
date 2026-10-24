@@ -100,4 +100,4 @@
 - [x] Add all-same-sign, same-element, mixed-pattern, house-contrast, and banned-phrase regressions.
 - [x] Run full tests, TypeScript, production build, and rendered QA.
 
-- [ ] Natal Portrait "Who this person is" whole-chart narrative (chained evidence graph + named signatures + current transits), replacing patchwork top section. Awaiting plan approval.
+- [x] Natal Portrait "Who this person is" whole-chart narrative (chained evidence + named signatures + current transits).
