@@ -186,3 +186,25 @@ describe('person reading validator: evidence integrity', () => {
     expect(fails(reading({ underStress: 'She will snap.' }), 'Fixed-fate')).toBe(true);
   });
 });
+
+// Saved chart (triple Libra). Regression for defects seen in a generated sample.
+const lauren = {"id":"user","name": "Lauren Newman", "planets": {"Sun": {"sign": "Libra", "degree": 28, "minutes": 11, "isRetrograde": false}, "Mars": {"sign": "Scorpio", "degree": 8, "minutes": 36, "isRetrograde": false}, "Moon": {"sign": "Libra", "degree": 3, "minutes": 33, "isRetrograde": false}, "Pluto": {"sign": "Libra", "degree": 12, "minutes": 14, "isRetrograde": false}, "Venus": {"sign": "Sagittarius", "degree": 0, "minutes": 54, "isRetrograde": false}, "Chiron": {"sign": "Aries", "degree": 29, "minutes": 38, "isRetrograde": true}, "Saturn": {"sign": "Leo", "degree": 15, "minutes": 36, "isRetrograde": false}, "Uranus": {"sign": "Scorpio", "degree": 6, "minutes": 53, "isRetrograde": false}, "Jupiter": {"sign": "Taurus", "degree": 29, "minutes": 34, "isRetrograde": true}, "Mercury": {"sign": "Libra", "degree": 16, "minutes": 56, "isRetrograde": false}, "Neptune": {"sign": "Sagittarius", "degree": 12, "minutes": 6, "isRetrograde": false}, "NorthNode": {"sign": "Scorpio", "degree": 3, "minutes": 32, "isRetrograde": false}}, "birthDate": "1976-10-21", "birthTime": "07:12", "houseCusps": {"house1": {"sign": "Libra", "degree": 24, "minutes": 56}, "house2": {"sign": "Scorpio", "degree": 22, "minutes": 57}, "house3": {"sign": "Sagittarius", "degree": 24, "minutes": 41}, "house4": {"sign": "Capricorn", "degree": 28, "minutes": 51}, "house5": {"sign": "Pisces", "degree": 1, "minutes": 56}, "house6": {"sign": "Aries", "degree": 0, "minutes": 53}, "house7": {"sign": "Aries", "degree": 24, "minutes": 56}, "house8": {"sign": "Taurus", "degree": 22, "minutes": 57}, "house9": {"sign": "Gemini", "degree": 24, "minutes": 41}, "house10": {"sign": "Cancer", "degree": 28, "minutes": 51}, "house11": {"sign": "Virgo", "degree": 1, "minutes": 56}, "house12": {"sign": "Libra", "degree": 0, "minutes": 53}}} as unknown as NatalChart;
+describe('Lauren (triple Libra) whole-chart evidence', () => {
+  const m = buildChartStoryMap(lauren, { now: NOW });
+  const c = validationContextFor(m);
+  it('Big Three repetition is evidence, and complicating factors are in the map', () => {
+    expect(m.evidence['concentration:big-three'].fact).toMatch(/all three in Libra, all Air, all Cardinal/);
+    expect(m.evidence['aspect:Mars-conjunction-Uranus']).toBeTruthy();
+    expect(m.placements.Mars.house).toBe(1);
+    expect(m.placements.Moon.house).toBe(12);
+    expect(m.placements.Saturn.house).toBe(10);
+    expect(m.houseRulers[1].traditional).toBe('Venus');
+  });
+  it('Ascendant-MC is never treated as an aspect or tension', () => {
+    expect(m.allowedAspects.some((a) => [a.a, a.b].includes('Ascendant') && [a.a, a.b].includes('Midheaven'))).toBe(false);
+  });
+  it('rejects "exactly conjunct" for the 1.7° Mars-Uranus conjunction', () => {
+    const r = reading({ howItWorks: 'Mars in its home sign of Scorpio exactly conjunct unpredictable Uranus.' });
+    expect(validatePersonReading(r, c).some((e) => e.includes('"exact" used'))).toBe(true);
+  });
+});
