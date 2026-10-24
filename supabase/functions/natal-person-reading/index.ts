@@ -4,12 +4,16 @@ import { withInterpretationStandard } from '../_shared/interpretationStandard.ts
 import { cleanPersonReading, validatePersonReading, type PersonReading } from '../_shared/personReadingValidator.ts';
 import { contextFromStoryMap } from '../_shared/personReadingContext.ts';
 
-const MODEL = 'google/gemini-3.1-pro-preview';
+const DEFAULT_MODEL = 'google/gemini-3.1-pro-preview';
+/** Side-by-side evaluation only; the app always uses DEFAULT_MODEL. */
+const EVAL_MODELS = ['openai/gpt-5.2', 'openai/gpt-5', 'google/gemini-2.5-pro'];
+let MODEL = DEFAULT_MODEL;
 
 const Evidence = z.object({ id: z.string(), kind: z.string(), fact: z.string(), bodies: z.array(z.string()) }).passthrough();
 const Body = z.object({
   /** Repair pass: a previous draft plus the checker's errors (keeps each call under the time limit). */
   repair: z.object({ draft: z.unknown(), errors: z.array(z.string()).max(40) }).optional(),
+  evalModel: z.enum(EVAL_MODELS as [string, ...string[]]).optional(),
   name: z.string().min(1).max(120),
   age: z.number().int().min(0).max(120).nullable().optional(),
   map: z.object({
