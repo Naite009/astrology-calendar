@@ -1,3 +1,6 @@
+import { signPositionToLongitude } from './ephemerisEngine';
+import { getNatalAngleTargets } from './transitAspects';
+import { relationshipTargetPriority } from './rulerChains';
 import * as Astronomy from 'astronomy-engine';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import { formatFutureTransitsContext, scanFutureTransits } from './futureTransitScanner';
@@ -987,17 +990,14 @@ const longitudeToSignDegree = (lon: number): string => {
 const buildNatalPositions = (chart: NatalChart | null): { name: string; longitude: number }[] => {
   if (!chart?.planets) return [];
 
-  return Object.entries(chart.planets).flatMap(([name, data]) => {
-    if (!data || typeof data !== 'object' || !('sign' in data)) return [];
-    const sign = (data as { sign: string }).sign;
-    const signIdx = ZODIAC.indexOf(sign);
-    if (signIdx < 0) return [];
-
-    const degree = typeof (data as { degree?: number }).degree === 'number' ? (data as { degree: number }).degree : 0;
-    const minutes = typeof (data as { minutes?: number }).minutes === 'number' ? (data as { minutes: number }).minutes : 0;
-
-    return [{ name, longitude: signIdx * 30 + degree + minutes / 60 }];
+  const angles = getNatalAngleTargets(chart);
+  const angleNames = new Set(['Ascendant','ASC','Midheaven','MC','Descendant','DSC','IC']);
+  const positions = Object.entries(chart.planets).flatMap(([name, data]) => {
+    if (!data?.sign || angleNames.has(name)) return [];
+    const longitude = signPositionToLongitude(data);
+    return longitude === null ? [] : [{ name, longitude }];
   });
+  return [...positions, ...angles.map(a => ({ name: a.name, longitude: a.longitude }))];
 };
 
 const isRetrogradeAtExactHit = (planet: string, exactDate: Date, passLabel: string): boolean => {
@@ -1428,6 +1428,7 @@ export function buildDeterministicTimingData(
       (w.natalPlanet === 'Sun' ||
         w.natalPlanet === 'Midheaven' || w.natalPlanet === 'MC' ||
         tenthHousePlanets.has(w.natalPlanet));
+    if (readingType === 'relationship' && chart) return relationshipTargetPriority(chart, w.natalPlanet) * 100 + tp * 2 + asp;
     if (isJupiterCareerHeadline) return -100 + asp;
     return tp * 10 + np * 2 + asp;
   };

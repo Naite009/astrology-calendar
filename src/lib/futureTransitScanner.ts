@@ -8,6 +8,7 @@
 
 import * as Astronomy from 'astronomy-engine';
 import { getPlanetLongitudeExact, aspectOrb, normalizeLongitude } from './transitMath';
+import { findExactHits } from './transits/majorTransits';
 
 const ZODIAC = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
@@ -48,6 +49,9 @@ interface FutureTransitWindow {
   enterDate: string;
   exitDate: string;
   isRetrograde: boolean;
+  classification: 'exact-hit' | 'close-approach';
+  closestOrb: number;
+  closestDate: string;
 }
 
 function lonToSignDegree(lon: number): string {
@@ -76,132 +80,45 @@ export function scanFutureTransits(
   monthsAhead: number = 18,
 ): FutureTransitWindow[] {
   const now = new Date();
-  const endMs = now.getTime() + monthsAhead * 30.44 * 86400000;
-  const stepMs = 5 * 86400000; // 5-day steps for scanning
+  const startMs = now.getTime();
+  const endMs = startMs + monthsAhead * 30.44 * 86400000;
+  const stepMs = 86400000;
   const results: FutureTransitWindow[] = [];
-
   for (const outer of OUTER_PLANETS) {
+    const cache = new Map<number, number>();
+    const lonAt = (ms: number) => {
+      let lon = cache.get(ms);
+      if (lon === undefined) { lon = getPlanetLongitudeExact(outer.body, new Date(ms)); cache.set(ms, lon); }
+      return lon;
+    };
     for (const natal of natalPositions) {
       if (!NATAL_TARGETS.includes(natal.name)) continue;
-
       for (const asp of MAJOR_ASPECTS) {
-        // Scan for periods where orb < threshold
-        const threshold = asp.orb;
-        let inWindow = false;
-        let windowEnterMs = 0;
-        let windowExitMs = 0;
-        let minOrb = 999;
-        let minOrbMs = 0;
-        const exactHits: { ms: number; orb: number }[] = [];
-        let prevOrb = 999;
-        let prevPrevOrb = 999;
-
-        for (let ms = now.getTime(); ms <= endMs; ms += stepMs) {
-          const lon = getPlanetLongitudeExact(outer.body, new Date(ms));
-          const orb = aspectOrb(lon, natal.longitude, asp.angle);
-
-          if (orb <= threshold && !inWindow) {
-            inWindow = true;
-            windowEnterMs = ms;
-            minOrb = orb;
-            minOrbMs = ms;
+        let enter: number | null = null;
+        let minOrb = Infinity, minMs = startMs;
+        const finish = (exit: number) => {
+          if (enter === null) return;
+          const points = asp.angle === 0 || asp.angle === 180 ? [natal.longitude + asp.angle] : [natal.longitude + asp.angle, natal.longitude - asp.angle];
+          const hits = points.flatMap(p => findExactHits(outer.name, normalizeLongitude(p), enter ?? startMs, exit, lonAt)).sort((a,b) => a.ms - b.ms);
+          // Refine the actual closest approach; a station minimum is not an exact pass.
+          let lo = Math.max(enter, minMs - stepMs), hi = Math.min(exit, minMs + stepMs);
+          for (let j = 0; j < 35; j++) {
+            const a = lo + (hi-lo)/3, b = hi - (hi-lo)/3;
+            if (aspectOrb(lonAt(a), natal.longitude, asp.angle) < aspectOrb(lonAt(b), natal.longitude, asp.angle)) hi = b; else lo = a;
           }
-
-          if (inWindow && orb <= threshold) {
-            if (orb < minOrb) {
-              minOrb = orb;
-              minOrbMs = ms;
-            }
-            // Detect local minima (exact hits)
-            if (prevOrb < prevPrevOrb && prevOrb < orb && prevOrb < 1.0) {
-              exactHits.push({ ms: ms - stepMs, orb: prevOrb });
-            }
-          }
-
-          if (inWindow && orb > threshold) {
-            windowExitMs = ms;
-            inWindow = false;
-
-            // If no exact hits found but we had a minimum, add it
-            if (exactHits.length === 0 && minOrb < 1.5) {
-              exactHits.push({ ms: minOrbMs, orb: minOrb });
-            }
-
-            if (exactHits.length > 0 || minOrb < 2.0) {
-              // Check retrograde at midpoint
-              const midMs = (windowEnterMs + windowExitMs) / 2;
-              const midDate = new Date(midMs);
-              const v1 = getPlanetLongitudeExact(outer.body, midDate);
-              const v2 = getPlanetLongitudeExact(outer.body, new Date(midMs + 86400000));
-              const isRetro = normalizeLongitude(v2 - v1 + 360) > 180;
-
-              const enterDate = new Date(windowEnterMs);
-              const exitDate = new Date(windowExitMs);
-
-              // Label exact hits
-              const labeled = exactHits.map((eh, i) => {
-                let label = 'single pass';
-                if (exactHits.length > 1) {
-                  if (i === 0) label = 'Pass 1, Direct';
-                  else if (i === exactHits.length - 1) label = `Pass ${i + 1}, Final Direct`;
-                  else label = `Pass ${i + 1}, Retrograde`;
-                }
-                return { date: formatDate(new Date(eh.ms)), label };
-              });
-
-              // Build date range string
-              const sameYear = enterDate.getFullYear() === exitDate.getFullYear();
-              const dateRange = sameYear
-                ? `${formatDateShort(enterDate)}–${formatDateShort(exitDate)}, ${enterDate.getFullYear()}`
-                : `${formatDate(enterDate)}–${formatDate(exitDate)}`;
-
-              results.push({
-                transitPlanet: outer.name,
-                aspect: asp.name,
-                natalPlanet: natal.name,
-                natalDegree: lonToSignDegree(natal.longitude),
-                exactDates: labeled,
-                dateRange,
-                enterDate: formatDate(enterDate),
-                exitDate: formatDate(exitDate),
-                isRetrograde: isRetro,
-              });
-            }
-
-            // Reset for next window
-            exactHits.length = 0;
-            minOrb = 999;
-          }
-
-          prevPrevOrb = prevOrb;
-          prevOrb = orb;
+          const closest = (lo+hi)/2;
+          const closestOrb = aspectOrb(lonAt(closest), natal.longitude, asp.angle);
+          results.push({ transitPlanet: outer.name, aspect: asp.name, natalPlanet: natal.name, natalDegree: lonToSignDegree(natal.longitude), exactDates: hits.map((h,i) => ({ date: new Date(h.ms).toISOString(), label: `Pass ${i+1}, ${h.motion}` })), dateRange: `${formatDate(new Date(enter))} to ${formatDate(new Date(exit))}`, enterDate: formatDate(new Date(enter)), exitDate: formatDate(new Date(exit)), isRetrograde: normalizeLongitude(lonAt(closest+3600000)-lonAt(closest-3600000)) > 180, classification: hits.length ? 'exact-hit' : 'close-approach', closestOrb, closestDate: new Date(closest).toISOString() });
+          enter = null; minOrb = Infinity;
+        };
+        for (let ms = startMs; ms <= endMs; ms += stepMs) {
+          const orb = aspectOrb(lonAt(ms), natal.longitude, asp.angle);
+          if (orb <= asp.orb) {
+            if (enter === null) enter = ms;
+            if (orb < minOrb) { minOrb = orb; minMs = ms; }
+          } else if (enter !== null) finish(ms);
         }
-
-        // Handle window still open at end of scan
-        if (inWindow && exactHits.length > 0) {
-          const exitDate = new Date(endMs);
-          const enterDate = new Date(windowEnterMs);
-          const labeled = exactHits.map((eh, i) => ({
-            date: formatDate(new Date(eh.ms)),
-            label: exactHits.length === 1 ? 'single pass' : `Pass ${i + 1}`,
-          }));
-          const sameYear = enterDate.getFullYear() === exitDate.getFullYear();
-          const dateRange = sameYear
-            ? `${formatDateShort(enterDate)}–${formatDateShort(exitDate)}, ${enterDate.getFullYear()}`
-            : `${formatDate(enterDate)}–${formatDate(exitDate)}`;
-
-          results.push({
-            transitPlanet: outer.name,
-            aspect: asp.name,
-            natalPlanet: natal.name,
-            natalDegree: lonToSignDegree(natal.longitude),
-            exactDates: labeled,
-            dateRange,
-            enterDate: formatDate(enterDate),
-            exitDate: formatDate(exitDate),
-            isRetrograde: false,
-          });
-        }
+        if (enter !== null) finish(endMs);
       }
     }
   }
@@ -218,14 +135,15 @@ export function formatFutureTransitsContext(windows: FutureTransitWindow[]): str
   if (windows.length === 0) return '';
   
   let ctx = '\n--- UPCOMING TRANSIT WINDOWS (next 18 months) ---\n';
-  ctx += 'USE THESE to populate the timing_section transits array. Each entry below is a verified astronomical event.\n\n';
+  ctx += 'USE THESE to populate the timing_section transits array. Exact dates below are solver-confirmed. Close approaches are NOT exact hits; absence of a hit applies only to the scanned interval.\n\n';
   
   for (const w of windows) {
     ctx += `• ${w.transitPlanet} ${w.aspect} natal ${w.natalPlanet} at ${w.natalDegree}`;
     if (w.isRetrograde) ctx += ' (R)';
     ctx += `\n  Active: ${w.dateRange}\n`;
+    if (!w.exactDates.length) ctx += `  Close approach only: ${w.closestDate}, minimum orb ${w.closestOrb.toFixed(4)}°. No exact hit in this window.\n`;
     for (const eh of w.exactDates) {
-      ctx += `  Exact: ${eh.date} — ${eh.label}\n`;
+      ctx += `  Exact: ${eh.date}: ${eh.label}\n`;
     }
     ctx += '\n';
   }
