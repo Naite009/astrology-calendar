@@ -416,9 +416,9 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     if (!A || !B) continue;
     reinforcements.push({ id: `reinforce:mutual-${x}-${y}`, fact: `${x} in ${px.sign} and ${y} in ${py.sign} rule each other's signs (mutual reception): each one's results run through the other`, chainIds: [A.id, B.id], evidenceIds: [A.steps[0], B.steps[0]] });
   }
-  const byHouse = new Map<number, string[]>();
-  for (const b of PLANETS) { const h = pos[b]?.house; if (h) byHouse.set(h, [...(byHouse.get(h) ?? []), b]); }
-  for (const [h, bodies] of byHouse) if (bodies.length >= 3) {
+  const byHouseR = new Map<number, string[]>();
+  for (const b of PLANETS) { const h = pos[b]?.house; if (h) byHouseR.set(h, [...(byHouseR.get(h) ?? []), b]); }
+  for (const [h, bodies] of byHouseR) if (bodies.length >= 3) {
     const cs = bodies.map(chainFor).filter(Boolean) as StoryChain[];
     reinforcements.push({ id: `reinforce:house-${h}`, fact: `${bodies.join(', ')} all in the ${ordinalHouse(h)}: several drives share one life area`, chainIds: cs.map((c) => c.id), evidenceIds: cs.map((c) => c.steps[0]) });
   }
