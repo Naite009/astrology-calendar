@@ -16,6 +16,7 @@ import { SectionExportButtons } from '@/components/SectionExportButtons';
 import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { TryThisAction } from '@/components/TryThisAction';
 import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
+import { WhoIsThisPerson } from '@/components/natal/WhoIsThisPerson';
 import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
 import type { ExportMeta } from '@/lib/pdfDocEngine';
@@ -762,6 +763,8 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
           }}
         />
       </div>
+
+      <WhoIsThisPerson key={selectedChart.id} chart={selectedChart} />
 
       <ChartSynthesisSection synthesis={portrait.synthesis} />
 
