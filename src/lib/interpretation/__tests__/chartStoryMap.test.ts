@@ -82,6 +82,7 @@ export function sampleReading(map: ReturnType<typeof buildChartStoryMap>, text =
     name, plainMeaning: 'She has the signature of someone who wants harmony, but takes over when relying on others feels uncertain.',
     chainIds: [rising.id, sun.id], evidenceIds: [rising.steps[0], sun.steps[0], sun.steps[1] ?? rising.steps[1]],
     howItWorks: text, inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: must.length ? must : [sun.steps[0]], healthyExpression: text,
+    conclusionEvidence: Object.fromEntries(['plainMeaning', 'howItWorks', 'inWork', 'inRelationships', 'underStress', 'tension', 'healthyExpression'].map((f) => [f, [rising.steps[0], sun.steps[0], sun.steps[1] ?? rising.steps[1]]])),
   });
   return { headline: text, centralTension: text, signatures: [sig('The A'), sig('The B'), sig('The C')], collisions: [], whenLost: text, whatSteadies: text, transitsNow: [], clientQuestions: ['Does this fit?'] };
 }

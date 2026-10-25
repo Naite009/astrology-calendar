@@ -118,6 +118,7 @@ function reading(over: Partial<PersonReading['signatures'][number]> = {}, text =
     chainIds: ['chain:rising', 'chain:moon'], evidenceIds: ['angle:Ascendant', 'placement:Moon', 'rulership:Moon-dispositor'],
     howItWorks: text, inWork: text, inRelationships: text, underStress: text,
     tension: text, tensionEvidenceIds: must.length ? must : ['placement:Moon'], healthyExpression: text, ...over,
+    conclusionEvidence: Object.fromEntries(['plainMeaning', 'howItWorks', 'inWork', 'inRelationships', 'underStress', 'tension', 'healthyExpression'].map((f) => [f, ['angle:Ascendant', 'placement:Moon', 'rulership:Moon-dispositor']])),
   });
   return { headline: text, centralTension: text, signatures: [sig('The A'), sig('The B'), sig('The C')], collisions: [], whenLost: text, whatSteadies: text, transitsNow: [], clientQuestions: ['Does this fit?'] };
 }
