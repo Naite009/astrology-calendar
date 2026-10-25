@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Core Natal Portrait main-plot reasoning
-- [ ] Build deterministic structural hierarchy, independent theme aggregation and ruler-led story candidates before prose.
-- [ ] Enforce selected-theme evidence, contradictions and slow-planet personalization in both reading gates; add regressions.
-- [ ] Generate and inspect a fresh saved adult portrait; report before/after evidence and limitations.
+- [x] Build deterministic structural hierarchy, independent theme aggregation and ruler-led story candidates before prose.
+- [x] Enforce selected-theme evidence, contradictions and slow-planet personalization in both reading gates; 703 tests passed.
+- [ ] Final saved adult portrait acceptance: inspected a rendered intermediate Lauren reading, fixed repeated story selection and vague scenes, then reran the latest revision. Gateway 504s and locally rejected authoring prevented final acceptance; remain open. Exact findings and before/after in `qa-reports/natal-main-plot.md`.
 
 ## Natal Portrait personalization hierarchy
 - [x] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
