@@ -110,7 +110,7 @@ describe('whole-chart story map', () => {
 
 // ── Prose validation (Part C) ──
 const map = buildChartStoryMap(gina, { now: NOW });
-const ctx = { ...validationContextFor(map), requireConclusionEvidence: false };
+const ctx = { ...validationContextFor(map), requireConclusionEvidence: false, mainPlot: undefined };
 const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]);
 function reading(over: Partial<PersonReading['signatures'][number]> = {}, text = 'She may notice this.'): PersonReading {
   const sig = (name: string) => ({
