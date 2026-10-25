@@ -21,7 +21,7 @@ const ctx = contextFromStoryMap(map);
 const ids = ['placement:Saturn', 'placement:Sun', 'rulership:Saturn-rules', 'aspect:Sun-square-Saturn'];
 const fields = ['plainMeaning', 'howItWorks', 'inLife', 'inWork', 'inRelationships', 'underStress', 'inDecisions', 'tension', 'healthyExpression'];
 function reading(text = 'She may want to work together, but can take over when a plan stalls.'): PersonReading {
- const s = { name: 'Shared Effort', chainIds: ['saturn', 'sun'], evidenceIds: ids, plainMeaning: text, howItWorks: 'Saturn in Leo is background cohort tone. Its 10th-house placement and rulership personalize it, alongside Sun square Saturn (0.3° orb).', inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: ['placement:Mars'], healthyExpression: text, conclusionEvidence: Object.fromEntries(fields.map(f => [f, ids])) };
+ const s = { name: 'Shared Effort', chainIds: ['saturn', 'sun'], evidenceIds: ids, plainMeaning: text, howItWorks: 'Saturn at 15° Leo is background cohort tone. Saturn in the 10th house rules the 4th house. Sun at 15° Taurus in the 7th house forms Sun square Saturn (0.3° orb), which may make collaboration feel more responsible.', inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: ['placement:Mars'], healthyExpression: text, conclusionEvidence: Object.fromEntries(fields.map(f => [f, ids])) };
  return { headline: text, centralTension: text, signatures: [s, { ...s, name: 'Steady Builder' }, { ...s, name: 'Careful Organizer' }], collisions: [], whenLost: text, whatSteadies: text, transitsNow: [], clientQuestions: [] };
 }
 describe('deterministic personalization strength', () => {
