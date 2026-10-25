@@ -4,6 +4,7 @@
  * gates check exactly the same evidence.
  */
 import type { ValidationContext } from './personReadingValidator.ts';
+import { buildNatalMainPlot } from './natalMainPlot.ts';
 
 export interface SerializedStoryMap {
   version?: number;
@@ -35,5 +36,6 @@ export function contextFromStoryMap(map: SerializedStoryMap): ValidationContext 
     requireFullSignature: v2,
     strengthContext: { evidence: map.evidence, placements: map.placements, houseRulers: map.houseRulers },
     requireConclusionEvidence: (map.version ?? 1) >= 3,
+    mainPlot: (map.version ?? 1) >= 4 ? buildNatalMainPlot(map) : undefined,
   };
 }

@@ -15,8 +15,10 @@
  */
 
 import { scorePersonEvidence, SLOW_BODIES, type StrengthContext, type EvidenceStrength } from './personEvidenceStrength.ts';
+import type { NatalMainPlot } from './natalMainPlot.ts';
 
 export interface PersonSignature {
+  themeId?: string;
   /** Each interpretive field's own citations, never borrowed from unrelated claims. */
   conclusionEvidence?: Record<string, string[]>;
   evidenceStrength?: EvidenceStrength;
@@ -56,6 +58,7 @@ export interface PersonTransitNote {
 }
 
 export interface PersonReading {
+  mainPlotThemeId?: string;
   headline: string;
   centralTension: string;
   signatures: PersonSignature[];
@@ -85,6 +88,7 @@ export interface ValidationContext {
   requireFullSignature?: boolean;
   strengthContext?: StrengthContext;
   requireConclusionEvidence?: boolean;
+  mainPlot?: NatalMainPlot;
 }
 
 const BODIES = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'North Node', 'South Node', 'Ascendant', 'Descendant', 'Midheaven', 'MC', 'IC'];
@@ -177,7 +181,7 @@ export function findAspectMentions(text: string): { a: string; b: string; type: 
     const prev = [...toks.slice(0, i)].reverse().find((x) => x.body);
     const next = toks.slice(i + 1).find((x) => x.body || x.aspect);
     if (!prev || !next?.body || t.at - prev.at > 70 || next.at - (t.at + t.len) > 30) return;
-    out.push({ a: prev.body!, b: next.body, type: t.aspect, raw: text.slice(prev.at, next.at + next.len), index: prev.at });
+    if (prev.body) out.push({ a: prev.body, b: next.body, type: t.aspect, raw: text.slice(prev.at, next.at + next.len), index: prev.at });
   });
   const seen = new Set<string>();
   return out.filter((m) => { const k = `${m.type}|${[m.a, m.b].sort().join('|')}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -224,7 +228,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
   for (const k of ['headline', 'centralTension', 'whenLost', 'whatSteadies'] as const) {
     if (typeof x[k] !== 'string' || !x[k].trim()) errors.push(`Missing ${k}`);
   }
-  if (!Array.isArray(x.signatures) || x.signatures.length < 3 || x.signatures.length > 6) errors.push('Need 3 to 6 signatures');
+  if (!Array.isArray(x.signatures) || x.signatures.length < 3 || x.signatures.length > (ctx.mainPlot ? 5 : 6)) errors.push(ctx.mainPlot ? 'Need 3 to 5 signatures' : 'Need 3 to 6 signatures');
   if (!Array.isArray(x.collisions)) errors.push('collisions must be an array');
   if (!Array.isArray(x.transitsNow)) errors.push('transitsNow must be an array');
   if (!Array.isArray(x.clientQuestions)) errors.push('clientQuestions must be an array');
@@ -233,7 +237,32 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
   const ev = new Set(ctx.evidenceIds), ch = new Set(ctx.chainIds), tr = new Set(ctx.transitIds);
   const names = new Set(x.signatures.map((s) => s.name));
   const cited = new Set<string>();
+  if (ctx.mainPlot) {
+    if (x.mainPlotThemeId !== ctx.mainPlot.primaryThemeId) errors.push('Opening must follow the deterministically selected main plot');
+    if (!x.signatures.some(s => s.themeId === ctx.mainPlot?.primaryThemeId)) errors.push('Missing the main-plot signature');
+    const themeIds = x.signatures.map(s => s.themeId);
+    if (new Set(themeIds).size !== themeIds.length) errors.push('Do not repeat the same theme as several signatures');
+  }
   x.signatures.forEach((s, i) => {
+    if (ctx.mainPlot) {
+      const theme = ctx.mainPlot.candidates.find(t => t.id === s.themeId);
+      if (!theme || !ctx.mainPlot.selectedThemeIds.includes(theme.id)) errors.push(`"${s.name}" does not use a selected structural theme`);
+      else {
+        const declared = new Set([...(s.evidenceIds ?? []), ...(s.tensionEvidenceIds ?? [])]);
+        for (const id of theme.requiredEvidenceIds) if (!declared.has(id)) errors.push(`"${s.name}" omits theme evidence ${id}`);
+        for (const id of s.evidenceIds ?? []) if (!theme.evidenceIds.includes(id)) errors.push(`"${s.name}" borrows unrelated theme evidence ${id}`);
+        for (const t of theme.contradictions.filter(t => ctx.mustAddress?.some(m => m.id === t.id))) {
+          const aspectId = t.evidenceIds.find(id => ctx.strengthContext?.evidence[id]?.aspect);
+          if (aspectId && !s.tensionEvidenceIds?.includes(aspectId)) errors.push(`"${s.name}" must preserve its salient competing needs: ${aspectId}`);
+        }
+        const fieldIds = s.conclusionEvidence?.plainMeaning ?? [];
+        const supporting = theme.indicatorBodies.filter(b => fieldIds.includes(`${['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(b) ? 'angle' : 'placement'}:${b}`));
+        if (supporting.length < 2) errors.push(`"${s.name}" major theme needs two independent structural indicators in its plain meaning`);
+        if (/\b(?:main|core|central|soul|major life) (?:story|theme|pattern|lesson)\b/i.test(s.plainMeaning) && supporting.length < 3) errors.push(`"${s.name}" main-story language needs three independent structural indicators`);
+        const astrologyIds = s.conclusionEvidence?.howItWorks ?? [];
+        if (theme.rulerPathIds.length && !theme.rulerPathIds.some(id => astrologyIds.includes(id))) errors.push(`"${s.name}" must explain a full relevant ruler/dispositor path`);
+      }
+    }
     if (!s.name?.trim()) errors.push(`Signature ${i + 1} has no name`);
     if (/\b(velvet|silk|silken|glass|mirror|storm|shadow|garden|alchemist|labyrinth|cathedral|tapestry|ember|tide)\b/i.test(s.name ?? '')) errors.push(`"${s.name}" uses a metaphor name; use a plain literal title`);
     if (typeof s.plainMeaning !== 'string' || s.plainMeaning.trim().length < 30) errors.push(`"${s.name}" needs a plain-language meaning sentence right under the name`);
@@ -272,6 +301,10 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
         if (ctx.requireConclusionEvidence && (!ids || ids.length < 2)) errors.push(`"${s.name}" needs at least two supporting factors in conclusionEvidence.${field}`);
         const fieldIds = ids ?? s.evidenceIds ?? [];
         for (const id of fieldIds) if (!ev.has(id) || ![...(s.evidenceIds ?? []), ...(s.tensionEvidenceIds ?? [])].includes(id)) errors.push(`"${s.name}" ${field} cites undeclared evidence ${id}`);
+        if (ctx.mainPlot) for (const aspect of findAspectMentions(text)) {
+          const supported = fieldIds.some(id => { const a = ctx.strengthContext?.evidence[id]?.aspect; return a && a.type === aspect.type && [a.a, a.b].sort().join() === [aspect.a, aspect.b].sort().join(); });
+          if (!supported) errors.push(`"${s.name}" ${field} names an aspect without that conclusion's exact evidence`);
+        }
         const support = scorePersonEvidence(fieldIds, ctx.strengthContext);
         if (ctx.requireConclusionEvidence && (support.level === 'background' || support.independentFactors.length < 2)) errors.push(`"${s.name}" ${field} exceeds weak evidence (${support.score} support index)`);
         if (support.level !== 'strong' && /\b(?:defining|dominant|powerful|profound|central|strongly|deeply|fierce)\b/i.test(text)) errors.push(`"${s.name}" ${field} uses strong wording beyond its evidence score ${support.score}`);

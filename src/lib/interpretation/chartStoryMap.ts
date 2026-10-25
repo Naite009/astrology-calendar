@@ -19,6 +19,9 @@ import { getChartRulers, TRADITIONAL_RULER, MODERN_CORULER } from './chartRuler'
 import { ordinalHouse } from './ordinals';
 import { SIGN_ELEMENT, SIGN_MODALITY } from '@/lib/aspects/outOfSign';
 import { scorePersonEvidence, type EvidenceStrength } from '../../../supabase/functions/_shared/personEvidenceStrength';
+import { buildNatalMainPlot, type NatalMainPlot } from '../../../supabase/functions/_shared/natalMainPlot';
+import { buildAllRulerChains } from '@/lib/rulerChains';
+import { getPsychologicalFunction, getNatalSignExpression, getHouseArena } from './psychologicalFunctions';
 
 export type StoryEvidenceKind = 'angle' | 'placement' | 'rulership' | 'aspect' | 'concentration' | 'balance' | 'sign' | 'house' | 'condition' | 'angularity' | 'configuration';
 
@@ -74,7 +77,10 @@ export interface StoryTransit {
 export interface StoryPlacement { sign: string; longitude: number; house: number | null; retrograde: boolean }
 
 export interface ChartStoryMap {
-  version: 3;
+  version: 4;
+  mainPlot: NatalMainPlot;
+  houseRulerChains: ReturnType<typeof buildAllRulerChains>;
+  functionContext: Record<string, { function: string; signExpression: string; lifeArena: string }>;
   personalization: Record<string, EvidenceStrength>;
   houseOccupancy: Record<number, string[]>;
   subject: { name: string; birthDate: string };
@@ -178,7 +184,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   const allowedAspects: AllowedAspect[] = [];
   const allowedById = new Map<string, AllowedAspect>();
   for (const a of aspects) {
-    const x: AllowedAspect = { a: canon(a.a), b: canon(a.b), type: a.aspect, orb: Math.round(a.orb * 100) / 100, outOfSign: a.dissociate };
+    const x: AllowedAspect = { a: canon(a.a), b: canon(a.b), type: a.aspect, orb: a.orb, outOfSign: a.dissociate };
     allowedAspects.push(x); allowedById.set(aspectIdOf(x), x);
     for (const [angle, mirror] of [['Ascendant', 'Descendant'], ['Midheaven', 'IC']] as const) {
       if ((x.a === angle || x.b === angle) && MIRROR[x.type]) {
@@ -274,12 +280,12 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     steps.push(add({ id: 'angle:Ascendant', kind: 'angle', fact: `Ascendant (Rising) ${fmtLon(ascLon).text} ${ascCusp.sign}`, bodies: ['Ascendant'] }));
     add({ id: 'angle:Descendant', kind: 'angle', fact: `Descendant (7th cusp, partnership angle) ${fmtLon(ascLon + 180).text} ${fmtLon(ascLon + 180).sign}`, bodies: ['Descendant'] });
     for (const b of occupants(1)) { const id = placementId(b); if (id) { steps.push(id); bodies.push(b); } }
-    addAspects(steps, bodies, aspectsOf('Ascendant', 3));
+    addAspects(steps, bodies, aspectsOf('Ascendant', 300));
     if (chartRuler && pos[chartRuler.traditional]) {
       steps.push(add({ id: 'rulership:chart-ruler', kind: 'rulership', fact: `${ascCusp.sign} rising makes ${chartRuler.traditional} the chart ruler (traditional rulership)${chartRuler.modern ? `, with ${chartRuler.modern} as modern co-ruler` : ''}`, bodies: [chartRuler.traditional] }));
       const pid = placementId(chartRuler.traditional); if (pid) steps.push(pid);
       bodies.push(chartRuler.traditional);
-      addAspects(steps, bodies, aspectsOf(chartRuler.traditional, 3, ['Ascendant']));
+      addAspects(steps, bodies, aspectsOf(chartRuler.traditional, 300, ['Ascendant']));
       const dc = dispositorChainId(chartRuler.traditional); if (dc) steps.push(dc);
       if (chartRuler.modern && pos[chartRuler.modern]) { const mid = placementId(chartRuler.modern); if (mid) { steps.push(mid); bodies.push(chartRuler.modern); } }
     }
@@ -287,7 +293,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     // Partnership angle: occupants of the 7th, DSC contacts, 7th ruler.
     const dSteps: string[] = ['angle:Descendant']; const dBodies: string[] = ['Descendant'];
     for (const b of occupants(7)) { const id = placementId(b); if (id) { dSteps.push(id); dBodies.push(b); } }
-    addAspects(dSteps, dBodies, aspectsOf('Descendant', 3));
+    addAspects(dSteps, dBodies, aspectsOf('Descendant', 300));
     if (houseRulers[7]) { dSteps.push('rulership:house-7'); const pid = placementId(houseRulers[7].traditional); if (pid) dSteps.push(pid); dBodies.push(houseRulers[7].traditional); }
     pushChain({ id: 'chain:descendant', anchor: 'Ascendant', label: `${fmtLon(ascLon + 180).sign} Descendant and the 7th-house ruler`, steps: dSteps, bodies: dBodies, salience: 5 + occupants(7).length * 2 });
   }
@@ -296,13 +302,13 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     steps.push(add({ id: 'angle:Midheaven', kind: 'angle', fact: `Midheaven (MC, the public and vocational direction) ${fmtLon(mcLon).text} ${mc.sign}`, bodies: ['Midheaven'] }));
     add({ id: 'angle:IC', kind: 'angle', fact: `IC (4th cusp, home and private base) ${fmtLon(mcLon + 180).text} ${fmtLon(mcLon + 180).sign}`, bodies: ['IC'] });
     for (const b of occupants(10)) { const id = placementId(b); if (id) { steps.push(id); bodies.push(b); } }
-    addAspects(steps, bodies, aspectsOf('Midheaven', 4));
+    addAspects(steps, bodies, aspectsOf('Midheaven', 300));
     const ruler = TRADITIONAL_RULER[mc.sign];
     if (ruler && pos[ruler]) {
       steps.push(add({ id: 'rulership:mc-ruler', kind: 'rulership', fact: `${mc.sign} on the Midheaven makes ${ruler} the Midheaven ruler`, bodies: [ruler] }));
       const pid = placementId(ruler); if (pid) steps.push(pid);
       bodies.push(ruler);
-      addAspects(steps, bodies, aspectsOf(ruler, 2, ['Midheaven']));
+      addAspects(steps, bodies, aspectsOf(ruler, 300, ['Midheaven']));
     }
     pushChain({ id: 'chain:midheaven', anchor: 'Midheaven', label: `${mc.sign} Midheaven and its ruler`, steps, bodies, salience: 8 });
     const icSteps = ['angle:IC']; const icBodies = ['IC'];
@@ -502,23 +508,29 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     const chain = kept.find((c) => c.id === (b === 'Sun' || b === 'Moon' ? `chain:${b.toLowerCase()}` : `chain:planet-${b}`));
     return [b, scorePersonEvidence(chain?.steps ?? [], { evidence, placements, houseRulers })];
   }));
-  // Anchors first in fixed order, then everything else by salience.
-  const ORDER = ['chain:rising', 'chain:midheaven', 'chain:sun', 'chain:moon'];
-  kept.sort((x, y) => {
-    const ix = ORDER.indexOf(x.id), iy = ORDER.indexOf(y.id);
-    if (ix >= 0 || iy >= 0) return (ix < 0 ? 99 : ix) - (iy < 0 ? 99 : iy);
-    return y.salience - x.salience;
-  });
+  const mainPlot = buildNatalMainPlot({ evidence, placements, houseRulers, chains: kept, tensions });
+  const houseRulerChains = buildAllRulerChains(chart);
+  // Include a complete, traceable chain for every available cusp, not only its first ruler.
+  for (const path of houseRulerChains) {
+    const steps = [`rulership:house-${path.house}`, ...path.steps.flatMap(s => [`placement:${s.planet}`, `rulership:dispositors-${s.planet}`, ...aspectsOf(s.planet, 300).map(aspectIdOf)])].filter(id => evidence[id]);
+    pushChain({ id: `chain:house-ruler-${path.house}`, anchor: 'Planet', label: `${ordinalHouse(path.house)} full ruler chain`, steps, bodies: path.steps.map(s => s.planet), salience: [1, 4, 7, 10].includes(path.house) || occupants(path.house).length >= 3 ? 7 : 2 });
+  }
+  const allChains = chains.filter(c => !c.bodies.every(b => SECONDARY.has(b)));
+  allChains.sort((a, b) => b.salience - a.salience || a.id.localeCompare(b.id));
+  const functionContext = Object.fromEntries(PLANETS.filter(b => pos[b]).map(b => [b, { function: getPsychologicalFunction(b)?.psychologicalFunction ?? b, signExpression: getNatalSignExpression(pos[b].sign), lifeArena: getHouseArena(pos[b].house) }]));
 
   return {
-    version: 3,
+    version: 4,
+    mainPlot,
+    houseRulerChains,
+    functionContext,
     personalization,
     houseOccupancy,
     subject: { name: chart.name, birthDate: chart.birthDate },
     evidence,
-    chains: kept,
-    tensions: tensions.slice(0, 8),
-    reinforcements: reinforcements.slice(0, 8),
+    chains: allChains,
+    tensions,
+    reinforcements,
     transits,
     allowedAspects,
     placements,
@@ -531,7 +543,7 @@ export const storyAspectId = aspectIdOf;
 
 /** Stable short hash of the chart data the map depends on, for caching. */
 export function storyMapChartHash(chart: NatalChart): string {
-  const src = JSON.stringify([3, chart.birthDate, chart.birthTime, chart.planets, chart.houseCusps]);
+  const src = JSON.stringify([4, chart.birthDate, chart.birthTime, chart.planets, chart.houseCusps]);
   let h = 5381;
   for (let i = 0; i < src.length; i++) h = ((h << 5) + h + src.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
