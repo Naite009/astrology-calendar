@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
     if (repair) {
       messages.push(
         { role: 'assistant', content: JSON.stringify(repair.draft) },
-        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 25).join('\n- ')}` },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 40).join('\n- ')}\nYou MUST repair conclusionEvidence too, not only wording. If a field uses only dispositor IDs, add the actual relevant placement IDs or omit that claim. Background qualifications can appear in the same astrology paragraph. Do not add unrelated evidence to pass. Make each behavioral field conditional.` },
       );
     }
     let lastErrors: string[] = [];

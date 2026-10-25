@@ -22,7 +22,13 @@ export function scorePersonEvidence(ids: string[], ctx: StrengthContext): Eviden
     if (factors.has(key)) return;
     factors.add(key); components[component] += weight;
   };
-  for (const id of new Set(ids)) {
+  const expanded = new Set(ids);
+  // A cited cluster refers to its actual constituent placements, not a free bonus.
+  for (const id of ids) if (ctx.evidence[id]?.kind === 'concentration') for (const b of ctx.evidence[id].bodies) {
+    const placement = ANGLES.has(b) ? `angle:${b}` : `placement:${b}`;
+    if (ctx.evidence[placement]) expanded.add(placement);
+  }
+  for (const id of expanded) {
     const e = ctx.evidence[id]; if (!e) continue;
     if (e.kind === 'placement' || e.kind === 'angle' || e.kind === 'sign' || e.kind === 'house') {
       for (const b of e.bodies) {

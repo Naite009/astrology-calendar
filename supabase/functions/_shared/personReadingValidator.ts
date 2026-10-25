@@ -287,7 +287,8 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
             const signOnly = findPlacementClaims(sentence).some((p) => p.body === b && p.sign);
             if (!signOnly) continue;
             const grounded = support.personalizedBodies.includes(b);
-            const background = /\b(?:background|cohort|generational|generation)\b/i.test(sentence);
+            // A paragraph may introduce the placement before explaining the background layer.
+            const background = new RegExp(`\\b${b}\\b[^.!?]{0,100}\\b(?:background|cohort|generational)\\b`, 'i').test(text);
             if ((!grounded || ctx.requireConclusionEvidence) && !background) errors.push(`"${s.name}" ${field}: ${b} by sign alone must be labelled background, not individualized`);
             if (/\b(?:means|makes?|gives?|destiny|life lesson|here to|change the world|transforms? you)\b/i.test(sentence) && !grounded) errors.push(`"${s.name}" ${field}: blocked ${b} sign-only personal claim`);
           }
