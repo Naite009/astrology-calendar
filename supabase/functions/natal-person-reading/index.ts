@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
       evidence: map.evidence,
       personalization: map.personalization,
       houseOccupancy: map.houseOccupancy,
-      chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
+      chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, evidenceIds: c.steps })),
       houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,
       reinforcements: map.reinforcements ?? [],
@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
 
     if (repair) {
       messages.push(
-        { role: 'assistant', content: JSON.stringify(repair.draft).slice(0, 30000) },
+        { role: 'assistant', content: JSON.stringify(repair.draft) },
         { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 25).join('\n- ')}` },
       );
     }
