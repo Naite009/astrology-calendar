@@ -14,7 +14,12 @@
  *  - uses fixed-fate or diagnostic wording
  */
 
+import { scorePersonEvidence, SLOW_BODIES, type StrengthContext, type EvidenceStrength } from './personEvidenceStrength.ts';
+
 export interface PersonSignature {
+  /** Each interpretive field's own citations, never borrowed from unrelated claims. */
+  conclusionEvidence?: Record<string, string[]>;
+  evidenceStrength?: EvidenceStrength;
   name: string;
   chainIds: string[];
   evidenceIds: string[];
@@ -78,6 +83,8 @@ export interface ValidationContext {
   mustAddress?: { id: string; fact: string; keyEvidenceId: string }[];
   /** Require the v3 signature fields (tension, healthyExpression). */
   requireFullSignature?: boolean;
+  strengthContext?: StrengthContext;
+  requireConclusionEvidence?: boolean;
 }
 
 const BODIES = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Chiron', 'North Node', 'South Node', 'Ascendant', 'Descendant', 'Midheaven', 'MC', 'IC'];
@@ -93,7 +100,7 @@ const ASPECT_WORDS: Record<string, string> = {
 
 const DETERMINISM = [
   /\b(?:you|she|he|they) will\b/i, /\blifelong\b/i, /\bwill (?:cause|make|force|always|never|destroy)\b/i, /\birreversibl/i, /\b(?:absolute|total|unyielding|uncompromising) (?:autonomy|independence|freedom|control|drive)\b/i, /\bmassive concentration\b/i, /\bdestined\b/i, /\bfated\b/i, /\bguarantee/i, /\bdoomed\b/i,
-  /\byou are (?:not )?meant (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i,
+  /\b(?:you are|she is|he is|they are) (?:not )?(?:meant|here) (?:to|for)\b/i, /\b(?:you are|is|are) built (?:for|to be)\b/i, /\bnever able\b/i, /\byou always\b/i, /\b(?:spirituality|relationships?) is (?:your|her|his|their) destiny\b/i,
 ];
 const PATHOLOGY = [
   /\btrauma/i, /\bnarcissis/i, /\bdisorder\b/i, /\bADHD\b/, /\bautis/i, /\bbipolar\b/i,
@@ -251,6 +258,35 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
     }
     // Big claims need a full chain: placement + rulership + aspect, 4+ ids.
     const sigText = [s.plainMeaning, s.howItWorks, s.inLife, s.inWork, s.inRelationships, s.underStress, s.inDecisions, s.healthyExpression].filter(Boolean).join(' ');
+    if (ctx.strengthContext) {
+      const strength = scorePersonEvidence(s.evidenceIds ?? [], ctx.strengthContext);
+      // The model's claimed score is never trusted; overwrite it from the graph.
+      s.evidenceStrength = strength;
+      if (ctx.requireConclusionEvidence && strength.level === 'background') errors.push(`"${s.name}" lacks personalized support for a named signature`);
+      const fields = ['plainMeaning', 'howItWorks', 'inLife', 'inWork', 'inRelationships', 'underStress', 'inDecisions', 'tension', 'healthyExpression'] as const;
+      for (const field of fields) {
+        const text = s[field]; if (!text) continue;
+        const ids = s.conclusionEvidence?.[field];
+        if (ctx.requireConclusionEvidence && (!ids || ids.length < 2)) errors.push(`"${s.name}" needs at least two supporting factors in conclusionEvidence.${field}`);
+        const fieldIds = ids ?? s.evidenceIds ?? [];
+        for (const id of fieldIds) if (!ev.has(id) || ![...(s.evidenceIds ?? []), ...(s.tensionEvidenceIds ?? [])].includes(id)) errors.push(`"${s.name}" ${field} cites undeclared evidence ${id}`);
+        const support = scorePersonEvidence(fieldIds, ctx.strengthContext);
+        if (ctx.requireConclusionEvidence && (support.level === 'background' || support.independentFactors.length < 2)) errors.push(`"${s.name}" ${field} exceeds weak evidence (${support.score} support index)`);
+        if (support.level !== 'strong' && /\b(?:defining|dominant|powerful|profound|central|strongly|deeply|fierce)\b/i.test(text)) errors.push(`"${s.name}" ${field} uses strong wording beyond its evidence score ${support.score}`);
+        if (support.level !== 'strong' && !/\b(?:may|can|could|often|tends? to|possible|background|cohort|generation)\b/i.test(text)) errors.push(`"${s.name}" ${field} must soften a claim supported by score ${support.score}`);
+        for (const sentence of sentences(text)) {
+          for (const b of SLOW_BODIES) {
+            if (!new RegExp(`\\b${b}\\b`, 'i').test(sentence)) continue;
+            const signOnly = findPlacementClaims(sentence).some((p) => p.body === b && p.sign);
+            if (!signOnly) continue;
+            const grounded = support.personalizedBodies.includes(b);
+            const background = /\b(?:background|cohort|generational|generation)\b/i.test(sentence);
+            if (!grounded && !background) errors.push(`"${s.name}" ${field}: ${b} by sign alone must be labelled background, not individualized`);
+            if (/\b(?:means|makes?|gives?|destiny|life lesson|here to|change the world|transforms? you)\b/i.test(sentence) && !grounded) errors.push(`"${s.name}" ${field}: blocked ${b} sign-only personal claim`);
+          }
+        }
+      }
+    }
     for (const re of BIG_CLAIM) {
       if (!re.test(sigText)) continue;
       const ids = s.evidenceIds ?? [];
