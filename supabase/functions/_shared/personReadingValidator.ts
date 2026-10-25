@@ -265,6 +265,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
       s.evidenceStrength = strength;
       if (ctx.requireConclusionEvidence && strength.level === 'background') errors.push(`"${s.name}" lacks personalized support for a named signature`);
       const fields = ['plainMeaning', 'howItWorks', 'inLife', 'inWork', 'inRelationships', 'underStress', 'inDecisions', 'tension', 'healthyExpression'] as const;
+      if (ctx.requireConclusionEvidence && !/\b(?:but|yet|while|both|alongside|also|together)\b/i.test(s.plainMeaning)) errors.push(`"${s.name}" plainMeaning must explain contradiction or reinforcement, not list adjectives`);
       for (const field of fields) {
         const text = s[field]; if (!text) continue;
         const ids = s.conclusionEvidence?.[field];
@@ -274,7 +275,12 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
         const support = scorePersonEvidence(fieldIds, ctx.strengthContext);
         if (ctx.requireConclusionEvidence && (support.level === 'background' || support.independentFactors.length < 2)) errors.push(`"${s.name}" ${field} exceeds weak evidence (${support.score} support index)`);
         if (support.level !== 'strong' && /\b(?:defining|dominant|powerful|profound|central|strongly|deeply|fierce)\b/i.test(text)) errors.push(`"${s.name}" ${field} uses strong wording beyond its evidence score ${support.score}`);
-        if (support.level !== 'strong' && !/\b(?:may|can|could|often|tends? to|possible|background|cohort|generation)\b/i.test(text)) errors.push(`"${s.name}" ${field} must soften a claim supported by score ${support.score}`);
+        if ((support.level !== 'strong' || (ctx.requireConclusionEvidence && field !== 'howItWorks')) && !/\b(?:may|can|could|often|tends? to|possible|background|cohort|generation)\b/i.test(text)) errors.push(`"${s.name}" ${field} must soften a claim supported by score ${support.score}; even strong support is not certainty`);
+        if (ctx.requireConclusionEvidence && field === 'howItWorks') {
+          const named = new Set(findPlacementClaims(text).map(p => p.body));
+          if (named.size < 2 || !/\d{1,2}°/.test(text)) errors.push(`"${s.name}" astrology must walk through two exact placements with degrees and houses`);
+          for (const b of named) if (!fieldIds.some(id => ctx.strengthContext?.evidence[id]?.bodies.includes(b))) errors.push(`"${s.name}" astrology names ${b} without conclusion evidence`);
+        }
         for (const sentence of sentences(text)) {
           for (const b of SLOW_BODIES) {
             if (!new RegExp(`\\b${b}\\b`, 'i').test(sentence)) continue;
@@ -282,7 +288,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
             if (!signOnly) continue;
             const grounded = support.personalizedBodies.includes(b);
             const background = /\b(?:background|cohort|generational|generation)\b/i.test(sentence);
-            if (!grounded && !background) errors.push(`"${s.name}" ${field}: ${b} by sign alone must be labelled background, not individualized`);
+            if ((!grounded || ctx.requireConclusionEvidence) && !background) errors.push(`"${s.name}" ${field}: ${b} by sign alone must be labelled background, not individualized`);
             if (/\b(?:means|makes?|gives?|destiny|life lesson|here to|change the world|transforms? you)\b/i.test(sentence) && !grounded) errors.push(`"${s.name}" ${field}: blocked ${b} sign-only personal claim`);
           }
         }
@@ -306,12 +312,15 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
 
   const allowed = new Map(ctx.allowedAspects.map((a) => [`${a.type}|${[a.a, a.b].sort().join('|')}`, a]));
   for (const { text, transit } of allText(x)) {
+    if (ctx.requireConclusionEvidence && /\b(?:effortlessly|immense accuracy|perfect equilibrium|radical authenticity|lightning-fast|laser-like|psychological insight|energetic shifts|personal magnetism|every attempt|refuses to compromise)\b/i.test(text)) errors.push(`Inflated ability or absolute behavior: "${text.match(/\b(?:effortlessly|immense accuracy|perfect equilibrium|radical authenticity|lightning-fast|laser-like|psychological insight|energetic shifts|personal magnetism|every attempt|refuses to compromise)\b/i)?.[0]}"; use an observable conditional scene`);
+    if (ctx.requireConclusionEvidence && [x.headline, x.centralTension, x.whenLost, x.whatSteadies].includes(text) && !/\b(?:may|can|could|often|tends? to)\b/i.test(text)) errors.push('Opening and summary must describe conditional possibilities, not certain identity');
     for (const re of DETERMINISM) if (re.test(text)) errors.push(`Fixed-fate wording: "${text.match(re)?.[0]}"`);
     for (const re of PATHOLOGY) if (re.test(text)) errors.push(`Diagnostic wording: "${text.match(re)?.[0]}"`);
     for (const re of BIG_CLAIM) if (!x.signatures.some((s) => s.plainMeaning === text || s.howItWorks === text) && [x.headline, x.centralTension, x.whenLost, x.whatSteadies].includes(text) && re.test(text)) errors.push(`Large life-purpose claim outside a fully evidenced signature: "${text.match(re)?.[0]}"`);
     for (const sentence of sentences(text)) {
       const transitish = transit || isTransitSentence(sentence);
       const mentions = transitish ? [] : findAspectMentions(sentence);
+      if (ctx.requireConclusionEvidence && !transitish && /\bexact (?:opposition|conjunction|square|trine|sextile)\b/i.test(sentence) && !mentions.length) errors.push('Name both bodies and the verified orb when calling an aspect exact');
       for (const m of mentions) {
         if (m.a === m.b) continue;
         const a = allowed.get(`${m.type}|${[m.a, m.b].sort().join('|')}`);

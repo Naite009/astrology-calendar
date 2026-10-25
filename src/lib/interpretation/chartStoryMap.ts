@@ -184,7 +184,12 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
       if ((x.a === angle || x.b === angle) && MIRROR[x.type]) {
         const other = x.a === angle ? x.b : x.a;
         if (other === 'Ascendant' || other === 'Midheaven') continue;
-        const d: AllowedAspect = { a: other, b: mirror, type: MIRROR[x.type], orb: x.orb, outOfSign: false, derived: true };
+        const otherSign = pos[other]?.sign;
+        const mirrorSign = fmtLon((angle === 'Ascendant' ? ascLon ?? 0 : mcLon ?? 0) + 180).sign;
+        const signDistRaw = otherSign ? Math.abs(SIGNS.indexOf(otherSign) - SIGNS.indexOf(mirrorSign)) : -1;
+        const signDist = Math.min(signDistRaw, 12 - signDistRaw);
+        const expectedSignDistance: Record<string, number> = { conjunction: 0, sextile: 2, square: 3, trine: 4, opposition: 6 };
+        const d: AllowedAspect = { a: other, b: mirror, type: MIRROR[x.type], orb: x.orb, outOfSign: otherSign ? signDist !== expectedSignDistance[MIRROR[x.type]] : false, derived: true };
         allowedAspects.push(d); allowedById.set(aspectIdOf(d), d);
       }
     }
@@ -474,6 +479,24 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   const kept = chains.filter((c) => !c.bodies.every((b) => SECONDARY.has(b)));
   // Preserve every qualifying aspect in the source graph, including those outside ranked themes.
   for (const a of allowedAspects) aspectEvidence(a);
+  // Configurations derive only from already verified major-planet aspect objects.
+  const contact = (a: string, b: string, type: string) => allowedAspects.find(x => !x.derived && x.type === type && [x.a, x.b].sort().join(':') === [a, b].sort().join(':'));
+  for (let i = 0; i < PLANETS.length; i++) for (let j = i + 1; j < PLANETS.length; j++) for (let k = j + 1; k < PLANETS.length; k++) {
+    const bs = [PLANETS[i], PLANETS[j], PLANETS[k]];
+    const trines = [contact(bs[0], bs[1], 'trine'), contact(bs[0], bs[2], 'trine'), contact(bs[1], bs[2], 'trine')];
+    if (trines.every(Boolean)) add({ id: `configuration:grand-trine-${bs.join('-')}`, kind: 'configuration', fact: `Grand trine: ${trines.map(x => x ? evidence[aspectIdOf(x)].fact : '').join('; ')}`, bodies: bs });
+    for (const apex of bs) {
+      const pair = bs.filter(b => b !== apex); const opposition = contact(pair[0], pair[1], 'opposition');
+      const a = contact(apex, pair[0], 'square'), b = contact(apex, pair[1], 'square');
+      if (opposition && a && b) add({ id: `configuration:t-square-${apex}-${pair.join('-')}`, kind: 'configuration', fact: `T-square with ${apex} as apex: ${[opposition, a, b].map(x => evidence[aspectIdOf(x)].fact).join('; ')}`, bodies: bs });
+      const q1 = contact(apex, pair[0], 'quincunx'), q2 = contact(apex, pair[1], 'quincunx'), sx = contact(pair[0], pair[1], 'sextile');
+      if (q1 && q2 && sx) add({ id: `configuration:yod-${apex}-${pair.join('-')}`, kind: 'configuration', fact: `Yod, a symbolic adjustment pattern, with ${apex} as apex: ${[q1, q2, sx].map(x => evidence[aspectIdOf(x)].fact).join('; ')}`, bodies: bs });
+    }
+  }
+  for (const b of PLANETS) {
+    const p = pos[b]; if (!p) continue;
+    if (p.house && [1, 4, 7, 10].includes(p.house)) add({ id: `angularity:${b}`, kind: 'angularity', fact: `${b} is in angular house ${p.house}; this is separate from a conjunction to an angle`, bodies: [b] });
+  }
   const houseOccupancy = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, occupants(i + 1)]));
   const personalization = Object.fromEntries(PLANETS.map((b) => {
     const chain = kept.find((c) => c.id === (b === 'Sun' || b === 'Moon' ? `chain:${b.toLowerCase()}` : `chain:planet-${b}`));

@@ -74,6 +74,8 @@ ACCURACY
 VOICE
 - Plain, warm, specific English. Translate any astrology term in the same sentence.
 - Say "may", "often", "tends to", "can". Never "you will", "you are meant to", "you are built for", "destined".
+- Every behavioral field and the opening/summary must include may/can/could/often/tends to, even when evidence is strong. Strong chart support is NOT proof of someone's behavior. Avoid inflated gifts or absolute ability: effortlessly, immense accuracy, psychic/energetic sensing, psychological insight, laser-like, lightning-fast, personal magnetism, radical authenticity, perfect equilibrium, refuses to compromise. Use a recognizable scene: "She may reread a message before replying" instead of "She understands what others mean before they say it".
+- Each plainMeaning must state a contradiction or reinforcement (but/yet/while/both/also/together), not a pair of flattering adjectives. howItWorks names at least two placements with degrees, houses and relevant verified orbs. Never call 1.3° exact: that is a tight contact, not exact. Include actual house rulership and the relevant full dispositor path, not only "its ruler".
 - No diagnoses, trauma, abuse, addiction or mental-health labels. No em dashes or en dashes.
 - Constructive expression before the challenge.
 - Write about the client in the third person by name (the practitioner reads this before the session). Client questions address the client as "you".

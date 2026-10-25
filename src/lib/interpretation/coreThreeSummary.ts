@@ -51,7 +51,7 @@ export function buildCoreThreeSummary(chart: NatalChart): CoreThreeSummary | nul
   const mod = mods.size === 1 ? [...mods][0] : majority(lines.map((l) => l.modality));
   let meaning: string;
   if (signs.size === 1) {
-    meaning = `This is a triple ${[...signs][0]} signature: how this person shines, what they need to feel safe, and how they come across all speak the same language. People tend to meet the same person inside and out. Because it is all ${el}, this person ${ELEMENT_MEANS[el]}; because it is all ${mod}, this person ${MODALITY_MEANS[mod]}. The other planets decide how that one note gets played.`;
+    meaning = `This is a triple ${[...signs][0]} signature: identity, emotional needs and first impressions share a sign style. That does not make private feelings and visible behavior identical: their houses, rulers and aspects may pull in different directions. The shared ${el} emphasis suggests this person ${ELEMENT_MEANS[el]}; the shared ${mod} emphasis suggests this person ${MODALITY_MEANS[mod]}. The evidence below shows what reinforces or complicates that baseline.`;
   } else if (els.size === 1) {
     meaning = `Different signs, but all ${el}: this person ${ELEMENT_MEANS[el]}, in three different flavors. The core is consistent even when the surface looks varied.`;
   } else {
