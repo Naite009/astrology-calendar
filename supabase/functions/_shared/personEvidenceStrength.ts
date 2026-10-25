@@ -24,12 +24,12 @@ export function scorePersonEvidence(ids: string[], ctx: StrengthContext): Eviden
   };
   for (const id of new Set(ids)) {
     const e = ctx.evidence[id]; if (!e) continue;
-    if (e.kind === 'placement' || e.kind === 'angle') {
+    if (e.kind === 'placement' || e.kind === 'angle' || e.kind === 'sign' || e.kind === 'house') {
       for (const b of e.bodies) {
         bodies.add(b);
-        add(`sign:${b}`, PERSONAL.has(b) || ANGLES.has(b) ? 'personal' : 'background', PERSONAL.has(b) || ANGLES.has(b) ? 2 : 0.25);
+        if (e.kind !== 'house') add(`sign:${b}`, PERSONAL.has(b) || ANGLES.has(b) ? 'personal' : 'background', PERSONAL.has(b) || ANGLES.has(b) ? 2 : 0.25);
         const h = ctx.placements?.[b]?.house;
-        if (h && !ANGLES.has(b)) {
+        if (h && !ANGLES.has(b) && e.kind !== 'sign') {
           add(`house:${b}`, 'houses', 2); personalized.add(b); areas.add(h);
           if ([1, 4, 7, 10].includes(h)) add(`angular:${b}`, 'angularity', 2);
         }

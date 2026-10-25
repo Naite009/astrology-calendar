@@ -24,6 +24,8 @@ const Body = z.object({
     tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(12),
     placements: z.record(z.object({ sign: z.string(), longitude: z.number(), house: z.number().nullable() }).passthrough()).optional(),
     houseRulers: z.record(z.object({ traditional: z.string(), modern: z.string().optional() })).optional(),
+    personalization: z.record(z.unknown()).optional(),
+    houseOccupancy: z.record(z.array(z.string())).optional(),
     transits: z.array(z.object({ id: z.string(), headline: z.string(), fact: z.string(), nextExact: z.string().nullable(), isActiveNow: z.boolean(), chainIds: z.array(z.string()) }).passthrough()).max(12),
     allowedAspects: z.array(z.object({ a: z.string(), b: z.string(), type: z.string(), orb: z.number().optional() }).passthrough()).max(300),
   }),
@@ -49,7 +51,10 @@ HOW TO READ
 - inLife, inRelationships, inWork, underStress, inDecisions (HOW IT SHOWS UP): concrete scenes of what the person does, says, chooses, avoids. "When a plan changes last minute, she quietly redoes it herself" beats "she is independent".
 - tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
 - healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
-- A big life-purpose statement ("here to change the world", "life purpose", "mission") is allowed only when the full chain (placement, ruler, aspect, at least 4 evidence ids) earns it. Otherwise describe the placement, its house, ruler and aspects and stop there.
+- Never write fate, destiny, "here to", "meant to", "you always" or invented life history. A high support index is not permission to make a certain life-purpose claim.
+- PERSONALIZATION HIERARCHY: Saturn by sign is cohort background; Uranus, Neptune and Pluto by sign are generational background. A sign alone NEVER earns an individualized signature. House personalizes the life area; traditional house rulership carries other areas; tight personal-planet/angle aspects, angularity, chart-ruler involvement and repeated independent chains give stronger support. A dispositor name alone is not enough.
+- Whenever you explain Saturn/Uranus/Neptune/Pluto in a sign, explicitly call the sign layer background or cohort/generational tone, THEN explain why it matters to THIS chart using its supplied house, actual house rulership, angle or personal aspect with orb. Do not say "Pluto in Libra means relationships transform her" or "Saturn in Leo gives her a visibility lesson". Explain which real links earn the interpretation.
+- conclusionEvidence: for EACH field (plainMeaning, howItWorks, inLife, inWork, inRelationships, underStress, inDecisions, tension, healthyExpression), list at least two concrete evidence IDs supporting THAT conclusion, all also declared in evidenceIds or tensionEvidenceIds. Cite BOTH sides of each contradiction. Unrelated citations cannot rescue a weak assertion. The checker computes strength; do not invent a score. Strong wording (defining, powerful, deeply, strongly, dominant) needs a strong support index. Otherwise use may/can/could/often/tends to.
 - Reinforcements are verified places where separate chains point the same way; use them to explain why a pattern is strong (cite their evidenceIds, never the reinforce: id itself). Each signature cites at least 3 evidence ids from at least 2 chains.
 - Start from the Big Three / strongest baseline, then show which verified placements sharpen or complicate it.
 - Tensions marked mustAddress are the strongest contradictions in the chart. Each one MUST be cited (its aspect evidence id) in a signature's tensionEvidenceIds or a collision.
@@ -78,7 +83,7 @@ VOICE
 OUTPUT: only JSON, no markdown fences, exactly this shape:
 {"headline": "2-3 sentences naming the central dynamic of this person",
  "centralTension": "2-4 sentences",
- "signatures": [{"name": "...", "plainMeaning": "1-2 everyday sentences", "chainIds": [], "evidenceIds": [], "howItWorks": "4-7 sentences: Because... then... but...", "inLife": "2 sentences", "inRelationships": "2 sentences", "inWork": "2 sentences", "underStress": "2 sentences", "inDecisions": "1-2 sentences", "tension": "2-3 sentences", "tensionEvidenceIds": [], "healthyExpression": "2 sentences"}],
+ "signatures": [{"name": "...", "plainMeaning": "1-2 everyday sentences", "chainIds": [], "evidenceIds": [], "conclusionEvidence": {"plainMeaning": [], "howItWorks": [], "inLife": [], "inWork": [], "inRelationships": [], "underStress": [], "inDecisions": [], "tension": [], "healthyExpression": []}, "howItWorks": "4-7 sentences: Because... then... but...", "inLife": "2 sentences", "inRelationships": "2 sentences", "inWork": "2 sentences", "underStress": "2 sentences", "inDecisions": "1-2 sentences", "tension": "2-3 sentences", "tensionEvidenceIds": [], "healthyExpression": "2 sentences"}],
  "collisions": [{"between": ["signature name", "signature name"], "description": "2-4 sentences", "evidenceIds": []}],
  "whenLost": "2-3 sentences", "whatSteadies": "2-3 sentences",
  "transitsNow": [{"transitId": "", "signatureName": "", "meaning": "2-3 sentences"}],
@@ -109,7 +114,8 @@ async function callModel(apiKey: string, messages: { role: string; content: stri
     console.error('gateway error', res.status, t.slice(0, 500));
     return { ok: false, status: res.status, message };
   }
-  const reader = res.body!.getReader();
+  if (!res.body) return { ok: false, status: 502, message: 'The reading service returned no content.' };
+  const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = '', text = '';
   while (true) {
@@ -143,13 +149,16 @@ Deno.serve(async (req) => {
     const ctx = contextFromStoryMap(map);
     const input = {
       client: { name, age: age ?? null },
+      evidence: map.evidence,
+      personalization: map.personalization,
+      houseOccupancy: map.houseOccupancy,
       chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, steps: c.steps.map((id) => ({ id, fact: map.evidence[id]?.fact })) })),
       houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,
       reinforcements: map.reinforcements ?? [],
       balance: ['balance:elements', 'balance:modalities'].map((id) => map.evidence[id]).filter(Boolean),
       transitsNow: map.transits.map((t) => ({ id: t.id, fact: t.fact, nextExact: t.nextExact, activeNow: t.isActiveNow, chainIds: t.chainIds })),
-      allowedAspects: map.allowedAspects.map((a) => `${a.a} ${a.type} ${a.b} (${typeof a.orb === 'number' ? a.orb.toFixed(1) : '?'}° orb)`),
+      allowedAspects: map.allowedAspects,
     };
 
     const messages = [

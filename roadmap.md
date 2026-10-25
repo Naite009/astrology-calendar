@@ -1,5 +1,10 @@
 # Roadmap
 
+## Natal Portrait personalization hierarchy
+- [ ] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
+- [ ] Preserve whole-chart sources and expose background versus personalized support.
+- [ ] Run regressions and inspect a newly generated saved adult portrait with exact evidence in the signed-in preview.
+
 ## Full accuracy audit and whole-chart Natal Portrait
 - [x] Single-source-of-truth map and root causes in `qa-reports/full-audit-2026-10.md`.
 - [x] Whole-chart story map (all 10 planets, 4 angles, 12 house rulers, dispositor chains, derived DSC/IC aspects, salience, mustAddress contradictions).

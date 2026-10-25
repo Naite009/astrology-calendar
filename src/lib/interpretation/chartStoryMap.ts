@@ -18,8 +18,9 @@ import { computeMajorTransits, type MajorTransit } from '@/lib/transits/majorTra
 import { getChartRulers, TRADITIONAL_RULER, MODERN_CORULER } from './chartRuler';
 import { ordinalHouse } from './ordinals';
 import { SIGN_ELEMENT, SIGN_MODALITY } from '@/lib/aspects/outOfSign';
+import { scorePersonEvidence, type EvidenceStrength } from '../../../supabase/functions/_shared/personEvidenceStrength';
 
-export type StoryEvidenceKind = 'angle' | 'placement' | 'rulership' | 'aspect' | 'concentration' | 'balance';
+export type StoryEvidenceKind = 'angle' | 'placement' | 'rulership' | 'aspect' | 'concentration' | 'balance' | 'sign' | 'house' | 'condition' | 'angularity' | 'configuration';
 
 export interface StoryEvidence {
   id: string;
@@ -73,7 +74,9 @@ export interface StoryTransit {
 export interface StoryPlacement { sign: string; longitude: number; house: number | null; retrograde: boolean }
 
 export interface ChartStoryMap {
-  version: 2;
+  version: 3;
+  personalization: Record<string, EvidenceStrength>;
+  houseOccupancy: Record<number, string[]>;
   subject: { name: string; birthDate: string };
   evidence: Record<string, StoryEvidence>;
   chains: StoryChain[];
@@ -126,7 +129,8 @@ function positions(chart: NatalChart): Record<string, Pos> {
   for (const body of [...PLANETS, 'NorthNode', 'Chiron']) {
     const p = (chart.planets as Record<string, NatalPlanetPosition | undefined>)[body];
     if (!p?.sign) continue;
-    const lon = toAbsoluteLongitude(p)!;
+    const lon = toAbsoluteLongitude(p);
+    if (lon == null) continue;
     const house = houseForLongitude(chart, lon);
     let cuspDistance: number | null = null, nextHouse: number | null = null;
     if (cusps && house) {
@@ -194,6 +198,9 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     const cusp = p.cuspDistance != null && p.cuspDistance < 1 && p.nextHouse
       ? `; within ${p.cuspDistance.toFixed(1)}° of the ${ordinalHouse(p.nextHouse)} cusp, so the house is birth-time sensitive`
       : '';
+    add({ id: `sign:${body}`, kind: 'sign', fact: `${body} in ${p.sign}: ${PERSONAL.has(body) ? 'personal style, not a complete portrait' : 'cohort/background sign tone, not an individualized conclusion'}`, bodies: [body] });
+    if (p.house) add({ id: `house:${body}`, kind: 'house', fact: `${body} occupies the ${ordinalHouse(p.house)}${cusp}`, bodies: [body] });
+    if (digText) add({ id: `condition:${body}`, kind: 'condition', fact: `${body}: traditional essential condition ${dig.toLowerCase()}, not a personality diagnosis`, bodies: [body] });
     return add({
       id: `placement:${body}`,
       kind: 'placement',
@@ -231,7 +238,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     add({
       id: `rulership:house-${h}`,
       kind: 'rulership',
-      fact: `${ordinalHouse(h)} cusp ${fmtLon(toAbsoluteLongitude(cusp)!).text} ${cusp.sign}, ruled by ${trad}${p ? ` (${fmtLon(p.lon).text} ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''})` : ''}${houseRulers[h].modern ? `; modern co-ruler ${houseRulers[h].modern}` : ''}`,
+      fact: `${ordinalHouse(h)} cusp ${fmtLon(toAbsoluteLongitude(cusp) ?? 0).text} ${cusp.sign}, ruled by ${trad}${p ? ` (${fmtLon(p.lon).text} ${p.sign}${p.house ? `, ${ordinalHouse(p.house)}` : ''}${p.retro ? ', retrograde' : ''})` : ''}${houseRulers[h].modern ? `; modern co-ruler ${houseRulers[h].modern}` : ''}`,
       bodies: [trad],
     });
   }
@@ -248,7 +255,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
       steps.push(next); seen.add(next); cur = next;
     }
     if (steps.length < 2 && end === 'unavailable') return null;
-    const chainText = steps.map((b) => `${b}${pos[b] ? ` in ${pos[b].sign}${pos[b].house ? ` (${ordinalHouse(pos[b].house!)})` : ''}` : ''}`).join(' → ');
+    const chainText = steps.map((b) => { const p = pos[b]; return `${b}${p ? ` ${fmtLon(p.lon).text} in ${p.sign}${p.house ? ` (${ordinalHouse(p.house)})` : ''}${p.retro ? ', retrograde' : ''}` : ''}`; }).join(' → ');
     return add({ id: `rulership:dispositors-${body}`, kind: 'rulership', fact: `Dispositor chain: ${chainText}; ${end}`, bodies: steps });
   };
 
@@ -293,6 +300,16 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
       addAspects(steps, bodies, aspectsOf(ruler, 2, ['Midheaven']));
     }
     pushChain({ id: 'chain:midheaven', anchor: 'Midheaven', label: `${mc.sign} Midheaven and its ruler`, steps, bodies, salience: 8 });
+    const icSteps = ['angle:IC']; const icBodies = ['IC'];
+    for (const b of occupants(4)) { const id = placementId(b); if (id) { icSteps.push(id); icBodies.push(b); } }
+    addAspects(icSteps, icBodies, aspectsOf('IC', 300));
+    const icRuler = houseRulers[4]?.traditional;
+    if (icRuler) {
+      icSteps.push('rulership:house-4'); icBodies.push(icRuler);
+      const id = placementId(icRuler); if (id) icSteps.push(id);
+      const dc = dispositorChainId(icRuler); if (dc) icSteps.push(dc);
+    }
+    pushChain({ id: 'chain:ic', anchor: 'Midheaven', label: 'IC, private base and its ruler', steps: icSteps, bodies: icBodies, salience: 5 });
   }
 
   // ── Planet chains: every one of the 10 majors (Sun/Moon keep their legacy ids) ──
@@ -310,7 +327,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     const ruled = housesRuledBy[body] ?? [];
     if (ruled.length) steps.push(add({ id: `rulership:${body}-rules`, kind: 'rulership', fact: `${body} rules the ${ruled.map((h) => ordinalHouse(h)).join(' and the ')} (traditional rulership of those cusps)`, bodies: [body] }));
     const dc = dispositorChainId(body); if (dc) steps.push(dc);
-    addAspects(steps, bodies, aspectsOf(body, PERSONAL.has(body) ? 5 : 3));
+    addAspects(steps, bodies, aspectsOf(body, 300));
     let salience = 1 + tightCount(body) * 2 + ruled.length;
     if (body === 'Sun' || body === 'Moon') salience += 6;
     if (chartRuler?.traditional === body) salience += 6;
@@ -455,6 +472,13 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   if (mcLon != null) { placements.Midheaven = { sign: fmtLon(mcLon).sign, longitude: mcLon, house: 10, retrograde: false }; placements.IC = { sign: fmtLon(mcLon + 180).sign, longitude: (mcLon + 180) % 360, house: 4, retrograde: false }; }
 
   const kept = chains.filter((c) => !c.bodies.every((b) => SECONDARY.has(b)));
+  // Preserve every qualifying aspect in the source graph, including those outside ranked themes.
+  for (const a of allowedAspects) aspectEvidence(a);
+  const houseOccupancy = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, occupants(i + 1)]));
+  const personalization = Object.fromEntries(PLANETS.map((b) => {
+    const chain = kept.find((c) => c.id === (b === 'Sun' || b === 'Moon' ? `chain:${b.toLowerCase()}` : `chain:planet-${b}`));
+    return [b, scorePersonEvidence(chain?.steps ?? [], { evidence, placements, houseRulers })];
+  }));
   // Anchors first in fixed order, then everything else by salience.
   const ORDER = ['chain:rising', 'chain:midheaven', 'chain:sun', 'chain:moon'];
   kept.sort((x, y) => {
@@ -464,7 +488,9 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
   });
 
   return {
-    version: 2,
+    version: 3,
+    personalization,
+    houseOccupancy,
     subject: { name: chart.name, birthDate: chart.birthDate },
     evidence,
     chains: kept,
@@ -482,7 +508,7 @@ export const storyAspectId = aspectIdOf;
 
 /** Stable short hash of the chart data the map depends on, for caching. */
 export function storyMapChartHash(chart: NatalChart): string {
-  const src = JSON.stringify([2, chart.birthDate, chart.birthTime, chart.planets, chart.houseCusps]);
+  const src = JSON.stringify([3, chart.birthDate, chart.birthTime, chart.planets, chart.houseCusps]);
   let h = 5381;
   for (let i = 0; i < src.length; i++) h = ((h << 5) + h + src.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
