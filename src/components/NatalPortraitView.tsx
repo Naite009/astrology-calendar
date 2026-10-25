@@ -743,8 +743,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3 max-w-2xl">
-          A comprehensive analysis of your birth chart — who you are, what drives you, where you struggle, 
-          and what you're here to become. This is your lifetime operating manual.
+          Your chart's repeating patterns, competing needs and possible expressions, grounded in placements, houses, rulers and aspects.
         </p>
         <SectionExportButtons
           className="mt-4"

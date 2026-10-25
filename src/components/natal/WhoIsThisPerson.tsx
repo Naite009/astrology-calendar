@@ -7,7 +7,7 @@ import { validatePersonReading, validationContextFor, type PersonReading } from 
 import { formatLocalDateKey } from '@/lib/localDate';
 import { buildCoreThreeSummary } from '@/lib/interpretation/coreThreeSummary';
 
-const CACHE_PREFIX = 'person-reading:v4:';
+const CACHE_PREFIX = 'person-reading:v5:';
 
 function ageOn(birthDate: string, now: Date): number | null {
   const [y, m, d] = birthDate.split('-').map(Number);
@@ -49,7 +49,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
       if (!body.reading) throw new Error('The written reading did not pass the accuracy check.');
       const r = body.reading as PersonReading;
       // Re-check in the browser with today's transit list.
-      const errs = validatePersonReading({ ...r, transitsNow: [] }, validationContextFor(map));
+      const errs = validatePersonReading(r, validationContextFor(map));
       if (errs.length) throw new Error('The written reading did not pass the accuracy check.');
       localStorage.setItem(cacheKey, JSON.stringify(r));
       setReading(r);
@@ -62,8 +62,9 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
 
   useEffect(() => {
     const cached = readCache(cacheKey);
-    setReading(cached); setError(null);
-    if (!cached) void generate();
+    const valid = cached && validatePersonReading(cached, validationContextFor(map)).length === 0 ? cached : null;
+    setReading(valid); setError(null);
+    if (!valid) void generate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey]);
 
@@ -135,7 +136,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
                 <dl className="grid gap-2 sm:grid-cols-2 text-sm">
                   {s.inLife && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Everyday life</dt><dd className="text-foreground">{s.inLife}</dd></div>}
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">In relationships</dt><dd className="text-foreground">{s.inRelationships}</dd></div>
-                  <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{ageOn(chart.birthDate, new Date())! < 18 ? 'School and direction' : 'In work'}</dt><dd className="text-foreground">{s.inWork}</dd></div>
+                  <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">{(ageOn(chart.birthDate, new Date()) ?? 18) < 18 ? 'School and direction' : 'In work'}</dt><dd className="text-foreground">{s.inWork}</dd></div>
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Under stress</dt><dd className="text-foreground">{s.underStress}</dd></div>
                   {s.inDecisions && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Making decisions</dt><dd className="text-foreground">{s.inDecisions}</dd></div>}
                 </dl>
@@ -146,6 +147,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
                     <ChevronDown className="h-3.5 w-3.5" /> The chart evidence
                   </summary>
                   <ul className="mt-2 list-disc pl-5 space-y-0.5 text-xs text-muted-foreground">
+                    {s.evidenceStrength && <li>Interpretive support: {s.evidenceStrength.level} ({s.evidenceStrength.independentFactors.length} distinct factors, not a probability).</li>}
                     {[...new Set([...s.evidenceIds, ...(s.tensionEvidenceIds ?? [])])].map((id) => <li key={id}>{map.evidence[id]?.fact ?? id}</li>)}
                   </ul>
                 </details>

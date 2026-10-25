@@ -7,7 +7,7 @@ import type { ValidationContext } from './personReadingValidator.ts';
 
 export interface SerializedStoryMap {
   version?: number;
-  evidence: Record<string, { id: string; bodies: string[] }>;
+  evidence: Record<string, { id: string; kind?: string; bodies: string[]; aspect?: { a: string; b: string; type: string; orb: number; derived?: boolean } }>;
   chains: { id: string; steps: string[]; bodies: string[] }[];
   tensions: { id: string; fact: string; evidenceIds: string[]; mustAddress?: boolean }[];
   transits: { id: string }[];
@@ -33,5 +33,7 @@ export function contextFromStoryMap(map: SerializedStoryMap): ValidationContext 
     evidenceBodies: v2 ? evidenceBodies : undefined,
     mustAddress: map.tensions.filter((t) => t.mustAddress).map((t) => ({ id: t.id, fact: t.fact, keyEvidenceId: t.evidenceIds[t.evidenceIds.length - 1] })),
     requireFullSignature: v2,
+    strengthContext: { evidence: map.evidence, placements: map.placements, houseRulers: map.houseRulers },
+    requireConclusionEvidence: (map.version ?? 1) >= 3,
   };
 }
