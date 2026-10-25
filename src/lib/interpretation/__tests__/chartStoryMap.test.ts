@@ -89,7 +89,8 @@ export function sampleReading(map: ReturnType<typeof buildChartStoryMap>, text =
 
 describe('person reading validator', () => {
   const map = buildChartStoryMap(harrison, { now: NOW });
-  const ctx = { ...validationContextFor(map), requireConclusionEvidence: false };
+  // These fixtures isolate factual parsing; main-plot semantics have their own strict tests.
+  const ctx = { ...validationContextFor(map), requireConclusionEvidence: false, mainPlot: undefined };
 
   it('accepts a reading that cites real evidence', () => {
     expect(validatePersonReading(sampleReading(map), ctx)).toEqual([]);

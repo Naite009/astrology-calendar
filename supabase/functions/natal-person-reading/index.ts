@@ -3,6 +3,7 @@ import { z } from 'npm:zod@3.23.8';
 import { withInterpretationStandard } from '../_shared/interpretationStandard.ts';
 import { cleanPersonReading, validatePersonReading, type PersonReading } from '../_shared/personReadingValidator.ts';
 import { contextFromStoryMap } from '../_shared/personReadingContext.ts';
+import { buildNatalMainPlot } from '../_shared/natalMainPlot.ts';
 
 const DEFAULT_MODEL = 'google/gemini-3.1-pro-preview';
 /** Side-by-side evaluation only; the app always uses DEFAULT_MODEL. */
@@ -20,12 +21,14 @@ const Body = z.object({
     version: z.number().optional(),
     evidence: z.record(Evidence),
     chains: z.array(z.object({ id: z.string(), anchor: z.string(), label: z.string(), steps: z.array(z.string()), bodies: z.array(z.string()), salience: z.number().optional() })).max(40),
-    reinforcements: z.array(z.object({ id: z.string(), fact: z.string(), chainIds: z.array(z.string()), evidenceIds: z.array(z.string()) })).max(12).optional(),
-    tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(12),
+    reinforcements: z.array(z.object({ id: z.string(), fact: z.string(), chainIds: z.array(z.string()), evidenceIds: z.array(z.string()) })).max(100).optional(),
+    tensions: z.array(z.object({ id: z.string(), between: z.array(z.string()), fact: z.string(), evidenceIds: z.array(z.string()), salience: z.number().optional(), mustAddress: z.boolean().optional() })).max(100),
     placements: z.record(z.object({ sign: z.string(), longitude: z.number(), house: z.number().nullable() }).passthrough()).optional(),
     houseRulers: z.record(z.object({ traditional: z.string(), modern: z.string().optional() })).optional(),
     personalization: z.record(z.unknown()).optional(),
     houseOccupancy: z.record(z.array(z.string())).optional(),
+    houseRulerChains: z.array(z.unknown()).optional(),
+    functionContext: z.record(z.object({ function: z.string(), signExpression: z.string(), lifeArena: z.string() })).optional(),
     transits: z.array(z.object({ id: z.string(), headline: z.string(), fact: z.string(), nextExact: z.string().nullable(), isActiveNow: z.boolean(), chainIds: z.array(z.string()) }).passthrough()).max(12),
     allowedAspects: z.array(z.object({ a: z.string(), b: z.string(), type: z.string(), orb: z.number().optional() }).passthrough()).max(300),
   }),
@@ -44,7 +47,12 @@ function systemPrompt(age: number | null | undefined): string {
 HOW TO READ
 - The evidence is the WHOLE chart: every major planet has its own chain (placement, sign ruler, the houses it rules, its dispositor chain, its tight aspects), plus the angles (Rising, Descendant, Midheaven, IC), all twelve house rulers, concentrations and balance. Chains carry a salience score; start from the most salient, but use any planet whose evidence matters. Do not ignore Mercury, Mars or Saturn just because they are not the Sun, Moon or Rising.
 - Read every signature through this chain: PLACEMENT -> what the SIGN does -> the HOUSE arena -> the RULER / DISPOSITOR chain -> TIGHT ASPECTS -> what REINFORCES or CONTRADICTS it elsewhere -> concrete BEHAVIOR.
-- 4 to 6 NAMED SIGNATURES. Name: plain and memorable, a stranger understands it instantly ("Fierce Independent", "The Peacekeeper Who Keeps Score"). No metaphors (banned: velvet, silk, glass, mirror, storm, shadow, garden, alchemist, labyrinth, cathedral, tapestry, ember, tide). Invent from this chart, never copy examples.
+- 3 to 5 NAMED SIGNATURES, normally 3 for depth without repetition. Name: plain and memorable, a stranger understands it instantly ("Fierce Independent", "The Peacekeeper Who Keeps Score"). No metaphors (banned: velvet, silk, glass, mirror, storm, shadow, garden, alchemist, labyrinth, cathedral, tapestry, ember, tide). Invent from this chart, never copy examples.
+- BEFORE PROSE: mainPlot is a deterministic ranking, not a menu of psychological labels. Choose only selectedThemeIds. Set mainPlotThemeId to primaryThemeId and write its signature first. Give each signature a distinct themeId. The structure tells you what repeats; derive the human meaning using functionContext and exact facts, not a canned theme list. One body with several facts is ONE structural indicator. Two independent bodies can earn a meaningful theme; three support a main-story candidate. Do not count a mirrored angle contact or repeated dispositor citation twice.
+- The provided signaturePlans are the fixed evidence outlines for three distinct stories. Preserve their themeId, chainIds, evidenceIds and conclusionEvidence; write the text from these exact factors. Include every listed tensionEvidenceId. Those IDs are not permission to infer unrelated life history. Each plainMeaning must explicitly use but/yet/while/both/also/together and contain can/may/could/often. In every other behavioral field also include can/may/could/often. Avoid strong adjectives entirely: profound, deeply, fierce, dominant, powerful, strongly, uncompromising. Titles can be memorable without promising absolute behavior.
+- QUALITY: use three genuinely different stories from the signaturePlans, not three versions of Libra harmony. No unsupported gifts (very perceptive, deeply read others, naturally putting others at ease, can excel, innate/strong relational skills). inLife/inWork/inRelationships/underStress/inDecisions each names an ordinary scene, such as receiving a message, a shared purchase, a meeting, a changed plan or a disagreement, only when the theme supports it. Do not merely say evaluate values, seek depth, maintain equilibrium, navigate shared vulnerability or recharge. Show the actual choice and competing need. Explain 2nd/8th houses as own money, possessions and choices versus shared costs, agreements and obligations, not generic self-worth. Do not call an MC ambitious or Jupiter intense just because they are there. Integration describes coexistence, not a prescribed growth task.
+- Every chosen theme declares requiredEvidenceIds. Include ALL of them in evidenceIds and cite at least two different primary placements/angles in conclusionEvidence.plainMeaning. Keep all signature evidence within the theme's evidenceIds. In howItWorks explain its actual full rulerPathIds and relevant houseRulerChains, including where paths terminate or loop. Use the full graph to understand context, not to borrow unrelated citations. The chartRuler path gets special treatment: show where the ASC ruler takes the chart story, including sign, house, condition, contacts and dispositor.
+- Preserve each chosen theme's mustAddress contradictions IN THAT signature's tension, with the exact aspect ID in tensionEvidenceIds. Do not cancel one need with another. Explain both. Sun is sign + house + house rulership + contacts + dispositor; Moon is the same full chain applied to reassurance, safety, instinct, stress response and restoration. A sign adjective list is not a story.
 - Every signature must draw on at least TWO DIFFERENT chains (different planets), e.g. a Venus chain plus a Saturn aspect. One placement never earns a signature.
 - plainMeaning: 1-2 everyday sentences stating the defining pattern or the apparent contradiction, e.g. "{Name} has the signature of someone who craves partnership and harmony, but when relying on someone feels uncertain, she would rather take over and do it herself." No astrology words here.
 - howItWorks (THE ASTROLOGY): a walkthrough in the form "Because X ... then Y ... but Z ...", naming exact placements with degrees, houses, the ruler or dispositor chain and the aspect with its orb exactly as supplied.
@@ -83,9 +91,9 @@ VOICE
 - ${ageRule}
 
 OUTPUT: only JSON, no markdown fences, exactly this shape:
-{"headline": "2-3 sentences naming the central dynamic of this person",
+{"mainPlotThemeId": "supplied primaryThemeId", "headline": "2 sentences naming the central dynamic of this person",
  "centralTension": "2-4 sentences",
- "signatures": [{"name": "...", "plainMeaning": "1-2 everyday sentences", "chainIds": [], "evidenceIds": [], "conclusionEvidence": {"plainMeaning": [], "howItWorks": [], "inLife": [], "inWork": [], "inRelationships": [], "underStress": [], "inDecisions": [], "tension": [], "healthyExpression": []}, "howItWorks": "4-7 sentences: Because... then... but...", "inLife": "2 sentences", "inRelationships": "2 sentences", "inWork": "2 sentences", "underStress": "2 sentences", "inDecisions": "1-2 sentences", "tension": "2-3 sentences", "tensionEvidenceIds": [], "healthyExpression": "2 sentences"}],
+ "signatures": [{"themeId": "supplied selected theme ID", "name": "...", "plainMeaning": "1-2 everyday sentences", "chainIds": [], "evidenceIds": [], "conclusionEvidence": {"plainMeaning": [], "howItWorks": [], "inLife": [], "inWork": [], "inRelationships": [], "underStress": [], "inDecisions": [], "tension": [], "healthyExpression": []}, "howItWorks": "4-7 sentences: Because... then... but...", "inLife": "1 concrete sentence", "inRelationships": "1 concrete sentence", "inWork": "1 concrete sentence", "underStress": "1 concrete sentence", "inDecisions": "1 concrete sentence", "tension": "2 sentences", "tensionEvidenceIds": [], "healthyExpression": "1-2 sentences"}],
  "collisions": [{"between": ["signature name", "signature name"], "description": "2-4 sentences", "evidenceIds": []}],
  "whenLost": "2-3 sentences", "whatSteadies": "2-3 sentences",
  "transitsNow": [{"transitId": "", "signatureName": "", "meaning": "2-3 sentences"}],
@@ -149,11 +157,27 @@ Deno.serve(async (req) => {
     if (!apiKey) return json({ error: 'Reading service is not configured.' }, 500);
 
     const ctx = contextFromStoryMap(map);
+    const mainPlot = buildNatalMainPlot(map);
+    const fields = ['plainMeaning', 'howItWorks', 'inLife', 'inWork', 'inRelationships', 'underStress', 'inDecisions', 'tension', 'healthyExpression'];
+    const signaturePlans = mainPlot.selectedThemeIds.slice(0, 3).map(id => {
+      const theme = mainPlot.candidates.find(t => t.id === id);
+      if (!theme) return null;
+      return { themeId: id, structure: theme.structure, chainIds: theme.chainIds, evidenceIds: theme.evidenceIds,
+        conclusionEvidence: Object.fromEntries(fields.map(field => [field, theme.evidenceIds])),
+        tensionEvidenceIds: [...new Set(theme.contradictions.flatMap(t => t.evidenceIds))],
+        exactWalkthroughFacts: theme.requiredEvidenceIds.map(e => map.evidence[e]?.fact).filter(Boolean),
+        rulerWalkthroughFacts: theme.rulerPathIds.map(e => map.evidence[e]?.fact).filter(Boolean),
+      };
+    }).filter(Boolean);
     const input = {
       client: { name, age: age ?? null },
       evidence: map.evidence,
       personalization: map.personalization,
       houseOccupancy: map.houseOccupancy,
+      mainPlot: { ...mainPlot, candidates: mainPlot.candidates.filter(t => mainPlot.selectedThemeIds.includes(t.id)) },
+      signaturePlans,
+      houseRulerChains: map.houseRulerChains,
+      functionContext: map.functionContext,
       chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, evidenceIds: c.steps })),
       houseRulers: Object.entries(map.houseRulers ?? {}).map(([h, r]) => ({ house: Number(h), id: `rulership:house-${h}`, ...r })),
       tensions: map.tensions,

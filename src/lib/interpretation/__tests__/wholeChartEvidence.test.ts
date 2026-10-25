@@ -79,6 +79,11 @@ describe('ruler chains and dispositors', () => {
     const m = buildChartStoryMap(gina, { now: NOW });
     expect(Object.keys(m.houseRulers)).toHaveLength(12);
     for (const p of PLANETS) expect(m.evidence[`rulership:dispositors-${p}`]?.fact).toMatch(/^Dispositor chain: /);
+    expect(m.houseRulerChains).toHaveLength(12);
+    for (const path of m.houseRulerChains) {
+      expect(path).toEqual(buildRulerChain(gina, path.house));
+      expect(m.chains.some(c => c.id === `chain:house-ruler-${path.house}`)).toBe(true);
+    }
   });
 });
 
@@ -110,7 +115,7 @@ describe('whole-chart story map', () => {
 
 // ── Prose validation (Part C) ──
 const map = buildChartStoryMap(gina, { now: NOW });
-const ctx = { ...validationContextFor(map), requireConclusionEvidence: false };
+const ctx = { ...validationContextFor(map), requireConclusionEvidence: false, mainPlot: undefined };
 const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]);
 function reading(over: Partial<PersonReading['signatures'][number]> = {}, text = 'She may notice this.'): PersonReading {
   const sig = (name: string) => ({

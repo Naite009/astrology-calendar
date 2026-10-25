@@ -7,7 +7,7 @@ import { validatePersonReading, validationContextFor, type PersonReading } from 
 import { formatLocalDateKey } from '@/lib/localDate';
 import { buildCoreThreeSummary } from '@/lib/interpretation/coreThreeSummary';
 
-const CACHE_PREFIX = 'person-reading:v5:';
+const CACHE_PREFIX = 'person-reading:v6:';
 
 function ageOn(birthDate: string, now: Date): number | null {
   const [y, m, d] = birthDate.split('-').map(Number);
@@ -135,10 +135,10 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
                 <h3 className="font-serif text-lg text-foreground">{i + 1}. {s.name}</h3>
                 {s.plainMeaning && <p className="text-base leading-relaxed text-foreground font-serif">{s.plainMeaning}</p>}
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">The astrology</p>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Why astrologically</p>
                   <p className="text-sm leading-relaxed text-foreground">{s.howItWorks}</p>
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">How it shows up</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">How this can show up</p>
                 <dl className="grid gap-2 sm:grid-cols-2 text-sm">
                   {s.inLife && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Everyday life</dt><dd className="text-foreground">{s.inLife}</dd></div>}
                   <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">In relationships</dt><dd className="text-foreground">{s.inRelationships}</dd></div>
@@ -147,13 +147,13 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
                   {s.inDecisions && <div><dt className="text-[10px] uppercase tracking-widest text-muted-foreground">Making decisions</dt><dd className="text-foreground">{s.inDecisions}</dd></div>}
                 </dl>
                 {(s.tension || s.stuckPoint) && <p className="text-sm text-foreground border-l-2 border-primary pl-3"><span className="font-medium">The tension: </span>{s.tension ?? s.stuckPoint}</p>}
-                {(s.healthyExpression || s.strength) && <p className="text-sm text-foreground"><span className="font-medium">Healthy expression: </span>{s.healthyExpression ?? s.strength}</p>}
+                {(s.healthyExpression || s.strength) && <p className="text-sm text-foreground"><span className="font-medium">Integration: </span>{s.healthyExpression ?? s.strength}</p>}
                 <details>
                   <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs font-medium text-primary">
                     <ChevronDown className="h-3.5 w-3.5" /> The chart evidence
                   </summary>
                   <ul className="mt-2 list-disc pl-5 space-y-0.5 text-xs text-muted-foreground">
-                    {s.evidenceStrength && <li>Interpretive support: {s.evidenceStrength.level} ({s.evidenceStrength.independentFactors.length} distinct factors, not a probability).</li>}
+                    {s.evidenceStrength && <li>Interpretive support: {s.evidenceStrength.level}.</li>}
                     {[...new Set([...s.evidenceIds, ...(s.tensionEvidenceIds ?? [])])].map((id) => <li key={id}>{map.evidence[id]?.fact ?? id}</li>)}
                   </ul>
                 </details>
