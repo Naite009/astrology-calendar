@@ -114,7 +114,7 @@ const ctx = validationContextFor(map);
 const must = map.tensions.filter((t) => t.mustAddress).map((t) => t.evidenceIds[t.evidenceIds.length - 1]);
 function reading(over: Partial<PersonReading['signatures'][number]> = {}, text = 'She may notice this.'): PersonReading {
   const sig = (name: string) => ({
-    name, plainMeaning: 'She wants closeness and fairness, yet when depending on someone feels shaky she quietly takes the job back.',
+    name, plainMeaning: 'She may want closeness and fairness, yet when depending on someone feels shaky she can quietly take the job back.',
     chainIds: ['chain:rising', 'chain:moon'], evidenceIds: ['angle:Ascendant', 'placement:Moon', 'rulership:Moon-dispositor'],
     howItWorks: text, inWork: text, inRelationships: text, underStress: text,
     tension: text, tensionEvidenceIds: must.length ? must : ['placement:Moon'], healthyExpression: text, ...over,

@@ -27,7 +27,7 @@ function reading(text = 'She may want to work together, but can take over when a
 describe('deterministic personalization strength', () => {
  it.each(['Saturn', 'Pluto', 'Neptune'])('%s sign alone remains background even with house data elsewhere', body => {
    const r = scorePersonEvidence([`sign:${body}`], strength);
-   expect(r.level).toBe('background'); expect(r.personalizedBodies).not.toContain(body); expect(r.score).toBe(0.25);
+   expect(r.level).toBe('background'); expect(r.personalizedBodies).not.toContain(body); expect(r.components.background).toBe(0.25);
  });
  it('house + rulership + tight personal aspect earns stronger support', () => {
    const r = scorePersonEvidence(ids, strength); expect(r.level).toBe('strong'); expect(r.personalizedBodies).toContain('Saturn'); expect(r.components.rulers).toBe(1.5);

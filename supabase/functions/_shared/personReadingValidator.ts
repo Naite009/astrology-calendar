@@ -246,7 +246,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
       if (typeof s[k] !== 'string' || !s[k].trim()) errors.push(`"${s.name}" missing ${k}`);
     }
     if (ctx.requireFullSignature) {
-      for (const k of ['tension', 'healthyExpression'] as const) if (typeof s[k] !== 'string' || !s[k]!.trim()) errors.push(`"${s.name}" missing ${k}`);
+      for (const k of ['tension', 'healthyExpression'] as const) if (typeof s[k] !== 'string' || !s[k]?.trim()) errors.push(`"${s.name}" missing ${k}`);
       if (!s.tensionEvidenceIds?.length) errors.push(`"${s.name}" tension must cite the competing placement's evidence id`);
     }
     // Independence: at least 2 distinct chains and 2 distinct bodies behind the signature.
@@ -254,7 +254,8 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
       const chainSet = new Set<string>([...(s.chainIds ?? []).filter((c) => ch.has(c))]);
       for (const id of s.evidenceIds ?? []) for (const c of ctx.evidenceChains[id] ?? []) chainSet.add(c);
       const bodySet = new Set<string>((s.evidenceIds ?? []).flatMap((id) => ctx.evidenceBodies?.[id] ?? []));
-      if (chainSet.size < 2 || bodySet.size < 2) errors.push(`"${s.name}" needs at least 2 independent supporting evidence chains (different chains and bodies)`);
+      const placements = new Set((s.evidenceIds ?? []).filter((id) => id.startsWith('placement:') || id.startsWith('angle:')).flatMap((id) => ctx.evidenceBodies?.[id] ?? []));
+      if (chainSet.size < 2 || bodySet.size < 2 || placements.size < 2) errors.push(`"${s.name}" needs at least 2 independent supporting evidence chains (different primary placements, not repeated chain membership)`);
     }
     // Big claims need a full chain: placement + rulership + aspect, 4+ ids.
     const sigText = [s.plainMeaning, s.howItWorks, s.inLife, s.inWork, s.inRelationships, s.underStress, s.inDecisions, s.healthyExpression].filter(Boolean).join(' ');
