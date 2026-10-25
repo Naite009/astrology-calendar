@@ -83,7 +83,9 @@ describe('main plot before prose', () => {
     const r: PersonReading = { mainPlotThemeId: plot.primaryThemeId ?? undefined, headline: 'She may weigh connection and independence.', centralTension: 'She may want both.', signatures, collisions: [], whenLost: 'She may pause.', whatSteadies: 'She may reflect.', transitsNow: [], clientQuestions: [] };
     expect(cleanPersonReading(r).mainPlotThemeId).toBe(plot.primaryThemeId);
     expect(validatePersonReading(r, ctx).filter(e => /theme|main plot|competing needs/.test(e))).toEqual([]);
-    r.signatures[0].tensionEvidenceIds = [];
+    const contradicted = r.signatures.find(s => plot.candidates.find(t => t.id === s.themeId)?.contradictions.length);
+    if (!contradicted) throw new Error('Fixture must contain a selected contradiction');
+    contradicted.tensionEvidenceIds = [];
     expect(validatePersonReading(r, ctx).some(e => e.includes('salient competing needs'))).toBe(true);
     r.signatures[0].conclusionEvidence = { ...r.signatures[0].conclusionEvidence, plainMeaning: ['placement:Sun', 'rulership:dispositors-Sun'] };
     expect(validatePersonReading(r, ctx).some(e => e.includes('two independent structural indicators'))).toBe(true);
