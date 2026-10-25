@@ -62,4 +62,21 @@ describe('main plot before prose', () => {
     expect(errors.some(e => e.includes('main plot'))).toBe(true);
     expect(errors.some(e => e.includes('Fixed-fate'))).toBe(true);
   });
+  it('rejects a selected theme when its own contradiction or independent evidence is omitted', () => {
+    const ctx = contextFromStoryMap({ ...source, version: 4, transits: [], allowedAspects: [source.evidence['aspect:Sun-square-Moon'].aspect] });
+    const plot = buildNatalMainPlot(source);
+    const chosen = plot.selectedThemeIds.slice(0, 3).map(id => plot.candidates.find(t => t.id === id)).filter(t => Boolean(t));
+    const signatures = chosen.map((t, i) => {
+      if (!t) throw new Error('Missing theme');
+      const text = 'She may consider another person, but can need time to decide privately.';
+      const ids = t.evidenceIds;
+      return { themeId: t.id, name: `Pattern ${i}`, plainMeaning: text, chainIds: t.chainIds, evidenceIds: ids, howItWorks: 'Sun at 28° Libra in the 1st house and Moon at 3° Libra in the 12th house may connect outward choices with private reflection. Their dispositor is Venus.', inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: ['aspect:Sun-square-Moon'], healthyExpression: text, conclusionEvidence: Object.fromEntries(['plainMeaning', 'howItWorks', 'inWork', 'inRelationships', 'underStress', 'tension', 'healthyExpression'].map(f => [f, ids])) };
+    });
+    const r: PersonReading = { mainPlotThemeId: plot.primaryThemeId ?? undefined, headline: 'She may weigh connection and independence.', centralTension: 'She may want both.', signatures, collisions: [], whenLost: 'She may pause.', whatSteadies: 'She may reflect.', transitsNow: [], clientQuestions: [] };
+    expect(validatePersonReading(r, ctx).filter(e => /theme|main plot|competing needs/.test(e))).toEqual([]);
+    r.signatures[0].tensionEvidenceIds = [];
+    expect(validatePersonReading(r, ctx).some(e => e.includes('salient competing needs'))).toBe(true);
+    r.signatures[0].conclusionEvidence = { ...r.signatures[0].conclusionEvidence, plainMeaning: ['placement:Sun', 'rulership:dispositors-Sun'] };
+    expect(validatePersonReading(r, ctx).some(e => e.includes('two independent structural indicators'))).toBe(true);
+  });
 });
