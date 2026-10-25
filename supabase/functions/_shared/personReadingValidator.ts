@@ -275,7 +275,7 @@ export function validatePersonReading(r: unknown, ctx: ValidationContext): strin
         const support = scorePersonEvidence(fieldIds, ctx.strengthContext);
         if (ctx.requireConclusionEvidence && (support.level === 'background' || support.independentFactors.length < 2)) errors.push(`"${s.name}" ${field} exceeds weak evidence (${support.score} support index)`);
         if (support.level !== 'strong' && /\b(?:defining|dominant|powerful|profound|central|strongly|deeply|fierce)\b/i.test(text)) errors.push(`"${s.name}" ${field} uses strong wording beyond its evidence score ${support.score}`);
-        if ((support.level !== 'strong' || (ctx.requireConclusionEvidence && field !== 'howItWorks')) && !/\b(?:may|can|could|often|tends? to|possible|background|cohort|generation)\b/i.test(text)) errors.push(`"${s.name}" ${field} must soften a claim supported by score ${support.score}; even strong support is not certainty`);
+        if ((support.level !== 'strong' || (ctx.requireConclusionEvidence && field !== 'howItWorks')) && !/\b(?:may|might|can|could|often|tends? to|possible|background|cohort|generation)\b/i.test(text)) errors.push(`"${s.name}" ${field} must soften a claim supported by score ${support.score}; even strong support is not certainty`);
         if (ctx.requireConclusionEvidence && field === 'howItWorks') {
           const named = new Set(findPlacementClaims(text).map(p => p.body));
           if (named.size < 2 || !/\d{1,2}°/.test(text)) errors.push(`"${s.name}" astrology must walk through two exact placements with degrees and houses`);
