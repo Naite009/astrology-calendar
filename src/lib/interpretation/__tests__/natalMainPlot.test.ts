@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildNatalMainPlot, type PlotSource } from '../../../../supabase/functions/_shared/natalMainPlot';
-import { validatePersonReading, type PersonReading } from '../personReadingValidator';
+import { validatePersonReading, cleanPersonReading, type PersonReading } from '../personReadingValidator';
 import { contextFromStoryMap } from '../../../../supabase/functions/_shared/personReadingContext';
 
 const source: PlotSource = {
@@ -73,6 +73,7 @@ describe('main plot before prose', () => {
       return { themeId: t.id, name: `Pattern ${i}`, plainMeaning: text, chainIds: t.chainIds, evidenceIds: ids, howItWorks: 'Sun at 28° Libra in the 1st house and Moon at 3° Libra in the 12th house may connect outward choices with private reflection. Their dispositor is Venus.', inWork: text, inRelationships: text, underStress: text, tension: text, tensionEvidenceIds: ['aspect:Sun-square-Moon'], healthyExpression: text, conclusionEvidence: Object.fromEntries(['plainMeaning', 'howItWorks', 'inWork', 'inRelationships', 'underStress', 'tension', 'healthyExpression'].map(f => [f, ids])) };
     });
     const r: PersonReading = { mainPlotThemeId: plot.primaryThemeId ?? undefined, headline: 'She may weigh connection and independence.', centralTension: 'She may want both.', signatures, collisions: [], whenLost: 'She may pause.', whatSteadies: 'She may reflect.', transitsNow: [], clientQuestions: [] };
+    expect(cleanPersonReading(r).mainPlotThemeId).toBe(plot.primaryThemeId);
     expect(validatePersonReading(r, ctx).filter(e => /theme|main plot|competing needs/.test(e))).toEqual([]);
     r.signatures[0].tensionEvidenceIds = [];
     expect(validatePersonReading(r, ctx).some(e => e.includes('salient competing needs'))).toBe(true);

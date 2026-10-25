@@ -154,6 +154,7 @@ export function cleanPersonReading(r: PersonReading): PersonReading {
   const c = cleanPersonText;
   const o = (v?: string) => (typeof v === 'string' ? c(v) : v);
   return {
+    mainPlotThemeId: r.mainPlotThemeId,
     headline: c(r.headline), centralTension: c(r.centralTension), whenLost: c(r.whenLost), whatSteadies: c(r.whatSteadies),
     signatures: r.signatures.map((s) => ({ ...s, name: c(s.name), plainMeaning: o(s.plainMeaning) as string, howItWorks: c(s.howItWorks), inLife: o(s.inLife), inWork: c(s.inWork), inRelationships: c(s.inRelationships), underStress: c(s.underStress), inDecisions: o(s.inDecisions), tension: o(s.tension), healthyExpression: o(s.healthyExpression), strength: o(s.strength), stuckPoint: o(s.stuckPoint) })),
     collisions: r.collisions.map((x) => ({ ...x, description: c(x.description) })),

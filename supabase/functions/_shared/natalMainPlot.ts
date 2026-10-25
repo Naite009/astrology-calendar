@@ -82,9 +82,13 @@ export function buildNatalMainPlot(source: PlotSource): NatalMainPlot {
     const rulers = exists(bodies.flatMap(b => Object.entries(houseRulers).filter(([, r]) => r.traditional === b).map(([h]) => `rulership:house-${h}`)));
     const linked = source.tensions.filter(t => t.evidenceIds.some(e => {
       const a = evidence[e]?.aspect; return a && [a.a, a.b].some(b => bodies.includes(b));
-    })).sort((a, b) => Number(Boolean(b.mustAddress)) - Number(Boolean(a.mustAddress))).slice(0, 2);
+    })).sort((a, b) => Number(Boolean(b.mustAddress)) - Number(Boolean(a.mustAddress)) || a.id.localeCompare(b.id)).slice(0, 2);
     const requiredEvidenceIds = exists([...core, ...bodies.map(primaryId)]);
-    const evidenceIds = exists([...requiredEvidenceIds, ...paths, ...rulers, ...linked.flatMap(t => t.evidenceIds)]);
+    // A repeated route needs its endpoint placements and tight contacts, not just a list of source names.
+    const pathBodies = unique(paths.flatMap(id => evidence[id]?.bodies ?? []));
+    const connectedBodies = unique([...bodies, ...pathBodies]);
+    const connectedAspects = aspects.filter(e => (e.aspect?.orb ?? 99) < 3 && e.bodies.every(b => connectedBodies.includes(b)));
+    const evidenceIds = exists([...requiredEvidenceIds, ...paths, ...rulers, ...pathBodies.map(primaryId), ...connectedAspects.map(e => e.id), ...linked.flatMap(t => t.evidenceIds)]);
     const weight = bodies.reduce((sum, b) => sum + Math.min(priority.get(b)?.weight ?? 0, 16), 0) + (bodies.length >= 3 ? 5 : 0);
     candidates.push({ id, structure, indicatorBodies: bodies, indicatorCount: bodies.length, strength: bodies.length >= 3 ? 'main-story' : 'meaningful', weight,
       requiredEvidenceIds, evidenceIds, rulerPathIds: paths, chainIds: unique(bodies.map(chainFor).filter(c => Boolean(c)).map(c => c?.id ?? '')),

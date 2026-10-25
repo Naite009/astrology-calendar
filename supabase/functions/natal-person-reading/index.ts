@@ -49,6 +49,7 @@ HOW TO READ
 - Read every signature through this chain: PLACEMENT -> what the SIGN does -> the HOUSE arena -> the RULER / DISPOSITOR chain -> TIGHT ASPECTS -> what REINFORCES or CONTRADICTS it elsewhere -> concrete BEHAVIOR.
 - 3 to 5 NAMED SIGNATURES, normally 3 for depth without repetition. Name: plain and memorable, a stranger understands it instantly ("Fierce Independent", "The Peacekeeper Who Keeps Score"). No metaphors (banned: velvet, silk, glass, mirror, storm, shadow, garden, alchemist, labyrinth, cathedral, tapestry, ember, tide). Invent from this chart, never copy examples.
 - BEFORE PROSE: mainPlot is a deterministic ranking, not a menu of psychological labels. Choose only selectedThemeIds. Set mainPlotThemeId to primaryThemeId and write its signature first. Give each signature a distinct themeId. The structure tells you what repeats; derive the human meaning using functionContext and exact facts, not a canned theme list. One body with several facts is ONE structural indicator. Two independent bodies can earn a meaningful theme; three support a main-story candidate. Do not count a mirrored angle contact or repeated dispositor citation twice.
+- The provided signaturePlans are the fixed evidence outlines for three distinct stories. Preserve their themeId, chainIds, evidenceIds and conclusionEvidence; write the text from these exact factors. Include every listed tensionEvidenceId. Those IDs are not permission to infer unrelated life history. Each plainMeaning must explicitly use but/yet/while/both/also/together and contain can/may/could/often. In every other behavioral field also include can/may/could/often. Avoid strong adjectives entirely: profound, deeply, fierce, dominant, powerful, strongly, uncompromising. Titles can be memorable without promising absolute behavior.
 - Every chosen theme declares requiredEvidenceIds. Include ALL of them in evidenceIds and cite at least two different primary placements/angles in conclusionEvidence.plainMeaning. Keep all signature evidence within the theme's evidenceIds. In howItWorks explain its actual full rulerPathIds and relevant houseRulerChains, including where paths terminate or loop. Use the full graph to understand context, not to borrow unrelated citations. The chartRuler path gets special treatment: show where the ASC ruler takes the chart story, including sign, house, condition, contacts and dispositor.
 - Preserve each chosen theme's mustAddress contradictions IN THAT signature's tension, with the exact aspect ID in tensionEvidenceIds. Do not cancel one need with another. Explain both. Sun is sign + house + house rulership + contacts + dispositor; Moon is the same full chain applied to reassurance, safety, instinct, stress response and restoration. A sign adjective list is not a story.
 - Every signature must draw on at least TWO DIFFERENT chains (different planets), e.g. a Venus chain plus a Saturn aspect. One placement never earns a signature.
@@ -156,12 +157,24 @@ Deno.serve(async (req) => {
 
     const ctx = contextFromStoryMap(map);
     const mainPlot = buildNatalMainPlot(map);
+    const fields = ['plainMeaning', 'howItWorks', 'inLife', 'inWork', 'inRelationships', 'underStress', 'inDecisions', 'tension', 'healthyExpression'];
+    const signaturePlans = mainPlot.selectedThemeIds.slice(0, 3).map(id => {
+      const theme = mainPlot.candidates.find(t => t.id === id);
+      if (!theme) return null;
+      return { themeId: id, structure: theme.structure, chainIds: theme.chainIds, evidenceIds: theme.evidenceIds,
+        conclusionEvidence: Object.fromEntries(fields.map(field => [field, theme.evidenceIds])),
+        tensionEvidenceIds: [...new Set(theme.contradictions.flatMap(t => t.evidenceIds))],
+        exactWalkthroughFacts: theme.requiredEvidenceIds.map(e => map.evidence[e]?.fact).filter(Boolean),
+        rulerWalkthroughFacts: theme.rulerPathIds.map(e => map.evidence[e]?.fact).filter(Boolean),
+      };
+    }).filter(Boolean);
     const input = {
       client: { name, age: age ?? null },
       evidence: map.evidence,
       personalization: map.personalization,
       houseOccupancy: map.houseOccupancy,
       mainPlot: { ...mainPlot, candidates: mainPlot.candidates.filter(t => mainPlot.selectedThemeIds.includes(t.id)) },
+      signaturePlans,
       houseRulerChains: map.houseRulerChains,
       functionContext: map.functionContext,
       chains: map.chains.map((c) => ({ id: c.id, label: c.label, salience: c.salience ?? null, evidenceIds: c.steps })),
