@@ -1,5 +1,10 @@
 # Roadmap
 
+## Core Natal Portrait main-plot reasoning
+- [ ] Build deterministic structural hierarchy, independent theme aggregation and ruler-led story candidates before prose.
+- [ ] Enforce selected-theme evidence, contradictions and slow-planet personalization in both reading gates; add regressions.
+- [ ] Generate and inspect a fresh saved adult portrait; report before/after evidence and limitations.
+
 ## Natal Portrait personalization hierarchy
 - [x] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
 - [x] Preserve whole-chart sources and expose background versus personalized support.
