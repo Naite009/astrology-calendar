@@ -53,6 +53,14 @@ describe('main plot before prose', () => {
     expect(p.candidates.find(t => t.id === 'plot:ruler-convergence-Venus')?.indicatorBodies).toEqual(['Sun', 'Moon', 'Venus']);
     expect(buildNatalMainPlot({ ...source, evidence: Object.fromEntries(Object.entries(source.evidence).reverse()) })).toEqual(p);
   });
+  it('does not select a subset as another disconnected version of the same story', () => {
+    const p = buildNatalMainPlot(source);
+    const chosen = p.candidates.filter(t => p.selectedThemeIds.includes(t.id));
+    for (let i = 0; i < chosen.length; i++) for (let j = i + 1; j < chosen.length; j++) {
+      const overlap = chosen[i].indicatorBodies.filter(b => chosen[j].indicatorBodies.includes(b)).length;
+      expect(overlap / Math.min(chosen[i].indicatorCount, chosen[j].indicatorCount)).toBeLessThan(0.8);
+    }
+  });
   it('fails prose that substitutes an unsupported sign-level major theme', () => {
     const ctx = contextFromStoryMap({ ...source, version: 4, transits: [], allowedAspects: [] });
     const sig = { themeId: 'plot:sign:Saturn', name: 'World Changer', plainMeaning: 'Saturn in Leo means she is here to change the world.', chainIds: ['chain:sun', 'chain:moon'], evidenceIds: ['sign:Saturn', 'placement:Sun', 'placement:Moon'], howItWorks: 'Saturn in Leo means her life purpose is visibility.', inWork: 'She can work.', inRelationships: 'She may cooperate.', underStress: 'She may pause.', tension: 'She may need privacy.', tensionEvidenceIds: [], healthyExpression: 'She can consider both.' };

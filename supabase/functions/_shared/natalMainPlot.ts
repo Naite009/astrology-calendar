@@ -118,7 +118,7 @@ export function buildNatalMainPlot(source: PlotSource): NatalMainPlot {
   for (const theme of candidates) {
     const duplicate = selected.some(s => {
       const overlap = theme.indicatorBodies.filter(b => s.indicatorBodies.includes(b)).length;
-      return overlap / Math.max(theme.indicatorBodies.length, s.indicatorBodies.length) >= 0.8;
+      return overlap / Math.min(theme.indicatorBodies.length, s.indicatorBodies.length) >= 0.8;
     });
     if (!duplicate && selected.length < 5) selected.push(theme);
   }
