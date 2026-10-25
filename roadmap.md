@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Natal Portrait personalization hierarchy
-- [ ] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
-- [ ] Preserve whole-chart sources and expose background versus personalized support.
-- [ ] Run regressions and inspect a newly generated saved adult portrait with exact evidence in the signed-in preview.
+- [x] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
+- [x] Preserve whole-chart sources and expose background versus personalized support.
+- [x] 695 regressions passed; inspected Lauren's actual model-generated and repaired saved adult portrait in signed-in preview. Findings and limitations in `qa-reports/natal-personalization-hierarchy.md`.
+- [ ] Fresh first-pass generation reliability remains unverified after model HTTP 504s; repaired saved-chart output passed, but provider latency remains outside the local validator's control.
 
 ## Full accuracy audit and whole-chart Natal Portrait
 - [x] Single-source-of-truth map and root causes in `qa-reports/full-audit-2026-10.md`.
