@@ -73,7 +73,10 @@ describe('main plot before prose', () => {
   it('rejects a selected theme when its own contradiction or independent evidence is omitted', () => {
     const ctx = contextFromStoryMap({ ...source, version: 4, transits: [], allowedAspects: [source.evidence['aspect:Sun-square-Moon'].aspect] });
     const plot = buildNatalMainPlot(source);
-    const chosen = plot.selectedThemeIds.slice(0, 3).map(id => plot.candidates.find(t => t.id === id)).filter(t => Boolean(t));
+    // Isolate evidence-gate behavior using three eligible candidates; diversity is tested separately.
+    if (!ctx.mainPlot) throw new Error('Missing main-plot context');
+    ctx.mainPlot.selectedThemeIds = plot.candidates.map(t => t.id);
+    const chosen = plot.candidates.slice(0, 3);
     const signatures = chosen.map((t, i) => {
       if (!t) throw new Error('Missing theme');
       const text = 'She may consider another person, but can need time to decide privately.';
