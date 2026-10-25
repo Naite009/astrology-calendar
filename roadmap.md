@@ -4,7 +4,7 @@
 - [x] Add deterministic factor weights, per-conclusion evidence and slow-sign overstatement guards.
 - [x] Preserve whole-chart sources and expose background versus personalized support.
 - [x] 695 regressions passed; inspected Lauren's actual model-generated and repaired saved adult portrait in signed-in preview. Findings and limitations in `qa-reports/natal-personalization-hierarchy.md`.
-- [ ] Fresh first-pass generation reliability remains unverified after model HTTP 504s; repaired saved-chart output passed, but provider latency remains outside the local validator's control.
+- [ ] Fresh first-pass generation reliability: reconfirmed failing. Fresh signed-in regeneration of Lauren's saved chart (cache cleared, network captured) returns gateway 504 `IDLE_TIMEOUT` after 150s while the model writes; UI shows "The reading could not be written." Repaired-pass path remains the working route. Blocker: model latency on the first call exceeds the gateway idle limit; would need smaller first-pass scope or an automatic retry-on-504 in the UI.
 
 ## Full accuracy audit and whole-chart Natal Portrait
 - [x] Single-source-of-truth map and root causes in `qa-reports/full-audit-2026-10.md`.

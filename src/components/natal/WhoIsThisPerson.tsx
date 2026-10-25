@@ -34,14 +34,20 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
     setLoading(true); setError(null);
     try {
       const call = async (extra: Record<string, unknown> = {}) => {
-        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/natal-person-reading`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ name: chart.name, age: ageOn(chart.birthDate, new Date()), map, ...extra }),
-        });
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(body.error || 'The reading could not be written.');
-        return body;
+        // The first write can outlast the gateway's idle limit; retry the transient failures.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) await new Promise((r) => setTimeout(r, 4000 * attempt));
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/natal-person-reading`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ name: chart.name, age: ageOn(chart.birthDate, new Date()), map, ...extra }),
+          });
+          if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < 2) continue;
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(body.error || 'The reading could not be written.');
+          return body;
+        }
+        throw new Error('The reading could not be written.');
       };
       let body = await call();
       // The server hands back a draft plus checker errors when a repair pass is needed.
