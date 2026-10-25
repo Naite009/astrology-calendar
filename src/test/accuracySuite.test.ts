@@ -36,7 +36,8 @@ import { validatePersonReading, validationContextFor } from '@/lib/interpretatio
 const SEM_NOW = new Date('2026-06-15T12:00:00Z');
 function semanticChecks() {
   return report.people.map((p) => {
-    const chart = p.math.chart!;
+    const chart = p.math.chart;
+    if (!chart) throw new Error(`Missing calculated reference chart: ${p.math.name}`);
     const m = buildChartStoryMap(chart, { now: SEM_NOW });
     const ctx = validationContextFor(m);
     const missingPlanets = PLANETS.filter((b) => !m.chains.some((c) => c.bodies.includes(b)));
@@ -51,8 +52,9 @@ function semanticChecks() {
     const pair = PLANETS.flatMap((x) => PLANETS.map((y) => [x, y])).find(([x, y]) => x !== y && !real.has([x, y].sort().join('|')));
     const inventedCaught = !pair || base(`${pair[0]} square ${pair[1]} shapes her.`).some((e) => e.includes('not in the chart'));
     const sat = m.placements.Saturn;
-    const purposeCaught = base(`Saturn in ${sat.sign} means she is here to change the world.`, [chain('Saturn').steps[0], chain('Saturn').steps[0], chain('Mercury').steps[0]]).length > 0;
-    return { name: p.math.name, missingPlanets, rulers, angleAspects: m.allowedAspects.some((a) => ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.a) || ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.b)), inventedCaught, purposeCaught };
+    const purposeCaught = base(`Saturn in ${sat.sign} means she is here to change the world.`, [chain('Saturn').steps[0], chain('Saturn').steps[0], chain('Mercury').steps[0]]).some(e => /Fixed-fate|life-purpose|sign-only personal/.test(e));
+    const structuralPlot = m.mainPlot.selectedThemeIds.length >= 3 && m.mainPlot.candidates.every(t => t.indicatorCount >= 2 && new Set(t.indicatorBodies).size === t.indicatorCount && t.requiredEvidenceIds.every(id => Boolean(m.evidence[id])));
+    return { name: p.math.name, missingPlanets, rulers, structuralPlot, angleAspects: m.allowedAspects.some((a) => ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.a) || ['Ascendant', 'Midheaven', 'Descendant', 'IC'].includes(a.b)), inventedCaught, purposeCaught };
   });
 }
 function semanticSection() {
@@ -62,7 +64,7 @@ function semanticSection() {
 }
 describe('end-to-end semantic integrity', () => {
   it('every reference chart keeps all planets and rulers in the evidence map and the prose gate rejects planted errors', () => {
-    const bad = semanticChecks().filter((r) => r.missingPlanets.length || r.rulers !== 12 || !r.inventedCaught || !r.purposeCaught);
+    const bad = semanticChecks().filter((r) => r.missingPlanets.length || r.rulers !== 12 || !r.inventedCaught || !r.purposeCaught || !r.structuralPlot);
     expect(bad).toEqual([]);
   }, 60000);
 });
