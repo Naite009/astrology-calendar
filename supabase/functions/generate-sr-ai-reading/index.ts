@@ -37,16 +37,17 @@ serve(async (req) => {
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
     // Only validated evidence reaches the prose writer. Legacy tables and
     // unverified eclipse/quarter templates are not treated as calculated facts.
+    const selectedThemes = (d.prioritizedSynthesis?.themes || []).slice(0, 5);
     const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
       rulers:{natalChartRuler:d.rulers?.natalChartRuler,solarReturnChartRuler:d.rulers?.solarReturnChartRuler,profectionLord:d.rulers?.profectionLord},
       moonPhase:d.moonPhase,
       provenance:d.calculationMetadata,
-      prioritizedSynthesis:{themes:d.prioritizedSynthesis?.themes,longerTerm:d.prioritizedSynthesis?.longerTerm},
+      prioritizedSynthesis:{themes:selectedThemes,longerTerm:d.prioritizedSynthesis?.longerTerm},
       verifiedFacts,
       timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
     const systemPrompt = `${SOLAR_RETURN_PROSE_STANDARD}
 Age: ${age ?? 'unknown'}. Adapt examples to age without assuming marriage, children, occupation or life events. Keep minors' examples nonsexual and age appropriate.
-Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Keep chart source labels in separate Evidence lines. Put each chart layer's placement in its own sentence with its explicit source, never combine natal and return positions in one sentence. Do not attach a placement to a named ruler unless its layer is supplied. Longer-term dates belong in Evidence lines; the paragraph itself must explain what you could notice.
+Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Write ONLY client interpretation paragraphs, not evidence lines; the application will attach the exact supplied evidence without asking you to copy or reformat positions. Planet names are allowed in astrology mode but do not write degrees, signs, houses, aspect names or dates in the interpretive paragraph. Longer-term context must explain a concrete possible experience rather than only a timing label.
 ${mode === 'astro' ? 'Include supplied exact source labels and orbs after plain meaning.' : 'Use ordinary language for experience, with supplied facts only in separate Evidence lines.'}`;
 
     const userPrompt = mode === 'astro'
@@ -101,7 +102,10 @@ ${mode === 'astro' ? 'Include supplied exact source labels and orbs after plain 
           }
           return text;
           }, text => validateVerifiedReading(text, verifiedFacts), validateSolarReturnReading);
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`));
+          // Chart evidence is supplied verbatim, not model-authored. Every position sentence keeps its own chart layer.
+          const evidence = selectedThemes.map((t: any) => `## ${t.title}\n\nEvidence: ${(t.evidence || []).join('\nEvidence: ')}`).join('\n\n');
+          const finalText = `${text}\n\n${evidence}`;
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: finalText } }] })}\n\ndata: [DONE]\n\n`));
         } catch (error) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Reading withheld' })}\n\n`));
         } finally { controller.close(); }
