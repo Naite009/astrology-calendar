@@ -77,50 +77,12 @@ const TRANSIT_SIGNIFICANCE: Record<string, Record<string, 'high' | 'medium' | 'l
   Saturn: { 'SR Sun': 'high', 'SR Saturn': 'high', 'SR Moon': 'high', 'SR Ascendant': 'high', default: 'high' },
 };
 
+// Activation text is a dated label plus a hedged, concrete note. Transits to SR points are
+// timing context only: no peaks, events, recognition, conflict or certainty claims.
 function getTransitInterpretation(transitPlanet: string, srTarget: string, aspect: string): string {
-  const interps: Record<string, Record<string, string>> = {
-    'Sun-Conjunction': {
-      'SR Sun': 'Your solar return themes are directly illuminated — this is a peak visibility moment for your year\'s central purpose.',
-      'SR Moon': 'Emotional themes of the year come into sharp focus. What you\'ve been feeling becomes conscious.',
-      'SR Ascendant': 'Your year\'s new identity expression is spotlighted. Others see the "new you" clearly.',
-      'SR MC': 'Career and public reputation themes peak. Recognition or professional turning points.',
-    },
-    'Mars-Conjunction': {
-      'SR Sun': 'Action energy surges around your core year themes. Assertiveness peaks — channel it intentionally.',
-      'SR Mars': 'Drive and conflict potential doubles. Physical energy peaks but so does irritability.',
-      'SR Ascendant': 'Your public presence becomes more forceful. Others notice your intensity.',
-    },
-    'Saturn-Conjunction': {
-      'SR Sun': 'Reality check on your year\'s main themes. Structure what matters; release what doesn\'t hold up.',
-      'SR Moon': 'Emotional maturation point. Feelings that aren\'t grounded in reality become unsustainable.',
-      'SR Ascendant': 'Your year\'s identity expression is tested. Authenticity is the only thing that works.',
-    },
-    'Jupiter-Conjunction': {
-      'SR Sun': 'Expansion and opportunity peak around your core themes. Say yes to growth — but don\'t overcommit.',
-      'SR Moon': 'Emotional generosity and optimism surge. Good for big emotional decisions.',
-      'SR Ascendant': 'Your presence expands. Opportunities come through being visible and optimistic.',
-    },
-  };
-
-  const key = `${transitPlanet}-${aspect}`;
-  const targetInterps = interps[key];
-  if (targetInterps?.[srTarget]) return targetInterps[srTarget];
-
-  // Generic fallback
-  const aspectFeel: Record<string, string> = {
-    Conjunction: 'directly activates',
-    Opposition: 'creates tension and awareness around',
-    Square: 'encourages action and decisions regarding',
-    Trine: 'supports and eases',
-    Sextile: 'opens opportunities related to',
-  };
-  const transitPlain: Record<string, string> = {
-    Sun: 'Your core purpose energy', Mars: 'Your drive and motivation',
-    Jupiter: 'Your growth and expansion energy', Saturn: 'Your commitment and responsibility focus',
-    Mercury: 'Your communication energy', Venus: 'Your love and connection energy',
-  };
-  const tpLabel = transitPlain[transitPlanet] || 'This energy';
-  return `${tpLabel} ${aspectFeel[aspect] || 'connects with'} your ${srTarget.replace('SR ', '')} placement — this is an activation point for those themes.`;
+  const target = srTarget.replace('SR ', '');
+  const area = TARGET_AREA[target] || `your Solar Return ${target}`;
+  return `Transiting ${transitPlanet} ${aspect.toLowerCase()} Solar Return ${target}. Around this date you may notice ${area} in your plans or conversations.`;
 }
 
 /**
@@ -374,72 +336,38 @@ function classifyWindowType(targets: string[], planets: string[]): ActivationWin
 
 function generateWindowAdvice(type: ActivationWindow['type'], _planets: string[], _targets: string[]): string {
   const adviceMap: Record<string, string> = {
-    career: 'Schedule important meetings, launches, or negotiations during this window.',
-    relationship: 'Ideal for deepening connections or having important conversations.',
-    emotional: 'Honor your feelings — journaling or creative expression helps process what surfaces.',
-    health: 'Pay attention to body signals. Good time for starting new health routines.',
-    identity: 'Who you are is shifting. Embrace the evolution instead of clinging to old patterns.',
-    money: 'Financial opportunities or pressures peak. Review budgets and be strategic.',
-    mixed: 'Multiple life areas activate simultaneously. Prioritize what feels most urgent.',
+    career: 'If you have a work decision pending, you could schedule time to review it in this window.',
+    relationship: 'If a conversation with someone close has been waiting, you could plan it for this window.',
+    emotional: 'You could set aside some quiet time to notice what you need from your week.',
+    health: 'You could check whether your daily routine still fits your schedule.',
+    identity: 'You could review how you are presenting your plans to others.',
+    money: 'You could review your budget or a planned purchase during this window.',
+    mixed: 'Several chart points are contacted close together; you could list what is due and pick one priority.',
   };
   return adviceMap[type] || adviceMap.mixed;
 }
 
 // ── Synthesize a real theme description for activation windows ──
 
-const PLANET_THEME_ACTION: Record<string, string> = {
-  Sun: 'brings visibility and clarity to',
-  Mars: 'pushes you to take action on',
-  Jupiter: 'opens doors and expands',
-  Saturn: 'invites accountability and hard work around',
-  Mercury: 'accelerates communication about',
-  Venus: 'brings warmth and connection to',
-};
-
 const TARGET_AREA: Record<string, string> = {
-  Sun: 'your core identity and purpose for the year',
-  Moon: 'your emotional needs and inner security',
-  Ascendant: 'how people see you and your personal presence',
-  MC: 'your career direction and public reputation',
-  Mars: 'your drive, motivation, and how you assert yourself',
-  Venus: 'your relationships, values, and what brings you joy',
-  Jupiter: 'your growth opportunities and where life expands',
-  Saturn: 'your responsibilities and where you face the hardest lessons',
-  Mercury: 'your thinking, conversations, and daily decisions',
-  Neptune: 'your intuition, creativity, and what feels unclear',
-  Pluto: 'the deep changes happening beneath the surface',
-  Uranus: 'where sudden shifts and unexpected events land',
-  Chiron: 'your sensitive spots and where healing is available',
+  Sun: 'the main priority of your year',
+  Moon: 'what helps you feel settled day to day',
+  Ascendant: 'how you introduce yourself and your plans',
+  MC: 'work and public responsibilities',
+  Mars: 'where you take action and set limits',
+  Venus: 'the people and activities you enjoy',
+  Jupiter: 'plans you want to grow',
+  Saturn: 'commitments and limits you can maintain',
+  Mercury: 'conversations, information and decisions',
+  Neptune: 'agreements worth checking before you act',
+  Pluto: 'commitments you may reconsider',
+  Uranus: 'routines you may want to change',
+  Chiron: 'a sensitive area you may handle with more care',
 };
 
 function synthesizeWindowTheme(cluster: TransitHit[], planets: string[], targets: string[]): string {
-  // Use the highest-significance hit's interpretation as basis
   const highHit = cluster.find(c => c.significance === 'high') || cluster[0];
-
-  if (cluster.length === 1) {
-    return highHit.interpretation;
-  }
-
-  // Multiple hits — synthesize
-  const planetActions = planets.map(p => PLANET_THEME_ACTION[p] || `activates`);
-  const targetAreas = targets.map(t => TARGET_AREA[t] || `your ${t} themes`);
-
-  const SYNTH_PLAIN: Record<string, string> = {
-    Sun: 'Your purpose energy', Mars: 'Your drive', Jupiter: 'Your growth energy',
-    Saturn: 'Your responsibility focus', Mercury: 'Your communication', Venus: 'Your connection energy',
-  };
-
-  if (planets.length === 1 && targets.length > 1) {
-    const pLabel = SYNTH_PLAIN[planets[0]] || 'This energy';
-    return `${pLabel} ${planetActions[0]} multiple areas at once: ${targetAreas.join(' and ')}. This is a concentrated burst — expect noticeable events.`;
-  }
-
-  if (planets.length > 1 && targets.length === 1) {
-    const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
-    return `Multiple energies (${pLabels.join(' and ')}) converge on ${targetAreas[0]}. This area gets loud — decisions and events pile up here.`;
-  }
-
-  // General multi-hit
-  const pLabels = planets.map(p => SYNTH_PLAIN[p] || p);
-  return `${pLabels.join(' and ')} activate ${targetAreas.slice(0, 2).join(' and ')} simultaneously. When this many triggers overlap, events feel faster and more significant. ${highHit.interpretation}`;
+  if (cluster.length === 1) return highHit.interpretation;
+  const areas = [...new Set(targets.map(t => TARGET_AREA[t] || `Solar Return ${t}`))].slice(0, 2);
+  return `${cluster.length} transit contacts (${[...new Set(planets)].join(', ')}) fall close together. Around these dates you may notice ${areas.join(' and ')} in your plans or conversations.`;
 }
