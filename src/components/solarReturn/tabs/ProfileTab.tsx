@@ -4,9 +4,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { PLANET_SYMBOLS, SIGN_SYMBOLS } from '@/lib/solarReturnConstants';
 import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
-import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
-import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { Flame, Repeat, Layers, Compass } from 'lucide-react';
@@ -19,7 +17,6 @@ interface Props {
 
 export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
   const identityShift = useMemo(() => generateIdentityShift(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
-  const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
   return (
     <div className="space-y-6 mt-4">

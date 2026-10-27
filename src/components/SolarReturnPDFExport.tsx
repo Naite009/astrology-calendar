@@ -21,7 +21,6 @@ import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
 import { calculateLifeDomainScores } from '@/lib/solarReturnLifeDomainScores';
 import { detectContradictions } from '@/lib/solarReturnContradictions';
 import { generateLunarWeatherMap } from '@/lib/solarReturnLunarWeather';
-import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { generateDomainDeepDives } from '@/lib/solarReturnDomainDeepDive';
 import { computeYearPriorities } from '@/lib/yearPriorityScoring';
 import { computeLunarPhaseTimeline } from '@/lib/solarReturnLunarTimeline';
@@ -833,7 +832,7 @@ export function buildFullJsonStandalone(
     })(),
     identityShift: generateIdentityShift(analysis, srChart, natalChart),
     lifeDomainScores: calculateLifeDomainScores(analysis),
-    powerPortrait: generatePowerPortrait(analysis, natalChart, srChart),
+    // Power portrait trait copy is not shown in the app and is not exported.
     domainDeepDives: generateDomainDeepDives(analysis, natalChart, srChart).map(d => ({
       ...d,
       narrative: d.synthesis.paragraph,
