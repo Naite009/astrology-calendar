@@ -19,7 +19,8 @@ export function validateSolarReturnProse(text: string): string[] {
   for (const [i, paragraph] of paragraphs.entries()) {
     if (meta.test(paragraph)) errors.push(`Paragraph ${i + 1}: empty meta-synthesis or astrology machinery`);
     if (!/\b(?:you|your)\b/i.test(paragraph)) errors.push(`Paragraph ${i + 1}: missing second-person client meaning`);
-    if (!scene.test(paragraph)) errors.push(`Paragraph ${i + 1}: no concrete life manifestation`);
+    const sentences = paragraph.split(/(?<=[.!?])\s+/);
+    if (!sentences.some(s => /\b(?:you|your)\b/i.test(s) && !meta.test(s) && scene.test(s))) errors.push(`Paragraph ${i + 1}: no concrete life manifestation`);
     if (/\b(?:questions, words, school|attention may return to)\b/i.test(paragraph)) errors.push(`Paragraph ${i + 1}: keyword-list interpretation`);
     if (/\u2014/.test(paragraph)) errors.push(`Paragraph ${i + 1}: prohibited dash`);
   }

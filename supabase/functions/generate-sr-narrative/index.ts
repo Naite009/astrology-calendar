@@ -1,8 +1,5 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { withInterpretationStandard } from '../_shared/interpretationStandard.ts';
 // Legacy compatibility entrypoint. Authoring and validation live in generate-sr-ai-reading.
-// withInterpretationStandard is applied by that canonical writer, not a second prompt here.
-void withInterpretationStandard;
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   const body = await req.json().catch(() => null);
