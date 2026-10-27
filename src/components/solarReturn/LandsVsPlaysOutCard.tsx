@@ -1,5 +1,6 @@
 import { Compass, MapPin, ArrowRight, HelpCircle, Layers } from 'lucide-react';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
+import { solarReturnHouseMeaning, solarReturnOverlayMeaning } from '@/lib/solarReturnClientMeaning';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍',
@@ -33,28 +34,28 @@ const PLANET_BRINGS: Record<string, string> = {
   Mercury: 'conversations, decisions, and mental energy',
   Venus: 'pleasure, connection, and what you enjoy',
   Mars: 'drive, action, and where you push hardest',
-  Jupiter: 'growth, luck, and expansion',
-  Saturn: 'responsibility, pressure, and hard work',
-  Uranus: 'surprises, changes, and restlessness',
-  Neptune: 'dreams, imagination, and possible confusion',
-  Pluto: 'deep change and intensity',
-  Ascendant: 'how you approach the entire year',
+  Jupiter: 'plans you want to grow',
+  Saturn: 'commitments and limits',
+  Uranus: 'routines you may want to change',
+  Neptune: 'agreements worth checking',
+  Pluto: 'commitments you may reconsider',
+  Ascendant: 'how you introduce yourself and your plans',
 };
 
 // Concrete, daily-life examples for each house
 const HOUSE_EXAMPLES: Record<number, string> = {
-  1: 'decisions about your appearance, fitness, personal direction, and "who am I now?" moments',
-  2: 'conversations about money, spending decisions, salary negotiations, and questions about what matters to you',
-  3: 'emails, phone calls, texts, learning something new, trips around town, and interactions with siblings or neighbors',
-  4: 'home renovations, family gatherings, moving decisions, cooking, and emotional processing in private',
-  5: 'dates, creative projects, time with children, hobbies, and moments of pure fun or self-expression',
-  6: 'doctor appointments, new workout routines, work projects, organizing your schedule, and health changes',
-  7: 'relationship conversations, partnership decisions, contracts, and one-on-one dynamics with important people',
-  8: 'bills, shared finances, insurance, therapy sessions, honest conversations about trust, and letting go of old baggage',
-  9: 'travel plans, taking a class, reading books that change your mind, and rethinking what you believe',
-  10: 'job interviews, promotions, public recognition, career pivots, and being seen by a wider audience',
-  11: 'group events, friendships forming or shifting, volunteer work, and thinking about your long-term future',
-  12: 'alone time, dreams, meditation, therapy, hospital visits, and quiet inner processing',
+  1: 'introducing yourself, choosing how you present your plans, and personal goals',
+  2: 'your budget, spending choices, and questions about what you value',
+  3: 'messages, conversations, learning something new, and short local trips',
+  4: 'home arrangements, family plans, and time in your private space',
+  5: 'creative projects, hobbies, and time for things you enjoy',
+  6: 'your schedule, work tasks, and everyday routines',
+  7: 'conversations with a partner or close friend, and agreements with one other person',
+  8: 'shared bills, joint plans, and conversations about who is responsible for what',
+  9: 'study, travel plans, and comparing your beliefs with what you learn',
+  10: 'work responsibilities, applications, and how your work is seen by others',
+  11: 'group plans, friendships, and longer-term goals',
+  12: 'quiet time, unfinished projects, and rest away from other people',
 };
 
 function getConcreteExamples(house: number): string {
@@ -68,12 +69,8 @@ const ordinal = (n: number): string => {
 };
 
 function getSynthesis(landsHouse: number, playsOutHouse: number): string {
-  if (landsHouse === playsOutHouse) {
-    return `Both techniques point to the same house: an unusually focused year. The life area of your ${ordinal(landsHouse)} house receives both the most planetary traffic AND the underlying motivational engine. This is a year where volume and direction are aligned.`;
-  }
-  const landsLabel = HOUSE_MEANINGS[landsHouse]?.split(',')[0]?.toLowerCase() || '';
-  const playsLabel = HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase() || '';
-  return `Events and activity concentrate in your ${ordinal(landsHouse)} house (${landsLabel}), but the underlying motivation routes through your ${ordinal(playsOutHouse)} house (${playsLabel}). In practice, ${landsLabel} matters get the most attention, but they keep circling back to ${playsLabel} questions. The ${ordinal(landsHouse)} house is where life happens; the ${ordinal(playsOutHouse)} house is why it matters to you.`;
+  if (landsHouse === playsOutHouse) return solarReturnHouseMeaning(landsHouse, 'Sun') || `Both techniques point to your ${ordinal(landsHouse)} house.`;
+  return solarReturnOverlayMeaning('Sun', landsHouse, playsOutHouse) || `The two techniques point to your ${ordinal(landsHouse)} and ${ordinal(playsOutHouse)} houses.`;
 }
 
 interface Props {
