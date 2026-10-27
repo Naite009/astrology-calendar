@@ -182,7 +182,7 @@ export function NatalOverlayCard({ analysis }: Props) {
           What This Means
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Your birth chart is like a permanent map of your life, divided into 12 sections (houses), each covering a different area: money, relationships, career, etc. Every birthday, a new chart is created. When we place this year's planets onto your permanent map, we can see <strong className="text-foreground">which parts of your life will get the most attention</strong>. Below, we show where each key planet falls and what it activates for you.
+          Your birth chart is like a permanent map of your life, divided into 12 sections (houses), each covering a different area: money, relationships, career, etc. Every birthday, a new chart is created. When we place this year's planets onto your permanent map, we can see <strong className="text-foreground">which parts of your life may get more attention</strong>. Below, we show where each key planet falls and what it activates for you.
         </p>
       </div>
 

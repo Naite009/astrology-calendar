@@ -143,7 +143,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
           How This Works
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that means identity-related events, how you look, how you feel about yourself, new beginnings, will dominate your year. The more planets that cluster in one house, the louder that life area gets.
+          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that area (how you introduce yourself and your plans) may get more of your attention this year. More planets in one house means more chart emphasis there, not a guaranteed event.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                     <span className="italic">"What area of life gets the most activity this year?"</span>
                   </p>
                   <p className="text-xs text-foreground leading-relaxed">
-                    Your {ordinal(landsHouse)} house: {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} birthday-chart planets landing here, this is the area of life where you'll notice the most action. Concretely, expect more {getConcreteExamples(landsHouse)} than in a typical year.
+                    Your {ordinal(landsHouse)} house: {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} birthday-chart planets landing here, this is the most emphasized area. For example, you may spend more time on {getConcreteExamples(landsHouse)} than in a typical year.
                   </p>
                 </div>
               </>

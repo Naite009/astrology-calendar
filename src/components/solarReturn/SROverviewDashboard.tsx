@@ -134,9 +134,9 @@ const getInterceptionTeaching = (intercepted: string[]): string => {
   let axisNote = '';
   if (axisPairs.length > 0) {
     const [a, b] = axisPairs[0];
-    axisNote = ` Interceptions always occur in opposite pairs. The ${a}-${b} axis being intercepted means an entire polarity is operating beneath the surface: neither the ${a} principle nor its counterbalance in ${b} has easy expression. The year's work is to consciously develop both sides. Usually one emerges first and pulls the other into awareness by mid-year.`;
+    axisNote = ` Interceptions occur in opposite pairs, so ${b} is intercepted along with ${a}. Neither sign appears on a house cusp in this chart.`;
   }
-  return `In solar return work, interception is a technical condition with real psychological consequences. When a sign is intercepted, it appears entirely within a house: no house cusp carries that sign. This means the sign's energy has no "front door." It can't announce itself; it must be excavated. You may not even recognize these needs exist until the second half of the year, when enough internal pressure forces them to the surface.${axisNote}`;
+  return `An intercepted sign sits entirely inside one house, so no house cusp in this Solar Return chart carries that sign. Some astrologers read this as a theme that may take longer to notice, because it does not rule any house cusp.${axisNote}`;
 };
 const ordinal = (n: number) => {
   const s = ['th','st','nd','rd'];
