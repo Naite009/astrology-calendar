@@ -5,7 +5,7 @@
  *
  * The Vertex is the intersection of the Prime Vertical with the Ecliptic in the west.
  * In moderate latitudes it typically falls in houses 5-8.
- * It represents significant-feeling encounters, destined events, and experiences beyond conscious control.
+ * It is treated as a secondary point; client prose is limited to conditional house meaning.
  */
 
 import { NatalPlanetPosition } from '@/hooks/useNatalChart';
