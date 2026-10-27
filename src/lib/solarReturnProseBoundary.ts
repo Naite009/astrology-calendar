@@ -1,6 +1,6 @@
 import { solarReturnProseViolations, validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
 
-const narrativeFields = new Set(['interpretation','narrative','description','summary','overview','experience','focus','caution','practical','paragraph','becomingNarrative','tensionNote','tension','synthesis','resolution','leanInto','avoid','bestUse','trigger','antidote','oneLineMantra','coreFocus','yearArchetypeDescription','advice','yearPattern','emotionalTheme','overallTone','fatedTheme','lesson','blendMeaning','signMeaning','combinedInsight']);
+const narrativeFields = new Set(['interpretation','narrative','description','summary','overview','experience','focus','caution','practical','paragraph','becomingNarrative','tensionNote','tension','synthesis','resolution','leanInto','avoid','bestUse','trigger','antidote','oneLineMantra','coreFocus','yearArchetypeDescription','advice','yearPattern','emotionalTheme','overallTone','fatedTheme','lesson','blendMeaning','signMeaning','combinedInsight','coreStory','content','body','meaning','yearTheme','primaryFocus','emotionalClimate','keyMessage']);
 const narrativeLists = new Set(['bodyParagraphs','practicalAdvice','highlights']);
 /** Withhold rejected composed prose, never edit numbers, placements, dates, sources or evidence labels. */
 export function guardSolarReturnProse<T>(value: T): T {

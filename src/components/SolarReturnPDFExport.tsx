@@ -1051,7 +1051,7 @@ export function buildFullJsonStandalone(
       'majorAspectsRanked', 'activationWindows', 'monthlyOverview',
       'advancedTechniques', 'patternTracking', 'finalAdvice',
     ],
-  };
+  });
 }
 
 // ── Replace em-dashes and en-dashes with proper punctuation ──
