@@ -1,5 +1,10 @@
 # Roadmap
 
+## Solar Return concrete interpretation repair
+- [ ] Trace and replace the active keyword/meta-synthesis source, consolidate competing authoring paths, and preserve factual checks.
+- [ ] Add shared paragraph-quality rejection with bounded regeneration and representative combination regressions.
+- [ ] Run relevant tests and document exact paths, results, and remaining verification limits.
+
 ## Core Natal Portrait main-plot reasoning
 - [x] Build deterministic structural hierarchy, independent theme aggregation and ruler-led story candidates before prose.
 - [x] Enforce selected-theme evidence, contradictions and slow-planet personalization in both reading gates; 703 tests passed.
