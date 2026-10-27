@@ -1,5 +1,35 @@
 # Solar Return implementation audit, October 27, 2026
 
+## Expanded active-generator pass: acceptance remains open
+
+Additional exact active sources were confirmed: `srOverlayNarrative` and prediction banks in `solarReturnInterpretations.ts`, `solarReturnExecutiveSummary.ts`, deep planet/Moon banks, `StoryOfTheYear.tsx`, `solarReturnRulerNarratives.ts`, and closing/year-summary generators. The visible aspect tab independently called `generateSRtoNatalInterpretation` for both cross-chart and internal contacts, including guaranteed all-year feelings and unsupported psychological/medical claims. Merely guarding the analysis object did not guard that direct renderer.
+
+### Additional changed files
+
+- `src/lib/solarReturnInterpretations.ts`, `solarReturnPlanetInHouseDeep.ts`, `solarReturnMoonData.ts`, `solarReturnActionGuidance.ts`: compatibility tables use the shared concrete house translator; unsupported sign-only and pair-only prediction banks are deprecated.
+- `solarReturnExecutiveSummary.ts`, `solarReturnYearSummary.ts`, `solarReturnFinalAdvice.ts`, `solarReturnIdentityShift.ts`, `solarReturnRulerNarratives.ts`: reuse ranked story/verified house meaning instead of benefic/malefic outcomes, personality history, keyword bridges or fabricated best months. Legacy opportunity fields now carry annual priorities, not predicted gains; challenge/pattern fields are empty when unsupported.
+- `solarReturnContradictions.ts`: house/sign contrasts alone no longer invent psychological conflict. Exact aspects remain available.
+- `solarReturnLunarWeather.ts`: deprecated invented monthly sign rotations, peak days and emotional-return intensity. Returns no monthly forecast; actual solver-backed timelines remain separate.
+- `solarReturnProseBoundary.ts`, `solarReturnAnalysis.ts`, `solarReturnDomainDeepDive.ts`, `solarReturnLifeDomainScores.ts`, `solarReturnPowerPortrait.ts`, `solarReturnEvidenceSynthesis.ts`, `SolarReturnPDFExport.tsx`: composed prose fields are withheld when failing the shared lexical gate; numerical facts and exact source labels are untouched. This field-key boundary is not universal semantic validation.
+- `StoryOfTheYear.tsx`, `tabs/TheMoonTab.tsx`, `tabs/ProfileTab.tsx`, `tabs/AspectsTimingTab.tsx`: replace independent story, remove sign-only Moon/body prediction and burnout presentation, use guarded aspect text rather than direct pair-only certainty.
+- `src/lib/pdfSections/tier1Report.ts`: snapshot paragraphs now use shared evidence synthesis/house translation rather than sign adjective tables; do not truncate client paragraphs to two lines.
+- `src/test/fixtures/solarReturnLaurenRejectedProse.ts`, `solarReturnProseQuality.test.ts`: exact supplied excerpts, all 144 house overlay pairs, table/deep-bank checks, ruler-history rejection, no invented lunar dates/best months and machine-field preservation. The available fixture contains supplied excerpts, not a nonexistent complete uploaded report.
+
+### Verification and unresolved findings
+
+- Full suite: **755 tests across 40 files passed**. Latest preview compilation/type-check log: **build OK**. No manual production build/typecheck was run, consistent with the preview harness.
+- Signed-in actual saved Lauren Newman SR 2026 selected: Scorpio ASC 26°57′; Sun 28°11′ Libra H11, Moon 0°38′ Pisces H3, Mars 13°12′ Leo H9, Jupiter 22°56′ Leo H9. Inspected all eight tabs and scanned their complete text for the reported bad phrases/overclaims; those explicit matches were absent after repair. Saved-chart JSON construction was exercised, not a substitute fixture.
+- Fresh saved-chart generation was first rejected because app-attached cross-chart evidence labels were interpreted as one source layer. Exact evidence stays in its structured display/export rather than being concatenated into model prose. Next live request passed server and browser gates with five concrete sections. Gemini 3.1 Pro Preview was retained.
+- Accepted text is **not final semantic acceptance**: it still said daily routines “will strongly influence” feelings and referred to Mercury near ASC as the “most visible angle”; these exceed what the facts establish. The lexical gate missed them. Main selection included Mars–Pluto rather than Lauren's tight Moon–Venus; ranking/synthesis quality still needs work.
+- Export audit found additional legacy narrative keys outside the current boundary, including sign-description fields, progression house-change text, psychological-profile blend descriptions and pattern notes. These still contain prohibited dashes or unsupported wording. They are not certified or all removed.
+- The actual T1 button download was attempted but timed out without a download. Therefore neither the rendered PDF nor every PDF tier is verified. No successful full end-to-end newly generated UI/PDF report is claimed.
+
+### Output example
+
+Before: natal Mars in Scorpio allegedly means you “hold grudges, and fight to win absolutely.”
+
+Now that sign-only behavioral history is removed. The verified natal house is translated conditionally into choices about how you introduce yourself, state what you want and take the lead. Its exact planet/sign/house label remains visible. Different SR/natal houses are linked through concrete choices, never an invented external-versus-emotional two-room model.
+
 ## Exact source and active paths
 
 The reported paragraph was generated literally by `buildSolarReturnEvidenceSynthesis()` in `src/lib/solarReturnEvidenceSynthesis.ts`. It concatenated the natal house `attention` and `focus` fields from `psychologicalFunctions.ts`, then appended an invented conflict disclaimer. This was deterministic copy, not a spontaneous model sentence.
