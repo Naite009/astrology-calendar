@@ -1,4 +1,5 @@
 import { signPositionToLongitude } from '@/lib/ephemerisEngine';
+import { guardSolarReturnProse } from '@/lib/solarReturnProseBoundary';
 import { buildAllRulerChains } from '@/lib/rulerChains';
 import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
@@ -789,7 +790,7 @@ export function buildFullJsonStandalone(
   const natalRisingSign2 = natalChart.houseCusps?.house1?.sign || '';
   const srRisingSign2 = analysis.yearlyTheme?.ascendantSign || '';
 
-  return {
+  return guardSolarReturnProse({
     reportVersion: SR_REPORT_VERSION,
     calculationMetadata: resolveSolarReturnProvenance(srChart, natalChart),
     methodology: { natalHouses: 'Placidus', solarReturnHouses: 'Placidus', annualProfection: 'Whole Sign', note: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.' },
