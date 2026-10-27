@@ -12,9 +12,27 @@ import { srOverlayNarrative, srSunInHouse, srMoonInHouse, srMoonInSign, srPlanet
 import { generateExecutiveSummary } from '../solarReturnExecutiveSummary';
 import { srJupiterInHouseDeep, srSaturnInHouseDeep } from '../solarReturnPlanetInHouseDeep';
 import { auditSolarReturnProse, guardSolarReturnProse } from '../solarReturnProseBoundary';
+import { generateLunarWeatherMap } from '../solarReturnLunarWeather';
+import { buildYearSummary } from '../solarReturnYearSummary';
+import { generateSRtoNatalInterpretation } from '../solarReturnAspectInterp';
+import { generateSettingNarrative } from '../solarReturnRulerNarratives';
 
 const bad = 'Attention may return to questions, words, school or everyday information, siblings or peers, and the details people exchange each day. The return placement of Jupiter connects this with building a worldview large enough to guide your choices. The point is how those areas meet in actual choices, not that one cancels the other.';
 describe('Solar Return client-meaning gate', () => {
+  it('does not invent lunar-return dates or best months from calendar rotations and tone scores', () => {
+    const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
+    expect(generateLunarWeatherMap(analysis,laurenReturn,laurenNatal).months).toEqual([]);
+    expect(buildYearSummary(analysis,laurenNatal,laurenReturn).advice.bestMonths).toEqual([]);
+  });
+  it('pair-only aspect compatibility never guarantees all-year feelings or mislabels internal contacts', () => {
+    expect(generateSRtoNatalInterpretation('Moon','Venus','Square',0.3).whatItMeans).toBe('');
+    expect(generateSRtoNatalInterpretation('Moon','Venus','Square',0.3).howItFeels).toBe('');
+  });
+  it('ruler sign alone cannot establish grudges or behavioral history', () => {
+    const text = generateSettingNarrative('Mars','Scorpio',1);
+    expect(text).not.toMatch(/grudge|fight to win|calculated precision/);
+    expect(validateSolarReturnProse(text)).toEqual([]);
+  });
   it.each(laurenRejectedReportExcerpts)('rejects supplied Lauren report excerpt: %s', text => {
     expect(validateSolarReturnProse(text)).not.toEqual([]);
   });
