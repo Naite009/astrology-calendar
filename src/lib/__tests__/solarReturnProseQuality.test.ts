@@ -8,7 +8,10 @@ import { analyzeSolarReturn } from '../solarReturnAnalysis';
 import { buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
 import { laurenRejectedReportExcerpts } from '@/test/fixtures/solarReturnLaurenRejectedProse';
-import { srOverlayNarrative, srSunInHouse, srMoonInHouse, srMoonInSign, srPlanetInHouse, angularPlanetMeaning } from '../solarReturnInterpretations';
+import { srOverlayNarrative, srSunInHouse, srMoonInHouse, srMoonInSign, srPlanetInHouse, angularPlanetMeaning, srMCInHouse } from '../solarReturnInterpretations';
+import { vertexInSign, vertexInHouse, vertexAspectMeanings } from '../solarReturnVertex';
+
+const BANNED = ['two different rooms of your life','that gap is where the growth happens','these two threads weave together','pulling you in two directions','honor both without choosing','finding a middle ground','beautifully aligned','lovely opportunity','dreams are prophetic','cannot emotionally thrive in isolation','there is no going back','health crisis','health issues demand attention','surprise pregnancy'];
 import { generateExecutiveSummary } from '../solarReturnExecutiveSummary';
 import { srJupiterInHouseDeep, srSaturnInHouseDeep } from '../solarReturnPlanetInHouseDeep';
 import { auditSolarReturnProse, guardSolarReturnProse } from '../solarReturnProseBoundary';
@@ -51,14 +54,45 @@ describe('Solar Return client-meaning gate', () => {
     expect(auditSolarReturnProse([srSunInHouse,srMoonInHouse,srPlanetInHouse,angularPlanetMeaning,srJupiterInHouseDeep,srSaturnInHouseDeep])).toEqual([]);
     for (const row of Object.values(srSunInHouse)) for (const field of ['overview','experience','focus','caution'] as const) expect(validateSolarReturnProse(row[field])).toEqual([]);
   });
-  it('executive summary retains ranked story evidence, not benefic events or invented conflicts', () => {
+  it('executive summary is a view over the validated year story with no competing prose system', () => {
     const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
     const summary = generateExecutiveSummary(analysis,laurenNatal);
-    expect(summary.coreFocus).toBe(buildYearStory(analysis).coreStory);
-    expect(summary.challenges).toEqual([]);
-    expect(summary.patterns).toEqual([]);
+    const story = buildYearStory(analysis);
+    expect(summary.priorities.map(p => p.title)).toEqual(story.themes.slice(0,3).map(t => t.title));
+    expect(summary.priorities.map(p => p.description)).toEqual(story.themes.slice(0,3).map(t => t.summary));
+    expect(summary.evidenceHierarchy).toEqual(story.hierarchy);
+    expect(summary).not.toHaveProperty('opportunities');
+    expect(summary).not.toHaveProperty('challenges');
+    expect(summary).not.toHaveProperty('patterns');
+    expect(summary).not.toHaveProperty('yearArchetype');
     expect(auditSolarReturnProse(summary)).toEqual([]);
-    expect(summary.opportunities[0].source.length).toBeGreaterThan(0);
+    expect(summary.priorities[0].source.length).toBeGreaterThan(0);
+  });
+  it('Lauren full JSON export, executive summary, Vertex and legacy tables contain none of the rejected phrases', () => {
+    const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
+    const exported = JSON.stringify([
+      buildFullJsonStandalone(analysis, laurenReturn, laurenNatal),
+      generateExecutiveSummary(analysis,laurenNatal), buildYearStory(analysis),
+      srSunInHouse, srMoonInHouse, srPlanetInHouse, angularPlanetMeaning, srMCInHouse,
+      vertexInSign, vertexInHouse, vertexAspectMeanings,
+      ...Array.from({length:12},(_,sr)=>Array.from({length:12},(_,n)=>srOverlayNarrative('Sun',sr+1,n+1))),
+    ]);
+    for (const phrase of BANNED) expect(exported.toLowerCase()).not.toContain(phrase);
+    expect(auditSolarReturnProse(JSON.parse(exported).slice(3))).toEqual([]);
+  });
+  it.each([
+    'Your decisions now will define the next several years.',
+    'An eclipse fast-forwards your life story this year.',
+    'This theme returns on an 18.6-year cycle, so you will face it again.',
+    'A surprise pregnancy is possible.',
+    'Relationship upheaval is unavoidable this year.',
+    'This is one of the best possible Solar Return placements.',
+    'You will meet your partner this year.',
+    'Depression is possible, so plan your schedule.',
+    'A health crisis may arrive through your work routine.',
+    'This is a lovely opportunity to plan a trip.',
+  ])('rejects deterministic certainty class: %s', text => {
+    expect(validateSolarReturnProse(text)).not.toEqual([]);
   });
   it('withholding composed prose leaves deterministic facts and source labels byte-identical', () => {
     const raw = {orb:0.267, source:'sr-to-natal', label:'SR Moon square natal Venus', date:'2026-10-21', sign:'Pisces', house:3, narrative:'Dreams are prophetic.'};
