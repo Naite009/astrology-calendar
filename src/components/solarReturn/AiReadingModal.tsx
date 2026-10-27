@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { validateVerifiedReading, verifiedFactsFromSolarReturnReport } from '../../../supabase/functions/_shared/verifiedReadingFacts';
 import { validateSolarReturnReport, validateSolarReturnReading } from '../../../supabase/functions/_shared/solarReturnReportValidation';
 import { useState, useRef, useCallback } from 'react';
@@ -24,11 +25,13 @@ export async function fetchReading(
   const inputErrors = validateSolarReturnReport(fullJson);
   if (inputErrors.length) throw new Error(`Report blocked: ${inputErrors.join('; ')}`);
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-sr-ai-reading`;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Sign in to generate a reading');
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ fullJson, mode }),
     signal,
