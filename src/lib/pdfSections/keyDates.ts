@@ -226,7 +226,7 @@ export function generateKeyDatesSection(
   ctx.drawCard(doc, () => {
     ctx.writeBold(doc, 'Why These Dates Matter');
     ctx.y += 6;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible — when you feel the pressure, the opportunity, or the shift. Mark them.`);
+    ctx.writeBody(doc, `${tlName} is your annual profection time lord. These are solver-checked dates when transiting ${tlName} makes an exact aspect to one of your natal planets. You may notice the year's main plans and decisions more clearly around these dates, so you can schedule check-ins with yourself or the people involved.`);
   });
 
   // ── Timeline-style event cards ──────────────────────────────────
