@@ -11,6 +11,18 @@ import {
 } from '@/lib/solarReturnLunarTimeline';
 import { getMoonPhaseBlending, srMoonPhaseInterp } from '@/lib/solarReturnMoonData';
 
+/** Hedged, concrete reading of the Solar Return Sun-Moon cycle stage (no certainty claims). */
+const STAGE_MEANING: Record<string, string> = {
+  Beginning: 'you may want to start a plan or project rather than finish old ones',
+  Growth: 'a plan you started may need steady effort to keep going',
+  Action: 'you may face a decision about a plan that asks you to act rather than wait',
+  Refinement: 'you may want to review and adjust a project before you show it to others',
+  Culmination: 'you may see the results of a plan more clearly, including in your relationships',
+  Sharing: 'you may want to share or teach what you have learned from a recent project',
+  Reevaluation: 'you may decide to change or stop a routine that no longer fits your plans',
+};
+const stageMeaning = (stage: string) => STAGE_MEANING[stage] || 'you may want to finish projects and clear your schedule before starting something new';
+
 // ── Color mapping for phase stages ──────────────────────────────────
 const PHASE_COLORS: Record<string, string> = {
   beginning: 'bg-chart-1/20 text-chart-1 border-chart-1/30',
@@ -219,16 +231,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
             <div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
               <p className="text-xs text-foreground leading-relaxed">
-                {blending.themeLabel}. The {currentEntry.cycleStage.toLowerCase()} stage of the lunar cycle means this year is about {
-                  currentEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
-                  currentEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
-                  currentEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
-                  currentEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
-                  currentEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
-                  currentEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
-                  currentEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
-                  'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
-                }.
+                {blending.themeLabel}. The {currentEntry.cycleStage.toLowerCase()} stage of the lunar cycle suggests that {stageMeaning(currentEntry.cycleStage)}.
               </p>
             </div>
 
@@ -403,16 +406,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
                 <p className="text-xs text-foreground leading-relaxed">
-                  {blending.themeLabel}. The {detailEntry.cycleStage.toLowerCase()} stage means this year is about {
-                    detailEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
-                    detailEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
-                    detailEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
-                    detailEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
-                    detailEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
-                    detailEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
-                    detailEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
-                    'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
-                  }.
+                  {blending.themeLabel}. The {detailEntry.cycleStage.toLowerCase()} stage suggests that {stageMeaning(detailEntry.cycleStage)}.
                 </p>
               </div>
 
