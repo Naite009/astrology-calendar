@@ -383,29 +383,7 @@ function buildThemeSummary(house: number, ctx: StoryContext): string {
 }
 
 function buildCoreStory(themes: YearTheme[], ctx: StoryContext): string {
-  if (!themes.length) return 'This return reads as a steadier year with no single area dominating. The chart asks for maintenance and refinement more than reinvention.';
-
-  const [t1, t2, t3] = themes;
-  const parts: string[] = [];
-
-  parts.push(`This can be a year organized around ${areaPhrase(t1.house)}${t2 ? `, with ${areaPhrase(t2.house)} close behind` : ''}.`);
-
-  if (ctx.sunHouse) {
-    parts.push(`The Solar Return Sun in the ${ordinal(ctx.sunHouse)} house${ctx.sunSign ? ` in ${ctx.sunSign}` : ''} sets that focus, and it is repeated by other independent signatures rather than resting on one placement.`);
-  }
-  if (ctx.profHouse) {
-    parts.push(`The annual profection to the ${ordinal(ctx.profHouse)} house adds ${areaPhrase(ctx.profHouse)} as a second layer${ctx.timeLordHouse ? `, and because ${ctx.timeLord} is in the ${ordinal(ctx.timeLordHouse)} house, that layer is likely to be worked out through ${areaPhrase(ctx.timeLordHouse)}` : ''}.`);
-  }
-  if (t3) {
-    parts.push(`Underneath the visible part of the year there is a quieter process involving ${areaPhrase(t3.house)}.`);
-  }
-  if (ctx.definingAspects.length) {
-    const d = ctx.definingAspects[0];
-    parts.push(`The tightest contact of the return, ${d.label} at ${d.orb}°, is the one to actually listen to.`);
-  }
-  parts.push('These are areas to compare with your actual circumstances, not promised events. The useful distinction is between what deserves more attention and what you do not need to change.');
-
-  return parts.join(' ');
+  return themes.slice(0, 2).map(t => t.summary).join('\n\n');
 }
 
 function areaPhrase(house: number): string {
@@ -441,52 +419,10 @@ function buildHierarchy(ctx: StoryContext): { label: string; detail: string }[] 
 }
 
 function buildWhatYouNeedToKnow(themes: YearTheme[], ctx: StoryContext): { heading: string; body: string }[] {
-  const t = themes.map(x => x.house);
-  const out: { heading: string; body: string }[] = [];
-
-  out.push({
-    heading: 'What is changing',
-    body: themes.length
-      ? `This is not a background year. ${capitalise(areaPhrase(t[0]))} is becoming more important${t[1] ? `, and ${areaPhrase(t[1])} becomes more consequential alongside it` : ''}. The chart places emphasis on a small number of areas rather than spreading itself thin.`
-      : 'The year reads as steady. Refinement matters more than reinvention.',
-  });
-
-  out.push({
-    heading: 'What matters most',
-    body: themes.slice(0, 3).map(x => capitalise(areaPhrase(x.house))).join('. ') + '. These themes reinforce each other, so progress in one tends to move the others.',
-  });
-
-  const challengeHouse = t.includes(6) ? 6 : t.includes(12) ? 12 : t[t.length - 1];
-  out.push({
-    heading: 'What might be challenging',
-    body: challengeHouse === 6
-      ? 'Opportunity may increase, and so may responsibility. The real challenge is building routines, pacing and boundaries capable of supporting the growth you are asking for. Pushing harder is not the same as being effective.'
-      : `The stretch is likely to sit in ${areaPhrase(challengeHouse)}. Expect to be asked for more honesty and more structure there than feels comfortable at first.`,
-  });
-
-  out.push({
-    heading: 'Where the opportunity is',
-    body: t.includes(10)
-      ? 'Visibility and credibility are available this year. Saying yes to the right level of responsibility, and being clear about what you want to be known for, can move things a long way.'
-      : `The opening is in ${areaPhrase(t[0] || 1)}. Deliberate, unglamorous consistency is what converts it into something real.`,
-  });
-
-  out.push({
-    heading: 'What to pay attention to',
-    body: [
-      t.includes(2) && t.includes(10) ? 'The link between what you earn, what you believe you are worth, and what you are willing to accept professionally.' : '',
-      t.includes(7) ? 'Reciprocity in your closest relationships and agreements, including the practical division of labor.' : '',
-      t.includes(6) ? 'Your workload, sleep, pacing and the difference between busy and effective.' : '',
-      t.includes(12) || t.includes(4) ? 'A quieter internal restructuring around security, home, old patterns and the kind of life you actually want.' : '',
-    ].filter(Boolean).join(' ') || 'The small, repeated decisions rather than the dramatic ones.',
-  });
-
-  out.push({
-    heading: 'What would help you use the year well',
-    body: 'Choose fewer things and commit to them properly. Put structure under anything you want to grow, say the practical part out loud in your relationships and agreements, and check whether your current routine could hold the version of your life you say you want.',
-  });
-
-  return out;
+  return themes.slice(0, 3).map((theme, i) => ({
+    heading: i === 0 ? 'What matters most' : i === 1 ? 'What also needs your time' : 'What to notice',
+    body: theme.summary,
+  }));
 }
 
 function buildReflectionQuestion(themes: YearTheme[], ctx: StoryContext): string {
