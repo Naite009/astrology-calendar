@@ -159,3 +159,36 @@ describe('Solar Return client-meaning gate', () => {
     expect(validateSolarReturnReading(`## Your year\n\n${bad}`)).not.toEqual([]);
   });
 });
+describe('Solar Return lower-tab and export generators (Lauren regression)', () => {
+  const analysis = analyzeSolarReturn(laurenReturn, laurenNatal);
+  const json = buildFullJsonStandalone(analysis, laurenReturn, laurenNatal) as any;
+  const text = JSON.stringify(json);
+  const CERTAINTY = /fast-forward|destiny-level|peak visibility moment|expect noticeable events|you'll feel this strongly|growth happens in the discomfort|pulled in two directions|unstoppable|hospitali|having a baby|marriage or divorce|running the show|one of the most predictive/i;
+
+  it('full export carries none of the rejected certainty or tension templates', () => {
+    expect(text).not.toMatch(CERTAINTY);
+    for (const phrase of BANNED) expect(text.toLowerCase()).not.toContain(phrase);
+  });
+  it('cycle tracking lists facts only: eclipses are sensitive points, not event accelerators', () => {
+    for (const line of json.patternTracking.eclipseConnections) expect(line).toMatch(/is listed as a sensitive point for this chart\.$/);
+    expect(json.patternTracking.repeatingThemesFromPastYears).toContain('Annual profection house 3 was also the profection house at age 38.');
+  });
+  it('hemisphere label follows the larger count (6 above, 4 below is Upper-Leaning) and lists houses, not life events', () => {
+    expect(json.hemisphericEmphasis.upper).toBe(6);
+    expect(json.hemisphericEmphasis.lower).toBe(4);
+    expect(json.hemisphericEmphasis.verticalLabel).toBe('Upper-Leaning');
+    expect(json.hemisphericEmphasis.verticalDetail.bodyParagraphs).toEqual([]);
+  });
+  it('Full Moon in the SR Moon sign falls six solar months after the Sun enters it (Pisces Moon: March, then September)', () => {
+    expect(json.lunarFlow.importantMoonMonths.map((m: any) => m.month)).toEqual(['March', 'September']);
+  });
+  it('a life area repeated by profection and the SR Moon becomes one reinforced theme, not two paragraphs', () => {
+    const meanings = json.prioritizedSynthesis.themes.map((t: any) => t.meaning);
+    expect(new Set(meanings).size).toBe(meanings.length);
+    expect(json.prioritizedSynthesis.themes[0].evidence.some((e: string) => /separate chart layer, same life area/.test(e))).toBe(true);
+  });
+  it('every published contact meaning passes the shared gate and comes from the shared helper', () => {
+    for (const a of [...json.srToNatalAspects, ...json.srInternalAspects]) if (a.interpretation) expect(validateSolarReturnProse(a.interpretation)).toEqual([]);
+    expect(json.srToNatalAspects.some((a: any) => a.interpretation)).toBe(true);
+  });
+});
