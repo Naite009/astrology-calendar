@@ -38,7 +38,8 @@ export function solarReturnProfectionMeaning(house: number, lord: string, routeH
   const entry = life[house], route = routeHouse ? life[routeHouse] : undefined;
   if (!entry) return '';
   if (!route || routeHouse === house) return solarReturnHouseMeaning(house, lord);
-  const text = `This year, ${entry.area} may need more attention. You might ${entry.action}; pursuing that could also lead you to ${route.action}. ${changes[lord] || changes.Sun}, so the aim is to ${entry.purpose}.`;
+  const change = (changes[lord] || changes.Sun).replace(/, so checking the time and cost matters$/, ', with time and cost worth checking');
+  const text = `This year, ${entry.area} may need more attention. You might ${entry.action}; pursuing that could also lead you to ${route.action}. ${change}, helping you ${entry.purpose}.`;
   if (validateSolarReturnProse(text).length) throw new Error('Solar Return profection meaning failed quality validation');
   return text;
 }

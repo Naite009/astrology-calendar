@@ -68,8 +68,6 @@ serve(async (req) => {
     const d = fullJson;
     const verifiedFacts = verifiedFactsFromSolarReturnReport(d);
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
-    const group = ageGroup(age);
-    const ageInstructions = ageContextInstructions(group, age);
     // Only validated evidence reaches the prose writer. Legacy tables and
     // unverified eclipse/quarter templates are not treated as calculated facts.
     const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
@@ -81,7 +79,7 @@ serve(async (req) => {
       timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
     const systemPrompt = `${SOLAR_RETURN_PROSE_STANDARD}
 Age: ${age ?? 'unknown'}. Adapt examples to age without assuming marriage, children, occupation or life events. Keep minors' examples nonsexual and age appropriate.
-Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Keep chart source labels in separate Evidence lines.
+Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Keep chart source labels in separate Evidence lines. Put each chart layer's placement in its own sentence with its explicit source, never combine natal and return positions in one sentence. Do not attach a placement to a named ruler unless its layer is supplied. Longer-term dates belong in Evidence lines; the paragraph itself must explain what you could notice.
 ${mode === 'astro' ? 'Include supplied exact source labels and orbs after plain meaning.' : 'Use ordinary language for experience, with supplied facts only in separate Evidence lines.'}`;
 
     const userPrompt = mode === 'astro'
