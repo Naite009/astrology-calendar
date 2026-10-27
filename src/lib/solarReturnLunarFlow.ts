@@ -79,11 +79,11 @@ export function buildLunarFlow(
 
   // Full/New moon in SR Moon sign (roughly the month when Sun opposes/conjoins)
   if (srMoonSign) {
-    const oppSignIdx = (Object.values(SIGN_MONTH).indexOf(SIGN_MONTH[srMoonSign]) + 6) % 12;
-    const oppMonth = Object.entries(SIGN_MONTH).find(([, v]) => v === oppSignIdx);
-    if (oppMonth) {
+    // Sun opposite the Moon's sign falls six solar months later.
+    const oppMonthIdx = SIGN_MONTH[srMoonSign] !== undefined ? (SIGN_MONTH[srMoonSign] + 6) % 12 : undefined;
+    if (oppMonthIdx !== undefined) {
       importantMoonMonths.push({
-        month: MONTHS_FULL[oppSignIdx],
+        month: MONTHS_FULL[oppMonthIdx],
         theme: `Approximate month: the Sun is opposite ${srMoonSign}, so the Full Moon falls in your Solar Return Moon sign. You may review how your routines are working.`,
       });
     }
