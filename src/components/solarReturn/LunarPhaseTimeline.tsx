@@ -75,6 +75,8 @@ function BalsamicDetailPanel({ entry }: { entry: TimelineEntry }) {
   );
 
   const isBridge = entry.moonSign !== entry.sunSign;
+  // Sign-only release/emerge narratives are not published; hide the panel when empty.
+  if (!blending.releasing && !blending.emerging) return null;
 
   return (
     <div className="space-y-3 pt-2 border-t border-border/50">
@@ -84,7 +86,7 @@ function BalsamicDetailPanel({ entry }: { entry: TimelineEntry }) {
 
       {isBridge && (
         <p className="text-[10px] text-muted-foreground italic leading-relaxed">
-          This year bridges two different psychological territories — a threshold year where one completed chapter dissolves while another quietly forms.
+          The Sun and Moon are in different signs at this return.
         </p>
       )}
 
@@ -212,20 +214,20 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
             </div>
 
             {/* What is completing */}
-            <div>
+            {blending.releasing && (<div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
               <p className="text-xs text-foreground leading-relaxed">
                 Your {currentEntry.moonSign} Moon points to what is being released this year: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
               </p>
-            </div>
+            </div>)}
 
             {/* What is emerging */}
-            <div>
+            {blending.emerging && (<div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
               <p className="text-xs text-foreground leading-relaxed">
                 Your {currentEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
               </p>
-            </div>
+            </div>)}
 
             {/* Theme of the year */}
             <div>
@@ -253,18 +255,18 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
                     <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="bg-secondary/20 rounded-sm p-2">
+                      {blending.releasing && (<div className="bg-secondary/20 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {currentEntry.moonSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
                           The Moon sign describes the emotional style active during this phase — specifically: {blending.releasing}.
                         </p>
-                      </div>
-                      <div className="bg-accent/10 rounded-sm p-2">
+                      </div>)}
+                      {blending.emerging && (<div className="bg-accent/10 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {currentEntry.sunSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
                           The Sun sign describes the spiritual orientation — specifically: {blending.emerging}.
                         </p>
-                      </div>
+                      </div>)}
                     </div>
                     <p className="text-[10px] text-muted-foreground/70 italic">
                       Phase angle: {currentEntry.phaseAngle}° · {currentEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
@@ -389,19 +391,19 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 <p className="text-xs text-foreground leading-relaxed">{detailEntry.shortMeaning}</p>
               </div>
 
-              <div>
+              {blending.releasing && (<div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
                 <p className="text-xs text-foreground leading-relaxed">
                   Your {detailEntry.moonSign} Moon points to what is being released: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
                 </p>
-              </div>
+              </div>)}
 
-              <div>
+              {blending.emerging && (<div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
                 <p className="text-xs text-foreground leading-relaxed">
                   Your {detailEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
                 </p>
-              </div>
+              </div>)}
 
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
@@ -430,18 +432,18 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
                     <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="bg-secondary/20 rounded-sm p-2">
+                      {blending.releasing && (<div className="bg-secondary/20 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {detailEntry.moonSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
                           The Moon sign describes the emotional style and psychological pattern active during this phase — specifically: {blending.releasing}.
                         </p>
-                      </div>
-                      <div className="bg-accent/10 rounded-sm p-2">
+                      </div>)}
+                      {blending.emerging && (<div className="bg-accent/10 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {detailEntry.sunSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
                           The Sun sign describes the spiritual orientation and life direction — specifically: {blending.emerging}.
                         </p>
-                      </div>
+                      </div>)}
                     </div>
                     <p className="text-[10px] text-muted-foreground/70 italic">
                       Phase angle: {detailEntry.phaseAngle}° · {detailEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
