@@ -21,6 +21,7 @@
  */
 
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
+import { solarReturnHouseMeaning, solarReturnProfectionMeaning } from './solarReturnClientMeaning';
 
 export interface YearTheme {
   house: number;
@@ -376,102 +377,13 @@ function planetsInHouse(ctx: StoryContext, house: number): string[] {
 }
 
 function buildThemeSummary(house: number, ctx: StoryContext): string {
-  const occupants = planetsInHouse(ctx, house);
-  const list = occupants.length ? occupants.join(', ') : '';
-  const isProf = ctx.profHouse === house;
-  const hasTimeLord = ctx.timeLordHouse === house;
-  const hasSun = ctx.sunHouse === house;
-  const hasMoon = ctx.moonHouse === house;
-  const hasRuler = ctx.ascRulerHouse === house;
-
-  const parts: string[] = [];
-
-  switch (house) {
-    case 10:
-      parts.push('Career, direction and visibility can become one of the loudest stories of the year.');
-      if (occupants.length >= 3) {
-        parts.push(`With ${list} gathered here, the chart places particular emphasis on being seen and taken seriously. Those planets connect their distinct concerns to your public responsibilities, rather than guaranteeing recognition.`);
-      }
-      parts.push('This can show up as recognition, more responsibility, a change of role, or a stronger need to build something that actually reflects who you are becoming. It does not promise a specific job event.');
-      break;
-    case 7:
-      parts.push('Relationships and agreements can become more consequential this year.');
-      if (isProf) parts.push('The annual profection activates this house, which puts romantic partnerships, important one to one connections, business partners, clients and contracts near the center of the year.');
-      if (ctx.timeLordHouse === 6) parts.push('Because the Time Lord sits in the sixth house, practical realities like time, workload and routine may be what reveals which relationships and agreements can actually be sustained.');
-      parts.push('Questions of commitment, reciprocity and long term compatibility may carry more weight than usual. That is not a prediction of marriage or of ending anything.');
-      break;
-    case 6:
-      parts.push('Daily life, workload, routines and what you can realistically maintain come into focus.');
-      if (hasTimeLord && ctx.timeLord === 'Saturn') parts.push('Saturn here reads as sustainability rather than restriction. The useful question is whether your current structure can hold what you are asking your life to carry.');
-      parts.push('Discipline, boundaries, pacing, rest and consistency matter more than intensity. Taking physical wellbeing seriously and avoiding burnout belong in this theme, without turning symbolism into a health forecast.');
-      break;
-    case 2:
-      parts.push('Money, values and self-worth are linked this year rather than separate.');
-      if (hasMoon) parts.push(`The Moon in ${ctx.moonSign || 'this house'} here suggests that emotional security, independence and what makes you feel steady are tied to your resources and income.`);
-      if (ctx.topHouses.includes(10)) parts.push('Because the career emphasis is strong, growing professionally may change what you believe you are worth, and getting clearer about your value may change what you are willing to accept at work.');
-      break;
-    case 12:
-      parts.push('Some of the most important movement this year may happen privately.');
-      if (hasRuler) parts.push(`${ctx.ascRuler}, the ruler of the year, sits here, so the outward story has an inward counterpart. You may become more conscious of old patterns, of what you do to keep things comfortable, and of what you genuinely value versus what you have learned to accommodate.`);
-      parts.push('This can look like reflection, rest, therapy, closure, or quietly letting go of a version of yourself that no longer fits.');
-      break;
-    case 4:
-      parts.push('Home, family and the foundation you are building can be under review.');
-      parts.push('Your sense of security, belonging and what you want your private life to feel like may change substantially, even while the visible story is about something else.');
-      break;
-    case 1:
-      parts.push('Identity, presence and how you meet people are emphasized.');
-      if (ctx.ascSign) parts.push(`${ctx.ascSign} rising on the return shapes the approach you lead with this year.`);
-      break;
-    case 8:
-      parts.push('Depth, shared resources and psychological change are emphasized.');
-      parts.push('You may find yourself dealing with what is actually underneath a situation rather than its surface, including joint money, trust and control.');
-      break;
-    case 5:
-      parts.push('Creativity, romance and self-expression carry more weight this year.');
-      break;
-    case 3:
-      parts.push('Communication, learning and everyday contact are emphasized.');
-      break;
-    case 9:
-      parts.push('Travel, study and your working worldview are emphasized.');
-      break;
-    case 11:
-      parts.push('Who you spend your life around, and what you are aiming at next, moves to the front of the year.');
-      if (hasSun) parts.push('With the Solar Return Sun here, your sense of purpose is tied to the people you choose and the direction you are pointing in, rather than to a title or an achievement. Friendships, networks, groups and long range plans are where you become most yourself this year.');
-      if (occupants.length >= 2) parts.push(`With ${list} in this house, the chart keeps returning to the difference between the company you have drifted into and the company you would choose on purpose.`);
-      parts.push('This can look like new circles, a clearer set of standards for who gets access to you, and plans that finally have a shape instead of staying a wish.');
-      break;
-  }
-
-  if (hasSun && house !== 10) parts.push(`The Solar Return Sun is here, which keeps this area near the center of the year.`);
-  return parts.join(' ');
+  if (house === ctx.profHouse) return solarReturnProfectionMeaning(house, ctx.timeLord, ctx.timeLordHouse);
+  const planet = house === ctx.sunHouse ? 'Sun' : house === ctx.moonHouse ? 'Moon' : house === ctx.ascRulerHouse ? ctx.ascRuler : planetsInHouse(ctx, house)[0] || 'Sun';
+  return solarReturnHouseMeaning(house, planet);
 }
 
 function buildCoreStory(themes: YearTheme[], ctx: StoryContext): string {
-  if (!themes.length) return 'This return reads as a steadier year with no single area dominating. The chart asks for maintenance and refinement more than reinvention.';
-
-  const [t1, t2, t3] = themes;
-  const parts: string[] = [];
-
-  parts.push(`This can be a year organized around ${areaPhrase(t1.house)}${t2 ? `, with ${areaPhrase(t2.house)} close behind` : ''}.`);
-
-  if (ctx.sunHouse) {
-    parts.push(`The Solar Return Sun in the ${ordinal(ctx.sunHouse)} house${ctx.sunSign ? ` in ${ctx.sunSign}` : ''} sets that focus, and it is repeated by other independent signatures rather than resting on one placement.`);
-  }
-  if (ctx.profHouse) {
-    parts.push(`The annual profection to the ${ordinal(ctx.profHouse)} house adds ${areaPhrase(ctx.profHouse)} as a second layer${ctx.timeLordHouse ? `, and because ${ctx.timeLord} is in the ${ordinal(ctx.timeLordHouse)} house, that layer is likely to be worked out through ${areaPhrase(ctx.timeLordHouse)}` : ''}.`);
-  }
-  if (t3) {
-    parts.push(`Underneath the visible part of the year there is a quieter process involving ${areaPhrase(t3.house)}.`);
-  }
-  if (ctx.definingAspects.length) {
-    const d = ctx.definingAspects[0];
-    parts.push(`The tightest contact of the return, ${d.label} at ${d.orb}°, is the one to actually listen to.`);
-  }
-  parts.push('These are areas to compare with your actual circumstances, not promised events. The useful distinction is between what deserves more attention and what you do not need to change.');
-
-  return parts.join(' ');
+  return themes.slice(0, 2).map(t => t.summary).join('\n\n');
 }
 
 function areaPhrase(house: number): string {
@@ -507,52 +419,10 @@ function buildHierarchy(ctx: StoryContext): { label: string; detail: string }[] 
 }
 
 function buildWhatYouNeedToKnow(themes: YearTheme[], ctx: StoryContext): { heading: string; body: string }[] {
-  const t = themes.map(x => x.house);
-  const out: { heading: string; body: string }[] = [];
-
-  out.push({
-    heading: 'What is changing',
-    body: themes.length
-      ? `This is not a background year. ${capitalise(areaPhrase(t[0]))} is becoming more important${t[1] ? `, and ${areaPhrase(t[1])} becomes more consequential alongside it` : ''}. The chart places emphasis on a small number of areas rather than spreading itself thin.`
-      : 'The year reads as steady. Refinement matters more than reinvention.',
-  });
-
-  out.push({
-    heading: 'What matters most',
-    body: themes.slice(0, 3).map(x => capitalise(areaPhrase(x.house))).join('. ') + '. These themes reinforce each other, so progress in one tends to move the others.',
-  });
-
-  const challengeHouse = t.includes(6) ? 6 : t.includes(12) ? 12 : t[t.length - 1];
-  out.push({
-    heading: 'What might be challenging',
-    body: challengeHouse === 6
-      ? 'Opportunity may increase, and so may responsibility. The real challenge is building routines, pacing and boundaries capable of supporting the growth you are asking for. Pushing harder is not the same as being effective.'
-      : `The stretch is likely to sit in ${areaPhrase(challengeHouse)}. Expect to be asked for more honesty and more structure there than feels comfortable at first.`,
-  });
-
-  out.push({
-    heading: 'Where the opportunity is',
-    body: t.includes(10)
-      ? 'Visibility and credibility are available this year. Saying yes to the right level of responsibility, and being clear about what you want to be known for, can move things a long way.'
-      : `The opening is in ${areaPhrase(t[0] || 1)}. Deliberate, unglamorous consistency is what converts it into something real.`,
-  });
-
-  out.push({
-    heading: 'What to pay attention to',
-    body: [
-      t.includes(2) && t.includes(10) ? 'The link between what you earn, what you believe you are worth, and what you are willing to accept professionally.' : '',
-      t.includes(7) ? 'Reciprocity in your closest relationships and agreements, including the practical division of labor.' : '',
-      t.includes(6) ? 'Your workload, sleep, pacing and the difference between busy and effective.' : '',
-      t.includes(12) || t.includes(4) ? 'A quieter internal restructuring around security, home, old patterns and the kind of life you actually want.' : '',
-    ].filter(Boolean).join(' ') || 'The small, repeated decisions rather than the dramatic ones.',
-  });
-
-  out.push({
-    heading: 'What would help you use the year well',
-    body: 'Choose fewer things and commit to them properly. Put structure under anything you want to grow, say the practical part out loud in your relationships and agreements, and check whether your current routine could hold the version of your life you say you want.',
-  });
-
-  return out;
+  return themes.slice(0, 3).map((theme, i) => ({
+    heading: i === 0 ? 'What matters most' : i === 1 ? 'What also needs your time' : 'What to notice',
+    body: theme.summary,
+  }));
 }
 
 function buildReflectionQuestion(themes: YearTheme[], ctx: StoryContext): string {

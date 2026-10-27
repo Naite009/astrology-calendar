@@ -1,12 +1,11 @@
 import { validateVerifiedReading, verifiedFactsFromSolarReturnReport } from "../_shared/verifiedReadingFacts.ts";
 import { validateSolarReturnReport, validateSolarReturnReading } from '../_shared/solarReturnReportValidation.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { SOLAR_RETURN_PROSE_STANDARD, generateCheckedSolarReturnProse } from "../_shared/solarReturnProseQuality.ts";
 import { withInterpretationStandard } from "../_shared/interpretationStandard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 function calculateAge(birthDate: string, srYear: number): number | null {
   if (!birthDate) return null;
@@ -16,477 +15,16 @@ function calculateAge(birthDate: string, srYear: number): number | null {
   return srYear - birthYear;
 }
 
-function ageGroup(age: number | null): string {
-  if (!age) return 'adult';
-  if (age <= 12) return 'child';
-  if (age <= 17) return 'teen';
-  if (age <= 25) return 'young_adult';
-  if (age <= 40) return 'adult';
-  if (age <= 55) return 'midlife';
-  if (age <= 70) return 'senior';
-  return 'elder';
-}
-
-function ageContextInstructions(group: string, age: number | null): string {
-  const ageStr = age ? `${age} years old` : 'unknown age';
-  switch (group) {
-    case 'child':
-      return `This person is ${ageStr}. Write as if explaining to a smart child. Use simple words, short sentences. Talk about school, friends, family, hobbies, sports, imagination. No romance, career pressure, or adult responsibilities. Frame challenges as "things that might feel confusing or hard."`;
-    case 'teen':
-      return `This person is ${ageStr}. They care about identity, friendships, school, fitting in, independence from parents. Mention dating only lightly. Career = "what you might want to do someday." Frame growth as self-discovery. Use casual but respectful tone.`;
-    case 'young_adult':
-      return `This person is ${ageStr}. They're navigating early career, relationships, possibly first serious partnerships, finding independence, maybe grad school or first jobs. Be direct and actionable. "This is a year to..." format works well.`;
-    case 'adult':
-      return `This person is ${ageStr}. They likely have established relationships, career momentum, possibly children. Focus on deepening existing commitments, career advancement, work-life balance, and personal fulfillment beyond achievement.`;
-    case 'midlife':
-      return `This person is ${ageStr}. They may be reassessing life direction, dealing with aging parents, children leaving home, career pivots, health awareness, and legacy questions. Focus on wisdom, recalibration, and "what matters most now." Don't assume they're slowing down — many people this age are starting new chapters.`;
-    case 'senior':
-      return `This person is ${ageStr}. Focus on wisdom, mentorship, health and vitality, relationships with grandchildren or community, creative pursuits, travel, legacy, and enjoying life on their own terms. Physical activity suggestions should be realistic (walking, yoga, swimming, dance classes — not extreme sports). Don't patronize. Many people this age are vibrant and active. Frame this year's energy around what brings joy, meaning, and connection.`;
-    case 'elder':
-      return `This person is ${ageStr}. Focus on legacy, spiritual meaning, close relationships, comfort, health management, creativity, and peace. Suggestions should be gentle and dignified. Honor their life experience. Frame the year around reflection, connection, and savoring life.`;
-    default:
-      return `This person is ${ageStr}. Write for a general adult audience with practical, grounded advice.`;
-  }
-}
-
-function buildContext(d: any, age: number | null): string {
-  let ctx = `PERSON: ${d.name || 'Unknown'}`;
-  if (age) ctx += `, turning ${age} this year`;
-  ctx += `\nBorn: ${d.birthDate || ''}, ${d.birthLocation || ''}\n`;
-  ctx += `Solar Return Year: ${d.solarReturnYear || ''}\n\n`;
-
-  ctx += `--- CHART BASICS ---\n`;
-  ctx += `Natal Sun: ${d.natalSun}\n`;
-  ctx += `Natal Moon: ${d.natalMoon}\n`;
-  ctx += `Natal Rising: ${d.natalRising}\n\n`;
-  ctx += `SR Sun: ${d.srSun}\n`;
-  ctx += `SR Moon: ${d.srMoon}\n`;
-  ctx += `SR Rising: ${d.srRising}\n\n`;
-
-  // Explicit SR planet positions so the AI never guesses signs
-  if (d.planetPositions?.length > 0) {
-    ctx += `--- SR PLANET POSITIONS (AUTHORITATIVE — do NOT contradict) ---\n`;
-    for (const pp of d.planetPositions) {
-      if (pp.srPosition) {
-        ctx += `SR ${pp.planet}: ${pp.srPosition} in SR house ${pp.srHouse || '—'}`;
-        if (pp.natalPosition) ctx += ` (natal: ${pp.natalPosition} in house ${pp.natalHouse || '—'})`;
-        if (pp.shift && pp.shift !== 'Same sign') ctx += ` [SHIFT: ${pp.shift}]`;
-        ctx += `\n`;
-      }
-    }
-    ctx += `\n`;
-  }
-
-  if (d.yearlyTheme) {
-    ctx += `--- YEAR THEME ---\n`;
-    ctx += `SR Ascendant: ${d.yearlyTheme.ascendantSign}\n`;
-    ctx += `SR Asc Ruler: ${d.yearlyTheme.ascendantRuler} in ${d.yearlyTheme.ascendantRulerSign} (house ${d.yearlyTheme.ascendantRulerHouse || '—'})\n\n`;
-  }
-
-  if (d.natalChartRuler) {
-    ctx += `Natal Chart Ruler (ruler of the NATAL Ascendant, NOT the profection Time Lord): ${d.natalChartRuler.planet} in ${d.natalChartRuler.srSign} (house ${d.natalChartRuler.srHouse || '—'}), dignity: ${d.natalChartRuler.dignity}${d.natalChartRuler.isRetrograde ? ' (Rx)' : ''}\n`;
-  }
-
-  if (d.profectionYear) {
-    ctx += `Annual Profection Time Lord: ${d.profectionYear.timeLord} (from the House ${d.profectionYear.houseNumber || d.profectionYear.house} profection)\n`;
-  }
-
-  if (d.dominantPlanets?.ranked?.length) {
-    ctx += `Solar Return Dominant Planet (scoring based, a separate technique again): ${d.dominantPlanets.ranked[0]?.planet || ''}\n`;
-  }
-
-  if (d.yearStory) {
-    ctx += `\n--- YEAR STORY (PRE-COMPUTED SYNTHESIS: FOLLOW THIS HIERARCHY, DO NOT REORDER IT) ---\n`;
-    ctx += `Core story: ${d.yearStory.coreStory}\n`;
-    (d.yearStory.themes || []).forEach((t: any, i: number) => {
-      ctx += `Theme ${i + 1} (house ${t.house}, ${t.reinforcements} independent signatures): ${t.title}\n  ${t.summary}\n  Evidence: ${(t.signatures || []).join(' ')}\n`;
-    });
-    (d.yearStory.hierarchy || []).forEach((h: any) => { ctx += `Emphasis: ${h.label} = ${h.detail}\n`; });
-    ctx += `Reflection question to close with: ${d.yearStory.reflectionQuestion}\n`;
-  }
-
-  ctx += `\n--- PLACEMENTS ---\n`;
-  ctx += `Sun: SR house ${d.sunHouse?.house || '—'}, overlays natal house ${d.sunNatalHouse?.house || '—'}\n`;
-  ctx += `Moon: ${d.srMoon} in SR house ${d.moonHouse?.house || '—'}, phase: ${d.moonPhase?.phase || '—'}\n`;
-  if (d.moonAngularity) ctx += `Moon angularity: ${d.moonAngularity}\n`;
-  ctx += 'Moon void-of-course status: not certified unless a future applying-aspect search was supplied.\n';
-
-  if (d.srMoonAspects?.length > 0) {
-    ctx += `\n--- MOON ASPECTS ---\n`;
-    d.srMoonAspects.slice(0, 8).forEach((a: any) => {
-      ctx += `- Moon ${a.aspectType} ${a.targetPlanet} (${a.orb}°): ${a.interpretation || ''}\n`;
-    });
-  }
-
-  if (d.angularPlanets?.length > 0) {
-    ctx += `\nAngular planets: ${d.angularPlanets.join(', ')}\n`;
-  }
-
-  if (d.stelliums?.length > 0) {
-    ctx += `Stelliums: ${d.stelliums.map((s: any) => `${s.planets.join(', ')} in ${s.location}`).join('; ')}\n`;
-  }
-
-  if (d.elementBalance) ctx += `\nElement balance: Fire=${d.elementBalance.fire}, Earth=${d.elementBalance.earth}, Air=${d.elementBalance.air}, Water=${d.elementBalance.water} — Dominant: ${d.elementBalance.dominant}\n`;
-
-  if (d.saturnFocus) ctx += `\nSaturn: ${d.saturnFocus.sign} in house ${d.saturnFocus.house || '—'}${d.saturnFocus.isRetrograde ? ' (Rx)' : ''}\n`;
-  if (d.nodesFocus) ctx += `North Node: ${d.nodesFocus.sign} in house ${d.nodesFocus.house || '—'}\n`;
-  if (d.retrogrades?.count > 0) ctx += `Retrogrades: ${d.retrogrades.planets.join(', ')}\n`;
-
-  if (d.identityShift) {
-    ctx += `\n--- IDENTITY SHIFT ---\n`;
-    ctx += `Headline: ${d.identityShift.headline || ''}\n`;
-    ctx += `Narrative: ${d.identityShift.becomingNarrative || ''}\n`;
-    if (d.identityShift.pillars?.length) {
-      d.identityShift.pillars.forEach((p: any) => {
-        ctx += `- ${p.label || p.name}: ${p.placement || ''} — ${p.keyword || ''}: ${p.description || ''}\n`;
-      });
-    }
-    if (d.identityShift.tensionNote) ctx += `Tension: ${d.identityShift.tensionNote}\n`;
-  }
-
-  if (d.executiveSummary) {
-    const es = d.executiveSummary;
-    if (es.opportunities?.length) {
-      ctx += `\n--- OPPORTUNITIES ---\n`;
-      es.opportunities.forEach((o: any) => { ctx += `- ${o.title || o}: ${o.description || ''}\n`; });
-    }
-    if (es.challenges?.length) {
-      ctx += `\n--- CHALLENGES ---\n`;
-      es.challenges.forEach((c: any) => { ctx += `- ${c.title || c}: ${c.description || ''}\n`; });
-    }
-  }
-
-  if (d.lifeDomainScores) {
-    ctx += `\n--- LIFE DOMAIN SCORES (out of 10) ---\n`;
-    Object.entries(d.lifeDomainScores).forEach(([k, v]: [string, any]) => {
-      if (typeof v === 'object' && v?.score !== undefined) {
-        ctx += `${k}: ${v.score}/10 — ${v.summary || ''}\n`;
-        if (v.breakdown?.length) {
-          v.breakdown.forEach((b: any) => { ctx += `  • ${b.source}: ${b.points > 0 ? '+' : ''}${b.points} (${b.reason})\n`; });
-        }
-      }
-    });
-  }
-
-  if (d.contradictions?.length > 0) {
-    ctx += `\n--- CONTRADICTIONS ---\n`;
-    d.contradictions.forEach((c: any) => {
-      ctx += `- ${c.title || ''}: ${c.narrative || c.description || ''}\n`;
-      if (c.resolution) ctx += `  Resolution: ${c.resolution}\n`;
-    });
-  }
-
-  if (d.actionGuidance?.length > 0) {
-    ctx += `\n--- ACTION GUIDANCE ---\n`;
-    d.actionGuidance.forEach((g: any) => {
-      ctx += `${g.planetSymbol || ''} ${g.placement || ''}:\n`;
-      ctx += `  Lean into: ${g.leanInto || ''}\n`;
-      ctx += `  Avoid: ${g.avoid || ''}\n`;
-      ctx += `  Best use: ${g.bestUse || ''}\n`;
-      if (g.timing) ctx += `  Timing: ${g.timing}\n`;
-    });
-  }
-
-  if (d.activationWindows) {
-    const aw = d.activationWindows;
-    if (aw.peakPeriods?.length) {
-      ctx += `\n--- PEAK PERIODS ---\n`;
-      aw.peakPeriods.forEach((p: any) => { ctx += `- ${p.label || p.month || ''}: ${p.description || p.reason || ''}\n`; });
-    }
-    if (aw.monthlyThemes?.length) {
-      ctx += `\n--- MONTHLY THEMES ---\n`;
-      aw.monthlyThemes.forEach((m: any) => {
-        ctx += `- ${m.label || m.month}: ${m.theme || ''} (${m.transitHits?.length || 0} transits)\n`;
-      });
-    }
-  }
-
-  if (d.lunarWeatherMap?.months?.length > 0) {
-    ctx += `\n--- LUNAR WEATHER ---\n`;
-    d.lunarWeatherMap.months.slice(0, 12).forEach((m: any) => {
-      ctx += `- ${m.label || m.month}: ${m.theme || m.emotionalTone || ''}\n`;
-    });
-  }
-
-  if (d.quarterlyFocus?.length > 0) {
-    ctx += `\n--- QUARTERLY FOCUS ---\n`;
-    d.quarterlyFocus.forEach((q: any) => {
-      ctx += `- Q${q.quarter}: ${q.theme || q.focus || ''}${q.description ? ' — ' + q.description : ''}\n`;
-    });
-  }
-
-  if (d.srToNatalAspects?.length > 0) {
-    ctx += `\n--- SR-TO-NATAL ASPECTS ---\n`;
-    d.srToNatalAspects.slice(0, 12).forEach((a: any) => {
-      ctx += `- SR ${a.srPlanet || a.planet1} ${a.aspectType || a.aspect || a.type || ''} Natal ${a.natalPlanet || a.planet2} (${a.orb}°)${a.interpretation ? ': ' + a.interpretation : ''}\n`;
-    });
-  }
-
-  if (d.dignityReport?.length > 0) {
-    ctx += `\n--- DIGNITY REPORT ---\n`;
-    d.dignityReport.slice(0, 8).forEach((dr: any) => {
-      ctx += `- ${dr.planet}: ${dr.label || ''} (score ${dr.score})\n`;
-    });
-  }
-
-  if (d.hemisphericEmphasis) {
-    ctx += `\n--- HEMISPHERIC EMPHASIS ---\n`;
-    const h = d.hemisphericEmphasis;
-    if (h.dominant) ctx += `Dominant: ${h.dominant}\n`;
-    if (h.description) ctx += `${h.description}\n`;
-  }
-
-  if (d.repeatedThemes?.length > 0) {
-    ctx += `\n--- REPEATED THEMES ---\n`;
-    d.repeatedThemes.forEach((t: any) => {
-      ctx += `- ${typeof t === 'string' ? t : t.theme || t.description || JSON.stringify(t)}\n`;
-    });
-  }
-
-  if (d.yearPriorities?.length > 0) {
-    ctx += `\n--- YEAR PRIORITIES (ranked) ---\n`;
-    d.yearPriorities.slice(0, 8).forEach((p: any, i: number) => {
-      ctx += `${i + 1}. ${p.label || p.category}: score ${p.score || ''}, confidence ${p.confidence || ''}\n`;
-      if (p.signals?.length) {
-        p.signals.slice(0, 4).forEach((s: any) => {
-          ctx += `   • ${typeof s === 'string' ? s : s.source || s.label || JSON.stringify(s)}\n`;
-        });
-      }
-    });
-  }
-
-  if (d.lunarPhaseTimeline?.length > 0) {
-    const currentPhase = d.lunarPhaseTimeline.find((e: any) => e.isCurrent);
-    if (currentPhase) {
-      ctx += `\n--- 29-YEAR EMOTIONAL CYCLE ---\n`;
-      ctx += `Phase: ${currentPhase.phase} (${currentPhase.cycleStage})\n`;
-      ctx += `Meaning: ${currentPhase.shortMeaning || ''}\n`;
-    }
-  }
-
-  if (d.houseOverlays?.length > 0) {
-    ctx += `\n--- HOUSE OVERLAYS (SR planets in natal houses) ---\n`;
-    const houseCounts: Record<number, string[]> = {};
-    d.houseOverlays.forEach((ov: any) => {
-      const overlayH = ov.srInNatalHouse ?? ov.natalHouse;
-      if (overlayH) {
-        if (!houseCounts[overlayH]) houseCounts[overlayH] = [];
-        houseCounts[overlayH].push(ov.planet);
-      }
-    });
-    Object.entries(houseCounts).sort(([,a], [,b]) => b.length - a.length).forEach(([house, planets]) => {
-      const hNum = parseInt(house);
-      const meaning = d.lookups?.houseMeanings?.[hNum] || '';
-      const examples = d.lookups?.houseExamples?.[hNum] || '';
-      ctx += `House ${house} (${meaning}): ${planets.join(', ')}. Examples: ${examples}\n`;
-    });
-  }
-
-  if (d.srAscRulerInNatal) {
-    const r = d.srAscRulerInNatal;
-    ctx += `\nSR Asc ruler ${r.rulerPlanet} lands in natal house ${r.rulerNatalHouse || '—'} (${r.rulerNatalSign || ''})\n`;
-  }
-
-  if (d.executiveSummary?.patterns?.length > 0) {
-    ctx += `\n--- PATTERNS ---\n`;
-    d.executiveSummary.patterns.forEach((p: any) => {
-      ctx += `- ${p.pattern}: ${p.description} Connection: ${p.connection}\n`;
-    });
-  }
-
-  if (d.eclipseSensitivity?.length > 0) {
-    ctx += `\n--- ECLIPSE ACTIVATIONS ---\n`;
-    d.eclipseSensitivity.forEach((e: any) => {
-      ctx += `- ${e.description || e.type || JSON.stringify(e)}\n`;
-    });
-  }
-
-  if (d.mutualReceptions?.length > 0) {
-    ctx += `\n--- MUTUAL RECEPTIONS ---\n`;
-    d.mutualReceptions.forEach((mr: any) => {
-      ctx += `- ${mr.planet1 || ''} & ${mr.planet2 || ''}: ${mr.description || mr.interpretation || ''}\n`;
-    });
-  }
-
-  if (d.srInternalAspects?.length) {
-    ctx += '\n--- SOLAR RETURN INTERNAL ASPECTS, NOT NATAL CONTACTS ---\n';
-    for (const a of d.srInternalAspects.slice(0, 12)) ctx += `${a.label}; orb ${a.orb} degrees.\n`;
-  }
-  if (d.calculationMetadata) ctx += `\nRETURN PROVENANCE: ${JSON.stringify(d.calculationMetadata)}\n`;
-  if (d.prioritizedSynthesis) ctx += `\nPRIORITIZED EVIDENCE SYNTHESIS: ${JSON.stringify(d.prioritizedSynthesis)}\n`;
-  if (d.secondaryProgressions) ctx += `\nSECONDARY PROGRESSIONS, LONGER-TERM CONTEXT, NOT RETURN PLACEMENTS: ${JSON.stringify(d.secondaryProgressions)}\n`;
-  return ctx;
-}
-
-function plainSystemPrompt(ageInstructions: string): string {
-  return `You write personalized yearly readings for people. You are NOT an astrologer speaking to a client — you are a wise, practical life advisor who happens to have deep knowledge of cycles and timing.
-
-${ageInstructions}
-
-  ABSOLUTE RULES:
-  0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs. NEVER guess or infer a planet's sign from aspects, houses, or other context. If Venus is listed as "Aries 12°", you say Aries — NEVER Taurus.
-  1. NEVER use astrological jargon. No planet names, sign names, house numbers, aspects, degrees, dignities, or any technical terms. Translate EVERYTHING into plain life language.
-     - Instead of "Sun in the 7th house" → "Your main focus this year is partnerships and close relationships"
-     - Instead of "Saturn square Moon" → "You may feel emotionally tested around responsibilities"
-     - Instead of "North Node in the 10th" → "You're being pulled toward career growth and public visibility"
-     - Instead of "Pisces Rising" → "You'll come across as more intuitive and gentle this year"
-  2. NEVER start with "Dear [Name]", "Dear soul", or any greeting. Jump straight into the content.
-  3. NEVER use vague language like "lean into the energy", "doors will open", "embrace the flow", "align with your truth", "the universe is asking you to". Every sentence must answer: WHAT specifically should they DO or EXPECT?
-   4. Every suggestion must be AGE-APPROPRIATE and PRACTICAL. Give specific examples they can actually act on.
-      - Bad: "Express your creativity" → Good for age 64: "Take that watercolor class you've been thinking about, join a writing group, or finally organize your photos into the book you've been meaning to make"
-      - Bad: "Focus on partnerships" → Good for age 64: "Deepen conversations with your spouse or closest friend — schedule a weekly dinner date, take a trip together, or start a shared hobby"
-   4b. HYBRID CLARITY RULE: For each insight, follow this sequence: (1) Start with a real-life situation — what actually happens. (2) Describe how it feels. (3) Briefly explain why. Do not lead with traits alone. Each sentence should combine what happens, how it feels, and what pattern it reflects. If a phrase sounds like astrology language, rewrite it into a concrete scenario. "You may catch yourself rethinking a decision you thought was settled — it feels destabilizing, because this year's chart is pushing you to question things you'd accepted on autopilot."
-  5. Each section must be exactly 3 sentences, maximum 80 words. Be specific to this chart — no generic statements. Every sentence must reference something unique to THIS person's data.
-  6. Write in SHORT, PUNCHY paragraphs. Use line breaks generously.
-  7. Be HONEST about difficult periods. Don't sugarcoat. But always include what they can do about it.
-  8. Use the person's FIRST NAME exactly ONCE — in the very first sentence of the reading. After that, use "you" and "your" exclusively. NEVER repeat their name again anywhere in the text.
-  9. Do not use any other markdown formatting — no bullets, asterisks, bold, or italic markup. Only ## is allowed, and only for the four section headers.
-  10. NEVER write two-word or fragment sentences like "Culmination energy." or "Relationships reveal their truth." or "Growth period." Every sentence must be a COMPLETE thought with a subject, verb, and object that explains what will actually happen in plain language. If you catch yourself writing a short abstract phrase, expand it into a full sentence that a non-astrologer would understand.
-
-   Format your response exactly like this with a blank line between every element:
-
-   ## What This Year Is About
-
-   First paragraph here.
-
-   Second paragraph here.
-
-   ## How You'll Feel Different
-
-   First paragraph here.
-
-   ## Your Biggest Opportunities
-
-   First paragraph here.
-
-   ## What Will Be Hard
-
-   First paragraph here.
-
-   Every ## header must be on its own line with a blank line before and after it. Never put a ## header inside a sentence or paragraph. Do not include any other section headers. Each section should be 2-3 short paragraphs, maximum 4 sentences per paragraph. Write with warmth and directness. Be specific to the chart data provided. No generic statements that could apply to anyone.
-
-
-
-  DOCTRINE FOR THE PLAIN READING:
-  A. Story first. Say what the year is about in ordinary words, using the pre-computed YEAR STORY order, before any detail.
-  B. Follow the theme ranking supplied in YEAR STORY exactly. Do not reorder it and do not promote something because it had more aspects.
-  C. Say plainly when several different parts of the chart point at the same area of life, because that is why it ranks first.
-  D. No medical predictions, no organs, no symptoms, no diagnoses. Talk about workload, routines, stamina, pacing, rest and stress management instead.
-  E. Use "may", "can" and "is likely to". Never guarantee an event.
-  F. No em dashes anywhere.
-  F. Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
-  G. Grammar: the reader is "you", so write "you have", "you are", "you were". Never "you has", "you is", "you's" or "you was".
-  H. Eclipses are timing, not destiny. Never say fated, destined, karmic payback, meant to be, or written.
-  I. No single area of life may take up more than about a quarter of the reading. The profected year and the Sun's area lead the story.
-  J. Close with a short "What You Need to Know" wrap up and then the single reflection question supplied in the data.
-
-  Keep the total reading between 600-800 words. Every word must earn its place. Brevity is strength.`;
-}
-
-function astroSystemPrompt(ageInstructions: string): string {
-  return `You are a master astrologer writing a comprehensive Solar Return synthesis. Your reader has astrological knowledge and wants the full technical picture — placements, aspects, dignities, timing, and chart-level pattern recognition. You are writing to impress a professional astrologer with the depth and specificity of your analysis.
-
-${ageInstructions}
-
-ABSOLUTE RULES:
-0. PLANET SIGNS ARE SACRED: The "SR PLANET POSITIONS (AUTHORITATIVE)" section lists every planet's exact sign, degree, and house. You MUST use those exact signs when referencing ANY SR placement. NEVER guess or infer a planet's sign. If Venus is listed as "Aries 12°", cite Aries — NEVER Taurus.
-1. USE full astrological terminology: planet names, sign names, house numbers, aspect names (conjunction, trine, square, opposition, sextile), orbs, dignities (domicile, exaltation, detriment, fall), retrogrades, angular/succedent/cadent, sect, mutual receptions.
-2. Reference SPECIFIC placements. "SR Mars in Libra in the 1st house square natal Pluto at 3.4°" — not "an assertive energy comes through."
-3. NEVER start with "Dear [Name]" or any greeting. Jump straight into the technical synthesis.
-4. Every claim must be grounded in the chart data provided. Cite the exact placement or aspect that drives each point.
-5. Integrate MULTIPLE data layers: cross-reference profection year + time lord + SR Asc ruler chain + dignity conditions + house overlays. Show the reader how these layers converge or conflict.
-6. Address contradictions explicitly: if the data shows opposing pulls (e.g., stellium in 12th but angular Mars), name the tension and explain how it resolves or must be held.
-7. Use the Life Domain Scores, Year Priorities, and Activation Windows data to prioritize what matters most — don't give equal weight to everything.
-8. Mention the 29-year lunar phase cycle position and Metonic echoes if the data includes them.
-9. Still be AGE-APPROPRIATE in practical suggestions even though the language is technical.
-10. HYBRID CLARITY RULE: Even in technical mode, every interpretive sentence must follow this sequence: (1) what actually happens, (2) how it feels, (3) why. "SR Mars square natal Pluto" is technical — but the interpretation must land as: "this often shows up as a period where you're fighting for control in a situation that won't let you have it — it feels frustrating because you know what you want but the path keeps getting blocked."
-
-STRUCTURE (use these exact headers):
-
-## Year Overview: The Chart Speaks
-3-4 sentences synthesizing the SR Ascendant, its ruler's condition and natal house placement, the profection house and Time Lord, and the dominant element/modality. This should feel like opening a chart and immediately seeing the story.
-
-## The Ruler Chain & Profection
-Deep dive into the SR Asc ruler: what planet, what sign/house in the SR, where it lands in the natal chart, its dignity condition. How does this connect to the profection year's Time Lord? Do they support or conflict with each other? What does the ruler chain tell us about WHERE the year plays out?
-
-## Identity & Becoming (SR Sun, Moon, Asc)
-The SR Sun's house placement and natal overlay. The SR Moon's sign, phase, house, aspects (especially conjunctions and squares). Moon angularity and void-of-course status. How these three pillars create the year's emotional and identity landscape.
-
-## The Aspect Web
-The most potent SR-to-natal aspects. Organize by type: hard aspects (squares, oppositions) vs. flowing (trines, sextiles) vs. fusion (conjunctions). For each major aspect: the exact orb, what it activates, and when it peaks (if activation window data is available).
-
-## Dignity Conditions & Planet Strength
-Which SR planets are dignified, debilitated, or accidentally strong/weak? How does this affect which planets can "deliver" and which ones struggle? Any mutual receptions that create hidden support channels?
-
-## Life Domain Analysis
-Reference the scored life domains (career, relationships, health, etc.). Which areas score highest and why? Which are challenged? Connect each score back to specific placements and aspects.
-
-## Timing Windows & Activation
-The peak event windows from the activation data. Month-by-month transit rhythm. When do the SR angles get hit? When does the Time Lord get activated? Eclipse sensitivity points.
-
-## Contradictions & Resolutions
-Name the chart's internal contradictions. How do opposing pulls resolve? What does the reader need to hold in tension vs. what will resolve naturally?
-
-## Practical Synthesis
-Despite being technical, end with 4-6 concrete, age-appropriate actions grounded in the chart. Each should reference the specific placement that motivates it.
-
-Aim for 1200-1800 words. Be technically dense but readable. Show mastery through specificity, not through jargon for jargon's sake.
-
-
-## NON-NEGOTIABLE REPORT DOCTRINE
-
-STRUCTURE: story first, astrology second. Open with the story of the year in plain language, then use the chart to support it. Never open with a placement list.
-
-THEME HIERARCHY: use the pre-computed YEAR STORY order exactly. Do not promote a theme because it collected more aspects. Weight evidence in this order: Solar Return Ascendant and its ruler, the Sun's house and condition, the Moon's house, angular planets, house or sign concentrations, the annual profection house and Time Lord, rulers of activated houses, then very tight major aspects. Minor bodies (Chiron, asteroids, Eris, Lilith, points) may reinforce a theme, never create one.
-
-REPEATED THEMES ARE THE POINT: if three or four independent signatures point at the same life area, say so explicitly and say that this is why it ranks first.
-
-ORB DISCIPLINE: only aspects under 2 degrees may be called defining or exact. 2 to 5 degrees is supporting. Over 5 degrees is background and usually not worth naming. Never call a 5 degree aspect exact, fused, or "right on top of".
-
-TIME LORD TERMINOLOGY: these are three different techniques and must never be merged or called "the Lord of the Year" without qualification:
-- "Annual Profection Time Lord" for the ruler of the profected house.
-- "Natal Chart Ruler" for the ruler of the natal Ascendant.
-- "Solar Return Dominant Planet" for the scoring based dominant.
-Name the technique every time you name the planet.
-
-DIGNITY: state dignity correctly. Saturn in Aries is in Fall, not Detriment. Saturn in Cancer or Leo is in Detriment. Do not invent dignities.
-
-HOUSES NEAR CUSPS: if a planet sits within about 2 degrees of the next house cusp, say it bridges both houses and interpret both. A planet conjunct an angle keeps the house it is actually in. Never move a planet into a different house to make a point.
-
-NO MEDICAL PREDICTIONS: never predict illness, name organs, body parts, diagnoses, or symptoms. Use workload, routines, stamina, pacing, rest, stress management and sustainability instead. Sixth house and Saturn contacts mean sustainability, not sickness. A quincunx does not mean a health problem.
-
-SATURN IN THE SIXTH: read as workload, structure, discipline and what can be maintained over time, not as physical decline.
-
-TENTATIVE LANGUAGE: use "may", "can", "is likely to", "this often shows up as". Never guarantee an outcome or an event.
-
-NO GENERIC ASPECT COPY: never write "squares are the engine of achievement", "energies merge into one force", "the universe is asking you", or similar filler. Explain what the specific pair may do in this specific year.
-
-REDUCE REPETITION: each placement gets its fullest explanation once. Later mentions must add something new or connect it to another theme.
-
-CONNECT, DO NOT LIST: link the themes to each other, for example how a professional focus interacts with the profected relationship house, or how workload determines what growth can actually be sustained.
-
-NO EM DASHES anywhere. Use commas, colons, periods or parentheses.
-
-Use U.S. English spelling only (practicing, behavior, favor, color, center, organize, recognize, traveling, counselor, analyze, emphasize, gray). Never use British spellings.
-
-GRAMMAR AND PRONOUNS: the reader is addressed as "you", which takes plural verb forms. Write "you have", "you are", "you were", "your". Never write "you has", "you is", "you's", "you was", or "yous". Never attach a possessive apostrophe to "you".
-
-ASPECT CHART SOURCE: every aspect must name both charts explicitly, for example "Solar Return Mars square natal Saturn" or "Solar Return Venus opposite Solar Return Saturn". Never write a bare pair like "Mars square Saturn", and never mix a Solar Return to natal contact with a Solar Return internal contact in the same sentence as if they were the same thing. Use the label supplied with each aspect in the data when one is present.
-
-ECLIPSES: describe eclipses as timing that brings something already building to a head. Never call anything fated, destined, karmic payback, meant to be, or written. No language that removes the reader's choice.
-
-DO NOT LET ONE HOUSE SWALLOW THE READING: no single house may dominate more than roughly a quarter of the text. The profected house and the Sun's house lead the reading. A house that is emphasized only because the Time Lord sits there is HOW the year gets worked out, not WHAT the year is about.
-
-CLOSE WITH: a section called "What You Need to Know" covering what is changing, what matters most, what may be challenging, where the opportunity is, and what to pay attention to. Then end with the single reflection question supplied in the data, or one just as specific.
-`;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
+    const auth = createClient(Deno.env.get('SUPABASE_URL') || '', Deno.env.get('SUPABASE_ANON_KEY') || '');
+    const { data: userData, error: authError } = token ? await auth.auth.getUser(token) : { data: { user: null }, error: new Error('Missing token') };
+    if (authError || !userData.user) return new Response(JSON.stringify({ error: 'Sign in to generate a reading' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const { fullJson, mode = 'plain' } = await req.json();
     if (!fullJson || typeof fullJson !== 'object' || !['plain', 'astro'].includes(mode)) return new Response(JSON.stringify({ error: 'Invalid report request' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const errors = validateSolarReturnReport(fullJson);
@@ -497,8 +35,6 @@ serve(async (req) => {
     const d = fullJson;
     const verifiedFacts = verifiedFactsFromSolarReturnReport(d);
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
-    const group = ageGroup(age);
-    const ageInstructions = ageContextInstructions(group, age);
     // Only validated evidence reaches the prose writer. Legacy tables and
     // unverified eclipse/quarter templates are not treated as calculated facts.
     const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
@@ -508,18 +44,16 @@ serve(async (req) => {
       prioritizedSynthesis:{themes:d.prioritizedSynthesis?.themes,longerTerm:d.prioritizedSynthesis?.longerTerm},
       verifiedFacts,
       timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
-    const repairRules = `Lead with 3 to 5 evidence-linked themes, not a list of every technique. For each, explain the exact signature, recognizable experience, and useful implication. No standalone sign stereotype, uses Libra style, steer reading, two valid needs, trust process, slogans, crisis-in-action, illness, trauma, mother claims or guaranteed future events. Never use em/en dashes. Natal, return, progressed and transiting factors are distinct. Profection lord is not either Ascendant ruler. Unknown metadata remains unknown. No uncomputed default peak months, Metonic recurrence claims, or VOC inference from an unaspected Moon. Progressed Moon sign and natal-house changes are longer-term context. Use only supplied dated events. Scores are app-defined activity/tone signals, not chances of success. All section headings start ##. Prioritized synthesis is the factual hierarchy; older generic glossaries cannot override it.`;
-
-    const systemPrompt = `Write a concise, evidence-grounded annual reading. ${ageInstructions}
-Use 5 sections: ## The main story, ## What modifies it, ## The central tension, ## The longer emotional chapter, ## What matters most.
-Each section has at most 3 sentences and 80 words. Connect rather than list placements. The Sun house and whole-sign profection lead; the ruler placement explains how their arenas meet. Major contacts modify those themes, never a minor-body headline. In the longer chapter, include supplied progressed Moon sign, natal house, reference date and real ingress date, distinctly labelled. Explain uncertainty honestly. Never add a placement, retrograde claim, aspect, orb, house, dignity or interpretation that is absent from the supplied theme evidence. Name the natal chart ruler only by name, without attaching a Solar Return placement to it. Do not infer new aspects from positions. Natal and Solar Return houses are Placidus; the annual profection is Whole Sign. Keep Solar Return-to-natal contacts (always say 'natal' for the natal planet) separate from Solar Return-to-Solar Return aspects; never call a Solar Return-to-natal contact the strongest aspect in this year's chart, say 'one of the closest Solar Return-to-natal contacts'. Use review or revisiting language for the Solar Return chart ruler only if the evidence states that ruler is retrograde. Treat tight orbs as 'may be especially noticeable', never as certainty.
-${mode === 'astro' ? 'Include exact supplied chart-layer contact labels and orbs as brief evidence, plus the three distinct rulers.' : 'Use ordinary language for experience, then a brief Evidence line naming the supplied chart factors. Never silently remove chart provenance.'}
-Do not include eclipse dates, month forecasts, health claims, invented biography, therapy recommendations, automatic shared-house compatibility, Chiron healing milestones, or claims that co-located rulers perfectly support each other. The astrology suggests possibilities, not facts about what happened or will happen.`;
+    const systemPrompt = `${SOLAR_RETURN_PROSE_STANDARD}
+Age: ${age ?? 'unknown'}. Adapt examples to age without assuming marriage, children, occupation or life events. Keep minors' examples nonsexual and age appropriate.
+Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Keep chart source labels in separate Evidence lines. Put each chart layer's placement in its own sentence with its explicit source, never combine natal and return positions in one sentence. Do not attach a placement to a named ruler unless its layer is supplied. Longer-term dates belong in Evidence lines; the paragraph itself must explain what you could notice.
+${mode === 'astro' ? 'Include supplied exact source labels and orbs after plain meaning.' : 'Use ordinary language for experience, with supplied facts only in separate Evidence lines.'}`;
 
     const userPrompt = mode === 'astro'
       ? `Write a concise Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Use only the supplied theme evidence and distinct ruler names.\n\n${ctx}`
       : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use the prioritized evidence below. Choose only the strongest themes; do not recite every technique or score. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
 
+    const requestDraft = async (feedback: string[]) => {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -529,8 +63,9 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
       body: JSON.stringify({
         model: "google/gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: withInterpretationStandard(`${systemPrompt}\n${repairRules}`, { fullChart: false }) },
+          { role: "system", content: withInterpretationStandard(systemPrompt, { fullChart: false }) },
           { role: "user", content: userPrompt },
+          ...(feedback.length ? [{ role: "user", content: `Regenerate from the SAME verified facts. Fix these failed checks, do not delete factual evidence or add new claims: ${feedback.join("; ")}` }] : []),
         ],
         temperature: mode === 'astro' ? 0.3 : 0.4,
         stream: true,
@@ -538,29 +73,17 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
       signal: req.signal,
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required, please add AI credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: (() => { try { const e = JSON.parse(errorText); return e.message || e.error?.message || "AI service rejected the request"; } catch { return "AI service rejected the request"; } })() }), {
-        status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!response.ok) throw new Error(`AI service returned ${response.status}`);
+    return response;
+    };
 
     // Consume the upstream stream, but never display unvalidated prose to the client.
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          const text = await generateCheckedSolarReturnProse(async (feedback) => {
+          const response = await requestDraft(feedback);
           const reader = response.body?.getReader();
           if (!reader) throw new Error('Missing model response');
           const decoder = new TextDecoder(); let buffer = '', text = '';
@@ -576,18 +99,8 @@ Do not include eclipse dates, month forecasts, health claims, invented biography
               text += data.choices?.[0]?.delta?.content || '';
             }
           }
-          const factErrors = validateVerifiedReading(text, verifiedFacts);
-          if (factErrors.length) throw new Error(`Reading withheld by calculation check: ${factErrors.join('; ')}`);
-          const faults = validateSolarReturnReading(text);
-          if (faults.length) {
-            // Transparent deterministic fallback, not invented replacement AI prose.
-            const themes = d.prioritizedSynthesis?.themes || [];
-            text = themes.map((t: any) => `## ${t.title}\n\n${t.meaning}\n\nEvidence: ${(t.evidence || []).join(' ')}`).join('\n\n');
-            const longer = d.prioritizedSynthesis?.longerTerm;
-            if (longer) text += `\n\n## ${longer.title}\n\n${longer.meaning}\n\nEvidence: ${(longer.evidence || []).join(' ')}`;
-            if (validateSolarReturnReading(text).length) throw new Error(`Reading withheld: ${faults.join('; ')}`);
-            text = `## Evidence-based fallback\n\nThe AI reading did not pass validation. The following is the supplied deterministic interpretation, not a regenerated AI reading.\n\n${text}`;
-          }
+          return text;
+          }, text => validateVerifiedReading(text, verifiedFacts), validateSolarReturnReading);
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`));
         } catch (error) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Reading withheld' })}\n\n`));

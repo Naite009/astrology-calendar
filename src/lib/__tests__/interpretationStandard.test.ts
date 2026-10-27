@@ -31,7 +31,7 @@ const INTERPRETIVE_FUNCTIONS = [
   'cosmic-weather-collective', 'cosmic-weather-email', 'cosmic-weather-what-matters',
   'family-pair-reading', 'family-system-reading', 'find-lunar-theme',
   'generate-hd-narrative', 'generate-intentions', 'generate-narrative',
-  'generate-sr-ai-reading', 'generate-sr-narrative', 'interpret-cards',
+  'generate-sr-ai-reading', 'interpret-cards',
   'interpret-hexagram', 'interpret-tarot-spread', 'soul-agreements',
   'your-weather-today',
 ];
@@ -39,7 +39,7 @@ const INTERPRETIVE_FUNCTIONS = [
 /** Data-extraction / plumbing functions that must NOT be forced to carry it. */
 const NON_INTERPRETIVE_FUNCTIONS = [
   'parse-chart-image', 'parse-hd-chart', 'extract-document-text', 'get-document',
-  'send-daily-emails', 'gate-probe',
+  'send-daily-emails', 'gate-probe', 'generate-sr-narrative',
 ];
 
 describe('the standard text', () => {
@@ -132,6 +132,12 @@ describe('withInterpretationStandard', () => {
 });
 
 describe('every interpretive edge function inherits the standard', () => {
+  it('legacy Solar Return narrative delegates to the guarded canonical author without a competing prompt', () => {
+    const source = fs.readFileSync(path.join(FUNCTIONS_DIR, 'generate-sr-narrative', 'index.ts'), 'utf8');
+    expect(source).toContain('/functions/v1/generate-sr-ai-reading');
+    expect(source).not.toContain('ai.gateway.lovable.dev');
+    expect(source).not.toContain('systemPrompt');
+  });
   for (const name of INTERPRETIVE_FUNCTIONS) {
     it(`${name} imports and applies it`, () => {
       const src = fs.readFileSync(path.join(FUNCTIONS_DIR, name, 'index.ts'), 'utf8');

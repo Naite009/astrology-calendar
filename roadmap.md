@@ -1,5 +1,11 @@
 # Roadmap
 
+## Solar Return concrete interpretation repair
+- [x] Replace the active deterministic keyword/meta-synthesis source, consolidate the narrative/modal authors and PDF story summaries; preserve factual checks.
+- [x] Add shared paragraph-quality rejection with one regeneration, nine representative combinations and 34 new cases.
+- [x] Relevant 167 tests and full 737 tests passed; signed-in saved Lauren 2026 deterministic UI inspected. Exact audit: `qa-reports/solar-return-prose-repair.md`.
+- [ ] Accepted fresh AI authoring remains unverified: live authenticated Lauren reference generation was withheld after two attempts for mixed-layer position claims and missing concrete scenes. Mathematical validation was not relaxed.
+
 ## Core Natal Portrait main-plot reasoning
 - [x] Build deterministic structural hierarchy, independent theme aggregation and ruler-led story candidates before prose.
 - [x] Enforce selected-theme evidence, contradictions and slow-planet personalization in both reading gates; 703 tests passed.
