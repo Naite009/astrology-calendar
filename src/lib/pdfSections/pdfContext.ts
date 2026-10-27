@@ -1,5 +1,9 @@
 import jsPDF from 'jspdf';
 import { SignColorTheme } from './signColorThemes';
+import { solarReturnRenderAllowed } from '@/lib/solarReturnProseBoundary';
+
+/** Every composed paragraph passes the shared Solar Return wording gate before it is drawn. */
+const gateText = (text: string): string | null => (solarReturnRenderAllowed(text) ? text.replace(/\s*\u2014\s*/g, ', ') : null);
 
 type Color = [number, number, number];
 
@@ -140,7 +144,9 @@ export function createPDFContext(
       }
     },
 
-    writeBody(d: jsPDF, text: string, _color: Color = INK, size = 11, lineH = 17) {
+    writeBody(d: jsPDF, rawText: string, _color: Color = INK, size = 11, lineH = 17) {
+      const text = gateText(rawText);
+      if (!text) return;
       d.setFont('times', 'normal');
       d.setFontSize(size);
       d.setTextColor(...INK);
@@ -244,7 +250,9 @@ export function createPDFContext(
       }
     },
 
-    writeCardSection(d: jsPDF, label: string, text: string, _labelColor: Color = GOLD) {
+    writeCardSection(d: jsPDF, label: string, rawText: string, _labelColor: Color = GOLD) {
+      const text = gateText(rawText);
+      if (!text) return;
       const innerX = margin + 10;
       const innerW = contentW - 20;
       const bodyX = margin + 18;
