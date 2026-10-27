@@ -102,10 +102,9 @@ ${mode === 'astro' ? 'Explain the supplied planet functions in plain language. E
           }
           return text;
           }, text => validateVerifiedReading(text, verifiedFacts), validateSolarReturnReading);
-          // Chart evidence is supplied verbatim, not model-authored. Every position sentence keeps its own chart layer.
-          const evidence = selectedThemes.map((t: any) => `## ${t.title}\n\nEvidence: ${(t.evidence || []).join('\nEvidence: ')}`).join('\n\n');
-          const finalText = `${text}\n\n${evidence}`;
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: finalText } }] })}\n\ndata: [DONE]\n\n`));
+          // Exact evidence already appears in the shared UI/JSON synthesis. Do not
+          // concatenate cross-chart labels into prose sentences with ambiguous layer scope.
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`));
         } catch (error) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : 'Reading withheld' })}\n\n`));
         } finally { controller.close(); }
