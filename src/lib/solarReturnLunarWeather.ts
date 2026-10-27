@@ -1,3 +1,4 @@
+import { guardSolarReturnProse } from './solarReturnProseBoundary';
 /**
  * Lunar Emotional Weather Map
  * Lunar return triggers, monthly emotional resets, Moon transit checkpoints every ~2.5 days
@@ -140,13 +141,13 @@ export function generateLunarWeatherMap(
 
   const yearPattern = buildYearPattern(natalMoonSign, analysis, emotionalPeaks);
 
-  return {
+  return guardSolarReturnProse({
     natalMoonSign,
     months,
     yearPattern,
     emotionalPeaks,
     quietMonths,
-  };
+  });
 }
 
 function generateLunarReturn(natalMoonSign: string, monthName: string, monthOffset: number): LunarReturnEvent {

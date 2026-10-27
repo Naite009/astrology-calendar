@@ -1,4 +1,4 @@
-import { getHouseLivedInterpretation } from './interpretation/psychologicalFunctions';
+import { solarReturnHouseMeaning } from './solarReturnClientMeaning';
 /**
  * Life Domain Scores, nature-weighted, tone-aware scoring
  *
@@ -604,7 +604,7 @@ export function calculateLifeDomainScores(analysis: SolarReturnAnalysis): LifeDo
       label: activityLabel(finalActivity, tone),
       drivers: allDrivers,
       driverSummaries: allDrivers.filter(d => d.house > 0).slice(0, 6).map(d => `${d.planet} in ${ordinal(d.house)} House`),
-      advice: finalActivity > 0 ? `This is an app-defined activity and tone signal, not a probability or outcome forecast. Attention may return to ${houses.map(h=>getHouseLivedInterpretation(h)?.attention).filter(Boolean).join('; ')}. Compare that possibility with your actual situation.` : 'No strong house-based activity signature was counted here. A quiet score does not predict health, success or an absence of important events.',
+      advice: allDrivers.filter(d => d.house > 0).slice(0, 1).map(d => solarReturnHouseMeaning(d.house, d.planet)).join(' '),
       breakdown,
     };
   }

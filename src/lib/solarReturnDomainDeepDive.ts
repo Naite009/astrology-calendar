@@ -1,3 +1,5 @@
+import { solarReturnHouseMeaning } from './solarReturnClientMeaning';
+import { guardSolarReturnProse } from './solarReturnProseBoundary';
 // Domain Deep-Dive Engine — synthesizes multiple houses per life area
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
 import { NatalChart } from '@/hooks/useNatalChart';
@@ -443,5 +445,5 @@ export function generateDomainDeepDives(
     buildHome(analysis, natalChart, srChart),
     buildHealth(analysis, natalChart, srChart),
     buildSpiritual(analysis, natalChart, srChart),
-  ];
+  ].map(domain => ({ ...guardSolarReturnProse(domain), synthesis: { headline: domain.title, paragraph: domain.houses.filter(h => h.planets.length).map(h => solarReturnHouseMeaning(h.houseNumber, h.planets[0])).join(' '), practicalAdvice: [] } }));
 }
