@@ -233,13 +233,13 @@ export function generatePDFYearAtAGlance(
   // ── TIME LORD (Profection ruler) ────────────────────────────────
   if (a.profectionYear?.timeLord) {
     const timeLordFelt: Record<string, string> = {
-      Sun: 'The Sun sets the pace — identity, purpose, and visibility drive events.',
-      Moon: 'The Moon sets the pace — emotions, instincts, and home life drive events.',
-      Mercury: 'Mercury sets the pace — communication, learning, and mental agility drive events.',
-      Venus: 'Venus sets the pace — relationships, beauty, and values drive events.',
-      Mars: 'Mars sets the pace — energy, ambition, and assertiveness drive events.',
-      Jupiter: 'Jupiter sets the pace — growth, opportunity, and expansion drive events.',
-      Saturn: 'Saturn sets the pace — discipline, responsibility, and long-term building drive events.',
+      Sun: 'The Sun sets the pace: identity, purpose, and visibility drive events.',
+      Moon: 'The Moon sets the pace: emotions, instincts, and home life drive events.',
+      Mercury: 'Mercury sets the pace: communication, learning, and mental agility drive events.',
+      Venus: 'Venus sets the pace: relationships, beauty, and values drive events.',
+      Mars: 'Mars sets the pace: energy, ambition, and assertiveness drive events.',
+      Jupiter: 'Jupiter sets the pace: growth, opportunity, and expansion drive events.',
+      Saturn: 'Saturn sets the pace: discipline, responsibility, and long-term building drive events.',
     };
 
     const lordName = P[a.profectionYear.timeLord] || a.profectionYear.timeLord;

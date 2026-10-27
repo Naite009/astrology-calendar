@@ -45,7 +45,7 @@ export function generatePDFTableOfContents(ctx: PDFContext, doc: jsPDF, a: Solar
   const sections: { title: string; desc: string }[] = [];
   sections.push({ title: 'How to Read This Report', desc: 'Key concepts explained in plain language' });
   sections.push({ title: 'The Story of Your Year', desc: 'What the year is about, and the themes ranked by weight' });
-  sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising — strengths, shadow, and activation' });
+  sections.push({ title: 'Your Big Three', desc: 'Sun, Moon, and Rising: strengths, shadow, and activation' });
   
   sections.push({ title: 'Lunar Phase Timeline', desc: '29-year developmental cycle with recurring patterns' });
   sections.push({ title: 'Natal Overlay & Angle Activations', desc: 'Where SR planets land in your houses, plus where angles hit your natal planets' });

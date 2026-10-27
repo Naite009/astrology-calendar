@@ -238,7 +238,7 @@ export function calculateMutualReceptions(srChart: SolarReturnChart): SRMutualRe
           planet1: p1, planet1Sign: pos1.sign,
           planet2: p2, planet2Sign: pos2.sign,
           type: 'domicile',
-          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a domicile mutual reception — each planet is in the other's home sign. They support each other powerfully, creating a hidden channel of cooperation. ${p1}'s themes and ${p2}'s themes work as a team this year, even if they are in different houses.`,
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a domicile mutual reception: each planet is in the other's home sign. They support each other powerfully, creating a hidden channel of cooperation. ${p1}'s themes and ${p2}'s themes work as a team this year, even if they are in different houses.`,
         });
         continue;
       }
@@ -252,7 +252,7 @@ export function calculateMutualReceptions(srChart: SolarReturnChart): SRMutualRe
           planet1: p1, planet1Sign: pos1.sign,
           planet2: p2, planet2Sign: pos2.sign,
           type: 'exaltation',
-          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form an exaltation mutual reception — each planet is in the sign where the other is exalted. This creates a refined, elevated exchange of energy between ${p1} and ${p2} this year.`,
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form an exaltation mutual reception: each planet is in the sign where the other is exalted. This creates a refined, elevated exchange of energy between ${p1} and ${p2} this year.`,
         });
         continue;
       }
@@ -263,7 +263,7 @@ export function calculateMutualReceptions(srChart: SolarReturnChart): SRMutualRe
           planet1: p1, planet1Sign: pos1.sign,
           planet2: p2, planet2Sign: pos2.sign,
           type: 'mixed',
-          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a mixed mutual reception — one planet is in the other's domicile while the reverse is an exaltation. This creates a supportive but asymmetric exchange between ${p1} and ${p2}'s themes.`,
+          interpretation: `${p1} in ${pos1.sign} and ${p2} in ${pos2.sign} form a mixed mutual reception: one planet is in the other's domicile while the reverse is an exaltation. This creates a supportive but asymmetric exchange between ${p1} and ${p2}'s themes.`,
         });
       }
     }
@@ -281,19 +281,19 @@ export function calculateDignityReport(
 
   const dignityInterps: Record<string, Record<string, string>> = {
     Domicile: {
-      default: 'is in its home sign — operating at full strength, comfortable, and expressing its nature freely.',
+      default: 'is in its home sign: operating at full strength, comfortable, and expressing its nature freely.',
     },
     Exaltation: {
-      default: 'is elevated and honored — performing at its best, with enhanced clarity and purpose.',
+      default: 'is elevated and honored: performing at its best, with enhanced clarity and purpose.',
     },
     Detriment: {
-      default: 'is in the sign opposite its home — working against its natural grain. Extra effort is needed to express this energy constructively.',
+      default: 'is in the sign opposite its home: working against its natural grain. Extra effort is needed to express this energy constructively.',
     },
     Fall: {
-      default: 'is in the sign opposite its exaltation — at its most challenged position. The planet\'s gifts are muted or misapplied without conscious work.',
+      default: 'is in the sign opposite its exaltation: at its most challenged position. The planet\'s gifts are muted or misapplied without conscious work.',
     },
     Peregrine: {
-      default: 'has no essential dignity here — it operates without special advantage or disadvantage, relying purely on aspects and house placement for expression.',
+      default: 'has no essential dignity here: it operates without special advantage or disadvantage, relying purely on aspects and house placement for expression.',
     },
   };
 
@@ -306,7 +306,7 @@ export function calculateDignityReport(
     const score = scoreMap[dignity] || 0;
     const isRetrograde = !!(pos as any).isRetrograde;
     const baseInterp = dignityInterps[dignity]?.default || '';
-    const rxNote = isRetrograde ? ` Being retrograde adds an inward, reflective quality — ${planet}'s expression turns internal before manifesting externally.` : '';
+    const rxNote = isRetrograde ? ` Being retrograde adds an inward, reflective quality: ${planet}'s expression turns internal before manifesting externally.` : '';
     
     entries.push({
       planet,
@@ -326,17 +326,17 @@ export function calculateDignityReport(
   const weakest = nonSunSorted.length > 0 ? nonSunSorted[nonSunSorted.length - 1]?.planet || '' : sorted[sorted.length - 1]?.planet || '';
 
   const totalInterp = totalScore > 10
-    ? 'The chart has strong essential dignity — multiple planets are well-placed, giving the year a sense of competence and natural flow.'
+    ? 'The chart has strong essential dignity: multiple planets are well-placed, giving the year a sense of competence and natural flow.'
     : totalScore > 0
-    ? 'The chart has moderate essential dignity — some planets are well-placed while others require more effort. A balanced year of both ease and challenge.'
+    ? 'The chart has moderate essential dignity: some planets are well-placed while others require more effort. A balanced year of both ease and challenge.'
     : totalScore > -5
-    ? 'The chart has mixed dignity — several planets are in uncomfortable signs. Growth comes through working harder with less natural support.'
-    : 'The chart has challenging essential dignity — many planets are in difficult positions. This is a year of building strength through adversity and conscious effort.';
+    ? 'The chart has mixed dignity: several planets are in uncomfortable signs. Growth comes through working harder with less natural support.'
+    : 'The chart has challenging essential dignity: many planets are in difficult positions. This is a year of building strength through adversity and conscious effort.';
 
   // Add note about Sun always being in fall in SR
   const sunEntry = entries.find(e => e.planet === 'Sun');
   if (sunEntry && sunEntry.dignity === 'Fall') {
-    sunEntry.interpretation += ' Note: Sun is in fall in every Solar Return chart by definition — this is expected and does not indicate weakness.';
+    sunEntry.interpretation += ' Note: Sun is in fall in every Solar Return chart by definition: this is expected and does not indicate weakness.';
   }
 
   return {
@@ -478,7 +478,7 @@ export function calculateEclipseSensitivity(
           sensitizedPlanet: planet,
           sensitizedPlanetSource: 'SR',
           orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls within ${Math.round(diff)}° of SR ${planet}. Eclipse activation of ${planet} brings sudden, significant-feeling shifts to ${planet}'s themes — events feel larger than ordinary life and may have lasting consequences.`,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls within ${Math.round(diff)}° of SR ${planet}. Eclipse activation of ${planet} brings sudden, significant-feeling shifts to ${planet}'s themes: events feel larger than ordinary life and may have lasting consequences.`,
         });
       }
     }
@@ -501,7 +501,7 @@ export function calculateEclipseSensitivity(
           sensitizedPlanet: angle.name,
           sensitizedPlanetSource: 'SR',
           orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls near your Solar Return ${angle.name}. This makes the eclipse highly visible in lived experience — identity shifts, directional pivots, and outer-life changes are more likely to show up around this eclipse window.`,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) falls near your Solar Return ${angle.name}. This makes the eclipse highly visible in lived experience: identity shifts, directional pivots, and outer-life changes are more likely to show up around this eclipse window.`,
         });
       }
     }
@@ -523,7 +523,7 @@ export function calculateEclipseSensitivity(
           sensitizedPlanet: planet,
           sensitizedPlanetSource: 'Natal',
           orb: Math.round(diff * 10) / 10,
-          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${planet}. This triggers a deeper, more personal response — natal planets activated by eclipses mark turning points that connect to your lifelong patterns around ${planet}'s themes.`,
+          interpretation: `The ${eclipse.type} eclipse at ${eclipse.degree}° ${eclipse.sign} (${eclipse.date}) activates your natal ${planet}. This triggers a deeper, more personal response: natal planets activated by eclipses mark turning points that connect to your lifelong patterns around ${planet}'s themes.`,
         });
       }
     }
@@ -847,9 +847,9 @@ export function calculateDominantPlanets(
   if (!billboard) billboard = entries[0]?.planet || '';
 
   const top3 = entries.slice(0, 3).map(e => e.planet);
-  const interpretation = `${captain} is your most dominant planet this year with ${entries[0]?.totalScore} points — it has the most influence over your chart through a combination of ${entries[0]?.tags.length > 0 ? entries[0].tags.join(', ').toLowerCase() : 'placement and aspects'}. ${
-    starPlayer !== captain ? `${starPlayer} is your strongest planet by dignity — most comfortable in its sign. ` : ''
-  }${billboard !== captain ? `${billboard} is your most elevated planet (closest to the Midheaven) — what the world sees first. ` : ''
+  const interpretation = `${captain} is your most dominant planet this year with ${entries[0]?.totalScore} points: it has the most influence over your chart through a combination of ${entries[0]?.tags.length > 0 ? entries[0].tags.join(', ').toLowerCase() : 'placement and aspects'}. ${
+    starPlayer !== captain ? `${starPlayer} is your strongest planet by dignity: most comfortable in its sign. ` : ''
+  }${billboard !== captain ? `${billboard} is your most elevated planet (closest to the Midheaven): what the world sees first. ` : ''
   }Your top three: ${top3.join(', ')}.`;
 
   return {

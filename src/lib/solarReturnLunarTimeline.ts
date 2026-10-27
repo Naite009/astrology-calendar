@@ -270,7 +270,7 @@ export function generateTimelineSummary(entries: TimelineEntry[], currentYear: n
   const current = entries.find(e => e.year === currentYear);
   if (!current) return '';
 
-  return `Each year at your Solar Return, the Moon lands at a different angle to the Sun — creating a unique emotional tone for that year. This is not a sequential cycle; it's a snapshot of the Moon's position at the exact moment the Sun returns to your natal degree. Your ${currentYear} return has a ${current.phase} Moon (${current.phaseAngle}°), emphasizing ${current.cycleStage.toLowerCase()}.`;
+  return `Each year at your Solar Return, the Moon lands at a different angle to the Sun: creating a unique emotional tone for that year. This is not a sequential cycle; it's a snapshot of the Moon's position at the exact moment the Sun returns to your natal degree. Your ${currentYear} return has a ${current.phase} Moon (${current.phaseAngle}°), emphasizing ${current.cycleStage.toLowerCase()}.`;
 }
 
 /** Generate transition narrative between two consecutive years */

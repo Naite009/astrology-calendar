@@ -137,7 +137,7 @@ const DomainCard = ({ d }: { d: LifeDomainScore }) => {
                     [{b.nature}]
                   </span>
                 )}
-                <span className="text-muted-foreground"> — {b.reason}</span>
+                <span className="text-muted-foreground">: {b.reason}</span>
               </div>
             </div>
           ))}
@@ -174,10 +174,10 @@ export const LifeDomainScoresCard = ({ scores }: Props) => {
   return (
     <div className="border border-primary/20 rounded-sm bg-card overflow-hidden">
       <div className="p-5 border-b border-border">
-        <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Life Domain Activity — 10 Areas</div>
+        <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Life Domain Activity: 10 Areas</div>
         <p className="text-[11px] text-muted-foreground">
-          How much energy each area of life is getting this year — and whether that energy is supportive, demanding, or transformative.
-          High activity doesn't mean "good" — it means that area won't be ignored. The tone tells you what kind of year it is.
+          How much energy each area of life is getting this year: and whether that energy is supportive, demanding, or transformative.
+          High activity doesn't mean "good": it means that area won't be ignored. The tone tells you what kind of year it is.
         </p>
       </div>
 

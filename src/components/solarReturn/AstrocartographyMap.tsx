@@ -273,7 +273,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
             <Globe size={16} className="text-primary" />
-            Astrocartography — Where to Travel This Year
+            Astrocartography: Where to Travel This Year
           </h3>
           <div className="flex gap-1">
             <button
@@ -433,7 +433,7 @@ export const AstrocartographyMap = ({ srChart, natalChart }: Props) => {
         </div>
 
         <p className="text-[10px] text-muted-foreground/60 text-center mt-2 uppercase tracking-widest">
-          {view === 'world' ? 'Where to travel this year based on your Solar Return planetary lines — click a city or switch to USA Close-Up' : 'Click a city dot to see which planetary lines run through it and why'}
+          {view === 'world' ? 'Where to travel this year based on your Solar Return planetary lines: click a city or switch to USA Close-Up' : 'Click a city dot to see which planetary lines run through it and why'}
         </p>
       </div>
 
@@ -550,10 +550,10 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
     ASC: { vibe: 'You feel like the main character. People notice you, remember your name, treat you as important.', bestFor: ['Personal reinvention', 'Starting a business', 'Leadership roles'], watchFor: ['Ego inflation', 'Burnout from visibility'], dayToDay: 'You wake up purposeful. People approach with opportunities. You feel seen everywhere.' },
     MC: { vibe: 'Career supercharged. Public reputation soars, bosses notice you, professional goals materialize fast.', bestFor: ['Promotions', 'Public speaking', 'Building authority'], watchFor: ['Work-life imbalance', 'Overidentifying with career'], dayToDay: 'Work feels meaningful. Milestones happen. Recognition comes without trying.' },
     DSC: { vibe: 'Powerful partnerships form. You attract confident, sometimes dominant, partners.', bestFor: ['Meeting a life partner', 'Business partnerships'], watchFor: ['Losing yourself in someone\'s vision', 'Power struggles'], dayToDay: 'Significant people enter your life. One-on-one connections feel especially significant.' },
-    IC: { vibe: 'Focus turns inward — home, family, emotional foundation. Purpose through private life.', bestFor: ['Home renovation', 'Family healing', 'Inner work'], watchFor: ['Feeling invisible professionally'], dayToDay: 'Home feels like sanctuary. Family time prioritized. External validation matters less.' },
+    IC: { vibe: 'Focus turns inward: home, family, emotional foundation. Purpose through private life.', bestFor: ['Home renovation', 'Family healing', 'Inner work'], watchFor: ['Feeling invisible professionally'], dayToDay: 'Home feels like sanctuary. Family time prioritized. External validation matters less.' },
   },
   Moon: {
-    ASC: { vibe: 'Emotional antenna fully extended. You feel everything deeply — yours and everyone else\'s.', bestFor: ['Therapy/healing work', 'Creative expression', 'Psychic development'], watchFor: ['Emotional overwhelm', 'Absorbing others\' moods'], dayToDay: 'Your face shows every feeling. People come to you for comfort. Tears flow easily.' },
+    ASC: { vibe: 'Emotional antenna fully extended. You feel everything deeply: yours and everyone else\'s.', bestFor: ['Therapy/healing work', 'Creative expression', 'Psychic development'], watchFor: ['Emotional overwhelm', 'Absorbing others\' moods'], dayToDay: 'Your face shows every feeling. People come to you for comfort. Tears flow easily.' },
     MC: { vibe: 'Emotional life becomes visible. Career involves nurturing, food, homes, or caring for others.', bestFor: ['Counseling', 'Real estate', 'Hospitality'], watchFor: ['Emotionally exposed at work', 'Reputation fluctuating'], dayToDay: 'Work feels personal. Instincts guide decisions. Public responds to honesty.' },
     DSC: { vibe: 'Relationships deeply emotional. Partners who nurture you or need nurturing.', bestFor: ['Moving in together', 'Starting a family', 'Deep bonding'], watchFor: ['Codependency', 'Emotionally needy partners'], dayToDay: 'You crave closeness. Partners become family. Emotional conversations natural.' },
     IC: { vibe: 'Moon\'s home court. Emotional security peaks. Profoundly rooted, connected to ancestry.', bestFor: ['Healing childhood wounds', 'Buying a home', 'Recovery'], watchFor: ['Becoming too insular', 'Regressing into old patterns'], dayToDay: 'Home is your refueling station. Cooking, nesting feel sacred. Dreams vivid.' },
@@ -565,10 +565,10 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
     IC: { vibe: 'Home becomes beautiful sanctuary. Comfort, décor, soul-feeding spaces.', bestFor: ['Home decorating', 'Hosting', 'Family reconciliation'], watchFor: ['Overspending on home', 'Becoming a homebody'], dayToDay: 'Living space feels like a magazine. Elaborate meals. Fresh flowers. Peace at home.' },
   },
   Mars: {
-    ASC: { vibe: 'Raw energy pours through. Bolder, competitive — but prone to anger and confrontation.', bestFor: ['Athletic training', 'Bold ventures', 'Physical challenges'], watchFor: ['Anger management', 'Injuries', 'Aggression'], dayToDay: 'You wake up wired. Arguments come easily. Physical activity essential.' },
-    MC: { vibe: 'Career ambition on fire. You fight for what you want — but burnout and politics are risks.', bestFor: ['Competitive industries', 'Entrepreneurship', 'Career battles'], watchFor: ['Professional enemies', 'Burnout', 'Too aggressive'], dayToDay: 'Work pace relentless. Competition motivates. Victories feel hard-won.' },
+    ASC: { vibe: 'Raw energy pours through. Bolder, competitive: but prone to anger and confrontation.', bestFor: ['Athletic training', 'Bold ventures', 'Physical challenges'], watchFor: ['Anger management', 'Injuries', 'Aggression'], dayToDay: 'You wake up wired. Arguments come easily. Physical activity essential.' },
+    MC: { vibe: 'Career ambition on fire. You fight for what you want: but burnout and politics are risks.', bestFor: ['Competitive industries', 'Entrepreneurship', 'Career battles'], watchFor: ['Professional enemies', 'Burnout', 'Too aggressive'], dayToDay: 'Work pace relentless. Competition motivates. Victories feel hard-won.' },
     DSC: { vibe: 'Relationships become battlegrounds or passionately intense. Chemistry OR fights.', bestFor: ['Passionate affairs', 'Standing up for yourself'], watchFor: ['Domestic arguments', 'Controlling partners', 'Legal disputes'], dayToDay: 'Partners push buttons. Arguments frequent. Sexual energy high.' },
-    IC: { vibe: 'Home restless, sometimes combative. Renovations, family arguments, feeling unsettled.', bestFor: ['Home renovation', 'Building projects'], watchFor: ['Family fights', 'Plumbing/electrical issues', 'Insomnia'], dayToDay: 'House under construction — literally or emotionally. Restless nights.' },
+    IC: { vibe: 'Home restless, sometimes combative. Renovations, family arguments, feeling unsettled.', bestFor: ['Home renovation', 'Building projects'], watchFor: ['Family fights', 'Plumbing/electrical issues', 'Insomnia'], dayToDay: 'House under construction: literally or emotionally. Restless nights.' },
   },
   Jupiter: {
     ASC: { vibe: 'Optimistic, generous, lucky. Opportunities arrive on their own. Seen as wise and warm.', bestFor: ['Travel', 'Teaching', 'Publishing', 'Legal matters'], watchFor: ['Overcommitting', 'Weight gain', 'Overconfidence'], dayToDay: 'You smile more. Strangers helpful. Lucky breaks happen. Philosophical contentment.' },
@@ -584,25 +584,25 @@ const DEEP: Record<string, Record<string, { vibe: string; bestFor: string[]; wat
   },
   Uranus: {
     ASC: { vibe: 'Electric, ready to reinvent. Sudden changes to appearance, lifestyle, identity.', bestFor: ['Self-reinvention', 'Breaking free', 'Tech projects'], watchFor: ['Impulsive decisions', 'Alienating people'], dayToDay: 'Every day different. Change hair, clothes, opinions. Old friends barely recognize you.' },
-    MC: { vibe: 'Career takes unexpected turns — sudden changes, unconventional paths, tech breakthroughs.', bestFor: ['Tech startups', 'Freelancing', 'Career pivots'], watchFor: ['Sudden job loss', 'Unreliable income'], dayToDay: 'Work unpredictable. Opportunities appear and vanish. Career zigzags.' },
-    DSC: { vibe: 'Relationships need space, freedom, excitement — or they break. Unusual partners.', bestFor: ['Open-minded dating', 'Non-traditional relationships'], watchFor: ['Commitment-phobia', 'Partners ghosting'], dayToDay: 'Partners surprise constantly. Rules keep changing. Need excitement or you bolt.' },
-    IC: { vibe: 'Home disrupted — sudden moves, unexpected roommates, emotional breakthroughs.', bestFor: ['Moving cities', 'Smart home upgrades', 'Breaking patterns'], watchFor: ['Displacement', 'Feeling ungrounded'], dayToDay: 'House changes constantly. Might move twice. Breakthroughs without warning.' },
+    MC: { vibe: 'Career takes unexpected turns: sudden changes, unconventional paths, tech breakthroughs.', bestFor: ['Tech startups', 'Freelancing', 'Career pivots'], watchFor: ['Sudden job loss', 'Unreliable income'], dayToDay: 'Work unpredictable. Opportunities appear and vanish. Career zigzags.' },
+    DSC: { vibe: 'Relationships need space, freedom, excitement: or they break. Unusual partners.', bestFor: ['Open-minded dating', 'Non-traditional relationships'], watchFor: ['Commitment-phobia', 'Partners ghosting'], dayToDay: 'Partners surprise constantly. Rules keep changing. Need excitement or you bolt.' },
+    IC: { vibe: 'Home disrupted: sudden moves, unexpected roommates, emotional breakthroughs.', bestFor: ['Moving cities', 'Smart home upgrades', 'Breaking patterns'], watchFor: ['Displacement', 'Feeling ungrounded'], dayToDay: 'House changes constantly. Might move twice. Breakthroughs without warning.' },
   },
   Neptune: {
-    ASC: { vibe: 'Boundaries dissolve. More empathic, artistic, spiritual — but susceptible to confusion.', bestFor: ['Artistic pursuits', 'Spiritual retreats', 'Meditation'], watchFor: ['Identity confusion', 'Being used', 'Escapism'], dayToDay: 'Reality dreamy. Pick up everyone\'s energy. Art moves you to tears. Need more sleep.' },
-    MC: { vibe: 'Career infused with creativity and spirituality — but direction feels foggy.', bestFor: ['Music/film/art', 'Spiritual teaching', 'Healing'], watchFor: ['Professional confusion', 'Deception at work'], dayToDay: 'Work inspired but unclear. Dream big, struggle with execution.' },
-    DSC: { vibe: 'Relationships soulful, significant-feeling — but confusing. Idealize partners, miss red flags.', bestFor: ['Soulmate experiences', 'Spiritual partnerships'], watchFor: ['Partner deception', 'Codependency', 'Fantasy over reality'], dayToDay: 'Partners feel like destiny. Love transcendent but can\'t always tell what\'s real.' },
-    IC: { vibe: 'Home becomes dream sanctuary — or place of confusion and emotional fog.', bestFor: ['Meditation space', 'Living near water', 'Dream journaling'], watchFor: ['Water damage', 'Family boundary issues', 'Escapism'], dayToDay: 'Home magical or confusing. Lose things. Vivid dreams.' },
+    ASC: { vibe: 'Boundaries dissolve. More empathic, artistic, spiritual: but susceptible to confusion.', bestFor: ['Artistic pursuits', 'Spiritual retreats', 'Meditation'], watchFor: ['Identity confusion', 'Being used', 'Escapism'], dayToDay: 'Reality dreamy. Pick up everyone\'s energy. Art moves you to tears. Need more sleep.' },
+    MC: { vibe: 'Career infused with creativity and spirituality: but direction feels foggy.', bestFor: ['Music/film/art', 'Spiritual teaching', 'Healing'], watchFor: ['Professional confusion', 'Deception at work'], dayToDay: 'Work inspired but unclear. Dream big, struggle with execution.' },
+    DSC: { vibe: 'Relationships soulful, significant-feeling: but confusing. Idealize partners, miss red flags.', bestFor: ['Soulmate experiences', 'Spiritual partnerships'], watchFor: ['Partner deception', 'Codependency', 'Fantasy over reality'], dayToDay: 'Partners feel like destiny. Love transcendent but can\'t always tell what\'s real.' },
+    IC: { vibe: 'Home becomes dream sanctuary: or place of confusion and emotional fog.', bestFor: ['Meditation space', 'Living near water', 'Dream journaling'], watchFor: ['Water damage', 'Family boundary issues', 'Escapism'], dayToDay: 'Home magical or confusing. Lose things. Vivid dreams.' },
   },
   Pluto: {
     ASC: { vibe: 'Deep personal transformation. Shed an identity. Power dynamics visible everywhere.', bestFor: ['Therapy', 'Power reclamation', 'Shadow work'], watchFor: ['Power struggles', 'All-consuming behavior', 'Control'], dayToDay: 'People love or fear you. Nothing surface-level. Deep truths confronted.' },
-    MC: { vibe: 'Career undergoes radical transformation. Institutional power — gain it or be crushed.', bestFor: ['Career transformation', 'Power positions', 'Investigation'], watchFor: ['Power plays', 'Betrayal by authority'], dayToDay: 'Work feels like power game. Office politics intense. Rise or face rebirth.' },
+    MC: { vibe: 'Career undergoes radical transformation. Institutional power: gain it or be crushed.', bestFor: ['Career transformation', 'Power positions', 'Investigation'], watchFor: ['Power plays', 'Betrayal by authority'], dayToDay: 'Work feels like power game. Office politics intense. Rise or face rebirth.' },
     DSC: { vibe: 'Relationships transformative, all-consuming, intense. Power dynamics magnified.', bestFor: ['Couples therapy', 'Relationship shadows', 'Sexual healing'], watchFor: ['Intense preoccupation', 'Jealousy', 'Manipulation'], dayToDay: 'Partners trigger area of deep sensitivity. Nothing casual. Love feels like life or death.' },
     IC: { vibe: 'Foundations excavated and rebuilt. Family secrets surface. Childhood demands change.', bestFor: ['Family therapy', 'Genealogy', 'Psychological work'], watchFor: ['Family crises', 'Home power struggles'], dayToDay: 'Emotional basement ripped open. Family dynamics shift dramatically.' },
   },
   Mercury: {
     ASC: { vibe: 'Mind sharp, communication peaks. Articulate, curious, quick-witted.', bestFor: ['Writing', 'Public speaking', 'Learning', 'Networking'], watchFor: ['Overthinking', 'Nervous energy', 'Scattered focus'], dayToDay: 'Ideas flow constantly. Conversations stimulating. Read more, write more.' },
-    MC: { vibe: 'Career success through communication — writing, teaching, speaking, media.', bestFor: ['Publishing', 'Teaching', 'Media', 'Sales'], watchFor: ['Being "all talk"', 'Communication mishaps'], dayToDay: 'Emails, meetings, presentations dominate. Words carry professional weight.' },
+    MC: { vibe: 'Career success through communication: writing, teaching, speaking, media.', bestFor: ['Publishing', 'Teaching', 'Media', 'Sales'], watchFor: ['Being "all talk"', 'Communication mishaps'], dayToDay: 'Emails, meetings, presentations dominate. Words carry professional weight.' },
     DSC: { vibe: 'Intellectual partnerships flourish. Partners who stimulate your mind.', bestFor: ['Meeting intellectual equals', 'Writing collaborations'], watchFor: ['All talk no depth', 'Mental without emotional'], dayToDay: 'Talk for hours with partners. Intellectual chemistry defines relationships.' },
     IC: { vibe: 'Mental activity at home. Working from home, studying, family conversations.', bestFor: ['Remote work', 'Home study', 'Journaling'], watchFor: ['Mental restlessness', 'Insomnia'], dayToDay: 'Home desk becomes command central. Books pile up. Mind never fully rests.' },
   },
@@ -628,7 +628,7 @@ function computeOrbMultiplier(orb: number): number {
 }
 
 function orbStrengthLabel(orb: number): string {
-  if (orb <= 1) return 'exact — maximum power';
+  if (orb <= 1) return 'exact: maximum power';
   if (orb <= 3) return 'very strong influence';
   if (orb <= 5) return 'strong influence';
   return 'moderate influence';
@@ -659,7 +659,7 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
           <h4 className="text-base font-medium text-foreground">{city.city}, {city.country}</h4>
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded-sm border ${ratingBg(city.rating)}`}>
-          {city.rating}/10 — {ratingLabel(city.rating)}
+          {city.rating}/10: {ratingLabel(city.rating)}
         </span>
       </div>
 
@@ -700,7 +700,7 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
       {city.angularPlanets.length > 0 && (
         <div className="border border-border/50 rounded-sm overflow-hidden">
           <div className="bg-secondary/40 px-3 py-2">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Score Breakdown — Why This Rating</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Score Breakdown: Why This Rating</p>
           </div>
           <div className="divide-y divide-border/30">
             <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground bg-secondary/20">
@@ -751,7 +751,7 @@ const CityDetailCard = ({ city, onClose }: { city: AstrocartoCity; onClose: () =
                       {ap.planet} on the {ANGLE_LABELS[ap.angle] || ap.angle}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Orb: {ap.orb}° — {orbStrengthLabel(ap.orb)}
+                      Orb: {ap.orb}°: {orbStrengthLabel(ap.orb)}
                     </p>
                     <span className={`inline-block text-[10px] mt-1 px-1.5 py-0.5 rounded-sm border ${natureBadge(nature)}`}>
                       {nature === 'benefic' ? '✦ Benefic' : nature === 'malefic' ? '⚠ Malefic' : '◆ Neutral'}

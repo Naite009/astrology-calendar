@@ -117,8 +117,8 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
             const displayPlanet = planetName === 'NorthNode' ? 'North Node' : planetName;
 
             const narrative = asp.name === 'conjunct'
-              ? `Your natal ${displayPlanet} (${meaning}) becomes a defining force this year — directly fused with the SR ${angleInfo.label}. Themes of ${meaning} are inseparable from ${angleInfo.domain}.`
-              : `The SR ${angleInfo.label} ${asp.name}s your natal ${displayPlanet} — ${rule} ${meaning}. This contact channels through ${angleInfo.domain}.`;
+              ? `Your natal ${displayPlanet} (${meaning}) becomes a defining force this year: directly fused with the SR ${angleInfo.label}. Themes of ${meaning} are inseparable from ${angleInfo.domain}.`
+              : `The SR ${angleInfo.label} ${asp.name}s your natal ${displayPlanet}: ${rule} ${meaning}. This contact channels through ${angleInfo.domain}.`;
 
             acts.push({
               angleName: angle.name,
@@ -154,7 +154,7 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
       if (angles.length >= 2) {
         pats.push({
           type: 'multi_angle',
-          message: `${planet} is contacted by ${angles.join(' and ')} — this planet becomes an extremely dominant theme of the year.`,
+          message: `${planet} is contacted by ${angles.join(' and ')}: this planet becomes an extremely dominant theme of the year.`,
         });
       }
     }
@@ -164,7 +164,7 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
     if (uniquePlanets.size >= 3) {
       pats.push({
         type: 'angular_cluster',
-        message: `${uniquePlanets.size} natal planets are activated by SR angles — the year is likely to bring visible, externally noticeable developments.`,
+        message: `${uniquePlanets.size} natal planets are activated by SR angles: the year is likely to bring visible, externally noticeable developments.`,
       });
     }
 

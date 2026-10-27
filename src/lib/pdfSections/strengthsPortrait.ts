@@ -53,16 +53,16 @@ const sunShadow: Record<string, string> = {
 
 // ─── SR Sun in House ────────────────────────────────
 const srSunHouseBody: Record<number, string> = {
-  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging: the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
   2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
   3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
-  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',
+  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward: toward ancestry, domestic life, and the foundations that hold everything else together.',
   5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun pulls you toward play, creative risk-taking, and emotional vulnerability.',
   6: 'Daily routines, health, and work efficiency are being restructured. Small, consistent changes produce the biggest results.',
   7: 'Relationships define this year. The 7th house Sun places partnerships at the center. Growth happens through the mirror of another person.',
   8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty.',
   9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar.',
-  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible — professional responsibilities increase, but so does recognition.',
+  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible: professional responsibilities increase, but so does recognition.',
   11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger.',
   12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are the curriculum.',
 };
@@ -76,7 +76,7 @@ const srMoonBody: Record<string, string> = {
   Leo: 'Your emotional world warms and expands. The need to feel seen, appreciated, and creatively expressed intensifies.',
   Virgo: 'Your emotional processing becomes more analytical and service-oriented. Feelings are channeled into practical improvements.',
   Libra: 'Your emotional world seeks balance and harmony. Discord feels physically disruptive, and the pull toward partnership strengthens.',
-  Scorpio: 'Your emotional world intensifies. Surface-level engagement becomes intolerable — you crave psychological honesty.',
+  Scorpio: 'Your emotional world intensifies. Surface-level engagement becomes intolerable: you crave psychological honesty.',
   Sagittarius: 'Your emotional world opens. Restlessness increases, optimism grows, and routine feels suffocating.',
   Capricorn: 'Your emotional world becomes more disciplined and pragmatic. Emotional maturity deepens.',
   Aquarius: 'Your emotional processing becomes more detached and cerebral. You observe feelings from a slight distance, preferring clarity over intensity.',
@@ -85,16 +85,16 @@ const srMoonBody: Record<string, string> = {
 
 // ─── SR Moon by House ───────────────────────────────
 const srMoonHouseBody: Record<number, string> = {
-  1: 'Your emotional needs are front and center — visible to everyone.',
+  1: 'Your emotional needs are front and center: visible to everyone.',
   2: 'Emotional security is tied to finances and material stability.',
   3: 'You process emotions through conversation, writing, and thinking.',
   4: 'Home and family are the emotional center of the year.',
   5: 'Emotional fulfillment comes through creativity, romance, and play.',
-  6: 'Emotional state directly affects physical health — body and mood are linked.',
+  6: 'Emotional state directly affects physical health: body and mood are linked.',
   7: 'Emotional needs are met (or frustrated) through partnerships.',
   8: 'Deep emotional processing, intimacy, and shared vulnerability define the year.',
   9: 'Emotional growth through travel, study, or exposure to different worldviews.',
-  10: 'Emotional investment in career and public role — your heart is at work.',
+  10: 'Emotional investment in career and public role: your heart is at work.',
   11: 'Emotional fulfillment through friendships and community belonging.',
   12: 'Emotions are internalized. Solitude is needed for processing.',
 };
@@ -122,7 +122,7 @@ const moonStrength: Record<string, string> = {
   Gemini: 'You process feelings through talking, writing, and thinking.',
   Cancer: 'Emotional capacity is enormous. You feel everything deeply.',
   Leo: 'Emotional warmth lights up rooms. You process feelings through creative expression.',
-  Virgo: 'You process emotions practically — knowing exactly what someone needs before they ask.',
+  Virgo: 'You process emotions practically: knowing exactly what someone needs before they ask.',
   Libra: 'Emotional world seeks harmony. You process feelings through relationship and dialogue.',
   Scorpio: 'Emotional depth is extraordinary. You feel everything at full intensity.',
   Sagittarius: 'Emotional resilience is remarkable. You process feelings through meaning-making.',
@@ -131,7 +131,7 @@ const moonStrength: Record<string, string> = {
   Pisces: 'Emotional sensitivity is a superpower. You absorb the emotional atmosphere of every space.',
 };
 const moonShadow: Record<string, string> = {
-  Aries: 'Emotional impulsivity — reacting before processing. Anger as a default emotion.',
+  Aries: 'Emotional impulsivity: reacting before processing. Anger as a default emotion.',
   Taurus: 'Emotional rigidity. Refusing to feel what is uncomfortable.',
   Gemini: 'Intellectualizing emotions to avoid feeling them.',
   Cancer: 'Emotional flooding, mood swings, and using guilt to maintain closeness.',

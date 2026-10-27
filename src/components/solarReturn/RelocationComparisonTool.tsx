@@ -181,29 +181,29 @@ export const RelocationComparisonTool = ({ srCharts, natalChart, currentSR, curr
             <h4 className="text-[10px] uppercase tracking-widest text-primary font-medium">Key Differences</h4>
             {comparison.ascA !== comparison.ascB && (
               <p className="text-sm text-foreground">
-                <strong>Ascendant shifts</strong> from {SIGN_SYMBOLS[comparison.ascA]} {comparison.ascA} → {SIGN_SYMBOLS[comparison.ascB]} {comparison.ascB} — the entire year's tone and approach changes.
+                <strong>Ascendant shifts</strong> from {SIGN_SYMBOLS[comparison.ascA]} {comparison.ascA} → {SIGN_SYMBOLS[comparison.ascB]} {comparison.ascB}: the entire year's tone and approach changes.
               </p>
             )}
             {comparison.sunHouseA !== comparison.sunHouseB && (
               <p className="text-sm text-foreground">
-                <strong>Sun moves</strong> from House {comparison.sunHouseA} → House {comparison.sunHouseB} — your vitality and identity focus shifts to a different life area.
+                <strong>Sun moves</strong> from House {comparison.sunHouseA} → House {comparison.sunHouseB}: your vitality and identity focus shifts to a different life area.
               </p>
             )}
             {comparison.moonHouseA !== comparison.moonHouseB && (
               <p className="text-sm text-foreground">
-                <strong>Moon moves</strong> from House {comparison.moonHouseA} → House {comparison.moonHouseB} — your emotional needs and comfort zone change.
+                <strong>Moon moves</strong> from House {comparison.moonHouseA} → House {comparison.moonHouseB}: your emotional needs and comfort zone change.
               </p>
             )}
             {comparison.beneficsOnAnglesB.length > comparison.beneficsOnAnglesA.length && (
               <p className="text-sm text-accent-foreground flex items-center gap-1">
                 <CheckCircle size={14} className="text-green-500" />
-                {comparison.locationB} places more benefics (Jupiter/Venus) on angles — generally favorable.
+                {comparison.locationB} places more benefics (Jupiter/Venus) on angles: generally favorable.
               </p>
             )}
             {comparison.maleficsOnAnglesB.length > comparison.maleficsOnAnglesA.length && (
               <p className="text-sm text-foreground flex items-center gap-1">
                 <AlertTriangle size={14} className="text-amber-500" />
-                {comparison.locationB} places more challenging planets on angles — expect deeper transformation.
+                {comparison.locationB} places more challenging planets on angles: expect deeper transformation.
               </p>
             )}
           </div>
@@ -241,7 +241,7 @@ export const RelocationComparisonTool = ({ srCharts, natalChart, currentSR, curr
           </div>
 
           <p className="text-[10px] text-muted-foreground/60 text-center uppercase tracking-widest">
-            Signs stay the same — only houses change with location
+            Signs stay the same: only houses change with location
           </p>
         </div>
       )}

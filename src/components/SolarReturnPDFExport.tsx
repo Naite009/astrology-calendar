@@ -166,81 +166,81 @@ export const nodeHouseMeaning: Record<number, string> = {};
 import type jsPDF from 'jspdf';
 
 const HTYM_SUN_BODY: Record<number, string> = {
-  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging — the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
+  1: 'Your core identity is being refreshed and redefined. People see a more honest version of you emerging: the year amplifies who you really are. The 1st house placement puts you at the center of your own story.',
   2: 'Your energy this year flows toward finances, possessions, and defining what you truly value. The 2nd house Sun draws attention to material security and self-worth in practical, tangible ways.',
   3: 'Your mind and voice are the main characters. The 3rd house Sun activates learning, communication, writing, and everyday connections. Ideas carry unusual weight this year.',
-  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward — toward ancestry, domestic life, and the foundations that hold everything else together.',
-  5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun pulls you toward play, creative risk-taking, and emotional vulnerability. Romance and children may also feature prominently — you feel most alive when creating or loving boldly.',
-  6: 'Daily routines, health, and work efficiency are being restructured. The 6th house Sun sharpens your awareness of what isn\'t working in your daily life — small, consistent changes produce the biggest results, and you feel genuine satisfaction from fixing what\'s broken.',
-  7: 'Relationships define this year. The 7th house Sun places partnerships — romantic, business, or creative — at the center. Growth happens through the mirror of another person.',
+  4: 'Home, family, and emotional roots demand your full attention. The 4th house Sun turns energy inward: toward ancestry, domestic life, and the foundations that hold everything else together.',
+  5: 'Joy, creativity, and self-expression light up this year. The 5th house Sun pulls you toward play, creative risk-taking, and emotional vulnerability. Romance and children may also feature prominently: you feel most alive when creating or loving boldly.',
+  6: 'Daily routines, health, and work efficiency are being restructured. The 6th house Sun sharpens your awareness of what isn\'t working in your daily life: small, consistent changes produce the biggest results, and you feel genuine satisfaction from fixing what\'s broken.',
+  7: 'Relationships define this year. The 7th house Sun places partnerships, romantic, business, or creative, at the center. Growth happens through the mirror of another person.',
   8: 'Transformation runs deep. The 8th house Sun activates shared resources, psychological depth, and emotional honesty. Something old must end for something honest to begin.',
-  9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar — philosophy, culture, and big-picture thinking.',
-  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible — professional responsibilities increase, but so does recognition and authority.',
-  11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger — your social circle is being restructured.',
-  12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are not extras — they are the curriculum.',
+  9: 'Your world is expanding through travel, education, or a fundamental shift in perspective. The 9th house Sun seeks meaning beyond the familiar: philosophy, culture, and big-picture thinking.',
+  10: 'Career and public reputation are the priority. The 10th house Sun makes you more visible: professional responsibilities increase, but so does recognition and authority.',
+  11: 'Community, friendship, and collective purpose shape the year. The 11th house Sun redirects personal ambition toward something larger: your social circle is being restructured.',
+  12: 'The most introspective placement. The 12th house Sun turns energy toward solitude, spiritual practice, and unconscious patterns. Rest and inner work are not extras: they are the curriculum.',
 };
 
 // ── Sign-specific plain-language descriptions for JSON export ──
 const SIGN_DESCRIPTIONS: Record<string, { sun: string; moon: string; rising: string }> = {
   Aries: {
-    sun: 'You lead with courage and independence — you are someone who takes initiative, speaks directly, and needs to feel like you are forging your own path.',
-    moon: 'You process emotions quickly and physically — when something upsets you, you want to act on it immediately rather than sit with the feeling.',
-    rising: 'You come across as bold, direct, and energetic — people see you as someone who takes charge and is not afraid to go first.',
+    sun: 'You lead with courage and independence: you are someone who takes initiative, speaks directly, and needs to feel like you are forging your own path.',
+    moon: 'You process emotions quickly and physically: when something upsets you, you want to act on it immediately rather than sit with the feeling.',
+    rising: 'You come across as bold, direct, and energetic: people see you as someone who takes charge and is not afraid to go first.',
   },
   Taurus: {
-    sun: 'You value stability, comfort, and building things that last — you are patient, sensory, and deeply loyal once you commit to something.',
-    moon: 'You need emotional security and physical comfort to feel safe — change is hard for you, but once you settle in, your emotional steadiness is a gift to everyone around you.',
-    rising: 'You come across as calm, grounded, and reliable — people feel safe around you and see you as someone who takes a measured, thoughtful approach to life.',
+    sun: 'You value stability, comfort, and building things that last: you are patient, sensory, and deeply loyal once you commit to something.',
+    moon: 'You need emotional security and physical comfort to feel safe: change is hard for you, but once you settle in, your emotional steadiness is a gift to everyone around you.',
+    rising: 'You come across as calm, grounded, and reliable: people feel safe around you and see you as someone who takes a measured, thoughtful approach to life.',
   },
   Gemini: {
-    sun: 'You are driven by curiosity and communication — you need variety, intellectual stimulation, and the freedom to explore multiple interests at once.',
-    moon: 'You process emotions by talking and thinking them through — writing, conversation, and mental activity are how you work through what you feel.',
-    rising: 'You come across as witty, curious, and socially adaptable — people see you as someone who can talk to anyone and make connections effortlessly.',
+    sun: 'You are driven by curiosity and communication: you need variety, intellectual stimulation, and the freedom to explore multiple interests at once.',
+    moon: 'You process emotions by talking and thinking them through: writing, conversation, and mental activity are how you work through what you feel.',
+    rising: 'You come across as witty, curious, and socially adaptable: people see you as someone who can talk to anyone and make connections effortlessly.',
   },
   Cancer: {
-    sun: 'You are deeply nurturing and emotionally intelligent — family, home, and emotional safety are your core priorities, and you protect what you love fiercely.',
-    moon: 'Your emotions run deep and your intuition is powerful — you absorb the feelings of people around you and need regular time alone to process and recharge.',
-    rising: 'You come across as warm, caring, and approachable — people instinctively trust you and feel comfortable sharing their feelings with you.',
+    sun: 'You are deeply nurturing and emotionally intelligent: family, home, and emotional safety are your core priorities, and you protect what you love fiercely.',
+    moon: 'Your emotions run deep and your intuition is powerful: you absorb the feelings of people around you and need regular time alone to process and recharge.',
+    rising: 'You come across as warm, caring, and approachable: people instinctively trust you and feel comfortable sharing their feelings with you.',
   },
   Leo: {
-    sun: 'You shine when you are creating, performing, or leading — you need recognition, creative expression, and the freedom to be honestly yourself in everything you do.',
-    moon: 'You need to feel special and appreciated to be emotionally secure — genuine praise and loyal love are not luxuries for you, they are necessities.',
-    rising: 'You come across as confident, warm, and charismatic — people are naturally drawn to your presence and see you as someone who lights up a room.',
+    sun: 'You shine when you are creating, performing, or leading: you need recognition, creative expression, and the freedom to be honestly yourself in everything you do.',
+    moon: 'You need to feel special and appreciated to be emotionally secure: genuine praise and loyal love are not luxuries for you, they are necessities.',
+    rising: 'You come across as confident, warm, and charismatic: people are naturally drawn to your presence and see you as someone who lights up a room.',
   },
   Virgo: {
-    sun: 'You find meaning through being useful, improving things, and solving problems — you notice details others miss and hold yourself to high standards.',
-    moon: 'You process emotions by analyzing them and finding practical solutions — you feel better when you can fix something, organize something, or help someone.',
-    rising: 'You come across as competent, thoughtful, and detail-oriented — people see you as someone they can rely on to get things right.',
+    sun: 'You find meaning through being useful, improving things, and solving problems: you notice details others miss and hold yourself to high standards.',
+    moon: 'You process emotions by analyzing them and finding practical solutions: you feel better when you can fix something, organize something, or help someone.',
+    rising: 'You come across as competent, thoughtful, and detail-oriented: people see you as someone they can rely on to get things right.',
   },
   Libra: {
-    sun: 'You are drawn to beauty, fairness, and meaningful partnerships — you see both sides of every situation and work hard to create harmony in your relationships.',
-    moon: 'You need emotional balance and peaceful relationships to feel secure — conflict genuinely unsettles you, and you process feelings best when you can talk them through with someone you trust.',
-    rising: 'You come across as gracious, diplomatic, and aesthetically attuned — people see you as someone who brings elegance and fairness to every interaction.',
+    sun: 'You are drawn to beauty, fairness, and meaningful partnerships: you see both sides of every situation and work hard to create harmony in your relationships.',
+    moon: 'You need emotional balance and peaceful relationships to feel secure: conflict genuinely unsettles you, and you process feelings best when you can talk them through with someone you trust.',
+    rising: 'You come across as gracious, diplomatic, and aesthetically attuned: people see you as someone who brings elegance and fairness to every interaction.',
   },
   Scorpio: {
-    sun: 'You live with emotional intensity and psychological depth — you are drawn to truth, transformation, and understanding what lies beneath the surface of everything.',
-    moon: 'Your emotions are intense, private, and all-or-nothing — you feel things deeply but rarely show it, and betrayal or dishonesty affects you more profoundly than most people understand.',
-    rising: 'You come across as intense, perceptive, and magnetic — people sense your depth immediately and either feel drawn to you or slightly intimidated by your presence.',
+    sun: 'You live with emotional intensity and psychological depth: you are drawn to truth, transformation, and understanding what lies beneath the surface of everything.',
+    moon: 'Your emotions are intense, private, and all-or-nothing: you feel things deeply but rarely show it, and betrayal or dishonesty affects you more profoundly than most people understand.',
+    rising: 'You come across as intense, perceptive, and magnetic: people sense your depth immediately and either feel drawn to you or slightly intimidated by your presence.',
   },
   Sagittarius: {
-    sun: 'You are driven by a need for meaning, adventure, and growth — you think big, seek truth, and feel most alive when you are learning, traveling, or exploring new philosophies.',
-    moon: 'You process emotions through movement, humor, and searching for meaning — when things get heavy, you instinctively look for the bigger picture or plan an escape.',
-    rising: 'You come across as optimistic, adventurous, and philosophical — people see you as someone who is always looking toward the horizon and inspiring others to think bigger.',
+    sun: 'You are driven by a need for meaning, adventure, and growth: you think big, seek truth, and feel most alive when you are learning, traveling, or exploring new philosophies.',
+    moon: 'You process emotions through movement, humor, and searching for meaning: when things get heavy, you instinctively look for the bigger picture or plan an escape.',
+    rising: 'You come across as optimistic, adventurous, and philosophical: people see you as someone who is always looking toward the horizon and inspiring others to think bigger.',
   },
   Capricorn: {
-    sun: 'You are ambitious, disciplined, and focused on building something meaningful over time — you take responsibility seriously and measure success by what you have actually accomplished.',
-    moon: 'You process emotions privately and practically — you may appear stoic on the outside, but you feel things deeply and cope by staying productive and in control.',
-    rising: 'You come across as serious, capable, and authoritative — people see you as someone who has their life together and can be trusted with important responsibilities.',
+    sun: 'You are ambitious, disciplined, and focused on building something meaningful over time: you take responsibility seriously and measure success by what you have actually accomplished.',
+    moon: 'You process emotions privately and practically: you may appear stoic on the outside, but you feel things deeply and cope by staying productive and in control.',
+    rising: 'You come across as serious, capable, and authoritative: people see you as someone who has their life together and can be trusted with important responsibilities.',
   },
   Aquarius: {
-    sun: 'You value independence, originality, and making the world better — you think differently from most people and are drawn to innovation, social causes, and intellectual freedom.',
-    moon: 'You process emotions with some detachment, preferring to understand feelings intellectually before engaging with them — you need space and freedom even in your closest relationships.',
-    rising: 'You come across as unique, independent, and slightly unconventional — people see you as someone who marches to their own drum and is not afraid to be different.',
+    sun: 'You value independence, originality, and making the world better: you think differently from most people and are drawn to innovation, social causes, and intellectual freedom.',
+    moon: 'You process emotions with some detachment, preferring to understand feelings intellectually before engaging with them: you need space and freedom even in your closest relationships.',
+    rising: 'You come across as unique, independent, and slightly unconventional: people see you as someone who marches to their own drum and is not afraid to be different.',
   },
   Pisces: {
-    sun: 'You are deeply empathic, creative, and spiritually attuned — you absorb the emotions of the world around you and express yourself best through art, music, healing, or compassion.',
-    moon: 'Your emotional world is vast and borderless — you feel everything intensely, dream vividly, and need creative or spiritual outlets to process the enormous amount of feeling you carry.',
-    rising: 'You come across as gentle, dreamy, and compassionate — people see you as someone who is deeply kind and intuitively understands what others are going through.',
+    sun: 'You are deeply empathic, creative, and spiritually attuned: you absorb the emotions of the world around you and express yourself best through art, music, healing, or compassion.',
+    moon: 'Your emotional world is vast and borderless: you feel everything intensely, dream vividly, and need creative or spiritual outlets to process the enormous amount of feeling you carry.',
+    rising: 'You come across as gentle, dreamy, and compassionate: people see you as someone who is deeply kind and intuitively understands what others are going through.',
   },
 };
 
@@ -275,7 +275,7 @@ const SIGN_RISING_PRESENTING_AS: Record<string, string> = {
   Gemini: 'more verbal and curious, lighter on your feet',
   Cancer: 'softer, more openly caring, more emotionally available',
   Leo: 'warmer, more visible, more willing to take up space',
-  Virgo: 'more measured, precise, and useful — running through a checklist',
+  Virgo: 'more measured, precise, and useful: running through a checklist',
   Libra: 'more gracious and diplomatic, weighing both sides before responding',
   Scorpio: 'more intense and watchful, slower to give yourself away',
   Sagittarius: 'more expansive and philosophical, with a wider field of vision',
@@ -290,38 +290,38 @@ function buildSrRisingContrast(natalRising: string, srRising: string): string {
   const natalDesc = SIGN_RISING_SHORT[natalRising];
   const srPresenting = SIGN_RISING_PRESENTING_AS[srRising];
   if (!natalDesc || !srPresenting) return '';
-  return `Your natal ${natalRising} Rising — ${natalDesc} — is wearing a ${srRising} coat this year. People will read you as ${srPresenting} than your default. The ${natalRising} underneath is still there; this year just runs it through a ${srRising} filter.`;
+  return `Your natal ${natalRising} Rising, ${natalDesc}, is wearing a ${srRising} coat this year. People will read you as ${srPresenting} than your default. The ${natalRising} underneath is still there; this year just runs it through a ${srRising} filter.`;
 }
 
 const HTYM_MOON_BODY: Record<string, string> = {
 
   Aries: 'Your emotional landscape shifts toward directness and independence. Where your natal Moon processes feelings in its familiar way, this year the emotional body wants action, speed, and autonomy.',
-  Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience — feelings are processed slowly and deliberately.',
-  Gemini: 'Your emotional processing becomes more verbal and social. You think through feelings rather than sitting with them — conversation and writing become emotional outlets.',
+  Taurus: 'Your emotional world this year craves stability, comfort, and sensory grounding. The shift is toward patience: feelings are processed slowly and deliberately.',
+  Gemini: 'Your emotional processing becomes more verbal and social. You think through feelings rather than sitting with them: conversation and writing become emotional outlets.',
   Cancer: 'Your emotional world deepens significantly. Sensitivity increases, intuition sharpens, and the need for emotional safety becomes non-negotiable.',
   Leo: 'Your emotional world warms and expands. The need to feel seen, appreciated, and creatively expressed intensifies. Heart-centered decisions carry more weight.',
   Virgo: 'Your emotional processing becomes more analytical and service-oriented. Feelings are examined, organized, and channeled into practical improvements.',
-  Libra: 'Your emotional world seeks balance and harmony. Relationship dynamics filter everything — discord feels physically disruptive, and the pull toward partnership strengthens until being alone feels genuinely uncomfortable.',
-  Scorpio: 'Your emotional world intensifies and deepens. Surface-level engagement becomes intolerable — you find yourself probing conversations, questioning motives, and craving psychological honesty in ways that surprise even you.',
-  Sagittarius: 'Your emotional world opens and lifts. Restlessness increases, optimism grows, and the need for meaning and adventure permeates your inner life — routine feels suffocating, and you process feelings by moving, learning, or debating.',
-  Capricorn: 'Your emotional world becomes more disciplined and pragmatic. Feelings are managed rather than indulged — emotional maturity deepens.',
+  Libra: 'Your emotional world seeks balance and harmony. Relationship dynamics filter everything: discord feels physically disruptive, and the pull toward partnership strengthens until being alone feels genuinely uncomfortable.',
+  Scorpio: 'Your emotional world intensifies and deepens. Surface-level engagement becomes intolerable: you find yourself probing conversations, questioning motives, and craving psychological honesty in ways that surprise even you.',
+  Sagittarius: 'Your emotional world opens and lifts. Restlessness increases, optimism grows, and the need for meaning and adventure permeates your inner life: routine feels suffocating, and you process feelings by moving, learning, or debating.',
+  Capricorn: 'Your emotional world becomes more disciplined and pragmatic. Feelings are managed rather than indulged: emotional maturity deepens.',
   Aquarius: 'Your emotional processing becomes more detached and cerebral. You observe feelings from a slight distance, preferring clarity and independence over intensity.',
   Pisces: 'Your emotional world becomes fluid and permeable. Boundaries thin, empathy deepens, and the unconscious sends vivid signals through dreams and intuition.',
 };
 
 const HTYM_RISING_BODY: Record<string, string> = {
-  Aries: 'Your public presence shifts toward boldness, directness, and initiative. Others perceive you as more courageous and action-oriented — you feel impatient with hesitation and drawn to starting things.',
-  Taurus: 'Your public presence becomes more grounded, patient, and reliable. Others see stability in you — you feel most effective when building slowly and deliberately rather than rushing.',
-  Gemini: 'Your public presence becomes lighter, more curious, and verbally agile. You naturally become a connector — ideas, people, and information flow through you, and you feel most alive in conversation.',
-  Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company — doors open through emotional intelligence and the genuine care you project.',
-  Leo: 'Your public presence becomes more visible, warm, and magnetic. You feel a persistent pull to step forward and let yourself be seen — hiding feels uncomfortable and counterproductive.',
-  Virgo: 'Your public presence sharpens and becomes more purposeful. You feel most confident when demonstrating precision and competence — sloppy work from others becomes harder to tolerate.',
-  Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. Doors open through collaboration rather than solo ambition — you find yourself naturally mediating, beautifying, and building bridges between people.',
-  Scorpio: 'Your public presence deepens and becomes more intense. You carry a magnetic, transformative quality that others either gravitate toward or instinctively resist — superficial interactions feel like a waste of time.',
-  Sagittarius: 'Your public presence opens and expands. You feel most effective when teaching, adventuring, or engaging philosophically with the world — routine professional obligations feel constraining.',
-  Capricorn: 'Your public presence becomes more authoritative and focused. You feel a drive to take on greater responsibility and build something lasting — frivolous pursuits lose their appeal.',
+  Aries: 'Your public presence shifts toward boldness, directness, and initiative. Others perceive you as more courageous and action-oriented: you feel impatient with hesitation and drawn to starting things.',
+  Taurus: 'Your public presence becomes more grounded, patient, and reliable. Others see stability in you: you feel most effective when building slowly and deliberately rather than rushing.',
+  Gemini: 'Your public presence becomes lighter, more curious, and verbally agile. You naturally become a connector: ideas, people, and information flow through you, and you feel most alive in conversation.',
+  Cancer: 'Your public presence softens and becomes more nurturing. Others feel safe in your company: doors open through emotional intelligence and the genuine care you project.',
+  Leo: 'Your public presence becomes more visible, warm, and magnetic. You feel a persistent pull to step forward and let yourself be seen: hiding feels uncomfortable and counterproductive.',
+  Virgo: 'Your public presence sharpens and becomes more purposeful. You feel most confident when demonstrating precision and competence: sloppy work from others becomes harder to tolerate.',
+  Libra: 'Your public presence becomes more diplomatic, graceful, and partnership-oriented. Doors open through collaboration rather than solo ambition: you find yourself naturally mediating, beautifying, and building bridges between people.',
+  Scorpio: 'Your public presence deepens and becomes more intense. You carry a magnetic, transformative quality that others either gravitate toward or instinctively resist: superficial interactions feel like a waste of time.',
+  Sagittarius: 'Your public presence opens and expands. You feel most effective when teaching, adventuring, or engaging philosophically with the world: routine professional obligations feel constraining.',
+  Capricorn: 'Your public presence becomes more authoritative and focused. You feel a drive to take on greater responsibility and build something lasting: frivolous pursuits lose their appeal.',
   Aquarius: 'Your public presence becomes more independent and original. You feel most aligned when trusting your own unconventional vision, even when it confuses people around you.',
-  Pisces: 'Your public presence becomes gentler and more intuitive. Doors open through compassion, creativity, and subtle connection — you influence others by feeling with them rather than directing them.',
+  Pisces: 'Your public presence becomes gentler and more intuitive. Doors open through compassion, creativity, and subtle connection: you influence others by feeling with them rather than directing them.',
 };
 
 function generateHowThisYearMeetsYou(
@@ -492,13 +492,13 @@ function buildChartWheelData(srChart: SolarReturnChart, natalChart: NatalChart, 
 
 // ─── Personal Planetary Hours Interpretation ────────────────────────
 const PLANETARY_HOUR_VIBES: Record<string, { feel: string; double: string }> = {
-  Sun:     { feel: 'You\'ll feel a surge of confidence and clarity — this is a year where your sense of purpose feels strong from the start. You wake up knowing who you are.', double: 'Double Sun energy makes this a powerfully self-defining year. You radiate authority and attract recognition without trying.' },
-  Moon:    { feel: 'You\'ll feel emotionally heightened and deeply intuitive — this year begins with a sense of inner knowing. Trust what your body and feelings are telling you.', double: 'Double Moon energy makes this a profoundly emotional and inward year. Home, family, and your inner world take center stage.' },
-  Mercury: { feel: 'You\'ll feel mentally sharp and communicative — ideas flow easily and connections happen through conversation. This is a year of learning and expressing.', double: 'Double Mercury energy makes this a year dominated by communication, learning, and mental agility. Words carry extra weight.' },
-  Venus:   { feel: 'You\'ll feel magnetic, warm, and drawn to beauty — this year opens with grace and ease. Love, pleasure, and creative inspiration feel close.', double: 'Double Venus energy makes this a year saturated with beauty, love, and sensory pleasure. Relationships and creativity flourish.' },
-  Mars:    { feel: 'You\'ll feel fired up and ready to act — there\'s an urgency to get things moving. Channel this energy into bold projects rather than frustration.', double: 'Double Mars energy makes this a year of intense drive and physical vitality. You have the fuel to conquer, but watch for burnout and conflicts.' },
-  Jupiter: { feel: 'You\'ll feel expansive, optimistic, and lucky — opportunities seem to appear out of nowhere. This is a year where faith in the future pays off.', double: 'Double Jupiter energy makes this a year of notable growth and abundance. Generosity flows both ways — give freely and receive fully.' },
-  Saturn:  { feel: 'You\'ll feel grounded, serious, and focused on what matters — there\'s a mature energy that asks you to do the real work. Discipline can be a real strength this year.', double: 'Double Saturn energy makes this a year of serious commitment and structural change. What you build now is meant to last decades.' },
+  Sun:     { feel: 'You\'ll feel a surge of confidence and clarity: this is a year where your sense of purpose feels strong from the start. You wake up knowing who you are.', double: 'Double Sun energy makes this a powerfully self-defining year. You radiate authority and attract recognition without trying.' },
+  Moon:    { feel: 'You\'ll feel emotionally heightened and deeply intuitive: this year begins with a sense of inner knowing. Trust what your body and feelings are telling you.', double: 'Double Moon energy makes this a profoundly emotional and inward year. Home, family, and your inner world take center stage.' },
+  Mercury: { feel: 'You\'ll feel mentally sharp and communicative: ideas flow easily and connections happen through conversation. This is a year of learning and expressing.', double: 'Double Mercury energy makes this a year dominated by communication, learning, and mental agility. Words carry extra weight.' },
+  Venus:   { feel: 'You\'ll feel magnetic, warm, and drawn to beauty: this year opens with grace and ease. Love, pleasure, and creative inspiration feel close.', double: 'Double Venus energy makes this a year saturated with beauty, love, and sensory pleasure. Relationships and creativity flourish.' },
+  Mars:    { feel: 'You\'ll feel fired up and ready to act: there\'s an urgency to get things moving. Channel this energy into bold projects rather than frustration.', double: 'Double Mars energy makes this a year of intense drive and physical vitality. You have the fuel to conquer, but watch for burnout and conflicts.' },
+  Jupiter: { feel: 'You\'ll feel expansive, optimistic, and lucky, opportunities seem to appear out of nowhere. This is a year where faith in the future pays off.', double: 'Double Jupiter energy makes this a year of notable growth and abundance. Generosity flows both ways, give freely and receive fully.' },
+  Saturn:  { feel: 'You\'ll feel grounded, serious, and focused on what matters: there\'s a mature energy that asks you to do the real work. Discipline can be a real strength this year.', double: 'Double Saturn energy makes this a year of serious commitment and structural change. What you build now is meant to last decades.' },
 };
 
 function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
@@ -506,7 +506,7 @@ function generatePersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPla
 }
 function legacyPersonalPlanetaryHoursInterpretation(hourPlanet: string, dayPlanet: string): string {
   if (hourPlanet === dayPlanet) {
-    return PLANETARY_HOUR_VIBES[hourPlanet]?.double || `Your Solar Return occurs during a ${hourPlanet} hour on a ${dayPlanet} day — doubled planetary energy amplifies this planet's themes all year.`;
+    return PLANETARY_HOUR_VIBES[hourPlanet]?.double || `Your Solar Return occurs during a ${hourPlanet} hour on a ${dayPlanet} day: doubled planetary energy amplifies this planet's themes all year.`;
   }
   const hourVibe = PLANETARY_HOUR_VIBES[hourPlanet]?.feel || `The ${hourPlanet} hour colors your birthday moment with ${hourPlanet}'s energy.`;
   const dayVibe = PLANETARY_HOUR_VIBES[dayPlanet]?.feel || '';
@@ -1028,9 +1028,9 @@ const FRAGMENT_EXPANSIONS: Record<string, string> = {
   'culmination energy': 'The things you have been building are reaching a natural peak and becoming visible to others.',
   'growth period': 'This is a time when multiple areas of your life are expanding and developing in meaningful ways.',
   'transformation energy': 'Something deep inside you is shifting, and old patterns are making room for a stronger version of who you are.',
-  'expansion energy': 'Your world is getting bigger — new opportunities, new perspectives, and new possibilities are opening up.',
+  'expansion energy': 'Your world is getting bigger: new opportunities, new perspectives, and new possibilities are opening up.',
   'release energy': 'This is a time to let go of what no longer serves you so that something better can take its place.',
-  'new beginnings': 'Fresh starts are available to you now — the seeds you plant during this time will grow for years to come.',
+  'new beginnings': 'Fresh starts are available to you now: the seeds you plant during this time will grow for years to come.',
 };
 
 function expandFragments(text: string): string {
@@ -1739,7 +1739,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
           });
         } else {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign} — Emotional Continuity`);
+            ctx.writeBold(doc, `Moon Stays in ${natalMoonSign}: Emotional Continuity`);
             ctx.writeBody(doc, 'Your SR Moon matches natal. This year amplifies your emotional instincts. Trust your gut.');
           });
         }
@@ -1795,7 +1795,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
                 const role = stelliumPlanetRoles[pp];
                 const ppH = analysis.planetSRHouses?.[pp];
                 const houseTag = ppH ? `  •  SR House ${ppH}` : '';
-                return role ? `${P[pp] || pp}${houseTag} — ${role}` : null;
+                return role ? `${P[pp] || pp}${houseTag}: ${role}` : null;
               }).filter(Boolean);
               
               if (roleLines.length > 0) {
@@ -1815,11 +1815,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // --- SIGN STELLIUMS --- (force new page with title)
         if (signStelliums.length > 0) {
           doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-          ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
+          ctx.sectionTitle(doc, 'STELLIUMS: YOUR POWER ZONES');
           ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
           
           if (signStelliums.length > 1) {
-            ctx.writeBody(doc, `You have ${signStelliums.length} sign stelliums this year — concentrated energy demanding attention.`, ctx.colors.dimText, 9.5);
+            ctx.writeBody(doc, `You have ${signStelliums.length} sign stelliums this year: concentrated energy demanding attention.`, ctx.colors.dimText, 9.5);
             ctx.y += 6;
           }
           for (const s of signStelliums) {
@@ -1838,7 +1838,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             ctx.y += 16;
           } else {
             doc.addPage(); ctx.y = margin; ctx.pageBg(doc);
-            ctx.sectionTitle(doc, 'STELLIUMS — YOUR POWER ZONES');
+            ctx.sectionTitle(doc, 'STELLIUMS: YOUR POWER ZONES');
             ctx.sectionPages.set('STELLIUMS', doc.getNumberOfPages());
           }
           for (const s of houseStelliums) {
@@ -2043,7 +2043,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
             doc.setDrawColor(...ctx.colors.gold); doc.setLineWidth(0.5);
             doc.line(margin, ctx.y, margin + contentW, ctx.y);
             ctx.y += 16;
-            ctx.writeBold(doc, 'Angular Planets — Most Powerful This Year');
+            ctx.writeBold(doc, 'Angular Planets: Most Powerful This Year');
             ctx.y += 12;
 
             const ANG_BG: [number, number, number][] = [
@@ -2111,7 +2111,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         doc.setTextColor(...ctx.colors.ink);
         doc.text(`${P[tlPlanet] || tlPlanet}`, margin + 8, ctx.y);
         doc.setFont('times', 'normal'); doc.setFontSize(11);
-        doc.text(`${tlSRSign || '--'} — SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
+        doc.text(`${tlSRSign || '--'}: SR House ${tlSRHouse || '--'}`, margin + 8, ctx.y + 18);
         if (tlDignity) {
           doc.setFont('times', 'italic'); doc.setFontSize(9);
           doc.setTextColor(...ctx.colors.muted);
@@ -2151,19 +2151,19 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         if (tlDignity === 'Detriment' || tlDignity === 'Fall') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Warning', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone — plans may require more effort.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity}. ${P[tlPlanet] || tlPlanet} is working outside its comfort zone: plans may require more effort.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
         if (tlDignity === 'Domicile' || tlDignity === 'Exaltation') {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Dignity Advantage', ctx.colors.accentGreen, 10);
-            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity} — ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `Your Annual Profection Time Lord is in ${tlDignity}: ${P[tlPlanet] || tlPlanet} at ${tlDignity === 'Domicile' ? 'full strength' : 'peak performance'}. Results come with less friction.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentGreen);
         }
         if (tlIsRetro) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'Retrograde Effect', ctx.colors.accentRust, 10);
-            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as the Annual Profection Time Lord means a built-in "review and revise" quality. Things from the past resurface — old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
+            ctx.writeBody(doc, `${P[tlPlanet] || tlPlanet} retrograde as the Annual Profection Time Lord means a built-in "review and revise" quality. Things from the past resurface: old projects, unfinished conversations. New initiatives may stall until you address what was left incomplete.`, ctx.colors.bodyText, 10);
           }, ctx.colors.accentRust);
         }
       }
@@ -2227,11 +2227,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // Moon VOC
         if (analysis.moonVOC) {
           ctx.drawCard(doc, () => {
-            ctx.writeBold(doc, 'Moon Void of Course — The Unaspected Moon');
+            ctx.writeBold(doc, 'Moon Void of Course: The Unaspected Moon');
             ctx.y += 6;
             ctx.writeBody(doc, 'Your Solar Return Moon makes no major aspects to any other planet in the SR chart. This is a rare and significant condition.');
             ctx.y += 4;
-            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation — your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.');
+            ctx.writeCardSection(doc, 'What This Means', 'An unaspected SR Moon operates in isolation: your emotional life this year runs on its own track. Feelings are vivid but disconnected from the rest of the chart\'s story.');
             ctx.writeCardSection(doc, 'The Gift', 'Without planetary aspects pulling it in different directions, the Moon is free. Your emotional compass this year is entirely your own.');
             ctx.writeCardSection(doc, 'The Challenge', 'Without aspects to ground or activate the Moon, emotional needs may go unmet unless you consciously name and honor them.');
           });
@@ -2240,7 +2240,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         // Angularity
         if (analysis.moonAngularity) {
           const angDesc: Record<string, string> = {
-            angular: 'Your SR Moon is angular (close to an angle). Emotional responses are instinctive, automatic, and highly reactive. You are close to every situation — perspective is harder, but feelings are powerfully felt and visible to others.',
+            angular: 'Your SR Moon is angular (close to an angle). Emotional responses are instinctive, automatic, and highly reactive. You are close to every situation: perspective is harder, but feelings are powerfully felt and visible to others.',
             succedent: 'Your SR Moon is in a succedent house. Emotional responses are stable and grounded this year. You can step back and examine situations without being overwhelmed.',
             cadent: 'Your SR Moon is in a cadent house. Emotional responses are more adaptive this year. You process feelings internally, preparing rather than reacting.',
           };
@@ -2288,7 +2288,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         ctx.checkPage(200);
         if (ctx.y > margin + 100) { doc.addPage(); ctx.y = margin; ctx.pageBg(doc); }
         ctx.sectionPages.set('VERTEX', doc.getNumberOfPages());
-        ctx.sectionTitle(doc, 'VERTEX — SIGNIFICANT-FEELING ENCOUNTERS');
+        ctx.sectionTitle(doc, 'VERTEX: SIGNIFICANT-FEELING ENCOUNTERS');
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, `Vertex: ${analysis.vertex!.sign} ${analysis.vertex!.degree}' ${analysis.vertex!.house ? `(House ${analysis.vertex!.house})` : ''}`);
           const vSign = vertexInSign[analysis.vertex!.sign];

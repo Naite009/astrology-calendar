@@ -24,7 +24,7 @@ export const ContradictionCard = ({ contradictions }: Props) => {
         <div className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1 flex items-center gap-1.5">
           <ArrowLeftRight size={12} /> Contradiction Resolution
         </div>
-        <p className="text-[11px] text-muted-foreground">Where you may feel pulled in two directions — and how to integrate both</p>
+        <p className="text-[11px] text-muted-foreground">Where you may feel pulled in two directions: and how to integrate both</p>
       </div>
 
       <div className="divide-y divide-border">

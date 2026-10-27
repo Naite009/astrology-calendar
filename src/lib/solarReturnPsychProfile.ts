@@ -437,13 +437,13 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
   const totalHemiH = hemiCounts.east + hemiCounts.west;
   const hemiParts: string[] = [];
   if (totalHemiV > 0) {
-    if (hemiCounts.above / totalHemiV > 0.6) hemiParts.push('Public-facing — energy directed toward the world, career, and social visibility');
-    else if (hemiCounts.below / totalHemiV > 0.6) hemiParts.push('Private — energy directed inward toward personal foundations, home, and inner development');
+    if (hemiCounts.above / totalHemiV > 0.6) hemiParts.push('Public-facing: energy directed toward the world, career, and social visibility');
+    else if (hemiCounts.below / totalHemiV > 0.6) hemiParts.push('Private: energy directed inward toward personal foundations, home, and inner development');
     else hemiParts.push('Balanced between public and private life');
   }
   if (totalHemiH > 0) {
-    if (hemiCounts.east / totalHemiH > 0.6) hemiParts.push('Self-directed — you set the agenda and take initiative');
-    else if (hemiCounts.west / totalHemiH > 0.6) hemiParts.push('Other-directed — relationships and collaborations shape your path');
+    if (hemiCounts.east / totalHemiH > 0.6) hemiParts.push('Self-directed: you set the agenda and take initiative');
+    else if (hemiCounts.west / totalHemiH > 0.6) hemiParts.push('Other-directed: relationships and collaborations shape your path');
     else hemiParts.push('Balanced between self-direction and collaboration');
   }
 

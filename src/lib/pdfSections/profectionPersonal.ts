@@ -39,10 +39,10 @@ const TIME_LORD_ENERGY: Record<string, string> = {
 };
 
 const TIME_LORD_POWER_MOVE: Record<string, string> = {
-  Sun: 'Step into the spotlight deliberately. Be the main character — not for performance, but for real.',
+  Sun: 'Step into the spotlight deliberately. Be the main character: not for performance, but for real.',
   Moon: 'Trust your instincts over logic this year. What you feel is more accurate than what you think.',
   Mercury: 'Write it down. Say it out loud. The clarity you need comes through communication.',
-  Venus: 'Invest in what you genuinely love — people, experiences, beauty. The returns are real.',
+  Venus: 'Invest in what you genuinely love: people, experiences, beauty. The returns are real.',
   Mars: 'Channel the energy into one clear project or goal. Scattered aggression costs; focused drive wins.',
   Jupiter: 'Say yes to the thing that scares you a little. Overreach is the only real risk.',
   Saturn: 'Do the hard thing first. Every morning. Build the structure your future self will thank you for.',
@@ -185,7 +185,7 @@ export function generateProfectionPersonalSection(
 
   doc.setFont('times', 'normal'); doc.setFontSize(11);
   doc.setTextColor(...INK);
-  const whyText = `Your natal ${ord(houseNumber)} house cusp falls in a sign ruled by ${tlName}. In Hellenistic astrology, the planet that rules the sign on your activated profection house cusp becomes the "Time Lord" — the planet whose agenda dominates the year.`;
+  const whyText = `Your natal ${ord(houseNumber)} house cusp falls in a sign ruled by ${tlName}. In Hellenistic astrology, the planet that rules the sign on your activated profection house cusp becomes the "Time Lord": the planet whose agenda dominates the year.`;
   const whyLines: string[] = doc.splitTextToSize(whyText, contentW);
   for (const line of whyLines) {
     ctx.checkPage(18);

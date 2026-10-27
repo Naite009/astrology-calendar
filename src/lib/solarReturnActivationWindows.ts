@@ -224,7 +224,7 @@ export function calculateActivationWindows(
 
     const themes = [...new Set(hits.map(h => h.interpretation))].slice(0, 3);
 
-    const themeList = themes.length > 0 ? themes : ['No major activation this month — a quieter period for integration'];
+    const themeList = themes.length > 0 ? themes : ['No major activation this month: a quieter period for integration'];
     const TRANSIT_PLAIN: Record<string, string> = {
       Sun: 'Purpose', Mars: 'Drive', Jupiter: 'Growth', Saturn: 'Responsibility',
       Mercury: 'Communication', Venus: 'Connection',

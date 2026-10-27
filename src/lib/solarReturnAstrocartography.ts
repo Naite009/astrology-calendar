@@ -253,42 +253,42 @@ const PLANET_LINE_INTERPS: Record<string, Record<string, string>> = {
     ASC: 'The Moon on the Ascendant heightens emotional sensitivity and intuition. You feel everything more deeply and others sense your emotional state.',
     MC: 'The Moon on the Midheaven brings public emotional visibility. Career may involve nurturing, counseling, or working with women/families.',
     DSC: 'The Moon on the Descendant draws emotionally significant relationships. Deep bonding and domestic partnership are highlighted.',
-    IC: 'The Moon on the IC is its most natural placement — profound emotional security, family healing, and feeling truly at home.',
+    IC: 'The Moon on the IC is its most natural placement: profound emotional security, family healing, and feeling truly at home.',
   },
   Venus: {
     ASC: 'Venus on the Ascendant is the ultimate beauty and magnetism line. You radiate charm, attract love, and everything feels aesthetically harmonious.',
     MC: 'Venus on the Midheaven brings professional success through creativity, diplomacy, and social grace. Excellent for artists and anyone in beauty/luxury industries.',
-    DSC: 'Venus on the Descendant is the classic love line — attracts harmonious partnerships, romantic encounters, and pleasant social connections.',
+    DSC: 'Venus on the Descendant is the classic love line: attracts harmonious partnerships, romantic encounters, and pleasant social connections.',
     IC: 'Venus on the IC creates a beautiful, harmonious home life. Domestic happiness, comfort, and pleasure in private spaces.',
   },
   Mars: {
-    ASC: 'Mars on the Ascendant gives boldness, physical energy, and assertiveness — but also attracts conflict and accidents. Handle with care.',
-    MC: 'Mars on the Midheaven drives career ambition and competitive success — but can also mean professional conflicts or burnout.',
+    ASC: 'Mars on the Ascendant gives boldness, physical energy, and assertiveness: but also attracts conflict and accidents. Handle with care.',
+    MC: 'Mars on the Midheaven drives career ambition and competitive success: but can also mean professional conflicts or burnout.',
     DSC: 'Mars on the Descendant attracts passionate but contentious relationships. Arguments, competition, and sexual intensity in partnerships.',
     IC: 'Mars on the IC creates restlessness at home, family conflicts, or major home renovations. Unsettled domestic energy.',
   },
   Jupiter: {
     ASC: 'Jupiter on the Ascendant brings optimism, generosity, and lucky breaks. You feel larger than life and opportunities find you.',
-    MC: 'Jupiter on the Midheaven is the best career line — recognition, promotion, expansion, and professional abundance.',
+    MC: 'Jupiter on the Midheaven is the best career line: recognition, promotion, expansion, and professional abundance.',
     DSC: 'Jupiter on the Descendant attracts generous, wise, or wealthy partners and beneficial business partnerships.',
-    IC: 'Jupiter on the IC expands home life — bigger house, more family gatherings, or emotional abundance and security.',
+    IC: 'Jupiter on the IC expands home life: bigger house, more family gatherings, or emotional abundance and security.',
   },
   Saturn: {
     ASC: 'Saturn on the Ascendant brings seriousness, responsibility, and visible aging. You appear more authoritative but also more burdened.',
     MC: 'Saturn on the Midheaven demands professional accountability. Hard work is required, but lasting career structures are built.',
     DSC: 'Saturn on the Descendant brings relationship tests and commitments. Serious partnerships, but also loneliness or delays in love.',
-    IC: 'Saturn on the IC weighs on home and family life — obligations, restrictions, or dealing with aging parents.',
+    IC: 'Saturn on the IC weighs on home and family life: obligations, restrictions, or dealing with aging parents.',
   },
   Uranus: {
     ASC: 'Uranus on the Ascendant brings sudden identity changes, excitement, and unpredictability. Liberation from old patterns.',
-    MC: 'Uranus on the Midheaven disrupts career — sudden job changes, unconventional career moves, or technology breakthroughs.',
+    MC: 'Uranus on the Midheaven disrupts career: sudden job changes, unconventional career moves, or technology breakthroughs.',
     DSC: 'Uranus on the Descendant attracts unusual partners and sudden relationship changes. Freedom-seeking in love.',
-    IC: 'Uranus on the IC disrupts domestic stability — sudden moves, household changes, or emotional liberation from family patterns.',
+    IC: 'Uranus on the IC disrupts domestic stability: sudden moves, household changes, or emotional liberation from family patterns.',
   },
   Neptune: {
     ASC: 'Neptune on the Ascendant heightens intuition and creativity but blurs personal boundaries. Chameleon energy.',
     MC: 'Neptune on the Midheaven brings artistic/spiritual career potential but also professional confusion and unrealistic expectations.',
-    DSC: 'Neptune on the Descendant idealizes partners — soulmate feelings but also deception risk. See partners clearly.',
+    DSC: 'Neptune on the Descendant idealizes partners: soulmate feelings but also deception risk. See partners clearly.',
     IC: 'Neptune on the IC creates a dreamy, spiritual home atmosphere but can mean domestic confusion or escapism.',
   },
   Pluto: {
@@ -299,9 +299,9 @@ const PLANET_LINE_INTERPS: Record<string, Record<string, string>> = {
   },
   Mercury: {
     ASC: 'Mercury on the Ascendant sharpens communication, wit, and intellectual presence. You come across as articulate and curious.',
-    MC: 'Mercury on the Midheaven favors communication-based careers — writing, teaching, speaking, media, commerce.',
+    MC: 'Mercury on the Midheaven favors communication-based careers: writing, teaching, speaking, media, commerce.',
     DSC: 'Mercury on the Descendant stimulates intellectual partnerships and important conversations with significant others.',
-    IC: 'Mercury on the IC activates mental activity at home — studying, writing from home, or important family communications.',
+    IC: 'Mercury on the IC activates mental activity at home: studying, writing from home, or important family communications.',
   },
 };
 
@@ -698,11 +698,11 @@ export function calculateAstrocartography(
     
     let summary = '';
     if (benefics.length > 0 && malefics.length === 0) {
-      summary = `Excellent location — ${benefics.map(b => `${b.planet} on ${b.angle}`).join(', ')}. Benefic energy dominates.`;
+      summary = `Excellent location: ${benefics.map(b => `${b.planet} on ${b.angle}`).join(', ')}. Benefic energy dominates.`;
     } else if (malefics.length > 0 && benefics.length === 0) {
-      summary = `Challenging location — ${malefics.map(m => `${m.planet} on ${m.angle}`).join(', ')}. Expect pressure and tests.`;
+      summary = `Challenging location: ${malefics.map(m => `${m.planet} on ${m.angle}`).join(', ')}. Expect pressure and tests.`;
     } else if (benefics.length > 0 && malefics.length > 0) {
-      summary = `Mixed energy — ${angularPlanets.map(ap => `${ap.planet} on ${ap.angle}`).join(', ')}. Both opportunity and challenge are amplified.`;
+      summary = `Mixed energy: ${angularPlanets.map(ap => `${ap.planet} on ${ap.angle}`).join(', ')}. Both opportunity and challenge are amplified.`;
     } else {
       summary = `${angularPlanets.map(ap => `${ap.planet} on ${ap.angle}`).join(', ')}. Moderate planetary influence on the angles.`;
     }
@@ -825,17 +825,17 @@ export function calculateAstrocartography(
   // Use the legitimately-best result (current vs candidates) for the headline.
   const bestBeneficLabel = currentBeatsAll
     ? `your current city (rating ${currentRating}/10)`
-    : bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country} — ${bestBeneficCity.summary}` : '';
+    : bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country}: ${bestBeneficCity.summary}` : '';
 
   const interpretation = topCities.length > 0
-    ? `Your Solar Return planetary lines reveal the best travel destinations for this year. ${bestBeneficLabel ? `Top pick: ${bestBeneficLabel}` : ''} ${worstMaleficCity ? `Use caution traveling near ${worstMaleficCity.city}, ${worstMaleficCity.country} — ${worstMaleficCity.summary}` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.map(a => `${a.planet} on ${a.angle}`).join(' and ')} angular.` : 'Your current location has no planets tightly angular — a neutral baseline.'}`
+    ? `Your Solar Return planetary lines reveal the best travel destinations for this year. ${bestBeneficLabel ? `Top pick: ${bestBeneficLabel}` : ''} ${worstMaleficCity ? `Use caution traveling near ${worstMaleficCity.city}, ${worstMaleficCity.country}, ${worstMaleficCity.summary}` : ''} ${currentAngular.length > 0 ? `Your current location has ${currentAngular.map(a => `${a.planet} on ${a.angle}`).join(' and ')} angular.` : 'Your current location has no planets tightly angular, a neutral baseline.'}`
     : 'Astrocartography data could not be calculated for this chart.';
 
   return {
     lines,
     topCities,
     bestBeneficCity: currentBeatsAll
-      ? `Your current city (rating ${currentRating}/10 — higher than any evaluated destination)`
+      ? `Your current city (rating ${currentRating}/10: higher than any evaluated destination)`
       : bestBeneficCity ? `${bestBeneficCity.city}, ${bestBeneficCity.country}` : null,
     worstMaleficCity: worstMaleficCity ? `${worstMaleficCity.city}, ${worstMaleficCity.country}` : null,
     currentLocationRating: currentRating,

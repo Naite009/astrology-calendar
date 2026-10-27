@@ -152,7 +152,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
       const finalReadings = { plain: plainResult, astro: astroResult };
       setAiReadings(finalReadings);
-      toast.success('AI readings generated — downloading JSON');
+      toast.success('AI readings generated: downloading JSON');
       downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, finalReadings);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
@@ -193,12 +193,12 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
           <Sun size={16} className="text-primary" /> Your Solar Return
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          A Solar Return chart is cast for the exact moment the Sun returns to its natal degree each year — your cosmic birthday blueprint.
+          A Solar Return chart is cast for the exact moment the Sun returns to its natal degree each year: your cosmic birthday blueprint.
         </p>
         <ul className="grid sm:grid-cols-2 gap-2 text-[13px] text-foreground/80">
           <li className="flex items-start gap-2">
             <Compass size={14} className="mt-0.5 text-primary shrink-0" />
-            <span>Understand how to <strong>execute</strong> a Solar Return — the directives to lean into for your year ahead</span>
+            <span>Understand how to <strong>execute</strong> a Solar Return: the directives to lean into for your year ahead</span>
           </li>
           <li className="flex items-start gap-2">
             <Star size={14} className="mt-0.5 text-primary shrink-0" />
@@ -1025,11 +1025,11 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
       <div className="border border-border rounded-sm p-5 bg-card space-y-3">
         <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground">How It Works</h4>
         <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-          <li>Your Solar Return chart is cast for the <strong>exact moment</strong> the transiting Sun returns to your natal Sun's degree — the location determines the rising sign and house cusps.</li>
+          <li>Your Solar Return chart is cast for the <strong>exact moment</strong> the transiting Sun returns to your natal Sun's degree: the location determines the rising sign and house cusps.</li>
           <li>By traveling to a different city for your birthday, you change the SR Ascendant, MC, and house placements of all SR planets.</li>
-          <li>The planet positions (sign and degree) stay the same — only the houses change.</li>
+          <li>The planet positions (sign and degree) stay the same: only the houses change.</li>
           <li><strong>Strategy:</strong> Look for locations that place Jupiter or Venus on the SR Ascendant or MC, and avoid Saturn/Pluto on angles unless you want a year of deep transformation.</li>
-          <li>You only need to be at the location at the <em>exact</em> moment of the solar return — not necessarily on your calendar birthday.</li>
+          <li>You only need to be at the location at the <em>exact</em> moment of the solar return: not necessarily on your calendar birthday.</li>
         </ul>
       </div>
 
@@ -1055,7 +1055,7 @@ const RelocationTab = ({ analysis, srChart, natalChart, srChartsForNatal }: {
             Birth location: <strong>{capitalizeLocation(natalChart.birthLocation || '')}</strong> → SR location: <strong>{capitalizeLocation(srChart.solarReturnLocation)}</strong>
           </p>
           <p className="text-xs text-muted-foreground/70 mt-1">
-            The planets are identical — only the house cusps and angles shift based on where you were for your Solar Return.
+            The planets are identical: only the house cusps and angles shift based on where you were for your Solar Return.
           </p>
         </div>
       )}

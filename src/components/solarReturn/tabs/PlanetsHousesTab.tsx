@@ -41,7 +41,7 @@ export const PlanetsHousesTab = ({ analysis, srChart, natalChart }: Props) => {
       {/* Angular Planets */}
       {analysis.angularPlanets.length > 0 && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
-          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">⚡ Angular Planets — Year's Powerhouses</h4>
+          <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">⚡ Angular Planets: Year's Powerhouses</h4>
           <div className="space-y-2">
             {analysis.angularPlanets.map(p => (
               <div key={p} className="bg-primary/5 rounded-sm p-3">
@@ -108,7 +108,7 @@ export const PlanetsHousesTab = ({ analysis, srChart, natalChart }: Props) => {
                       <p className="text-xs text-muted-foreground leading-relaxed">{srSunInHouse[h].overview}</p>
                     </>
                   ) : (
-                    h && <p className="text-xs text-muted-foreground">{planet} in SR House {h} — {analysis.houseOverlays.find(o => o.planet === planet)?.srHouseTheme || ''}</p>
+                    h && <p className="text-xs text-muted-foreground">{planet} in SR House {h}: {analysis.houseOverlays.find(o => o.planet === planet)?.srHouseTheme || ''}</p>
                   )}
                   {overlay?.natalHouse && h && overlay.natalHouse !== h && (
                     <p className="text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-2 mt-2">
@@ -161,7 +161,7 @@ export const PlanetsHousesTab = ({ analysis, srChart, natalChart }: Props) => {
       {analysis.vertex && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
-            <Zap size={16} className="text-primary" /> Vertex — Significant-feeling Encounters
+            <Zap size={16} className="text-primary" /> Vertex: Significant-feeling Encounters
           </h3>
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-xl font-serif text-primary">Vx {SIGN_SYMBOLS[analysis.vertex.sign]} {analysis.vertex.sign} {analysis.vertex.degree}°{String(analysis.vertex.minutes).padStart(2, '0')}'</span>

@@ -39,7 +39,7 @@ export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <div>
             <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
-              <Layers size={14} className="text-primary" /> Stelliums — Concentrated Energy
+              <Layers size={14} className="text-primary" /> Stelliums: Concentrated Energy
             </h4>
             <p className="text-xs text-muted-foreground">3+ true planets in the same sign or house.</p>
           </div>

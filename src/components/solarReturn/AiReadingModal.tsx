@@ -39,8 +39,8 @@ export async function fetchReading(
 
   if (!resp.ok) {
     const errData = await resp.json().catch(() => ({}));
-    if (resp.status === 429) throw new Error('Rate limit exceeded — please wait a moment and try again.');
-    if (resp.status === 402) throw new Error('AI credits needed — please add credits in Settings.');
+    if (resp.status === 429) throw new Error('Rate limit exceeded: please wait a moment and try again.');
+    if (resp.status === 402) throw new Error('AI credits needed: please add credits in Settings.');
     throw new Error(errData.error || 'Failed to generate reading');
   }
 
@@ -179,7 +179,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <h2 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
             <Sparkles size={16} className="text-primary" />
-            AI Reading — {personName}
+            AI Reading: {personName}
           </h2>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X size={18} />
@@ -228,7 +228,7 @@ export const AiReadingModal = ({ open, onClose, personName, buildFullJson, onRea
             <div className="text-center py-12 space-y-4">
               <Sparkles size={36} className="mx-auto text-primary/50" />
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Generate two complete AI readings of your Solar Return — one in plain everyday language (for anyone), and one with full astrological detail (for astrology readers). Both will be included in your JSON export.
+                Generate two complete AI readings of your Solar Return: one in plain everyday language (for anyone), and one with full astrological detail (for astrology readers). Both will be included in your JSON export.
               </p>
               <button
                 onClick={generateBoth}

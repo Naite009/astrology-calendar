@@ -62,15 +62,15 @@ const MOON_KEYWORD: Record<string, string> = {
 };
 
 const MOON_PHASE_PLAIN: Record<string, string> = {
-  'New Moon': 'A year of fresh starts — plant new seeds',
-  'Waxing Crescent': 'A building year — keep going',
-  'First Quarter': 'A year of action — push through',
-  'Waxing Gibbous': 'A year of refinement — almost there',
-  'Full Moon': 'A completion year — things come full circle',
-  'Waning Gibbous': 'A year of sharing — give what you\'ve learned',
-  'Last Quarter': 'A year of release — let go gracefully',
-  'Balsamic': 'A quiet year — rest before the next chapter',
-  'Balsamic Moon': 'A quiet year — rest before the next chapter',
+  'New Moon': 'A year of fresh starts: plant new seeds',
+  'Waxing Crescent': 'A building year: keep going',
+  'First Quarter': 'A year of action: push through',
+  'Waxing Gibbous': 'A year of refinement: almost there',
+  'Full Moon': 'A completion year: things come full circle',
+  'Waning Gibbous': 'A year of sharing: give what you\'ve learned',
+  'Last Quarter': 'A year of release: let go gracefully',
+  'Balsamic': 'A quiet year: rest before the next chapter',
+  'Balsamic Moon': 'A quiet year: rest before the next chapter',
 };
 
 const ELEMENT_WORD: Record<string, string> = {
@@ -91,24 +91,24 @@ const MOON_WORD: Record<string, string> = {
 
 const SUN_HOUSE_BODY: Record<number, string> = {
   1: 'This is a year where your sense of self takes center stage. You may feel a pull to reinvent, refresh, or simply show up more fully as who you are.',
-  2: 'This year draws your attention to what you value — your resources, your time, and your sense of security. Building something tangible matters now.',
+  2: 'This year draws your attention to what you value: your resources, your time, and your sense of security. Building something tangible matters now.',
   3: 'This is a year of words, ideas, and connections. You may feel drawn to learn something new, speak up more, or explore your neighborhood of thought.',
-  4: 'This year turns your attention inward — toward home, family, and what nourishes you at the deepest level. Creating a sense of belonging matters now.',
-  5: 'This is a year to follow what genuinely delights you. Joy, creativity, and self-expression are not luxuries — they are the point.',
+  4: 'This year turns your attention inward: toward home, family, and what nourishes you at the deepest level. Creating a sense of belonging matters now.',
+  5: 'This is a year to follow what genuinely delights you. Joy, creativity, and self-expression are not luxuries: they are the point.',
   6: 'This year asks you to refine your daily rhythm. Health, habits, and how you show up each day become the quiet foundation for everything else.',
-  7: 'This is a year defined by the people closest to you. Relationships — romantic, professional, or creative — take center stage.',
+  7: 'This is a year defined by the people closest to you. Relationships, romantic, professional, or creative, take center stage.',
   8: 'This year invites you to go deeper. Transformation, shared resources, and emotional honesty become the themes that shape your growth.',
-  9: 'This is a year to expand your world. Travel, education, philosophy, or simply a shift in perspective — the horizon calls.',
+  9: 'This is a year to expand your world. Travel, education, philosophy, or simply a shift in perspective: the horizon calls.',
   10: 'This year puts your work and purpose in the spotlight. What you are building in the world becomes visible, and recognition is possible.',
   11: 'This is a year shaped by community, friendship, and shared vision. The people around you help define what comes next.',
-  12: 'This year invites you to slow down, rest, and listen to what is happening beneath the surface. Healing and reflection are not delays — they are the work.',
+  12: 'This year invites you to slow down, rest, and listen to what is happening beneath the surface. Healing and reflection are not delays: they are the work.',
 };
 
 const MOON_SIGN_BODY: Record<string, string> = {
   Aries: 'Your emotional world this year is quick, direct, and action-oriented. You process feelings by moving through them rather than sitting with them.',
   Taurus: 'Your emotional world this year is calm and steady. You find comfort in routine, beauty, and the tangible pleasures of daily life.',
   Gemini: 'Your emotional world this year is lively and curious. You process feelings through conversation, writing, and making connections.',
-  Cancer: 'Your emotional world this year is tender and intuitive. You may feel more sensitive than usual — and that sensitivity is a gift.',
+  Cancer: 'Your emotional world this year is tender and intuitive. You may feel more sensitive than usual: and that sensitivity is a gift.',
   Leo: 'Your emotional world this year is warm and generous. You need to feel seen and appreciated, and your heart leads the way.',
   Virgo: 'Your emotional world this year is thoughtful and discerning. You process feelings through analysis, order, and quiet acts of service.',
   Libra: 'Your emotional world this year seeks harmony. You process feelings through relationships and may feel unsettled until balance is restored.',
@@ -116,19 +116,19 @@ const MOON_SIGN_BODY: Record<string, string> = {
   Sagittarius: 'Your emotional world this year is optimistic and restless. You process feelings by seeking meaning, movement, and broader perspective.',
   Capricorn: 'Your emotional world this year tends toward patience and practicality. You may find yourself less swayed by ups and downs, and more able to show up consistently.',
   Aquarius: 'Your emotional world this year is independent and clear-sighted. You process feelings at a slight distance, preferring logic and perspective over intensity.',
-  Pisces: 'Your emotional world this year is fluid and deeply empathic. You absorb the feelings of others easily — boundaries and rest matter more than usual.',
+  Pisces: 'Your emotional world this year is fluid and deeply empathic. You absorb the feelings of others easily: boundaries and rest matter more than usual.',
 };
 
 const RISING_BODY: Record<string, string> = {
-  Aries: 'You come across as someone ready to act — direct, energetic, and unafraid to lead. People respond to your courage and initiative this year.',
-  Taurus: 'You come across as grounded and dependable — someone others instinctively trust. This year rewards patience and a steady pace.',
+  Aries: 'You come across as someone ready to act: direct, energetic, and unafraid to lead. People respond to your courage and initiative this year.',
+  Taurus: 'You come across as grounded and dependable: someone others instinctively trust. This year rewards patience and a steady pace.',
   Gemini: 'You come across as bright, curious, and adaptable. People are drawn to your ideas and your ability to connect dots others miss.',
   Cancer: 'You come across as warm, intuitive, and emotionally intelligent. People feel safe around you, and that quality opens doors this year.',
   Leo: 'You come across as confident, warm, and naturally magnetic. This year invites you to step into the spotlight and let yourself be seen.',
   Virgo: 'You come across as competent, thoughtful, and precise. People notice your attention to detail, and this year rewards careful, purposeful action.',
   Libra: 'You come across as graceful, fair-minded, and diplomatic. This year, relationships shape your path more than personal ambition.',
-  Scorpio: 'You come across as intense, perceptive, and quietly powerful. This year invites transformation — shedding what is no longer true.',
-  Sagittarius: 'You come across as open, enthusiastic, and ready for adventure. This year rewards expansion — through travel, learning, or bold choices.',
+  Scorpio: 'You come across as intense, perceptive, and quietly powerful. This year invites transformation: shedding what is no longer true.',
+  Sagittarius: 'You come across as open, enthusiastic, and ready for adventure. This year rewards expansion: through travel, learning, or bold choices.',
   Capricorn: 'You come across as serious, capable, and quietly ambitious. People respect your authority, and this year rewards commitment and responsibility.',
   Aquarius: 'You come across as original, independent, and slightly unconventional. This year rewards innovation and trusting your own perspective.',
   Pisces: 'You come across as gentle, open-hearted, and deeply intuitive. People are drawn to your compassion, and this year opens doors through connection rather than force.',

@@ -21,11 +21,11 @@ const PLANET_ORDER = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','
 
 const SHIFT_FEEL: Record<string, Record<string, string>> = {
   Sun: {
-    same: 'Identity stays consistent — deepening what you already know.',
+    same: 'Identity stays consistent: deepening what you already know.',
     different: 'Your sense of self shifts. Who you are becoming looks different.',
   },
   Moon: {
-    same: 'Emotional responses feel familiar — instincts amplified.',
+    same: 'Emotional responses feel familiar: instincts amplified.',
     different: 'Emotional processing recalibrates. What soothes you shifts.',
   },
   Mercury: {
@@ -34,7 +34,7 @@ const SHIFT_FEEL: Record<string, Record<string, string>> = {
   },
   Venus: {
     same: 'What you love and value remains constant.',
-    different: 'What attracts you is changing — beauty, love, money, all shift.',
+    different: 'What attracts you is changing: beauty, love, money, all shift.',
   },
   Mars: {
     same: 'Your drive and fight stay on the same channel.',
@@ -49,15 +49,15 @@ const SHIFT_FEEL: Record<string, Record<string, string>> = {
     different: 'A different part of life demands discipline.',
   },
   Uranus: {
-    same: 'The disruption continues — you\'re learning to ride it.',
+    same: 'The disruption continues: you\'re learning to ride it.',
     different: 'A new area of life gets shaken loose.',
   },
   Neptune: {
-    same: 'The dream deepens — same dissolving and imagining.',
+    same: 'The dream deepens: same dissolving and imagining.',
     different: 'Different illusions, different inspirations.',
   },
   Pluto: {
-    same: 'Transformation works the same territory — go deeper.',
+    same: 'Transformation works the same territory: go deeper.',
     different: 'A different life area undergoes profound renovation.',
   },
   Chiron: {
@@ -105,7 +105,7 @@ export function generateNatalVsSRCards(
 
   doc.setFont('times', 'italic'); doc.setFontSize(10);
   doc.setTextColor(...MUTED);
-  doc.text('Where each planet was — and where it is now', margin, ctx.y);
+  doc.text('Where each planet was: and where it is now', margin, ctx.y);
   ctx.y += 8;
 
   // 3-column x 4-row grid

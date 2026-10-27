@@ -47,10 +47,10 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
         <div className="space-y-3">
           <div className="text-xs font-medium text-foreground mb-1">What's Included</div>
           <BulletList items={[
-            'SR Ascendant — your year\'s opening tone',
-            'SR Sun house — where life energy goes',
-            'SR Moon sign — emotional weather all year',
-            'Profection year — which life area is activated',
+            'SR Ascendant: your year\'s opening tone',
+            'SR Sun house: where life energy goes',
+            'SR Moon sign: emotional weather all year',
+            'Profection year: which life area is activated',
             'One dominant theme card (plain language)',
             '3 power words for the year',
           ]} />
@@ -71,12 +71,12 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
           <div className="text-xs font-medium text-foreground mb-1">Everything in Tier 1, plus</div>
           <BulletList items={[
             'Big Three activation (Sun, Moon, Rising in SR context)',
-            'SR Moon deep dive — phase, angularity, VOC',
+            'SR Moon deep dive: phase, angularity, VOC',
             'Profection + Time Lord explained in plain language',
             'SR vs Natal comparison table',
             'Top 3 SR-to-natal aspects (How it feels / What it means)',
             'Element + modality balance snapshot',
-            'Saturn focus — where discipline is called',
+            'Saturn focus: where discipline is called',
             'North Node growth direction',
             'Monthly overview (12-month grid)',
           ]} />
@@ -85,7 +85,7 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
           ]} />
           <Badge label="AI summary narrative" color="amber" />
           <div className="text-[11px] text-muted-foreground italic mt-1">
-            Clean, complete — not overwhelming
+            Clean, complete: not overwhelming
           </div>
         </div>
       );
@@ -95,11 +95,11 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
         <div className="space-y-3">
           <div className="text-xs font-medium text-foreground mb-1">Everything in Tier 2, plus</div>
           <BulletList items={[
-            'Stelliums — power zone analysis',
+            'Stelliums: power zone analysis',
             'All SR-to-natal aspects (full set)',
             'Planet-by-planet spotlight (Mercury–Pluto)',
             'Hemispheric emphasis + angular planets',
-            'Vertex — significant-feeling encounters',
+            'Vertex: significant-feeling encounters',
             'Moon sign shift narrative',
             'Metonic cycle echoes',
             'Natal chart ruler full breakdown',
@@ -121,14 +121,14 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
         <div className="space-y-3">
           <div className="text-xs font-medium text-foreground mb-1">Everything in Tier 3, plus</div>
           <BulletList items={[
-            'Planet dignity full report — domicile, exaltation, detriment, fall',
+            'Planet dignity full report: domicile, exaltation, detriment, fall',
             'Mutual receptions in SR chart',
             'SR ruler technique (Asc ruler\'s natal house = where year plays out)',
-            'Degree conduits — SR planets landing on natal degree positions',
+            'Degree conduits: SR planets landing on natal degree positions',
             'SR internal aspects (aspects within SR chart only)',
-            'Health astrology overlay — natal vulnerability + SR pressure points',
-            'Eclipse sensitivity check — SR planets near eclipse degrees',
-            'Retrograde analysis — all Rx planets + shadow periods',
+            'Health astrology overlay: natal vulnerability + SR pressure points',
+            'Eclipse sensitivity check: SR planets near eclipse degrees',
+            'Retrograde analysis: all Rx planets + shadow periods',
             'Repeated themes synthesis card (cross-technique patterns)',
             'Quarterly focus breakdown (not just monthly)',
           ]} />
@@ -144,17 +144,17 @@ export const TierPreviewContent = ({ tier, analysis }: Props) => {
         <div className="space-y-3">
           <div className="text-xs font-medium text-foreground mb-1">Everything in Tier 4, plus</div>
           <BulletList items={[
-            'Saros cycle context — eclipse family history for natal eclipse',
+            'Saros cycle context: eclipse family history for natal eclipse',
             'Fixed star conjunctions in SR chart (Algol, Spica, Regulus, etc.)',
-            'Arabic Parts / Lots — Part of Fortune, Spirit, Eros, Necessity in SR',
-            'Firdaria (Persian time-lord system) — main + sub-lord for the year',
+            'Arabic Parts / Lots: Part of Fortune, Spirit, Eros, Necessity in SR',
+            'Firdaria (Persian time-lord system): main + sub-lord for the year',
             'SR relocated vs natal location comparison (if different)',
             'Antiscia + contra-antiscia (mirror degree contacts)',
             'Solar arc directions in force during SR year',
             'Relationship + money year synthesis (Venus + 7H + 2H focus)',
             'Career + purpose synthesis (10H + MC + SR ruler of 10H)',
             'Spiritual + soul growth synthesis (12H + Neptune + nodes)',
-            'A "what a master sees" summary — patterns across all techniques',
+            'A "what a master sees" summary: patterns across all techniques',
           ]} />
           <FormatBlock lines={[
             '40–50 page PDF',

@@ -69,7 +69,7 @@ const ordinal = (n: number): string => {
 
 function getSynthesis(landsHouse: number, playsOutHouse: number): string {
   if (landsHouse === playsOutHouse) {
-    return `Both techniques point to the same house — an unusually focused year. The life area of your ${ordinal(landsHouse)} house receives both the most planetary traffic AND the underlying motivational engine. This is a year where volume and direction are aligned.`;
+    return `Both techniques point to the same house: an unusually focused year. The life area of your ${ordinal(landsHouse)} house receives both the most planetary traffic AND the underlying motivational engine. This is a year where volume and direction are aligned.`;
   }
   const landsLabel = HOUSE_MEANINGS[landsHouse]?.split(',')[0]?.toLowerCase() || '';
   const playsLabel = HOUSE_MEANINGS[playsOutHouse]?.split(',')[0]?.toLowerCase() || '';
@@ -132,7 +132,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
           Year Focus: Where It Lands vs. Where It Plays Out
         </h3>
         <p className="text-[10px] text-muted-foreground mt-0.5">
-          Two different techniques, two different answers — both true simultaneously
+          Two different techniques, two different answers: both true simultaneously
         </p>
       </div>
 
@@ -143,7 +143,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
           How This Works
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that means identity-related events — how you look, how you feel about yourself, new beginnings — will dominate your year. The more planets that cluster in one house, the louder that life area gets.
+          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that means identity-related events, how you look, how you feel about yourself, new beginnings, will dominate your year. The more planets that cluster in one house, the louder that life area gets.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                     <span className="italic">"What area of life gets the most activity this year?"</span>
                   </p>
                   <p className="text-xs text-foreground leading-relaxed">
-                    Your {ordinal(landsHouse)} house — {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} birthday-chart planets landing here, this is the area of life where you'll notice the most action. Concretely, expect more {getConcreteExamples(landsHouse)} than in a typical year.
+                    Your {ordinal(landsHouse)} house: {HOUSE_MEANINGS[landsHouse]?.toLowerCase()}. With {landsCount} birthday-chart planets landing here, this is the area of life where you'll notice the most action. Concretely, expect more {getConcreteExamples(landsHouse)} than in a typical year.
                   </p>
                 </div>
               </>
@@ -262,7 +262,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                         <span className="text-base leading-none">{PLANET_SYMBOLS[playsOut.rulerPlanet] || ''}</span>
                         <span className="text-foreground font-medium">{playsOut.rulerPlanet}</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Every sign has a "boss" planet — this one steers your year</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Every sign has a "boss" planet: this one steers your year</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2 text-[11px]">
@@ -285,7 +285,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
                     <span className="italic">"What's the hidden motivation behind everything this year?"</span>
                   </p>
                   <p className="text-xs text-foreground leading-relaxed">
-                    Even when you're busy with other things, you'll keep circling back to {HOUSE_MEANINGS[playsOutHouse]?.toLowerCase() || 'this area'}. That's because your year's "steering wheel" ({playsOut.rulerPlanet}) lives in your birth chart's {ordinal(playsOutHouse)} house. It's the quiet "why" behind your decisions — the thing that actually matters to you underneath the surface.
+                    Even when you're busy with other things, you'll keep circling back to {HOUSE_MEANINGS[playsOutHouse]?.toLowerCase() || 'this area'}. That's because your year's "steering wheel" ({playsOut.rulerPlanet}) lives in your birth chart's {ordinal(playsOutHouse)} house. It's the quiet "why" behind your decisions: the thing that actually matters to you underneath the surface.
                   </p>
                 </div>
               </>

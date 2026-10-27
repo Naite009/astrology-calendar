@@ -77,7 +77,7 @@ export function PlanetToAngleCard({ natalChart, srChart }: Props) {
     <div className="border border-primary/20 rounded-sm p-5 bg-card">
       <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-1 flex items-center gap-2">
         <Eye size={16} className="text-primary" />
-        Visible Activations — SR Planets on Natal Angles
+        Visible Activations: SR Planets on Natal Angles
       </h3>
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
         SR Planets → Natal ASC / DSC / MC / IC (planet-specific orbs)
@@ -151,7 +151,7 @@ export function usePlanetToAngleActivations(natalChart: NatalChart, srChart: Sol
             const rule = ASPECT_RULES[asp.name];
 
             const narrative = asp.name === 'conjunct'
-              ? `SR ${displayPlanet} (${meaning}) lands directly on your natal ${angleInfo.label} — themes of ${meaning} become highly visible and concrete through ${angleInfo.domain}. This is one of the most predictive contacts in a Solar Return.`
+              ? `SR ${displayPlanet} (${meaning}) lands directly on your natal ${angleInfo.label}: themes of ${meaning} become highly visible and concrete through ${angleInfo.domain}. This is one of the most predictive contacts in a Solar Return.`
               : `SR ${displayPlanet} ${rule} your natal ${angleInfo.label}. Themes of ${meaning} become active through ${angleInfo.domain}.`;
 
             acts.push({

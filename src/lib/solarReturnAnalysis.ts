@@ -149,18 +149,18 @@ const getDignity = (planet: string, sign: string): string => {
 
 // ─── Lord of Year house interpretations (Step 2) ────────────────────
 const lordHouseInterps: Record<number, string> = {
-  1: "Your life direction is pointing straight at you this year. How you look, how you carry yourself, and how you introduce yourself to new people — that's the work. In daily life: updating your style, starting a fitness routine, getting comfortable saying 'this is who I am' without apologizing.",
+  1: "Your life direction is pointing straight at you this year. How you look, how you carry yourself, and how you introduce yourself to new people: that's the work. In daily life: updating your style, starting a fitness routine, getting comfortable saying 'this is who I am' without apologizing.",
   2: "Your life direction is pointing at your wallet and your self-worth this year. How you earn, what you spend on, and how you value your own time are the central questions. In daily life: negotiating a raise, starting a savings plan, or finally dealing with that money situation you've been avoiding.",
   3: "Your life direction is pointing at how you communicate, learn, and connect locally. Your voice matters more than usual this year. In daily life: writing projects, important conversations, a class or workshop, more time with siblings or neighbors, short trips that turn out to be significant.",
-  4: "Your life direction turns inward — toward home, family, and your emotional foundation. In daily life: moving, renovating, a parent needing attention, making your living space feel right, or dealing with old family patterns that need resolution.",
+  4: "Your life direction turns inward: toward home, family, and your emotional foundation. In daily life: moving, renovating, a parent needing attention, making your living space feel right, or dealing with old family patterns that need resolution.",
   5: "Your life direction points toward joy, creativity, and what makes your heart race. In daily life: a creative project that matters to you, a romance that feels important, more time playing and less time grinding. If you have kids, they're a central part of the story.",
   6: "Your life direction is focused on daily routines, health, and the quality of your work. In daily life: changing your diet, starting a new exercise routine, reorganizing how you work, or getting serious about a health concern. The small daily choices are the big story.",
   7: "Your life direction lives in your closest relationships this year. In daily life: a partner (romantic or business) becomes the main character in your story. Negotiations, compromises, and learning how to truly share space with someone else.",
-  8: "Your life direction points to the deep end — shared money, emotional intimacy, and things you don't talk about at dinner. In daily life: dealing with debt, insurance, inheritance, or tax issues. Emotionally, you're going beneath the surface in your closest relationships.",
-  9: "Your life direction points outward and upward — travel, education, and rethinking what you believe. In daily life: a meaningful trip, going back to school, exploring a philosophy or practice that reshapes how you see the world.",
-  10: "Your life direction is the most visible it can be — career, reputation, and what you're building in the world. In daily life: job changes, promotions, public recognition, or taking on a role that defines you for years to come.",
+  8: "Your life direction points to the deep end: shared money, emotional intimacy, and things you don't talk about at dinner. In daily life: dealing with debt, insurance, inheritance, or tax issues. Emotionally, you're going beneath the surface in your closest relationships.",
+  9: "Your life direction points outward and upward: travel, education, and rethinking what you believe. In daily life: a meaningful trip, going back to school, exploring a philosophy or practice that reshapes how you see the world.",
+  10: "Your life direction is the most visible it can be: career, reputation, and what you're building in the world. In daily life: job changes, promotions, public recognition, or taking on a role that defines you for years to come.",
   11: "Your life direction is aimed at your community, friendships, and future goals. In daily life: joining a group, deepening friendships that matter, letting go of social connections that don't fit anymore, or getting clear about what you actually want for the future.",
-  12: "Your life direction has gone behind the scenes. This isn't a year for loud moves — it's a year for rest, reflection, and processing. In daily life: more time alone, therapy or journaling, dealing with something from the past, or supporting someone without recognition.",
+  12: "Your life direction has gone behind the scenes. This isn't a year for loud moves: it's a year for rest, reflection, and processing. In daily life: more time alone, therapy or journaling, dealing with something from the past, or supporting someone without recognition.",
 };
 
 // ─── Profection house themes (used for synthesis with Time Lord) ──────
@@ -237,7 +237,7 @@ function buildProfectionSynthesis(
     const dignityNote = DIGNITY_FORCE_NOTE[dignity] || '';
     const srArea = PROFECTION_SR_HOUSE_AREA[timeLordSRHouse] || `your ${ordinalNumber(timeLordSRHouse)} house`;
     const retroClause = isRetrograde
-      ? ' Retrograde, that path turns inward first — review and integration before outward action.'
+      ? ' Retrograde, that path turns inward first: review and integration before outward action.'
       : '';
     placementClause = ` This means the path toward ${houseThemes} this year runs through ${srArea}${dignityNote ? ` (${timeLord} is ${dignityNote})` : ''}.${retroClause}`;
   }
@@ -638,18 +638,18 @@ const internalAspectMeaning = (p1: string, p2: string, type: string): string => 
 // ─── Stellium interpretation helpers ────────────────────────────────
 
 const signStelliumMeanings: Record<string, string> = {
-  Aries: 'An Aries stellium makes this a year of fierce independence, initiative, and courage. You are the pioneer — impatient with delay, ready to fight for what matters. The danger is burnout from constant forward motion. Channel this fire into ONE major initiative rather than scattering it.',
-  Taurus: 'A Taurus stellium grounds the year in material reality — money, comfort, beauty, and physical pleasure are central. You are building something lasting and tangible. Stubbornness is both your strength and your trap. Slow, steady effort produces permanent results.',
-  Gemini: 'A Gemini stellium creates a year of mental hyperactivity — ideas, conversations, writing, and learning are everywhere. You are collecting information, making connections, and communicating constantly. The risk is superficiality; the gift is versatility and adaptability.',
+  Aries: 'An Aries stellium makes this a year of fierce independence, initiative, and courage. You are the pioneer: impatient with delay, ready to fight for what matters. The danger is burnout from constant forward motion. Channel this fire into ONE major initiative rather than scattering it.',
+  Taurus: 'A Taurus stellium grounds the year in material reality: money, comfort, beauty, and physical pleasure are central. You are building something lasting and tangible. Stubbornness is both your strength and your trap. Slow, steady effort produces permanent results.',
+  Gemini: 'A Gemini stellium creates a year of mental hyperactivity: ideas, conversations, writing, and learning are everywhere. You are collecting information, making connections, and communicating constantly. The risk is superficiality; the gift is versatility and adaptability.',
   Cancer: 'A Cancer stellium makes this a deeply emotional, family-centered year. Home, mother figures, nurturing, and emotional security are the dominant themes. You feel everything more intensely. Creating a safe emotional harbor is both the work and the reward.',
   Leo: 'A Leo stellium infuses the year with creative fire, self-expression, and a desire for recognition. You want to shine, create, love, and be seen. Generosity flows naturally but so does ego. The year asks: can you radiate without needing applause?',
-  Virgo: 'A Virgo stellium creates a year focused on improvement, analysis, health, and service. You are fixing, organizing, and refining every area of your life. Perfectionism is the shadow — "good enough" is the lesson. Your body\'s needs demand attention.',
+  Virgo: 'A Virgo stellium creates a year focused on improvement, analysis, health, and service. You are fixing, organizing, and refining every area of your life. Perfectionism is the shadow: "good enough" is the lesson. Your body\'s needs demand attention.',
   Libra: 'A Libra stellium makes relationships, beauty, justice, and harmony the year\'s central concerns. You are constantly weighing options, seeking balance, and navigating partnerships. The danger is indecision or people-pleasing. The gift is diplomacy, grace, and genuine collaboration.',
-  Scorpio: 'A Scorpio stellium brings a year of intensity, transformation, and depth. Surface-level living is impossible — you are drawn to hidden truths, power dynamics, and psychological excavation. Trust is earned slowly. What dies this year needed to die.',
-  Sagittarius: 'A Sagittarius stellium creates an expansive year of travel, philosophy, education, and truth-seeking. You want MORE — more experience, more understanding, more freedom. The risk is overextension or dogmatism. The gift is wisdom earned through direct experience.',
-  Capricorn: 'A Capricorn stellium makes this a year of ambition, structure, responsibility, and building for the long term. You are climbing — career, status, or personal mastery. The weight is real but so is the endurance. Discipline can be a real strength; rigidity is the trap.',
-  Aquarius: 'An Aquarius stellium brings a year of innovation, community, and unconventional thinking. You are questioning everything — systems, traditions, your own assumptions. The group matters more than the individual. Genius and eccentricity walk the same line.',
-  Pisces: 'A Pisces stellium creates a year of spiritual depth, artistic inspiration, and emotional sensitivity. Boundaries dissolve — between you and others, between reality and imagination. The gift is compassion and creativity; the danger is escapism and confusion.',
+  Scorpio: 'A Scorpio stellium brings a year of intensity, transformation, and depth. Surface-level living is impossible: you are drawn to hidden truths, power dynamics, and psychological excavation. Trust is earned slowly. What dies this year needed to die.',
+  Sagittarius: 'A Sagittarius stellium creates an expansive year of travel, philosophy, education, and truth-seeking. You want MORE: more experience, more understanding, more freedom. The risk is overextension or dogmatism. The gift is wisdom earned through direct experience.',
+  Capricorn: 'A Capricorn stellium makes this a year of ambition, structure, responsibility, and building for the long term. You are climbing: career, status, or personal mastery. The weight is real but so is the endurance. Discipline can be a real strength; rigidity is the trap.',
+  Aquarius: 'An Aquarius stellium brings a year of innovation, community, and unconventional thinking. You are questioning everything: systems, traditions, your own assumptions. The group matters more than the individual. Genius and eccentricity walk the same line.',
+  Pisces: 'A Pisces stellium creates a year of spiritual depth, artistic inspiration, and emotional sensitivity. Boundaries dissolve: between you and others, between reality and imagination. The gift is compassion and creativity; the danger is escapism and confusion.',
 };
 
 const planetKeywords: Record<string, { energy: string; domain: string }> = {
@@ -678,43 +678,43 @@ const getStelliumBlendMeaning = (planets: string[]): string => {
   const parts: string[] = [];
 
   if (has('Sun') && has('Moon')) {
-    parts.push('Sun-Moon together means your conscious identity and emotional instincts are ALIGNED — there is no internal conflict between what you want and what you need. This creates powerful focus but can also create blind spots (no one is challenging your assumptions from within).');
+    parts.push('Sun-Moon together means your conscious identity and emotional instincts are ALIGNED: there is no internal conflict between what you want and what you need. This creates powerful focus but can also create blind spots (no one is challenging your assumptions from within).');
   }
   if (has('Sun') && has('Venus')) {
     parts.push('Sun-Venus together draws love, beauty, and social pleasure toward your core identity. You attract others naturally this year. Creativity, romance, and aesthetic refinement are inseparable from who you are.');
   }
   if (has('Sun') && has('Mars')) {
-    parts.push('Sun-Mars together creates forceful, assertive energy — you are driven to ACT on your identity. This is a year of courage, competition, and potentially conflict. You cannot stay passive; your life force demands direct expression.');
+    parts.push('Sun-Mars together creates forceful, assertive energy: you are driven to ACT on your identity. This is a year of courage, competition, and potentially conflict. You cannot stay passive; your life force demands direct expression.');
   }
   if (has('Moon') && has('Venus')) {
-    parts.push('Moon-Venus together creates emotional warmth, a need for beauty and comfort, and deepened relationships. Your feelings and your values are in sync — what feels good IS good for you this year. Nurturing through beauty and love.');
+    parts.push('Moon-Venus together creates emotional warmth, a need for beauty and comfort, and deepened relationships. Your feelings and your values are in sync: what feels good IS good for you this year. Nurturing through beauty and love.');
   }
   if (has('Moon') && has('Mars')) {
     parts.push('Moon-Mars together creates emotional volatility and passionate instincts. You react first, think later. Anger and emotional needs are tangled together. Physical activity channels this intensity productively.');
   }
   if (has('Venus') && has('Mars')) {
-    parts.push('Venus-Mars together is the classic attraction combination — passion, desire, and creative/sexual energy are heightened. Relationships are charged. You pursue what you want with both charm and force.');
+    parts.push('Venus-Mars together is the classic attraction combination: passion, desire, and creative/sexual energy are heightened. Relationships are charged. You pursue what you want with both charm and force.');
   }
   if (has('Sun') && has('Pluto')) {
-    parts.push('Sun-Pluto together brings transformation to your very identity. This is not a gentle year — you are being remade at a fundamental level. Power dynamics, psychological depth, and letting go of who you used to be are central.');
+    parts.push('Sun-Pluto together brings transformation to your very identity. This is not a gentle year: you are being remade at a fundamental level. Power dynamics, psychological depth, and letting go of who you used to be are central.');
   }
   if (has('Mars') && has('Pluto')) {
-    parts.push('Mars-Pluto together is the most intense drive combination — willpower is extreme, ambition is relentless, and the potential for power struggles is high. Channel this into purposeful transformation, not control.');
+    parts.push('Mars-Pluto together is the most intense drive combination: willpower is extreme, ambition is relentless, and the potential for power struggles is high. Channel this into purposeful transformation, not control.');
   }
   if (has('Jupiter') && has('Saturn')) {
-    parts.push('Jupiter-Saturn together balances expansion with discipline — growth is structured and sustainable rather than reckless. You are building something that lasts. Ambition meets realism.');
+    parts.push('Jupiter-Saturn together balances expansion with discipline: growth is structured and sustainable rather than reckless. You are building something that lasts. Ambition meets realism.');
   }
   if (has('Saturn') && has('Pluto')) {
-    parts.push('Saturn-Pluto together brings heavy restructuring — old systems break down to be rebuilt stronger. This can feel crushing but produces lasting transformation. Endurance through difficulty.');
+    parts.push('Saturn-Pluto together brings heavy restructuring: old systems break down to be rebuilt stronger. This can feel crushing but produces lasting transformation. Endurance through difficulty.');
   }
   if (has('Mercury') && has('Venus')) {
-    parts.push('Mercury-Venus together brings charm to communication — your words are diplomatic, artistic, and socially effective. Writing, speaking, and negotiating are enhanced by grace and aesthetic sense.');
+    parts.push('Mercury-Venus together brings charm to communication: your words are diplomatic, artistic, and socially effective. Writing, speaking, and negotiating are enhanced by grace and aesthetic sense.');
   }
 
   if (parts.length === 0) {
     // Generic blend based on planet energies
     const energies = sorted.map(p => planetKeywords[p]?.energy || p).join(', ');
-    return `This combination brings together ${energies}. When these forces share the same sign, they amplify each other — the year\'s dominant themes carry the combined weight of all these planetary functions operating in concert.`;
+    return `This combination brings together ${energies}. When these forces share the same sign, they amplify each other: the year\'s dominant themes carry the combined weight of all these planetary functions operating in concert.`;
   }
 
   return parts.join('\n\n');
@@ -723,10 +723,10 @@ const getStelliumBlendMeaning = (planets: string[]): string => {
 const generateStelliumInterpretation = (location: string, planets: string[], type: 'sign' | 'house', houseNum?: number): string => {
   const planetList = planets.join(', ');
   if (type === 'sign') {
-    return `A true stellium of ${planets.length} planets (${planetList}) concentrated in ${location}. This is not a casual emphasis — when three or more planets share a sign, that sign\'s energy becomes the dominant frequency of the entire year. Every area of life touched by these planets is filtered through ${location} qualities.`;
+    return `A true stellium of ${planets.length} planets (${planetList}) concentrated in ${location}. This is not a casual emphasis: when three or more planets share a sign, that sign\'s energy becomes the dominant frequency of the entire year. Every area of life touched by these planets is filtered through ${location} qualities.`;
   } else {
     const theme = houseNum ? (houseThemes[houseNum] || '') : '';
-    return `A stellium of ${planets.length} planets (${planetList}) in ${location}. This house becomes the primary arena of your year — ${theme.toLowerCase()}. With this much planetary energy concentrated here, events and inner development in this life area are unavoidable and transformative.`;
+    return `A stellium of ${planets.length} planets (${planetList}) in ${location}. This house becomes the primary arena of your year: ${theme.toLowerCase()}. With this much planetary energy concentrated here, events and inner development in this life area are unavoidable and transformative.`;
   }
 };
 
@@ -744,7 +744,7 @@ const PLANET_OVERLAY_DRIVE: Record<string, { what: string; shift: string }> = {
   Neptune: { what: 'your imagination, sensitivity, and tendency toward confusion', shift: 'where boundaries get foggy and intuition runs high' },
   Pluto: { what: 'your deepest drives, control issues, and capacity for transformation', shift: 'where deep change happens whether you choose it or not' },
   Chiron: { what: 'your old sore spots and where you help others heal', shift: 'where insecurity surfaces but also where you grow the most' },
-  NorthNode: { what: 'your growth direction — unfamiliar territory that stretches you', shift: 'the life area calling you forward this year' },
+  NorthNode: { what: 'your growth direction: unfamiliar territory that stretches you', shift: 'the life area calling you forward this year' },
   Juno: { what: 'your partnership needs and what you expect from commitment', shift: 'where loyalty and relationship dynamics play out' },
   Vesta: { what: 'your devotion and what you sacrifice for', shift: 'where you pour focused, dedicated energy' },
   Pallas: { what: 'your strategic intelligence and ability to see patterns', shift: 'where you apply creative problem-solving' },
@@ -818,7 +818,7 @@ export const analyzeSolarReturn = (
 
     const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
     const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${ordinalNumber(rulerHouse)} house affairs` : '';
-    const themeDesc = `${srAsc.sign} Rising this year means ${ruler} — the planet of ${rulerTheme.domain} — steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. This may show up as a recurring pull, with decisions and reactions often filtering through ${rulerSign} energy — ${getSignFeltSense(rulerSign)}.`;
+    const themeDesc = `${srAsc.sign} Rising this year means ${ruler}, the planet of ${rulerTheme.domain}, steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. This may show up as a recurring pull, with decisions and reactions often filtering through ${rulerSign} energy, ${getSignFeltSense(rulerSign)}.`;
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
@@ -847,22 +847,22 @@ export const analyzeSolarReturn = (
       const natalTheme = rulerNatalHouse ? (houseThemes[rulerNatalHouse] || '') : '';
 
       const srAscRulerNatalHouseInterps: Record<number, string> = {
-        1: `${ruler} rules your SR Ascendant and lands in your natal 1st house — this year's energy flows directly into your identity, appearance, and how you present yourself. You ARE the project. The way you carry yourself and the first impression you make are where the year's story lives.`,
-        2: `${ruler} rules your SR Ascendant and lands in your natal 2nd house — this year's energy flows into your money, possessions, and self-worth. How you earn, spend, and value yourself is where the year's themes play out. Building material security or reassessing what you truly value becomes central.`,
-        3: `${ruler} rules your SR Ascendant and lands in your natal 3rd house — this year's energy flows into communication, learning, writing, and your immediate environment. Siblings, neighbors, short trips, and how you process and share information become the stage for the year's main themes.`,
-        4: `${ruler} rules your SR Ascendant and lands in your natal 4th house — this year's energy flows into home, family, roots, and your private inner world. Your living situation, a parent, or your emotional foundation is where the year's story unfolds. Building from the inside out.`,
-        5: `${ruler} rules your SR Ascendant and lands in your natal 5th house — this year's energy flows into creativity, romance, children, and self-expression. Joy, play, and putting your honest stamp on the world is where the year's themes come alive. Follow what excites you.`,
-        6: `${ruler} rules your SR Ascendant and lands in your natal 6th house — this year's energy flows into daily routines, health, work habits, and service. How you show up every day — your body, your job, your rituals — is where the year's story plays out. Small, consistent improvements create big change.`,
-        7: `${ruler} rules your SR Ascendant and lands in your natal 7th house — this year's energy flows into partnerships, marriage, contracts, and one-on-one relationships. Another person — romantic, business, or even an adversary — is central to how the year's themes manifest.`,
-        8: `${ruler} rules your SR Ascendant and lands in your natal 8th house — this year's energy flows into transformation, shared resources, intimacy, and psychological depth. Joint finances, power dynamics, and letting go of what no longer serves you is where the year's story lives.`,
-        9: `${ruler} rules your SR Ascendant and lands in your natal 9th house — this year's energy flows into travel, higher education, philosophy, and expanding your worldview. A journey — physical or intellectual — is where the year's themes play out. Your beliefs are evolving.`,
-        10: `${ruler} rules your SR Ascendant and lands in your natal 10th house — this year's energy flows into career, public reputation, and your legacy. Professional ambition and how the world sees you is where the year's story unfolds. You are building something visible.`,
-        11: `${ruler} rules your SR Ascendant and lands in your natal 11th house — this year's energy flows into community, friendships, networks, and your vision for the future. Groups, social causes, and your hopes and dreams are where the year's themes manifest.`,
-        12: `${ruler} rules your SR Ascendant and lands in your natal 12th house — this year's energy flows into solitude, spirituality, hidden matters, and inner processing. What happens behind the scenes, in dreams, or in retreat is where the year's story lives. Rest is productive work.`,
+        1: `${ruler} rules your SR Ascendant and lands in your natal 1st house: this year's energy flows directly into your identity, appearance, and how you present yourself. You ARE the project. The way you carry yourself and the first impression you make are where the year's story lives.`,
+        2: `${ruler} rules your SR Ascendant and lands in your natal 2nd house: this year's energy flows into your money, possessions, and self-worth. How you earn, spend, and value yourself is where the year's themes play out. Building material security or reassessing what you truly value becomes central.`,
+        3: `${ruler} rules your SR Ascendant and lands in your natal 3rd house: this year's energy flows into communication, learning, writing, and your immediate environment. Siblings, neighbors, short trips, and how you process and share information become the stage for the year's main themes.`,
+        4: `${ruler} rules your SR Ascendant and lands in your natal 4th house: this year's energy flows into home, family, roots, and your private inner world. Your living situation, a parent, or your emotional foundation is where the year's story unfolds. Building from the inside out.`,
+        5: `${ruler} rules your SR Ascendant and lands in your natal 5th house: this year's energy flows into creativity, romance, children, and self-expression. Joy, play, and putting your honest stamp on the world is where the year's themes come alive. Follow what excites you.`,
+        6: `${ruler} rules your SR Ascendant and lands in your natal 6th house, this year's energy flows into daily routines, health, work habits, and service. How you show up every day, your body, your job, your rituals, is where the year's story plays out. Small, consistent improvements create big change.`,
+        7: `${ruler} rules your SR Ascendant and lands in your natal 7th house, this year's energy flows into partnerships, marriage, contracts, and one-on-one relationships. Another person, romantic, business, or even an adversary, is central to how the year's themes manifest.`,
+        8: `${ruler} rules your SR Ascendant and lands in your natal 8th house: this year's energy flows into transformation, shared resources, intimacy, and psychological depth. Joint finances, power dynamics, and letting go of what no longer serves you is where the year's story lives.`,
+        9: `${ruler} rules your SR Ascendant and lands in your natal 9th house, this year's energy flows into travel, higher education, philosophy, and expanding your worldview. A journey, physical or intellectual, is where the year's themes play out. Your beliefs are evolving.`,
+        10: `${ruler} rules your SR Ascendant and lands in your natal 10th house: this year's energy flows into career, public reputation, and your legacy. Professional ambition and how the world sees you is where the year's story unfolds. You are building something visible.`,
+        11: `${ruler} rules your SR Ascendant and lands in your natal 11th house: this year's energy flows into community, friendships, networks, and your vision for the future. Groups, social causes, and your hopes and dreams are where the year's themes manifest.`,
+        12: `${ruler} rules your SR Ascendant and lands in your natal 12th house: this year's energy flows into solitude, spirituality, hidden matters, and inner processing. What happens behind the scenes, in dreams, or in retreat is where the year's story lives. Rest is productive work.`,
       };
 
       const interpretation = rulerNatalHouse
-        ? (srAscRulerNatalHouseInterps[rulerNatalHouse] || `${ruler} rules your SR Ascendant and falls in your natal ${ordinalNumber(rulerNatalHouse)} house — the year's themes play out through ${natalTheme.toLowerCase()}.`)
+        ? (srAscRulerNatalHouseInterps[rulerNatalHouse] || `${ruler} rules your SR Ascendant and falls in your natal ${ordinalNumber(rulerNatalHouse)} house: the year's themes play out through ${natalTheme.toLowerCase()}.`)
         : `${ruler} rules your SR Ascendant. Add house cusps to your natal chart to see which area of your life this year's energy flows into.`;
 
       srAscRulerInNatal = {
@@ -1040,7 +1040,7 @@ export const analyzeSolarReturn = (
   }
 
   // 8. Relocation tip
-  const relocationTip = `The Solar Return Ascendant changes based on WHERE you are at your exact solar return moment. By traveling to a different location on your birthday, you can shift which sign rises — and therefore which house your SR planets fall in. This is called "Solar Return relocation." Key strategy: Choose a location where benefic planets (Venus, Jupiter) fall on the SR Ascendant or MC for a more supportive year.`;
+  const relocationTip = `The Solar Return Ascendant changes based on WHERE you are at your exact solar return moment. By traveling to a different location on your birthday, you can shift which sign rises: and therefore which house your SR planets fall in. This is called "Solar Return relocation." Key strategy: Choose a location where benefic planets (Venus, Jupiter) fall on the SR Ascendant or MC for a more supportive year.`;
 
   // 9. Lord of the Year (Step 2)
   // Read natal ascendant sign — houseCusps.house1 is the DEFINITIVE source
@@ -1287,7 +1287,7 @@ export const analyzeSolarReturn = (
     firePlanets: elPlanets.fire, earthPlanets: elPlanets.earth, airPlanets: elPlanets.air, waterPlanets: elPlanets.water,
     dominant,
     missing,
-    interpretation: elementInterpretations[dominant] + (missing.length > 0 ? ` Missing ${missing.join(' and ')} energy — you may need to consciously cultivate ${missing.join('/')} qualities this year.` : ''),
+    interpretation: elementInterpretations[dominant] + (missing.length > 0 ? ` Missing ${missing.join(' and ')} energy: you may need to consciously cultivate ${missing.join('/')} qualities this year.` : ''),
   };
 
   // ─── 14. Modality Balance ─────────────────────────────────────────
@@ -1314,9 +1314,9 @@ export const analyzeSolarReturn = (
   const isOpeningMoon = openingPhases.some(p => currentPhase.toLowerCase().includes(p.toLowerCase()));
 
   const modalityDefaults: Record<string, string> = {
-    cardinal: 'This is an initiating year — new projects, fresh starts, and active leadership. You are motivated to begin things and take charge.',
+    cardinal: 'This is an initiating year: new projects, fresh starts, and active leadership. You are motivated to begin things and take charge.',
     fixed: 'This is a year of determination, persistence, and deepening. You are building on what exists, stabilizing, and refusing to budge on what matters.',
-    mutable: 'This is a year of flexibility, adaptation, and change. Multiple shifts are likely — your ability to adjust and flow is your greatest asset.',
+    mutable: 'This is a year of flexibility, adaptation, and change. Multiple shifts are likely: your ability to adjust and flow is your greatest asset.',
   };
 
   let modalityInterp = modalityDefaults[domMod];
@@ -1349,12 +1349,12 @@ export const analyzeSolarReturn = (
   }
   const retroInterpretations: Record<string, string> = {
     Mercury: 'Review and revise communication, contracts, and thought processes',
-    Venus: 'Reassess relationships, values, and self-worth — old loves may resurface',
-    Mars: 'Redirect energy inward — frustrations with progress require patience',
+    Venus: 'Reassess relationships, values, and self-worth: old loves may resurface',
+    Mars: 'Redirect energy inward: frustrations with progress require patience',
     Jupiter: 'Inner growth and philosophical re-evaluation rather than external expansion',
-    Saturn: 'Review structures, boundaries, and responsibilities — karmic reckoning',
+    Saturn: 'Review structures, boundaries, and responsibilities: karmic reckoning',
     Uranus: 'Internal rebellion and questioning of where you have been inauthentic',
-    Neptune: 'Spiritual deepening and dissolving of illusions — heightened intuition',
+    Neptune: 'Spiritual deepening and dissolving of illusions: heightened intuition',
     Pluto: 'Deep psychological transformation happening beneath the surface',
   };
   const retroDetails = retroPlanets.map(p => `${p}: ${retroInterpretations[p] || 'internalized themes'}`).join('. ');
@@ -1362,8 +1362,8 @@ export const analyzeSolarReturn = (
     planets: retroPlanets,
     count: retroPlanets.length,
     interpretation: retroPlanets.length === 0
-      ? 'No retrograde planets — direct, forward momentum characterizes the year. What you see is what you get.'
-      : `${retroPlanets.length} planet${retroPlanets.length > 1 ? 's' : ''} retrograde — ${retroDetails}. Retrograde planets indicate areas where internal reflection, revision, and re-evaluation are needed before external progress can be made.`,
+      ? 'No retrograde planets: direct, forward momentum characterizes the year. What you see is what you get.'
+      : `${retroPlanets.length} planet${retroPlanets.length > 1 ? 's' : ''} retrograde: ${retroDetails}. Retrograde planets indicate areas where internal reflection, revision, and re-evaluation are needed before external progress can be made.`,
   };
 
   // ─── 16. Repeated Natal Themes ────────────────────────────────────
@@ -1373,7 +1373,7 @@ export const analyzeSolarReturn = (
   if (srRisingSign && natalRisingSign && srRisingSign === natalRisingSign) {
     repeatedThemes.push({
       description: `SR Ascendant matches your natal Ascendant (${srRisingSign})`,
-      significance: 'This is a deeply personal year — you are more "yourself" than usual. Identity themes are reinforced. This year feels like a reset to your core self.',
+      significance: 'This is a deeply personal year: you are more "yourself" than usual. Identity themes are reinforced. This year feels like a reset to your core self.',
     });
   }
   // Check if SR Moon matches natal Moon
@@ -1381,7 +1381,7 @@ export const analyzeSolarReturn = (
   if (moonSign && natalMoonSign && moonSign === natalMoonSign) {
     repeatedThemes.push({
       description: `SR Moon matches your natal Moon (${moonSign})`,
-      significance: 'Your emotional baseline this year resonates with your core emotional nature. You feel emotionally "at home" — instincts are reliable and your needs are clearer.',
+      significance: 'Your emotional baseline this year resonates with your core emotional nature. You feel emotionally "at home": instincts are reliable and your needs are clearer.',
     });
   }
   // Check if SR Sun house = natal Sun house
@@ -1392,7 +1392,7 @@ export const analyzeSolarReturn = (
     if (natalSunHouse && sunHouse.house && natalSunHouse === sunHouse.house) {
       repeatedThemes.push({
         description: `SR Sun falls in the same house as your natal Sun (House ${natalSunHouse})`,
-        significance: 'Your vitality and purpose are reinforced — this house\'s themes are doubly activated, creating a "return to purpose" year.',
+        significance: 'Your vitality and purpose are reinforced: this house\'s themes are doubly activated, creating a "return to purpose" year.',
       });
     }
   }
@@ -1403,18 +1403,18 @@ export const analyzeSolarReturn = (
   // ─── 18. Saturn Focus ─────────────────────────────────────────────
   function getSaturnSignStyle(sign: string): string {
     const styles: Record<string, string> = {
-      Aries: 'frustrated impatience — you want to act fast but Saturn forces you to slow down and plan',
-      Taurus: 'stubborn persistence — the lessons are about money, comfort, and learning that security is earned',
-      Gemini: 'mental pressure — too many things to think about, contracts to review, or communication breakdowns that need patience',
-      Cancer: 'emotional weight — family obligations feel heavier, and you learn to set boundaries with people you love',
-      Leo: 'restricted self-expression — your confidence gets tested, and recognition has to be earned rather than given',
-      Virgo: 'perfectionist pressure — your standards are high and the work is relentless, but the skills you build are permanent',
-      Libra: 'relationship tests — partnerships require real honesty, and anything superficial in your relationships gets exposed',
-      Scorpio: 'confronting what you\'ve been avoiding — power dynamics, financial entanglements, or emotional patterns you can\'t keep ignoring',
-      Sagittarius: 'belief systems challenged — your assumptions about the world get reality-checked, and blind optimism doesn\'t hold up',
-      Capricorn: 'pure hard work — Saturn is at home here, which means the demands are heavy but the rewards are real and lasting',
-      Aquarius: 'social responsibility — group dynamics and future plans require serious commitment, not just good intentions',
-      Pisces: 'spiritual discipline — your intuition is strong but Saturn asks you to ground it in practice, not just feelings',
+      Aries: 'frustrated impatience: you want to act fast but Saturn forces you to slow down and plan',
+      Taurus: 'stubborn persistence: the lessons are about money, comfort, and learning that security is earned',
+      Gemini: 'mental pressure: too many things to think about, contracts to review, or communication breakdowns that need patience',
+      Cancer: 'emotional weight: family obligations feel heavier, and you learn to set boundaries with people you love',
+      Leo: 'restricted self-expression: your confidence gets tested, and recognition has to be earned rather than given',
+      Virgo: 'perfectionist pressure: your standards are high and the work is relentless, but the skills you build are permanent',
+      Libra: 'relationship tests: partnerships require real honesty, and anything superficial in your relationships gets exposed',
+      Scorpio: 'confronting what you\'ve been avoiding: power dynamics, financial entanglements, or emotional patterns you can\'t keep ignoring',
+      Sagittarius: 'belief systems challenged: your assumptions about the world get reality-checked, and blind optimism doesn\'t hold up',
+      Capricorn: 'pure hard work: Saturn is at home here, which means the demands are heavy but the rewards are real and lasting',
+      Aquarius: 'social responsibility: group dynamics and future plans require serious commitment, not just good intentions',
+      Pisces: 'spiritual discipline: your intuition is strong but Saturn asks you to ground it in practice, not just feelings',
     };
     return styles[sign] || 'structured discipline and patience';
   }
@@ -1427,17 +1427,17 @@ export const analyzeSolarReturn = (
     const satNatalHouse = satDeg !== null ? findNatalHouse(satDeg, natalChart) : null;
     const saturnHouseInterps: Record<number, string> = {
       1: 'This year asks for maturity in how you present yourself. You may feel more serious, take on a leadership role, or face challenges that reshape your identity. In daily life: being more intentional about how you show up, possibly changing your appearance or taking on responsibilities you didn\'t expect.',
-      2: 'Your finances and values are getting a reality check this year. Earnings may require harder work — but what you build financially is durable. In daily life: budgeting becomes essential, and you\'ll think hard about what\'s truly worth your money and time.',
+      2: 'Your finances and values are getting a reality check this year. Earnings may require harder work: but what you build financially is durable. In daily life: budgeting becomes essential, and you\'ll think hard about what\'s truly worth your money and time.',
       3: 'Communication and learning take center stage with a serious tone. In daily life: important documents, contracts, or difficult conversations that can\'t be avoided. You may start studying something that demands real effort.',
       4: 'Home and family responsibilities need your full attention this year. In daily life: repairs, a parent needing help, feeling the weight of family expectations, or making hard decisions about where you live.',
       5: 'Creative expression and romance become more serious. In daily life: creative projects require discipline rather than inspiration. Dating feels mature, not casual. If you have children, their needs ask more structure from you.',
-      6: 'Your health, work habits, and daily routines are getting your full attention. In daily life: committing to better habits — doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
+      6: 'Your health, work habits, and daily routines are getting your full attention. In daily life: committing to better habits: doctor visits, meal prep, earlier bedtimes. Work feels like a grind but steady effort builds real skills.',
       7: 'This year asks you to get real about partnerships. Solid relationships get stronger; anything built on sand gets rebuilt. In daily life: honest conversations with a partner about what\'s working. Couples may formalize or separate. You learn exactly where the boundaries are.',
-      8: 'Deep change and shared resources are in focus — facing fears, dealing with finances tied to others, or letting go of old baggage. In daily life: insurance claims, debt restructuring, or a period where you confront something you\'ve been avoiding about trust in close relationships.',
+      8: 'Deep change and shared resources are in focus: facing fears, dealing with finances tied to others, or letting go of old baggage. In daily life: insurance claims, debt restructuring, or a period where you confront something you\'ve been avoiding about trust in close relationships.',
       9: 'Your beliefs and big-picture vision are getting a reality check. In daily life: a learning commitment that demands real work, travel that\'s more purpose than vacation, or a period where your assumptions are tested by experience.',
-      10: 'Your career and public role are getting your full attention — professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or stepping into a role that comes with real accountability. What you build professionally this year lasts.',
+      10: 'Your career and public role are getting your full attention: professional responsibilities increase significantly. In daily life: heavier workload, performance reviews, or stepping into a role that comes with real accountability. What you build professionally this year lasts.',
       11: 'Your friendships and future vision need honest assessment. In daily life: you may drift away from connections that don\'t share your values, join a structured group, or realize some friendships require actual work to maintain.',
-      12: 'Inner work and quiet processing take priority — you need more alone time this year. In daily life: therapy, meditation practice, a need to withdraw and recharge, or caring for someone behind the scenes.',
+      12: 'Inner work and quiet processing take priority: you need more alone time this year. In daily life: therapy, meditation practice, a need to withdraw and recharge, or caring for someone behind the scenes.',
     };
 
     const SATURN_HOUSE_THEME: Record<number, string> = {
@@ -1450,7 +1450,7 @@ export const analyzeSolarReturn = (
 
     const isRetro = !!(saturnPos as any).isRetrograde;
     const retroNote = isRetro
-      ? ' This year, the lessons here are turned inward — instead of external pressure, the real work is psychological. You\'re re-examining old commitments and whether the structures you\'ve built still hold. Progress feels slow because the growth is internal, but what you resolve now prevents repeating the same patterns.'
+      ? ' This year, the lessons here are turned inward: instead of external pressure, the real work is psychological. You\'re re-examining old commitments and whether the structures you\'ve built still hold. Progress feels slow because the growth is internal, but what you resolve now prevents repeating the same patterns.'
       : '';
     saturnFocus = {
       sign: saturnPos.sign,
@@ -1507,12 +1507,12 @@ export const analyzeSolarReturn = (
     const nodeHouseInterps: Record<number, string> = {
       1: 'Growth comes through self-assertion and independence. Step into leadership and trust your own path this year.',
       2: 'Growth comes through building your own resources and self-worth. Financial independence and solid values are the lesson.',
-      3: 'Growth comes through communication, learning, and local connections. Speak up, write, teach — your voice matters this year.',
+      3: 'Growth comes through communication, learning, and local connections. Speak up, write, teach: your voice matters this year.',
       4: 'Growth comes through home, family, and emotional foundations. Creating a secure base is the soul work this year.',
       5: 'Growth comes through creative self-expression, joy, and following your heart. Take risks on what lights you up.',
-      6: 'Growth comes through service, health, and daily discipline. Show up for the mundane — mastery lives in the details.',
+      6: 'Growth comes through service, health, and daily discipline. Show up for the mundane: mastery lives in the details.',
       7: 'Growth comes through partnerships and learning to truly share your life. Collaboration and compromise are the teachers.',
-      8: 'Growth comes through intimacy, vulnerability, and shared transformation. Let others in — depth is required.',
+      8: 'Growth comes through intimacy, vulnerability, and shared transformation. Let others in: depth is required.',
       9: 'Growth comes through expanding your worldview, travel, and higher learning. Adventure and meaning-making are calling.',
       10: 'Growth comes through career achievement and public responsibility. Step into your authority and be visible.',
       11: 'Growth comes through community involvement and pursuing your ideals. Collective purpose matters more than individual glory.',
@@ -1540,9 +1540,9 @@ export const analyzeSolarReturn = (
     }
     // Natal vs SR shift
     if (nnNatalHouse && nnHouse && nnNatalHouse !== nnHouse) {
-      fullInterp += `Your natal North Node lives in House ${nnNatalHouse} (${houseThemes[nnNatalHouse] || ''}), but this year it activates House ${nnHouse} (${houseThemes[nnHouse] || ''}) — a shift in where your soul growth is focused. `;
+      fullInterp += `Your natal North Node lives in House ${nnNatalHouse} (${houseThemes[nnNatalHouse] || ''}), but this year it activates House ${nnHouse} (${houseThemes[nnHouse] || ''}): a shift in where your soul growth is focused. `;
     } else if (nnNatalHouse && nnHouse && nnNatalHouse === nnHouse) {
-      fullInterp += `Your North Node returns to its natal House ${nnNatalHouse} this year — a powerful reinforcement of your life-long growth direction. `;
+      fullInterp += `Your North Node returns to its natal House ${nnNatalHouse} this year: a powerful reinforcement of your life-long growth direction. `;
     }
     if (nnSrInNatalHouse && nnSrInNatalHouse !== nnHouse) {
       fullInterp += `The SR North Node degree falls in your natal House ${nnSrInNatalHouse} (${houseThemes[nnSrInNatalHouse] || ''}), connecting this year's growth to that natal life area.`;
@@ -1552,7 +1552,7 @@ export const analyzeSolarReturn = (
       sign: nnPos.sign,
       house: nnHouse,
       theme: nnHouse ? (NODE_HOUSE_THEME[nnHouse] || 'Growth Edge') : 'Growth Edge',
-      interpretation: fullInterp.trim() || 'Your growth edge this year points toward what feels unfamiliar but true — lean into the discomfort.',
+      interpretation: fullInterp.trim() || 'Your growth edge this year points toward what feels unfamiliar but true: lean into the discomfort.',
     };
   }
 
@@ -1605,96 +1605,96 @@ export const analyzeSolarReturn = (
       if (diff > 180) diff = 360 - diff;
       if (diff <= CONDUIT_ORB) {
         const CONDUIT_INTERPS: Record<string, Record<string, string>> = {
-          Sun: { Ascendant: 'Your identity and vitality land directly on your rising degree — this year you ARE your Sun sign in a way people can see. Expect a confidence boost and stronger sense of self.',
-            Moon: 'Your conscious will sits on your emotional core — head and heart align this year. Decisions feel clearer because what you want and what you need are the same thing.',
-            Mercury: 'Your purpose activates your communication style — you speak with authority this year and people listen. Writing, teaching, or important conversations carry real weight.',
-            Venus: 'Your identity lands on your love nature — this year, who you are and what you attract are inseparable. Personal magnetism is high.',
-            Mars: 'Your purpose fires up your drive — ambition and identity merge. You pursue goals with unusual clarity and force.',
-            Jupiter: 'Your core self activates your expansion point — confidence, opportunity, and growth feel natural and personally meaningful.',
-            Saturn: 'Your vitality meets your discipline point — maturity is not optional this year. You step into real responsibility willingly.',
-            NorthNode: 'Your purpose activates your growth direction — this is a year where doing what comes naturally IS the growth path.',
-            default: 'Your core identity reawakens the themes of your natal placement — expect those life areas to feel more vivid and personally important.' },
-          Moon: { Sun: 'Your emotional needs sit on your identity degree — everything this year filters through how you feel. Mood drives decisions more than logic.',
-            Ascendant: 'Your emotional self is visible on the surface — others sense your feelings immediately. Vulnerability becomes a strength.',
-            Mercury: 'Your feelings activate your communication — you speak from the heart this year, and emotional intelligence guides conversations.',
-            Venus: 'Your emotional needs merge with your love nature — what you feel and what you want in relationships are indistinguishable.',
-            Mars: 'Your emotions fuel your drive — passion runs high, but so does reactivity. Channel feelings into action rather than conflict.',
-            Saturn: 'Your emotional body meets your discipline point — feelings are contained but honest. Emotional maturity deepens.',
-            NorthNode: 'Your emotional instincts point toward growth — trust your gut feelings about the direction your life needs to take.',
-            default: 'Your emotional radar locks onto this natal point — expect heightened sensitivity around these life themes.' },
-          Mercury: { Sun: 'Your communication lands on your identity degree — this year your words define you. How you think and speak shapes how others perceive your core self.',
-            Moon: 'Your mind sits on your emotional core — overthinking feelings is likely, but so is emotional articulation. Journal, talk, process.',
-            Venus: 'Your communication activates your love nature — flirtation, love letters, important conversations about values and relationships.',
-            Mars: 'Your thinking activates your drive — sharp mind, quick decisions, possible arguments that actually clear the air.',
-            Jupiter: 'Your communication expands your growth — teaching, publishing, or a conversation that opens an entirely new worldview.',
-            Saturn: 'Your mind meets your discipline point — serious thinking, important paperwork, commitments put into writing.',
-            Ascendant: 'Your communication style is front and center — you come across as articulate, curious, and mentally sharp this year.',
-            default: 'Your thinking and communication reawaken this natal theme — expect mental activity and important conversations around these life areas.' },
-          Venus: { Mars: 'Venus lands on your Mars degree — desire and attraction merge. Relationships feel magnetic and decisive.',
-            Sun: 'Venus activates your identity — you feel more attractive, artistic, and socially magnetic. Self-worth and self-expression align.',
-            Moon: 'Venus touches your emotional core — comfort, beauty, and pleasure heal emotional needs. Nurturing through love and luxury.',
-            Mercury: 'Venus meets your communication — sweet words, diplomatic conversations, artistic writing or speaking.',
-            Jupiter: 'Venus expands on your growth point — love, money, and pleasure all feel abundant and generous.',
-            Saturn: 'Venus meets your discipline — love gets serious. Commitments, loyalty tests, and relationships that prove their worth.',
-            NorthNode: 'Venus activates your growth direction — love, beauty, or financial opportunity IS the growth path this year.',
-            Ascendant: 'Venus on your rising degree — you radiate charm and attractiveness. People are drawn to you without effort.',
-            default: 'Venus activates this natal point — expect more pleasure, beauty, and ease around these life themes.' },
-          Mars: { Venus: 'Mars lands on your Venus degree — passion and pursuit merge. You go after what you want in love and money with unusual directness.',
-            Sun: 'Mars fires up your identity — assertiveness, courage, and competitive drive define how you show up.',
-            Moon: 'Mars sits on your emotional core — feelings run hot. Anger and passion surface quickly but honestly.',
-            Mercury: 'Mars activates your communication — sharp tongue, decisive words, arguments that actually resolve things.',
-            Saturn: 'Mars meets your discipline point — controlled force, strategic action, the ability to endure and push through.',
-            Jupiter: 'Mars expands your ambition — bold moves, calculated risks, and the drive to go bigger than usual.',
-            Ascendant: 'Mars on your rising degree — you come across as bold, assertive, and physically energized. Others feel your presence.',
-            default: 'Mars reactivates this natal point — expect increased energy, drive, or conflict around these themes.' },
-          Jupiter: { Sun: 'Jupiter expands your identity — confidence is high, opportunities align with who you are, and generosity comes naturally.',
-            Moon: 'Jupiter lifts your emotional life — optimism, emotional generosity, and a feeling that things will work out.',
-            Venus: 'Jupiter blesses your love and finances — abundance in relationships and money. The risk is overindulgence.',
-            Saturn: 'Jupiter meets your discipline — structured growth, rewarded hard work, and expansion that actually lasts.',
-            Mars: 'Jupiter amplifies your drive — big ambitions, bold actions, and the confidence to take calculated risks.',
-            Mercury: 'Jupiter expands your mind — big ideas, important learning, and conversations that change your worldview.',
-            NorthNode: 'Jupiter activates your growth direction — this is a year of accelerated spiritual and personal development.',
-            default: 'Jupiter expands this natal point — growth, opportunity, and optimism flow into these life themes.' },
-          Saturn: { Sun: 'Saturn lands on your identity degree — a serious year of maturation. You feel older, more responsible, and less tolerant of anything that wastes your time.',
-            Moon: 'Saturn sits on your emotional core — feelings are heavy but honest. Emotional maturity comes through accepting what you cannot change.',
-            Venus: 'Saturn presses on your love and values — relationships face a reality check. What is real survives; what is not, ends.',
-            Mars: 'Saturn constrains your drive — frustration with pace, but also disciplined effort that builds something lasting.',
-            Jupiter: 'Saturn meets your expansion point — growth slows but solidifies. What you build now has real foundations.',
-            Mercury: 'Saturn weighs on your communication — words carry gravity, contracts matter, and careless speech has consequences.',
-            Ascendant: 'Saturn on your rising degree — you appear more serious, authoritative, and older. People take you seriously this year.',
-            NorthNode: 'Saturn activates your growth direction — the growth path requires hard work, discipline, and patience.',
-            default: 'Saturn reactivates this natal point — expect a test or restructuring around these themes.' },
-          Uranus: { Sun: 'Uranus electrifies your identity — expect sudden shifts in how you see yourself and how others see you. Liberation from old roles.',
-            Moon: 'Uranus disrupts your emotional patterns — feelings are unpredictable but liberating. Old emotional habits break.',
-            Venus: 'Uranus shakes your love life — sudden attractions, breakups, or a complete redefinition of what you value.',
-            Mars: 'Uranus charges your drive — impulsive action, breakthroughs through unconventional methods, rebellion against constraints.',
-            Saturn: 'Uranus meets your structure — the establishment gets disrupted. Rules you have followed for years suddenly feel obsolete.',
-            Ascendant: 'Uranus on your rising degree — you reinvent your image, appearance, or public persona in a sudden, dramatic way.',
-            default: 'Uranus electrifies this natal point — sudden changes, breakthroughs, or disruptions activate these themes.' },
-          Neptune: { Sun: 'Neptune dissolves your identity boundaries — you feel more permeable, empathic, and uncertain about who you are. Creativity soars but clarity drops.',
-            Moon: 'Neptune softens your emotional core — heightened intuition, vivid dreams, but also emotional confusion and boundary issues.',
-            Venus: 'Neptune romanticizes your love nature — idealization, soul mate fantasies, and the need to see partners clearly through the fog.',
-            Mars: 'Neptune undermines your drive — motivation feels diffuse, indirect action works better than force, and escapism tempts.',
-            Saturn: 'Neptune dissolves your structure — rules and discipline feel meaningless. Faith replaces certainty.',
-            Mercury: 'Neptune clouds your thinking — inspired creativity and intuitive insights, but also miscommunication and misunderstandings.',
-            Ascendant: 'Neptune on your rising degree — you appear ethereal, chameleon-like, and hard to pin down. Artistic expression flourishes.',
-            default: 'Neptune dissolves boundaries around this natal point — expect heightened intuition but also potential confusion.' },
-          Pluto: { Sun: 'Pluto transforms your identity — a fundamental shift in who you are. The old self dies so the new self can emerge.',
-            Moon: 'Pluto penetrates your emotional core — deep feelings surface, power dynamics in relationships become visible, catharsis.',
-            Venus: 'Pluto intensifies your love life — all-consuming attractions, financial power plays, and relationships that change you permanently.',
-            Mars: 'Pluto supercharges your drive — relentless willpower, but also power struggles and the temptation to control outcomes.',
-            Saturn: 'Pluto meets your structure — institutional power shifts, career upheavals, or dismantling systems that no longer serve.',
-            Mercury: 'Pluto deepens your thinking — research, investigation, and conversations that reveal hidden truths.',
-            Ascendant: 'Pluto on your rising degree — a year of dramatic personal transformation visible to everyone around you.',
-            NorthNode: 'Pluto activates your growth direction — evolution is not optional, and the transformation is permanent.',
-            default: 'Pluto intensifies this natal point — deep transformation and power shifts activate around these themes.' },
-          Chiron: { Ascendant: 'The healing-through-understanding sits on your rising degree — old insecurities surface publicly, but so does your ability to help others through similar pain.',
-            Moon: 'Chiron on your emotional core — old wounds resurface for healing. This is tender but ultimately freeing.',
-            Sun: 'Chiron on your identity degree — a year of healing your relationship with yourself. The wound becomes the gift.',
-            Venus: 'Chiron touches your love nature — old relationship wounds reopen for healing. Vulnerability in love becomes transformative.',
-            Saturn: 'Chiron meets your discipline — the wound around authority, achievement, or fatherhood asks to be acknowledged.',
-            NorthNode: 'Chiron activates your growth direction — healing IS the growth path. Your pain becomes your purpose.',
-            default: 'Chiron reactivates this natal point — expect old sensitivities to surface, creating opportunities for genuine healing.' },
+          Sun: { Ascendant: 'Your identity and vitality land directly on your rising degree: this year you ARE your Sun sign in a way people can see. Expect a confidence boost and stronger sense of self.',
+            Moon: 'Your conscious will sits on your emotional core: head and heart align this year. Decisions feel clearer because what you want and what you need are the same thing.',
+            Mercury: 'Your purpose activates your communication style: you speak with authority this year and people listen. Writing, teaching, or important conversations carry real weight.',
+            Venus: 'Your identity lands on your love nature: this year, who you are and what you attract are inseparable. Personal magnetism is high.',
+            Mars: 'Your purpose fires up your drive: ambition and identity merge. You pursue goals with unusual clarity and force.',
+            Jupiter: 'Your core self activates your expansion point: confidence, opportunity, and growth feel natural and personally meaningful.',
+            Saturn: 'Your vitality meets your discipline point: maturity is not optional this year. You step into real responsibility willingly.',
+            NorthNode: 'Your purpose activates your growth direction: this is a year where doing what comes naturally IS the growth path.',
+            default: 'Your core identity reawakens the themes of your natal placement: expect those life areas to feel more vivid and personally important.' },
+          Moon: { Sun: 'Your emotional needs sit on your identity degree: everything this year filters through how you feel. Mood drives decisions more than logic.',
+            Ascendant: 'Your emotional self is visible on the surface: others sense your feelings immediately. Vulnerability becomes a strength.',
+            Mercury: 'Your feelings activate your communication: you speak from the heart this year, and emotional intelligence guides conversations.',
+            Venus: 'Your emotional needs merge with your love nature: what you feel and what you want in relationships are indistinguishable.',
+            Mars: 'Your emotions fuel your drive: passion runs high, but so does reactivity. Channel feelings into action rather than conflict.',
+            Saturn: 'Your emotional body meets your discipline point: feelings are contained but honest. Emotional maturity deepens.',
+            NorthNode: 'Your emotional instincts point toward growth: trust your gut feelings about the direction your life needs to take.',
+            default: 'Your emotional radar locks onto this natal point: expect heightened sensitivity around these life themes.' },
+          Mercury: { Sun: 'Your communication lands on your identity degree: this year your words define you. How you think and speak shapes how others perceive your core self.',
+            Moon: 'Your mind sits on your emotional core: overthinking feelings is likely, but so is emotional articulation. Journal, talk, process.',
+            Venus: 'Your communication activates your love nature: flirtation, love letters, important conversations about values and relationships.',
+            Mars: 'Your thinking activates your drive: sharp mind, quick decisions, possible arguments that actually clear the air.',
+            Jupiter: 'Your communication expands your growth: teaching, publishing, or a conversation that opens an entirely new worldview.',
+            Saturn: 'Your mind meets your discipline point: serious thinking, important paperwork, commitments put into writing.',
+            Ascendant: 'Your communication style is front and center: you come across as articulate, curious, and mentally sharp this year.',
+            default: 'Your thinking and communication reawaken this natal theme: expect mental activity and important conversations around these life areas.' },
+          Venus: { Mars: 'Venus lands on your Mars degree: desire and attraction merge. Relationships feel magnetic and decisive.',
+            Sun: 'Venus activates your identity: you feel more attractive, artistic, and socially magnetic. Self-worth and self-expression align.',
+            Moon: 'Venus touches your emotional core: comfort, beauty, and pleasure heal emotional needs. Nurturing through love and luxury.',
+            Mercury: 'Venus meets your communication: sweet words, diplomatic conversations, artistic writing or speaking.',
+            Jupiter: 'Venus expands on your growth point: love, money, and pleasure all feel abundant and generous.',
+            Saturn: 'Venus meets your discipline: love gets serious. Commitments, loyalty tests, and relationships that prove their worth.',
+            NorthNode: 'Venus activates your growth direction: love, beauty, or financial opportunity IS the growth path this year.',
+            Ascendant: 'Venus on your rising degree: you radiate charm and attractiveness. People are drawn to you without effort.',
+            default: 'Venus activates this natal point: expect more pleasure, beauty, and ease around these life themes.' },
+          Mars: { Venus: 'Mars lands on your Venus degree: passion and pursuit merge. You go after what you want in love and money with unusual directness.',
+            Sun: 'Mars fires up your identity: assertiveness, courage, and competitive drive define how you show up.',
+            Moon: 'Mars sits on your emotional core: feelings run hot. Anger and passion surface quickly but honestly.',
+            Mercury: 'Mars activates your communication: sharp tongue, decisive words, arguments that actually resolve things.',
+            Saturn: 'Mars meets your discipline point: controlled force, strategic action, the ability to endure and push through.',
+            Jupiter: 'Mars expands your ambition: bold moves, calculated risks, and the drive to go bigger than usual.',
+            Ascendant: 'Mars on your rising degree: you come across as bold, assertive, and physically energized. Others feel your presence.',
+            default: 'Mars reactivates this natal point: expect increased energy, drive, or conflict around these themes.' },
+          Jupiter: { Sun: 'Jupiter expands your identity: confidence is high, opportunities align with who you are, and generosity comes naturally.',
+            Moon: 'Jupiter lifts your emotional life: optimism, emotional generosity, and a feeling that things will work out.',
+            Venus: 'Jupiter blesses your love and finances: abundance in relationships and money. The risk is overindulgence.',
+            Saturn: 'Jupiter meets your discipline: structured growth, rewarded hard work, and expansion that actually lasts.',
+            Mars: 'Jupiter amplifies your drive: big ambitions, bold actions, and the confidence to take calculated risks.',
+            Mercury: 'Jupiter expands your mind: big ideas, important learning, and conversations that change your worldview.',
+            NorthNode: 'Jupiter activates your growth direction: this is a year of accelerated spiritual and personal development.',
+            default: 'Jupiter expands this natal point: growth, opportunity, and optimism flow into these life themes.' },
+          Saturn: { Sun: 'Saturn lands on your identity degree: a serious year of maturation. You feel older, more responsible, and less tolerant of anything that wastes your time.',
+            Moon: 'Saturn sits on your emotional core: feelings are heavy but honest. Emotional maturity comes through accepting what you cannot change.',
+            Venus: 'Saturn presses on your love and values: relationships face a reality check. What is real survives; what is not, ends.',
+            Mars: 'Saturn constrains your drive: frustration with pace, but also disciplined effort that builds something lasting.',
+            Jupiter: 'Saturn meets your expansion point: growth slows but solidifies. What you build now has real foundations.',
+            Mercury: 'Saturn weighs on your communication: words carry gravity, contracts matter, and careless speech has consequences.',
+            Ascendant: 'Saturn on your rising degree: you appear more serious, authoritative, and older. People take you seriously this year.',
+            NorthNode: 'Saturn activates your growth direction: the growth path requires hard work, discipline, and patience.',
+            default: 'Saturn reactivates this natal point: expect a test or restructuring around these themes.' },
+          Uranus: { Sun: 'Uranus electrifies your identity: expect sudden shifts in how you see yourself and how others see you. Liberation from old roles.',
+            Moon: 'Uranus disrupts your emotional patterns: feelings are unpredictable but liberating. Old emotional habits break.',
+            Venus: 'Uranus shakes your love life: sudden attractions, breakups, or a complete redefinition of what you value.',
+            Mars: 'Uranus charges your drive: impulsive action, breakthroughs through unconventional methods, rebellion against constraints.',
+            Saturn: 'Uranus meets your structure: the establishment gets disrupted. Rules you have followed for years suddenly feel obsolete.',
+            Ascendant: 'Uranus on your rising degree: you reinvent your image, appearance, or public persona in a sudden, dramatic way.',
+            default: 'Uranus electrifies this natal point: sudden changes, breakthroughs, or disruptions activate these themes.' },
+          Neptune: { Sun: 'Neptune dissolves your identity boundaries: you feel more permeable, empathic, and uncertain about who you are. Creativity soars but clarity drops.',
+            Moon: 'Neptune softens your emotional core: heightened intuition, vivid dreams, but also emotional confusion and boundary issues.',
+            Venus: 'Neptune romanticizes your love nature: idealization, soul mate fantasies, and the need to see partners clearly through the fog.',
+            Mars: 'Neptune undermines your drive: motivation feels diffuse, indirect action works better than force, and escapism tempts.',
+            Saturn: 'Neptune dissolves your structure: rules and discipline feel meaningless. Faith replaces certainty.',
+            Mercury: 'Neptune clouds your thinking: inspired creativity and intuitive insights, but also miscommunication and misunderstandings.',
+            Ascendant: 'Neptune on your rising degree: you appear ethereal, chameleon-like, and hard to pin down. Artistic expression flourishes.',
+            default: 'Neptune dissolves boundaries around this natal point: expect heightened intuition but also potential confusion.' },
+          Pluto: { Sun: 'Pluto transforms your identity: a fundamental shift in who you are. The old self dies so the new self can emerge.',
+            Moon: 'Pluto penetrates your emotional core: deep feelings surface, power dynamics in relationships become visible, catharsis.',
+            Venus: 'Pluto intensifies your love life: all-consuming attractions, financial power plays, and relationships that change you permanently.',
+            Mars: 'Pluto supercharges your drive: relentless willpower, but also power struggles and the temptation to control outcomes.',
+            Saturn: 'Pluto meets your structure: institutional power shifts, career upheavals, or dismantling systems that no longer serve.',
+            Mercury: 'Pluto deepens your thinking: research, investigation, and conversations that reveal hidden truths.',
+            Ascendant: 'Pluto on your rising degree: a year of dramatic personal transformation visible to everyone around you.',
+            NorthNode: 'Pluto activates your growth direction: evolution is not optional, and the transformation is permanent.',
+            default: 'Pluto intensifies this natal point: deep transformation and power shifts activate around these themes.' },
+          Chiron: { Ascendant: 'The healing-through-understanding sits on your rising degree: old insecurities surface publicly, but so does your ability to help others through similar pain.',
+            Moon: 'Chiron on your emotional core: old wounds resurface for healing. This is tender but ultimately freeing.',
+            Sun: 'Chiron on your identity degree: a year of healing your relationship with yourself. The wound becomes the gift.',
+            Venus: 'Chiron touches your love nature: old relationship wounds reopen for healing. Vulnerability in love becomes transformative.',
+            Saturn: 'Chiron meets your discipline: the wound around authority, achievement, or fatherhood asks to be acknowledged.',
+            NorthNode: 'Chiron activates your growth direction: healing IS the growth path. Your pain becomes your purpose.',
+            default: 'Chiron reactivates this natal point: expect old sensitivities to surface, creating opportunities for genuine healing.' },
         };
         const interpMap = CONDUIT_INTERPS[srPlanet] || {};
         const specificInterp = interpMap[natPlanet] || interpMap['default'] || `SR ${srPlanet} sits on the degree of your natal ${natPlanet}, reawakening those birth chart themes through ${srPlanet}'s current expression.`;

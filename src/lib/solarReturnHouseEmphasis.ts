@@ -71,8 +71,8 @@ export function buildHouseEmphasis(analysis: SolarReturnAnalysis): HouseEmphasis
   }
 
   const summary = sorted.length > 0
-    ? `This is primarily a ${sorted.map(h => ordinal(h)).join(', ')} house year — focused on ${sorted.map(h => HOUSE_SHORT[h] || '').filter(Boolean).join(', ')}.`
-    : 'Activity is evenly distributed across the chart — no single life area dominates.';
+    ? `This is primarily a ${sorted.map(h => ordinal(h)).join(', ')} house year: focused on ${sorted.map(h => HOUSE_SHORT[h] || '').filter(Boolean).join(', ')}.`
+    : 'Activity is evenly distributed across the chart: no single life area dominates.';
 
   return { mostActiveHouses: sorted, themes, summary };
 }
