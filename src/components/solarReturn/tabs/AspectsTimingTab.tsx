@@ -79,7 +79,7 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
               {interp.whatToDo && <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
                 <p className="text-[10px] uppercase tracking-widest text-primary mb-0.5">What To Do</p>
                 <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
-              </div>}}
+              </div>}
             </div>
           );
         })}
@@ -107,7 +107,7 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
               {interp.whatToDo && <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
                 <p className="text-[10px] uppercase tracking-widest text-primary mb-0.5">What To Do</p>
                 <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
-              </div>}}
+              </div>}
             </div>
           );
         })}
