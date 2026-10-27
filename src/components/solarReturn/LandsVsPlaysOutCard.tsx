@@ -140,7 +140,7 @@ export function LandsVsPlaysOutCard({ analysis }: Props) {
           How This Works
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that area (how you introduce yourself and your plans) may get more of your attention this year. More planets in one house means more chart emphasis there, not a guaranteed event.
+          Every year on your birthday, the planets are in new positions. We take those birthday-chart positions and <strong className="text-foreground">lay them on top of your birth chart</strong> to see which areas of <em>your</em> life they light up. If 4 planets land in your birth chart's 1st house (identity), that area (how you introduce yourself and your plans) may get more of your attention this year. More planets in one house means more chart emphasis there; it does not predict a specific event.
         </p>
       </div>
 
