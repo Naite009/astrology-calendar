@@ -22,33 +22,33 @@ const ASPECT_DEFS = [
 ] as const;
 
 const PLANET_MEANINGS: Record<string, string> = {
-  Sun: 'identity, purpose, vitality',
-  Moon: 'emotions, home, daily life',
-  Mercury: 'communication, learning, contracts',
-  Venus: 'relationships, love, money, harmony',
-  Mars: 'action, drive, conflict, energy',
-  Jupiter: 'growth, expansion, opportunity',
-  Saturn: 'responsibility, discipline, tests',
-  Uranus: 'change, disruption, freedom',
-  Neptune: 'spirituality, imagination, dissolution',
-  Pluto: 'transformation, power, deep change',
-  NorthNode: 'life direction, karmic growth',
-  Chiron: 'healing, wounds, mentorship',
+  Sun: 'your main priorities',
+  Moon: 'what helps you feel settled',
+  Mercury: 'conversations and decisions',
+  Venus: 'the people and activities you enjoy',
+  Mars: 'where you take action and set limits',
+  Jupiter: 'plans you want to grow',
+  Saturn: 'commitments you can maintain',
+  Uranus: 'routines you may want to change',
+  Neptune: 'agreements worth checking',
+  Pluto: 'commitments you may reconsider',
+  NorthNode: 'a secondary direction point',
+  Chiron: 'a sensitive area you may handle with care',
 };
 
 const ANGLE_MEANINGS: Record<string, { label: string; domain: string }> = {
-  Ascendant: { label: 'Ascendant', domain: 'personal identity, body, how you approach life' },
-  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters with others' },
-  Midheaven: { label: 'Midheaven (MC)', domain: 'career, public reputation, calling, visibility' },
-  IC: { label: 'IC', domain: 'home, family, private life, emotional foundations' },
+  Ascendant: { label: 'Ascendant', domain: 'how you introduce yourself and your plans' },
+  Descendant: { label: 'Descendant', domain: 'close relationships and agreements' },
+  Midheaven: { label: 'Midheaven (MC)', domain: 'work and public responsibilities' },
+  IC: { label: 'IC', domain: 'home and private life' },
 };
 
 const ASPECT_RULES: Record<string, string> = {
-  conjunct: 'becomes directly fused with',
-  opposite: 'creates external tension and encounters around',
-  square: 'generates pressure and turning points involving',
-  trine: 'flows supportively into',
-  sextile: 'opens opportunities through',
+  conjunct: 'is conjunct',
+  opposite: 'is opposite',
+  square: 'is square',
+  trine: 'is trine',
+  sextile: 'is sextile',
 };
 
 export interface PlanetToAngleActivation {
@@ -151,8 +151,8 @@ export function usePlanetToAngleActivations(natalChart: NatalChart, srChart: Sol
             const rule = ASPECT_RULES[asp.name];
 
             const narrative = asp.name === 'conjunct'
-              ? `SR ${displayPlanet} (${meaning}) lands directly on your natal ${angleInfo.label}: themes of ${meaning} become highly visible and concrete through ${angleInfo.domain}. This is one of the most predictive contacts in a Solar Return.`
-              : `SR ${displayPlanet} ${rule} your natal ${angleInfo.label}. Themes of ${meaning} become active through ${angleInfo.domain}.`;
+              ? `Solar Return ${displayPlanet} is conjunct your natal ${angleInfo.label}. You may notice ${meaning} more in ${angleInfo.domain}.`
+              : `Solar Return ${displayPlanet} ${rule} your natal ${angleInfo.label}. You may notice ${meaning} in ${angleInfo.domain}.`;
 
             acts.push({
               srPlanet: displayPlanet,

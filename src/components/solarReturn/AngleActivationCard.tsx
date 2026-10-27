@@ -24,33 +24,33 @@ const ASPECT_DEFS = [
 const ORB = 3;
 
 const PLANET_MEANINGS: Record<string, string> = {
-  Sun: 'identity, purpose, vitality',
-  Moon: 'emotions, home, daily life',
-  Mercury: 'communication, learning, contracts',
-  Venus: 'relationships, love, money, harmony',
-  Mars: 'action, drive, conflict, energy',
-  Jupiter: 'growth, expansion, opportunity',
-  Saturn: 'responsibility, discipline, tests',
-  Uranus: 'change, disruption, freedom',
-  Neptune: 'spirituality, imagination, dissolution',
-  Pluto: 'transformation, power, deep change',
-  NorthNode: 'life direction, karmic growth',
-  Chiron: 'healing, wounds, mentorship',
+  Sun: 'your main priorities',
+  Moon: 'what helps you feel settled',
+  Mercury: 'conversations and decisions',
+  Venus: 'the people and activities you enjoy',
+  Mars: 'where you take action and set limits',
+  Jupiter: 'plans you want to grow',
+  Saturn: 'commitments you can maintain',
+  Uranus: 'routines you may want to change',
+  Neptune: 'agreements worth checking',
+  Pluto: 'commitments you may reconsider',
+  NorthNode: 'a secondary direction point',
+  Chiron: 'a sensitive area you may handle with care',
 };
 
 const ANGLE_MEANINGS: Record<string, { label: string; domain: string; house: number }> = {
-  Ascendant: { label: 'Ascendant', domain: 'personal direction, identity, how the year begins', house: 1 },
-  Descendant: { label: 'Descendant', domain: 'relationships, partnerships, encounters', house: 7 },
-  Midheaven: { label: 'Midheaven', domain: 'career, reputation, public visibility', house: 10 },
-  IC: { label: 'IC', domain: 'home, family, emotional foundations', house: 4 },
+  Ascendant: { label: 'Ascendant', domain: 'how you introduce yourself and your plans', house: 1 },
+  Descendant: { label: 'Descendant', domain: 'close relationships and agreements', house: 7 },
+  Midheaven: { label: 'Midheaven', domain: 'work and public responsibilities', house: 10 },
+  IC: { label: 'IC', domain: 'home and private life', house: 4 },
 };
 
 const ASPECT_RULES: Record<string, string> = {
-  conjunct: 'becomes a dominant theme woven directly into',
-  opposite: 'manifests through external events, encounters, or other people involving',
-  square: 'creates tension, turning points, or required effort around',
-  trine: 'brings supportive flow and natural opportunities involving',
-  sextile: 'opens doors that can be activated through effort around',
+  conjunct: 'is conjunct',
+  opposite: 'is opposite',
+  square: 'is square',
+  trine: 'is trine',
+  sextile: 'is sextile',
 };
 
 interface Activation {
@@ -117,8 +117,8 @@ export function AngleActivationCard({ natalChart, srChart }: Props) {
             const displayPlanet = planetName === 'NorthNode' ? 'North Node' : planetName;
 
             const narrative = asp.name === 'conjunct'
-              ? `Your natal ${displayPlanet} (${meaning}) becomes a defining force this year: directly fused with the SR ${angleInfo.label}. Themes of ${meaning} are inseparable from ${angleInfo.domain}.`
-              : `The SR ${angleInfo.label} ${asp.name}s your natal ${displayPlanet}: ${rule} ${meaning}. This contact channels through ${angleInfo.domain}.`;
+              ? `The Solar Return ${angleInfo.label} is conjunct your natal ${displayPlanet}. You may notice ${meaning} more in ${angleInfo.domain}.`
+              : `The Solar Return ${angleInfo.label} ${rule} your natal ${displayPlanet}. You may notice ${meaning} in ${angleInfo.domain}.`;
 
             acts.push({
               angleName: angle.name,
