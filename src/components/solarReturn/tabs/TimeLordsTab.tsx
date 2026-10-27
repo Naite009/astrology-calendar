@@ -33,7 +33,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
       {analysis.profectionYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground">
-            Profection Year — House {analysis.profectionYear.houseNumber} / Time Lord: {PLANET_SYMBOLS[analysis.profectionYear.timeLord]} {analysis.profectionYear.timeLord}
+            Profection Year: House {analysis.profectionYear.houseNumber} / Time Lord: {PLANET_SYMBOLS[analysis.profectionYear.timeLord]} {analysis.profectionYear.timeLord}
           </h3>
           <p className="text-xs text-muted-foreground">
             Age: <span className="font-medium text-foreground">{analysis.profectionYear.age}</span>
@@ -126,7 +126,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
       {analysis.lordOfTheYear && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3">
-            Natal Chart Ruler — {PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}
+            Natal Chart Ruler: {PLANET_SYMBOLS[analysis.lordOfTheYear.planet]} {analysis.lordOfTheYear.planet}
             {analysis.lordOfTheYear.srHouse ? ` in SR ${ordinal(analysis.lordOfTheYear.srHouse)} House` : ''}
           </h3>
           <div className="flex items-center gap-3 mb-3 flex-wrap">
@@ -147,7 +147,7 @@ export const TimeLordsTab = ({ analysis, srChart, natalChart }: Props) => {
       {analysis.firdaria && (
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-3">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground">
-            Firdaria — {PLANET_SYMBOLS[analysis.firdaria.currentMainLord]} {analysis.firdaria.currentMainLord} / {PLANET_SYMBOLS[analysis.firdaria.currentSubLord]} {analysis.firdaria.currentSubLord}
+            Firdaria: {PLANET_SYMBOLS[analysis.firdaria.currentMainLord]} {analysis.firdaria.currentMainLord} / {PLANET_SYMBOLS[analysis.firdaria.currentSubLord]} {analysis.firdaria.currentSubLord}
           </h3>
           <p className="text-xs text-muted-foreground">Current period: {analysis.firdaria.currentPeriodYears}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{analysis.firdaria.interpretation}</p>

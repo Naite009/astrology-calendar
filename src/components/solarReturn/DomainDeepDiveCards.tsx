@@ -56,13 +56,13 @@ const HouseCard = ({ house }: { house: DomainHouseSnapshot }) => (
       </div>
     ) : house.minorBodies && house.minorBodies.length > 0 ? (
       <div className="flex gap-1.5 flex-wrap">
-        <span className="text-[10px] text-muted-foreground italic">No major planets — </span>
+        <span className="text-[10px] text-muted-foreground italic">No major planets: </span>
         {house.minorBodies.map(p => (
           <span key={p} className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-sm italic">{p}</span>
         ))}
       </div>
     ) : (
-      <p className="text-[10px] text-muted-foreground italic">No planets — quiet zone</p>
+      <p className="text-[10px] text-muted-foreground italic">No planets: quiet zone</p>
     )}
     <p className="text-[10px] text-muted-foreground leading-relaxed">{house.interpretation}</p>
   </div>
@@ -153,7 +153,7 @@ export const DomainDeepDiveCards = ({ domains }: Props) => (
     <div className="border-b border-border pb-3">
       <h3 className="text-base font-semibold text-foreground">Life Area Deep Dives</h3>
       <p className="text-[11px] text-muted-foreground mt-1">
-        Each card synthesizes multiple houses to show the full picture for that life area — not just one house in isolation.
+        Each card synthesizes multiple houses to show the full picture for that life area: not just one house in isolation.
       </p>
     </div>
     {domains.map(d => <DomainCard key={d.id} domain={d} />)}

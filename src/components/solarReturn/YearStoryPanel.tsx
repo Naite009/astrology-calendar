@@ -21,7 +21,7 @@ export const YearStoryPanel = ({ analysis, year }: Props) => {
       <div className="border border-primary/30 rounded-sm p-5 bg-card">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
           <Sparkles size={16} className="text-primary" />
-          The Story of Your Year{year ? ` — ${year}` : ''}
+          The Story of Your Year{year ? `: ${year}` : ''}
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{story.coreStory}</p>
       </div>

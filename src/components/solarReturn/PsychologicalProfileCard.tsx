@@ -248,9 +248,9 @@ function SpectrumBar({
               </div>
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 The blended score is 60% your natal baseline + 40% this year's energy.
-                {bd.blendType === 'tension' && ' These energies pull in opposite directions — expect inner friction.'}
-                {bd.blendType === 'reinforced' && ' Both charts agree — this quality is amplified this year.'}
-                {bd.blendType === 'shift' && ' This year gently nudges you from your baseline.'}
+                {bd.blendType === 'tension' && ' The two charts lean in different directions on this scale.'}
+                {bd.blendType === 'reinforced' && ' Both charts lean the same way on this scale.'}
+                {bd.blendType === 'shift' && ' This year differs slightly from your baseline.'}
               </p>
               {bd.blendDescription && (
                 <p className="text-[10px] text-muted-foreground leading-relaxed">{bd.blendDescription}</p>
@@ -263,7 +263,7 @@ function SpectrumBar({
             What's Driving This Score
           </p>
           <p className="text-[9px] text-muted-foreground mb-2">
-            Bars show each planet's push — <span className="text-primary">left = {dim.left}</span>, <span className="text-destructive">right = {dim.right}</span>
+            Bars show each planet's push: <span className="text-primary">left = {dim.left}</span>, <span className="text-destructive">right = {dim.right}</span>
           </p>
           <div className="space-y-0">
             {dim.drivers.filter(d => Math.abs(d.contribution) > 0.1).slice(0, 10).map((d, i) => (
@@ -337,9 +337,9 @@ export function PsychologicalProfileCard({ natalChart, srChart }: Props) {
 
         {showInfo && (
           <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-sm space-y-1">
-            <p><strong>How to read:</strong> Each bar is a spectrum between two poles. The dot shows where you land — closer to one side means you lean that way. The number (0-100) shows how strong the lean is.</p>
+            <p><strong>How to read:</strong> Each bar is a spectrum between two poles. The dot shows where you land: closer to one side means you lean that way. The number (0-100) shows how strong the lean is.</p>
             <p><strong>Click any bar</strong> to see which planets push the score left or right.</p>
-            <p><strong>Blended view:</strong> <strong>N▼</strong> = your natal position. <strong>SR▲</strong> = this year. <strong>● dot</strong> = blended (60% natal + 40% SR) — it always sits between N and SR, closer to N.</p>
+            <p><strong>Blended view:</strong> <strong>N▼</strong> = your natal position. <strong>SR▲</strong> = this year. <strong>● dot</strong> = blended (60% natal + 40% SR): it always sits between N and SR, closer to N.</p>
           </div>
         )}
       </div>

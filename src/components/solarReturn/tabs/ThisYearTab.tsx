@@ -38,7 +38,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="border border-primary/20 rounded-sm p-5 bg-card">
           <h3 className="text-sm uppercase tracking-widest font-medium text-foreground mb-3 flex items-center gap-2">
             <Sun size={16} className="text-primary" />
-            Year Theme — SR {srChart.solarReturnYear}
+            Year Theme: SR {srChart.solarReturnYear}
           </h3>
           <div className="flex items-center gap-3 mb-3">
             <span className="text-3xl">{SIGN_SYMBOLS[analysis.yearlyTheme.ascendantSign] || ''}</span>
@@ -131,7 +131,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
           {/* Teaching explainer */}
           <div className="bg-secondary/30 rounded-sm p-3 mb-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              The SR Ascendant ruler appears in <strong>two charts at once</strong>. In the Solar Return chart it shows the <em>energy and style</em> of your year — how things feel. In your natal chart it shows the <em>life area</em> that gets activated — where things happen. Think of it like a movie: the SR placement is the plot, and the natal placement is the setting.
+              The SR Ascendant ruler appears in <strong>two charts at once</strong>. In the Solar Return chart it shows the <em>energy and style</em> of your year, how things feel. In your natal chart it shows the <em>life area</em> that gets activated, where things happen. Think of it like a movie: the SR placement is the plot, and the natal placement is the setting.
             </p>
           </div>
 
@@ -149,7 +149,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {/* SR Chart layer */}
             <div className="bg-primary/5 border border-primary/10 rounded-sm p-3">
-              <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-2">🎬 The Plot — How This Year Feels</p>
+              <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-2">🎬 The Plot: How This Year Feels</p>
               <p className="text-xs font-medium text-foreground mb-2">
                 {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerSRSign] || ''} {analysis.srAscRulerInNatal.rulerSRSign}
                 {analysis.srAscRulerInNatal.rulerSRHouse && <> · SR {ordinal(analysis.srAscRulerInNatal.rulerSRHouse)} house</>}
@@ -161,7 +161,7 @@ export const ThisYearTab = ({ analysis, srChart, natalChart }: Props) => {
 
             {/* Natal Chart layer */}
             <div className="bg-secondary/50 border border-border rounded-sm p-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">📍 The Setting — Where It Lands In Your Life</p>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mb-2">📍 The Setting: Where It Lands In Your Life</p>
               <p className="text-xs font-medium text-foreground mb-2">
                 {PLANET_SYMBOLS[analysis.srAscRulerInNatal.rulerPlanet]} {analysis.srAscRulerInNatal.rulerPlanet} in {SIGN_SYMBOLS[analysis.srAscRulerInNatal.rulerNatalSign] || ''} {analysis.srAscRulerInNatal.rulerNatalSign}
                 {analysis.srAscRulerInNatal.rulerNatalHouse && <> · natal {ordinal(analysis.srAscRulerInNatal.rulerNatalHouse)} house</>}

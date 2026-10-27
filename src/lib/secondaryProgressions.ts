@@ -499,7 +499,7 @@ const calculateHouseChange = (
     monthsUntilHouseChange,
     houseChangeDate,
     whatHouseChangeBrings: `When your Progressed Moon enters the ${nextHouse}${getOrdinalSuffix(nextHouse)} house, your emotional focus shifts to ${nextHouseMeaning?.themes || 'new areas'}. This is when you'll FEEL the change — your needs, security concerns, and daily emotional preoccupations will reorganize around ${nextHouseMeaning?.short || 'new themes'}.`,
-    howItFeelsBefore: `In the final months of house ${currentHouse}, you may feel a growing restlessness with ${currentHouseMeaning?.short || 'current themes'} — a sense that this chapter is completing. Pay attention to what feels "done" and what naturally draws your attention toward ${nextHouseMeaning?.short || 'what comes next'}.`
+    howItFeelsBefore: `In the final months of house ${currentHouse}, you may feel a growing restlessness with ${currentHouseMeaning?.short || 'current themes'}, with a sense that this chapter may be completing. Pay attention to what feels "done" and what naturally draws your attention toward ${nextHouseMeaning?.short || 'what comes next'}.`
   };
 };
 

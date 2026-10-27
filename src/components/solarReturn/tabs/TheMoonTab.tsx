@@ -71,7 +71,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
       {/* Late Degree */}
       {analysis.moonLateDegree && (
         <div className="border border-amber-500/30 rounded-sm p-4 bg-amber-500/5 space-y-2">
-          <p className="text-[10px] uppercase tracking-widest font-medium text-amber-600">Late-Degree Moon (25°+) — Completion Energy</p>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-amber-600">Late-Degree Moon (25°+): Completion Energy</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             You are at the <em>end</em> of an emotional chapter. Something building for years reaches its conclusion. This is not a crisis; it is a graduation.
           </p>
@@ -120,7 +120,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
       {/* Moon Sign Temperament */}
       {srMoonInSign[analysis.moonSign] && (
         <div className="border border-border rounded-sm p-4">
-          <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Emotional Temperament — Moon in {analysis.moonSign}</p>
+          <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Emotional Temperament: Moon in {analysis.moonSign}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInSign[analysis.moonSign]}</p>
         </div>
       )}
@@ -130,7 +130,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
         const deep = srMoonInHouseDeep[analysis.moonHouse.house];
         return (
           <div className="border border-border rounded-sm p-4 space-y-3">
-            <p className="text-[10px] uppercase tracking-widest font-medium text-primary">SR House {analysis.moonHouse.house} — {deep.title}</p>
+            <p className="text-[10px] uppercase tracking-widest font-medium text-primary">SR House {analysis.moonHouse.house}: {deep.title}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">{deep.overview}</p>
             <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Theme</p><p className="text-xs text-muted-foreground">{deep.emotionalTheme}</p></div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -146,10 +146,10 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="border-2 border-amber-500/30 rounded-sm p-5 bg-amber-500/5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🌑</span>
-            <h4 className="text-[10px] uppercase tracking-widest font-semibold text-amber-600">Moon Void of Course — Unaspected Moon</h4>
+            <h4 className="text-[10px] uppercase tracking-widest font-semibold text-amber-600">Moon Void of Course: Unaspected Moon</h4>
           </div>
           <p className="text-sm text-foreground leading-relaxed font-medium">Your SR Moon makes no major aspects. This is rare and significant.</p>
-          <p className="text-xs text-muted-foreground leading-relaxed">An unaspected SR Moon operates in isolation — your emotional life runs on its own track. Feelings are vivid but disconnected. Journaling and creative expression become essential outlets.</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">An unaspected SR Moon operates in isolation: your emotional life runs on its own track. Feelings are vivid but disconnected. Journaling and creative expression become essential outlets.</p>
         </div>
       )}
 
@@ -228,7 +228,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
                   <span className="text-primary font-bold">Now: {age}</span>
                   {future.length > 0 && <> · <span className="text-muted-foreground">Next: </span><strong>{future.join(', ')}</strong></>}
                 </p>
-                <p className="text-xs text-muted-foreground italic">Reflect on those past ages. The same emotional themes cycle back — but you meet them with everything you've learned since.</p>
+                <p className="text-xs text-muted-foreground italic">Reflect on those past ages. The same emotional themes cycle back: but you meet them with everything you've learned since.</p>
               </>
             );
           })()}

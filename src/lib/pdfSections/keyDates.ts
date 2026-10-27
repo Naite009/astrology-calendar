@@ -58,14 +58,14 @@ const lonToSign = (lon: number): { sign: string; degree: number } => {
 
 const saturnTransitInterps: Record<string, Record<string, string>> = {
   Sun: {
-    Conjunction: 'Identity restructuring. You feel the full weight of Saturn on your sense of self — who you are is being tested and rebuilt. Authority figures demand accountability. Health and vitality require attention. The gift: genuine self-authority earned through real effort.',
+    Conjunction: 'Identity restructuring. You feel the full weight of Saturn on your sense of self: who you are is being tested and rebuilt. Authority figures demand accountability. Health and vitality require attention. The gift: genuine self-authority earned through real effort.',
     Opposition: 'Others hold the mirror. Relationships with authority figures, bosses, or partners force you to define who you are vs. who they need you to be. External pressures reveal internal strength or weakness.',
     Square: 'Friction between what you want and what reality allows. Ego meets limitation. Progress feels blocked but the obstacles are showing you where your foundation is weak. Strengthen it.',
     Trine: 'Disciplined effort pays off naturally. Authority figures support you. Career and personal identity align. This is when Saturn rewards the work you have already done.',
-    Sextile: 'Opportunities through structure and patience. A mentor or system appears that helps you organize your ambitions. Take the practical path — it leads somewhere real.',
+    Sextile: 'Opportunities through structure and patience. A mentor or system appears that helps you organize your ambitions. Take the practical path: it leads somewhere real.',
   },
   Moon: {
-    Conjunction: 'Emotional heaviness. Saturn sits on your emotional body — feelings are muted, serious, or delayed. You may feel isolated or emotionally self-reliant. Family obligations weigh. The growth: emotional maturity and the ability to self-soothe.',
+    Conjunction: 'Emotional heaviness. Saturn sits on your emotional body: feelings are muted, serious, or delayed. You may feel isolated or emotionally self-reliant. Family obligations weigh. The growth: emotional maturity and the ability to self-soothe.',
     Opposition: 'Tension between emotional needs and responsibilities. You cannot have both comfort and achievement without conscious negotiation. Home vs. career. Safety vs. ambition.',
     Square: 'Emotional frustration. What you need and what you get are mismatched. Mood may be heavy. Relationships with women or mother figures may feel strained. The lesson: you are responsible for your own emotional wellbeing.',
     Trine: 'Emotional stability earned through maturity. Family relationships feel solid. Your ability to handle difficult feelings is at its best. Practical domestic decisions work out.',
@@ -79,7 +79,7 @@ const saturnTransitInterps: Record<string, Record<string, string>> = {
     Sextile: 'An opportunity to learn something that has lasting value. A course, mentor, or book arrives at the right time. Practical knowledge over theory.',
   },
   Venus: {
-    Conjunction: 'Love gets real. Relationships are tested for substance — surface attraction is not enough. Financial caution is wise. You may feel less playful but more discerning about what (and who) you actually value.',
+    Conjunction: 'Love gets real. Relationships are tested for substance: surface attraction is not enough. Financial caution is wise. You may feel less playful but more discerning about what (and who) you actually value.',
     Opposition: 'Relationship tension around commitment, money, or values. What you want vs. what you can realistically have. A partnership may feel restrictive or may solidify into something permanent.',
     Square: 'Love and money under pressure. Relationships feel like work. Financial limitations force hard choices. The lesson: real love survives difficulty; infatuation does not.',
     Trine: 'Committed love deepens naturally. Financial stability through practical decisions. Art or creative projects benefit from discipline and structure. Relationships with age differences may thrive.',
@@ -107,8 +107,8 @@ const saturnTransitInterps: Record<string, Record<string, string>> = {
     Sextile: 'A quiet opportunity to refine your structures. Small adjustments to routines, career plans, or long-term goals yield lasting improvement.',
   },
   Ascendant: {
-    Conjunction: 'Saturn crosses your Ascendant — you appear more serious, authoritative, and mature to others. Physical aging may be noticeable. New responsibilities shape your identity. This is a defining year.',
-    Opposition: 'Saturn on the Descendant — partnerships are the testing ground. Commitments are demanded or dissolved. Others hold you accountable. The question: are your closest relationships built on reality?',
+    Conjunction: 'Saturn crosses your Ascendant: you appear more serious, authoritative, and mature to others. Physical aging may be noticeable. New responsibilities shape your identity. This is a defining year.',
+    Opposition: 'Saturn on the Descendant: partnerships are the testing ground. Commitments are demanded or dissolved. Others hold you accountable. The question: are your closest relationships built on reality?',
     Square: 'Identity under pressure from both internal and external demands. How you present yourself clashes with what life requires. Adjust your self-image to match who you are actually becoming.',
     Trine: 'Your public presence and personal authority feel natural and earned. Others respect you without being asked. Professional and personal identity align.',
     Sextile: 'An opportunity to present yourself with more authority and maturity. A role or title that fits who you are becoming. Step into it.',
@@ -122,13 +122,13 @@ function getGenericTimeLordInterp(timeLord: string, natalPlanet: string, aspect:
   const hardAspects = ['Square', 'Opposition'];
   
   if (aspect === 'Conjunction') {
-    return `${lordName} merges with your natal ${natalName} — the Time Lord's agenda directly activates ${natalName}'s themes in your life. This is a peak activation point where the year's dominant story intensifies through ${natalName}'s domain.`;
+    return `${lordName} merges with your natal ${natalName}: the Time Lord's agenda directly activates ${natalName}'s themes in your life. This is a peak activation point where the year's dominant story intensifies through ${natalName}'s domain.`;
   } else if (flowAspects.includes(aspect)) {
-    return `${lordName} supports your natal ${natalName} — the Time Lord's themes flow easily through ${natalName}'s area of your life. Progress comes naturally in this domain during this period.`;
+    return `${lordName} supports your natal ${natalName}: the Time Lord's themes flow easily through ${natalName}'s area of your life. Progress comes naturally in this domain during this period.`;
   } else if (hardAspects.includes(aspect)) {
-    return `${lordName} creates tension with your natal ${natalName} — the Time Lord's demands clash with ${natalName}'s comfort zone. Growth happens through friction. The discomfort is productive if you don't resist the lesson.`;
+    return `${lordName} creates tension with your natal ${natalName}: the Time Lord's demands clash with ${natalName}'s comfort zone. Growth happens through friction. The discomfort is productive if you don't resist the lesson.`;
   }
-  return `${lordName} activates your natal ${natalName} — watch for this domain to become unusually prominent during this period.`;
+  return `${lordName} activates your natal ${natalName}: watch for this domain to become unusually prominent during this period.`;
 }
 
 export function generateKeyDatesSection(
@@ -219,14 +219,14 @@ export function generateKeyDatesSection(
 
   // ── Section header with extra top margin ──
   ctx.y += 36;
-  ctx.sectionTitle(doc, `KEY DATES — WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`,
+  ctx.sectionTitle(doc, `KEY DATES: WHEN ${tlName.toUpperCase()} ACTIVATES YOUR CHART`,
     `Exact and near-exact aspects from transiting ${tlName} to your natal planets during the SR year`);
 
   // Intro card — full-width centered
   ctx.drawCard(doc, () => {
     ctx.writeBold(doc, 'Why These Dates Matter');
     ctx.y += 6;
-    ctx.writeBody(doc, `As your Time Lord, ${tlName} is the planet running the show this year. Every time transiting ${tlName} makes an exact aspect to one of your natal planets, the Time Lord's agenda ACTIVATES that area of your life. These are the dates when the year's themes become tangible — when you feel the pressure, the opportunity, or the shift. Mark them.`);
+    ctx.writeBody(doc, `${tlName} is your annual profection time lord. These are the listed dates when transiting ${tlName} makes an exact aspect to one of your natal planets. You may notice the year's main plans and decisions more clearly around these dates, so you can schedule check-ins with yourself or the people involved.`);
   });
 
   // ── Timeline-style event cards ──────────────────────────────────

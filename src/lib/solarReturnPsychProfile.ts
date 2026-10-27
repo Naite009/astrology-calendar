@@ -437,13 +437,13 @@ export function computePsychProfile(chart: ChartInput): PsychProfile {
   const totalHemiH = hemiCounts.east + hemiCounts.west;
   const hemiParts: string[] = [];
   if (totalHemiV > 0) {
-    if (hemiCounts.above / totalHemiV > 0.6) hemiParts.push('Public-facing — energy directed toward the world, career, and social visibility');
-    else if (hemiCounts.below / totalHemiV > 0.6) hemiParts.push('Private — energy directed inward toward personal foundations, home, and inner development');
+    if (hemiCounts.above / totalHemiV > 0.6) hemiParts.push('Public-facing: energy directed toward the world, career, and social visibility');
+    else if (hemiCounts.below / totalHemiV > 0.6) hemiParts.push('Private: energy directed inward toward personal foundations, home, and inner development');
     else hemiParts.push('Balanced between public and private life');
   }
   if (totalHemiH > 0) {
-    if (hemiCounts.east / totalHemiH > 0.6) hemiParts.push('Self-directed — you set the agenda and take initiative');
-    else if (hemiCounts.west / totalHemiH > 0.6) hemiParts.push('Other-directed — relationships and collaborations shape your path');
+    if (hemiCounts.east / totalHemiH > 0.6) hemiParts.push('Self-directed: you set the agenda and take initiative');
+    else if (hemiCounts.west / totalHemiH > 0.6) hemiParts.push('Other-directed: relationships and collaborations shape your path');
     else hemiParts.push('Balanced between self-direction and collaboration');
   }
 
@@ -494,16 +494,16 @@ export function computeBlendedProfile(
     if (sameDirection && scoreDiff < 3) {
       blendType = 'reinforced';
       const pole = blendedScore >= 0 ? nd.left : nd.right;
-      blendDescription = `Both your natal chart and this year's chart pull toward ${pole}. This is amplified — you'll feel this strongly.`;
+      blendDescription = `Your natal chart and this year's chart both lean toward ${pole}, so you may notice this habit more often, for example in how you plan your week or answer requests.`;
     } else if (!sameDirection && scoreDiff > 4) {
       blendType = 'tension';
       const natalPole = nd.score >= 0 ? nd.left : nd.right;
       const srPole = sd.score >= 0 ? sd.left : sd.right;
-      blendDescription = `Your natural ${natalPole} tendency is being challenged by a ${srPole} year. This creates friction — you may feel pulled in two directions. Growth happens in the discomfort.`;
+      blendDescription = `Your natal chart leans ${natalPole} and this year's chart leans ${srPole}. You may notice moments when your usual ${natalPole.toLowerCase()} approach and a more ${srPole.toLowerCase()} one both seem reasonable, such as how you handle a shared plan.`;
     } else {
       blendType = 'shift';
       const srPole = sd.score >= 0 ? sd.left : sd.right;
-      blendDescription = `This year gently shifts you toward ${srPole}. Not a dramatic change, but you'll notice the pull.`;
+      blendDescription = `This year's chart leans slightly toward ${srPole}; the shift from your natal baseline is small.`;
     }
 
     return {

@@ -116,29 +116,29 @@ interface StarData {
 
 const FIXED_STARS: StarData[] = [
   // ── Royal Stars (the Big Four) ──
-  { name: 'Aldebaran', longitude2000: 69.78, magnitude: 0.85, nature: 'Mars', interpretation: 'The "Eye of the Bull" — one of the four Royal Stars. Integrity, honor, and success through moral courage. A year of standing firm in your values and being tested for honesty. Success comes when you refuse to compromise your principles.' },
-  { name: 'Regulus', longitude2000: 149.83, magnitude: 1.35, nature: 'Jupiter-Mars', interpretation: 'The "Heart of the Lion" — one of the four Royal Stars. Leadership, authority, and success through generosity. A year of commanding respect and stepping into power. The warning: success is lost through revenge or petty behavior.' },
-  { name: 'Antares', longitude2000: 249.77, magnitude: 1.09, nature: 'Mars-Jupiter', interpretation: 'The "Heart of the Scorpion" — one of the four Royal Stars. Intensity, intense preoccupation, and strategic power. A year of high stakes, deep passion, and potential confrontation. Success through fearless engagement with what is difficult.' },
-  { name: 'Fomalhaut', longitude2000: 333.87, magnitude: 1.16, nature: 'Venus-Mercury', interpretation: 'The "Mouth of the Fish" — one of the four Royal Stars. Dreams, idealism, and following a high vision. A year of pursuing something meaningful, but success only holds if you stay honest. Associated with fame, creativity, and following your conscience.' },
+  { name: 'Aldebaran', longitude2000: 69.78, magnitude: 0.85, nature: 'Mars', interpretation: 'The "Eye of the Bull": one of the four Royal Stars. Integrity, honor, and success through moral courage. A year of standing firm in your values and being tested for honesty. Success comes when you refuse to compromise your principles.' },
+  { name: 'Regulus', longitude2000: 149.83, magnitude: 1.35, nature: 'Jupiter-Mars', interpretation: 'The "Heart of the Lion": one of the four Royal Stars. Leadership, authority, and success through generosity. A year of commanding respect and stepping into power. The warning: success is lost through revenge or petty behavior.' },
+  { name: 'Antares', longitude2000: 249.77, magnitude: 1.09, nature: 'Mars-Jupiter', interpretation: 'The "Heart of the Scorpion": one of the four Royal Stars. Intensity, intense preoccupation, and strategic power. A year of high stakes, deep passion, and potential confrontation. Success through fearless engagement with what is difficult.' },
+  { name: 'Fomalhaut', longitude2000: 333.87, magnitude: 1.16, nature: 'Venus-Mercury', interpretation: 'The "Mouth of the Fish": one of the four Royal Stars. Dreams, idealism, and following a high vision. A year of pursuing something meaningful, but success only holds if you stay honest. Associated with fame, creativity, and following your conscience.' },
 
   // ── First-magnitude & classically essential ──
-  { name: 'Algol', longitude2000: 56.17, magnitude: 2.1, nature: 'Saturn-Jupiter', interpretation: 'The "Demon Star" — intense, transformative energy. Can indicate a year of facing shadows, power struggles, or breakthroughs through crisis. Associated with intense passion and the ability to literally "lose your head" over something.' },
-  { name: 'Alcyone (Pleiades)', longitude2000: 60.0, magnitude: 2.9, nature: 'Moon-Mars', interpretation: 'The weeping sisters — emotional intensity, ambition, and dealing with loss or longing. A drive to achieve but with an undercurrent of sadness or nostalgia.' },
-  { name: 'Capella', longitude2000: 81.84, magnitude: 0.08, nature: 'Jupiter-Saturn', interpretation: 'The "She-Goat" — curiosity, love of learning, and unconventional success. A year of exploring new subjects, mentoring, or being mentored. Associated with people who thrive through knowledge and adaptability.' },
-  { name: 'Rigel', longitude2000: 76.83, magnitude: 0.12, nature: 'Jupiter-Saturn', interpretation: 'The "Foot of Orion" — ambition, education, and intellectual achievement. A year favoring teaching, publishing, or large-scale projects. Benevolent influence supporting growth through knowledge.' },
-  { name: 'Betelgeuse', longitude2000: 88.75, magnitude: 0.42, nature: 'Mars-Mercury', interpretation: 'The "Armpit of the Giant" — raw ambition, fame, and martial success. A year of bold moves, athletic achievement, or public recognition. Success through daring, but watch for overreach.' },
-  { name: 'Sirius', longitude2000: 104.08, magnitude: -1.46, nature: 'Jupiter-Mars', interpretation: 'The brightest star — ambition, fame, honor, and high achievement. A year of burning brilliance, but also the risk of burning too hot. Associated with guardian spirits, devotion, and wealth. Success is amplified but so is scrutiny.' },
-  { name: 'Procyon', longitude2000: 115.62, magnitude: 0.34, nature: 'Mercury-Mars', interpretation: 'The "Before the Dog" — quick action, sudden opportunities, and sharp instincts. A year of fast-moving developments. Success through being alert and ready to act, but beware of impulsive decisions or short-lived gains.' },
-  { name: 'Castor', longitude2000: 110.23, magnitude: 1.6, nature: 'Mercury', interpretation: 'The mortal twin — intellectual brilliance, writing, and creative partnerships. Quick mind, versatility, but potential for sudden reversals or injuries.' },
-  { name: 'Pollux', longitude2000: 113.22, magnitude: 1.14, nature: 'Mars', interpretation: 'The immortal twin — bold, athletic, and competitive energy. A year of courage and willingness to fight for what matters. Can also indicate cruelty if poorly channeled.' },
-  { name: 'Denebola', longitude2000: 171.57, magnitude: 2.14, nature: 'Saturn-Venus', interpretation: 'The "Tail of the Lion" — going against the mainstream. A year of bucking trends, unconventional choices, or whistleblowing. Can bring both social criticism and the satisfaction of independent thinking.' },
-  { name: 'Vindemiatrix', longitude2000: 189.93, magnitude: 2.83, nature: 'Saturn-Mercury', interpretation: 'The "Grape Gatherer" — widowhood, loss, and endings in traditional astrology. In modern context, a year of harvesting what you planted but also accepting what is ending. Associated with necessary goodbyes and the bittersweet side of change.' },
-  { name: 'Spica', longitude2000: 203.83, magnitude: 0.97, nature: 'Venus-Mercury', interpretation: 'The brightest star of Virgo — brilliance, gifts, and harvest. One of the most fortunate fixed stars. A year of reaping rewards, artistic talent, and receiving what you have earned. Associated with skill, craft, and excellence.' },
-  { name: 'Arcturus', longitude2000: 204.23, magnitude: -0.04, nature: 'Jupiter-Mars', interpretation: 'The "Bear Guardian" — pathfinding, innovation, and doing things differently. A year of finding your own way, often through unconventional methods. Success through independence and original thinking.' },
-  { name: 'Zubenelgenubi', longitude2000: 225.07, magnitude: 2.75, nature: 'Saturn-Mars', interpretation: 'The "Southern Claw" of the Scorpion — social reform, justice, and fighting for fairness. A year where issues of right and wrong come into sharp focus. Associated with legal matters, activism, and the courage to challenge unfair systems.' },
-  { name: 'Vega', longitude2000: 285.32, magnitude: 0.03, nature: 'Venus-Mercury', interpretation: 'The "Harp Star" — charisma, artistic talent, and public appeal. A year of creativity, performance, and social magnetism. Associated with magic, music, and the ability to enchant others.' },
-  { name: 'Altair', longitude2000: 301.83, magnitude: 0.77, nature: 'Mars-Jupiter', interpretation: 'The "Flying Eagle" — bold ambition, sudden rises, and daring action. A year of courageous leaps, leadership, and potentially sudden changes in status. Success through confidence and willingness to take risks.' },
-  { name: 'Achernar', longitude2000: 345.32, magnitude: 0.46, nature: 'Jupiter', interpretation: 'The "End of the River" — success through integrity and moral strength. Associated with religious or philosophical leadership, honors, and a year of being recognized for your principles. One of the brightest stars, linking achievement with spiritual depth.' },
+  { name: 'Algol', longitude2000: 56.17, magnitude: 2.1, nature: 'Saturn-Jupiter', interpretation: 'The "Demon Star": intense, transformative energy. Can indicate a year of facing shadows, power struggles, or breakthroughs through crisis. Associated with intense passion and the ability to literally "lose your head" over something.' },
+  { name: 'Alcyone (Pleiades)', longitude2000: 60.0, magnitude: 2.9, nature: 'Moon-Mars', interpretation: 'The weeping sisters: emotional intensity, ambition, and dealing with loss or longing. A drive to achieve but with an undercurrent of sadness or nostalgia.' },
+  { name: 'Capella', longitude2000: 81.84, magnitude: 0.08, nature: 'Jupiter-Saturn', interpretation: 'The "She-Goat": curiosity, love of learning, and unconventional success. A year of exploring new subjects, mentoring, or being mentored. Associated with people who thrive through knowledge and adaptability.' },
+  { name: 'Rigel', longitude2000: 76.83, magnitude: 0.12, nature: 'Jupiter-Saturn', interpretation: 'The "Foot of Orion": ambition, education, and intellectual achievement. A year favoring teaching, publishing, or large-scale projects. Benevolent influence supporting growth through knowledge.' },
+  { name: 'Betelgeuse', longitude2000: 88.75, magnitude: 0.42, nature: 'Mars-Mercury', interpretation: 'The "Armpit of the Giant": raw ambition, fame, and martial success. A year of bold moves, athletic achievement, or public recognition. Success through daring, but watch for overreach.' },
+  { name: 'Sirius', longitude2000: 104.08, magnitude: -1.46, nature: 'Jupiter-Mars', interpretation: 'The brightest star: ambition, fame, honor, and high achievement. A year of burning brilliance, but also the risk of burning too hot. Associated with guardian spirits, devotion, and wealth. Success is amplified but so is scrutiny.' },
+  { name: 'Procyon', longitude2000: 115.62, magnitude: 0.34, nature: 'Mercury-Mars', interpretation: 'The "Before the Dog": quick action, sudden opportunities, and sharp instincts. A year of fast-moving developments. Success through being alert and ready to act, but beware of impulsive decisions or short-lived gains.' },
+  { name: 'Castor', longitude2000: 110.23, magnitude: 1.6, nature: 'Mercury', interpretation: 'The mortal twin: intellectual brilliance, writing, and creative partnerships. Quick mind, versatility, but potential for sudden reversals or injuries.' },
+  { name: 'Pollux', longitude2000: 113.22, magnitude: 1.14, nature: 'Mars', interpretation: 'The immortal twin: bold, athletic, and competitive energy. A year of courage and willingness to fight for what matters. Can also indicate cruelty if poorly channeled.' },
+  { name: 'Denebola', longitude2000: 171.57, magnitude: 2.14, nature: 'Saturn-Venus', interpretation: 'The "Tail of the Lion": going against the mainstream. A year of bucking trends, unconventional choices, or whistleblowing. Can bring both social criticism and the satisfaction of independent thinking.' },
+  { name: 'Vindemiatrix', longitude2000: 189.93, magnitude: 2.83, nature: 'Saturn-Mercury', interpretation: 'The "Grape Gatherer": widowhood, loss, and endings in traditional astrology. In modern context, a year of harvesting what you planted but also accepting what is ending. Associated with necessary goodbyes and the bittersweet side of change.' },
+  { name: 'Spica', longitude2000: 203.83, magnitude: 0.97, nature: 'Venus-Mercury', interpretation: 'The brightest star of Virgo: brilliance, gifts, and harvest. One of the most fortunate fixed stars. A year of reaping rewards, artistic talent, and receiving what you have earned. Associated with skill, craft, and excellence.' },
+  { name: 'Arcturus', longitude2000: 204.23, magnitude: -0.04, nature: 'Jupiter-Mars', interpretation: 'The "Bear Guardian": pathfinding, innovation, and doing things differently. A year of finding your own way, often through unconventional methods. Success through independence and original thinking.' },
+  { name: 'Zubenelgenubi', longitude2000: 225.07, magnitude: 2.75, nature: 'Saturn-Mars', interpretation: 'The "Southern Claw" of the Scorpion: social reform, justice, and fighting for fairness. A year where issues of right and wrong come into sharp focus. Associated with legal matters, activism, and the courage to challenge unfair systems.' },
+  { name: 'Vega', longitude2000: 285.32, magnitude: 0.03, nature: 'Venus-Mercury', interpretation: 'The "Harp Star": charisma, artistic talent, and public appeal. A year of creativity, performance, and social magnetism. Associated with magic, music, and the ability to enchant others.' },
+  { name: 'Altair', longitude2000: 301.83, magnitude: 0.77, nature: 'Mars-Jupiter', interpretation: 'The "Flying Eagle": bold ambition, sudden rises, and daring action. A year of courageous leaps, leadership, and potentially sudden changes in status. Success through confidence and willingness to take risks.' },
+  { name: 'Achernar', longitude2000: 345.32, magnitude: 0.46, nature: 'Jupiter', interpretation: 'The "End of the River": success through integrity and moral strength. Associated with religious or philosophical leadership, honors, and a year of being recognized for your principles. One of the brightest stars, linking achievement with spiritual depth.' },
   { name: 'Scheat', longitude2000: 359.38, magnitude: 2.42, nature: 'Saturn-Mercury', interpretation: 'Associated with independent thinking but also potential misfortune through stubbornness. A year where going against the grain has both rewards and consequences.' },
 ];
 
@@ -247,7 +247,7 @@ export function calculateFixedStars(
           conjunctPlanet: planet,
           conjunctPlanetSource: 'Natal',
           orb: Math.round(diff * 10) / 10,
-          interpretation: `Natal ${planet} conjunct ${star.name} (${Math.round(diff * 10) / 10}° orb): This is a lifelong contact — ${star.interpretation} This year's Solar Return activates this natal star conjunction.`,
+          interpretation: `Natal ${planet} conjunct ${star.name} (${Math.round(diff * 10) / 10}° orb): This is a lifelong contact: ${star.interpretation} This year's Solar Return activates this natal star conjunction.`,
         });
       }
     }
@@ -481,7 +481,7 @@ export function calculateFirdaria(age: number): SRFirdariaReport {
           periodEnd: Math.ceil(subEnd),
           isCurrent,
           interpretation: isCurrent
-            ? `You are currently in a ${period.lord}/${sub.lord} firdaria period. ${period.lord} sets the overarching theme — ${getFirdariaLordMeaning(period.lord)}. ${sub.lord !== period.lord ? `${sub.lord} as sub-lord adds a layer of ${getFirdariaLordMeaning(sub.lord).toLowerCase()}.` : 'As both main and sub-lord, this planet\'s themes are doubled in intensity.'}`
+            ? `You are currently in a ${period.lord}/${sub.lord} firdaria period. ${period.lord} sets the overarching theme: ${getFirdariaLordMeaning(period.lord)}. ${sub.lord !== period.lord ? `${sub.lord} as sub-lord adds a layer of ${getFirdariaLordMeaning(sub.lord).toLowerCase()}.` : 'As both main and sub-lord, this planet\'s themes are doubled in intensity.'}`
             : `${period.lord}/${sub.lord} period (age ${Math.floor(subStart)}–${Math.ceil(subEnd)}).`,
         });
       }
@@ -502,15 +502,15 @@ export function calculateFirdaria(age: number): SRFirdariaReport {
 
 function getFirdariaLordMeaning(lord: string): string {
   const meanings: Record<string, string> = {
-    Sun: 'A period of visibility, authority, and conscious purpose. You are center stage — leadership, recognition, and vitality define these years.',
+    Sun: 'A period of visibility, authority, and conscious purpose. You are center stage: leadership, recognition, and vitality define these years.',
     Moon: 'A period of emotional depth, nurturing, and inner life. Family, home, and instinctive responses guide your path. Sensitivity is heightened.',
     Mercury: 'A period of intellectual activity, communication, and learning. Writing, teaching, commerce, and social connections accelerate.',
     Venus: 'A period of pleasure, relationships, beauty, and values. Love, art, and financial growth are favored. Harmony is the priority.',
     Mars: 'A period of action, ambition, and assertive drive. Competition, courage, and physical energy are heightened. Conflicts may arise but so does achievement.',
     Jupiter: 'A period of expansion, opportunity, and spiritual growth. Travel, education, and generosity define these years. Faith in the process is rewarded.',
     Saturn: 'A period of discipline, responsibility, and structural building. Hard work pays off but the burden is real. Maturity is earned, not given.',
-    'North Node': 'A brief period of karmic acceleration — significant-feeling encounters and growth opportunities appear rapidly.',
-    'South Node': 'A brief period of karmic release — letting go of old patterns and completing unfinished business.',
+    'North Node': 'A brief period of karmic acceleration: significant-feeling encounters and growth opportunities appear rapidly.',
+    'South Node': 'A brief period of karmic release: letting go of old patterns and completing unfinished business.',
   };
   return meanings[lord] || `${lord} themes are active.`;
 }
@@ -571,7 +571,7 @@ export function calculateAntiscia(
           planet2Degree: `${natPos.degree}° ${natPos.sign}`,
           orb: Math.round(diff * 10) / 10,
           type: 'antiscia',
-          interpretation: `SR ${srPlanet}'s antiscia (mirror point) at ${antPos.degree}° ${antPos.sign} contacts your natal ${natPlanet}. Antiscia connections are "hidden conjunctions" — the two planets share equal daylight and operate as a secret alliance. ${srPlanet}'s energy reaches ${natPlanet} through an invisible channel this year.`,
+          interpretation: `SR ${srPlanet}'s antiscia (mirror point) at ${antPos.degree}° ${antPos.sign} contacts your natal ${natPlanet}. Antiscia connections are "hidden conjunctions": the two planets share equal daylight and operate as a secret alliance. ${srPlanet}'s energy reaches ${natPlanet} through an invisible channel this year.`,
         });
       }
 
@@ -590,7 +590,7 @@ export function calculateAntiscia(
           planet2Degree: `${natPos.degree}° ${natPos.sign}`,
           orb: Math.round(diff * 10) / 10,
           type: 'contra-antiscia',
-          interpretation: `SR ${srPlanet}'s contra-antiscia at ${contraPos.degree}° ${contraPos.sign} contacts your natal ${natPlanet}. Contra-antiscia functions like a hidden opposition — tension or awareness between ${srPlanet} and ${natPlanet} operates beneath the surface this year.`,
+          interpretation: `SR ${srPlanet}'s contra-antiscia at ${contraPos.degree}° ${contraPos.sign} contacts your natal ${natPlanet}. Contra-antiscia functions like a hidden opposition: tension or awareness between ${srPlanet} and ${natPlanet} operates beneath the surface this year.`,
         });
       }
     }
@@ -649,7 +649,7 @@ export function calculateSolarArcs(
             aspectToSRPlanet: srPlanet,
             aspectType: aspect.name,
             orb: Math.round(orbVal * 10) / 10,
-            interpretation: `Solar Arc ${natPlanet} (advanced to ${arcedPos.degree}° ${arcedPos.sign}) ${aspect.name.toLowerCase()}s SR ${srPlanet}. Solar arcs represent the unfolding of natal potential over your lifetime — at age ${age}, your natal ${natPlanet} has matured to this degree. Its ${aspect.name.toLowerCase()} to SR ${srPlanet} means this year specifically activates that matured energy through ${srPlanet}'s current themes.`,
+            interpretation: `Solar Arc ${natPlanet} (advanced to ${arcedPos.degree}° ${arcedPos.sign}) ${aspect.name.toLowerCase()}s SR ${srPlanet}. Solar arcs represent the unfolding of natal potential over your lifetime: at age ${age}, your natal ${natPlanet} has matured to this degree. Its ${aspect.name.toLowerCase()} to SR ${srPlanet} means this year specifically activates that matured energy through ${srPlanet}'s current themes.`,
           });
         }
       }
@@ -708,28 +708,28 @@ export interface SRMidpointHit {
 }
 
 const MIDPOINT_INTERPS: Record<string, string> = {
-  'Sun/Moon': 'Your core identity and emotional needs merge here — this is your most personal integration point. When activated, it highlights marriage, partnerships, and inner wholeness.',
-  'Sun/Mars': 'Your willpower and drive meet at this point — activation brings bursts of energy, ambition, and the courage to act on what matters most.',
-  'Sun/Saturn': 'Your identity meets responsibility — activation brings moments of reckoning, maturity, and building something that lasts.',
-  'Sun/Jupiter': 'Your sense of purpose meets growth — activation brings opportunities, optimism, and moments where things fall into place.',
-  'Moon/Venus': 'Your emotional needs meet your love nature — activation brings tenderness, relationship sweetness, and moments of genuine comfort.',
-  'Moon/Saturn': 'Your feelings meet hard reality — activation can bring emotional heaviness, but also the strength to handle difficult emotions with maturity.',
-  'Moon/Pluto': 'Your emotional depths are exposed — activation brings intense feelings, psychological breakthroughs, and transformative inner shifts.',
-  'Mars/Saturn': 'Your drive meets restriction — activation can feel like driving with the brakes on, but focused effort produces lasting results.',
-  'Mars/Pluto': 'Your willpower meets deep transformation — activation brings intense ambition, power dynamics, and the energy to push through obstacles.',
-  'Venus/Saturn': 'Your love nature meets commitment — activation brings relationship maturity, loyalty tests, and the potential for lasting bonds.',
-  'Venus/Jupiter': 'Your love nature meets abundance — activation brings generosity, social pleasure, and fortunate romantic or creative developments.',
-  'Jupiter/Saturn': 'Growth meets structure — activation brings real-world progress, career milestones, and the ability to build on solid ground.',
-  'Saturn/Pluto': 'Your pressure point — discipline meets deep power. Activation brings intense challenges that forge unshakeable inner strength.',
-  'Saturn/Neptune': 'Structure meets dissolution — activation brings confusion about responsibilities, but also the ability to bring dreams into practical form.',
-  'Saturn/Uranus': 'Order meets disruption — activation brings sudden changes to structures, career shifts, or breakthroughs from breaking old patterns.',
-  'Jupiter/Pluto': 'Expansion meets transformation — activation brings major power plays, financial windfalls, or ambitious projects with deep impact.',
-  'Sun/Pluto': 'Your identity meets deep change — activation brings power dynamics, ego transformations, and the need to claim your honest self.',
-  'Mercury/Saturn': 'Your thinking meets structure — activation brings serious study, important documents, or decisions requiring careful thought.',
-  'Venus/Mars': 'Desire meets attraction — activation heightens romantic and creative energy, bringing passionate encounters or artistic breakthroughs.',
-  'Venus/Pluto': 'Love meets transformation — activation brings all-consuming attraction, relationship power shifts, or deep creative breakthroughs.',
-  'Moon/Mars': 'Emotions meet action — activation brings emotional assertiveness, impulsive reactions, or the courage to fight for what you need.',
-  'Moon/Jupiter': 'Feelings meet faith — activation brings emotional generosity, optimism, and a sense of emotional abundance.',
+  'Sun/Moon': 'Your core identity and emotional needs merge here: this is your most personal integration point. When activated, it highlights marriage, partnerships, and inner wholeness.',
+  'Sun/Mars': 'Your willpower and drive meet at this point: activation brings bursts of energy, ambition, and the courage to act on what matters most.',
+  'Sun/Saturn': 'Your identity meets responsibility: activation brings moments of reckoning, maturity, and building something that lasts.',
+  'Sun/Jupiter': 'Your sense of purpose meets growth: activation brings opportunities, optimism, and moments where things fall into place.',
+  'Moon/Venus': 'Your emotional needs meet your love nature: activation brings tenderness, relationship sweetness, and moments of genuine comfort.',
+  'Moon/Saturn': 'Your feelings meet hard reality: activation can bring emotional heaviness, but also the strength to handle difficult emotions with maturity.',
+  'Moon/Pluto': 'Your emotional depths are exposed: activation brings intense feelings, psychological breakthroughs, and transformative inner shifts.',
+  'Mars/Saturn': 'Your drive meets restriction: activation can feel like driving with the brakes on, but focused effort produces lasting results.',
+  'Mars/Pluto': 'Your willpower meets deep transformation: activation brings intense ambition, power dynamics, and the energy to push through obstacles.',
+  'Venus/Saturn': 'Your love nature meets commitment: activation brings relationship maturity, loyalty tests, and the potential for lasting bonds.',
+  'Venus/Jupiter': 'Your love nature meets abundance: activation brings generosity, social pleasure, and fortunate romantic or creative developments.',
+  'Jupiter/Saturn': 'Growth meets structure: activation brings real-world progress, career milestones, and the ability to build on solid ground.',
+  'Saturn/Pluto': 'Your pressure point: discipline meets deep power. Activation brings intense challenges that forge unshakeable inner strength.',
+  'Saturn/Neptune': 'Structure meets dissolution: activation brings confusion about responsibilities, but also the ability to bring dreams into practical form.',
+  'Saturn/Uranus': 'Order meets disruption: activation brings sudden changes to structures, career shifts, or breakthroughs from breaking old patterns.',
+  'Jupiter/Pluto': 'Expansion meets transformation: activation brings major power plays, financial windfalls, or ambitious projects with deep impact.',
+  'Sun/Pluto': 'Your identity meets deep change: activation brings power dynamics, ego transformations, and the need to claim your honest self.',
+  'Mercury/Saturn': 'Your thinking meets structure: activation brings serious study, important documents, or decisions requiring careful thought.',
+  'Venus/Mars': 'Desire meets attraction: activation heightens romantic and creative energy, bringing passionate encounters or artistic breakthroughs.',
+  'Venus/Pluto': 'Love meets transformation: activation brings all-consuming attraction, relationship power shifts, or deep creative breakthroughs.',
+  'Moon/Mars': 'Emotions meet action: activation brings emotional assertiveness, impulsive reactions, or the courage to fight for what you need.',
+  'Moon/Jupiter': 'Feelings meet faith: activation brings emotional generosity, optimism, and a sense of emotional abundance.',
 };
 
 export function calculateMidpoints(
@@ -785,7 +785,7 @@ export function calculateMidpoints(
             activatingPlanet: sp,
             activatingSource: 'SR',
             orb: Math.round(diff * 100) / 100,
-            interpretation: MIDPOINT_INTERPS[key] || MIDPOINT_INTERPS[`${p2}/${p1}`] || `The ${p1}/${p2} midpoint is activated — themes of both planets combine and are triggered this year.`,
+            interpretation: MIDPOINT_INTERPS[key] || MIDPOINT_INTERPS[`${p2}/${p1}`] || `The ${p1}/${p2} midpoint is activated: themes of both planets combine and are triggered this year.`,
           });
         }
       }
@@ -871,7 +871,7 @@ export function calculatePrenatalEclipse(
     eclipseDegInSign: pos.degree,
     activatedBy: activated,
     interpretation: activated.length > 0
-      ? `Your prenatal eclipse degree (${pos.degree}° ${pos.sign}) is activated this year by ${activated.map(a => a.planet).join(', ')}. This is a lifelong sensitive point — when planets touch it, major life events tend to unfold. Pay attention to the themes of ${activated[0].planet} this year.`
+      ? `Your prenatal eclipse degree (${pos.degree}° ${pos.sign}) is activated this year by ${activated.map(a => a.planet).join(', ')}. This is a lifelong sensitive point: when planets touch it, major life events tend to unfold. Pay attention to the themes of ${activated[0].planet} this year.`
       : `Your prenatal eclipse degree (${pos.degree}° ${pos.sign}) is not directly activated by Solar Return planets this year, suggesting the deepest karmic patterns are resting.`,
   };
 }
@@ -904,29 +904,29 @@ const AVG_DAILY_MOTION: Record<string, number> = {
 
 const SPEED_INTERPS: Record<string, { stationed: string; slow: string; fast: string }> = {
   Mercury: {
-    stationed: 'Mercury is nearly stationary — your thinking, communication, and decision-making are in a deep processing mode. Ideas percolate slowly but carry more weight. Important contracts or conversations this year have lasting impact.',
-    slow: 'Mercury is moving slowly — careful, deliberate thinking dominates. You are less likely to make snap decisions and more likely to think things through.',
-    fast: 'Mercury is moving quickly — your mind is sharp, quick, and ready. Ideas come fast, conversations flow, and information moves rapidly this year.',
+    stationed: 'Mercury is nearly stationary: your thinking, communication, and decision-making are in a deep processing mode. Ideas percolate slowly but carry more weight. Important contracts or conversations this year have lasting impact.',
+    slow: 'Mercury is moving slowly: careful, deliberate thinking dominates. You are less likely to make snap decisions and more likely to think things through.',
+    fast: 'Mercury is moving quickly: your mind is sharp, quick, and ready. Ideas come fast, conversations flow, and information moves rapidly this year.',
   },
   Venus: {
-    stationed: 'Venus is nearly stationary — your values, relationships, and sense of beauty are in a deep review. A relationship or financial matter is being examined at the deepest level. What you decide about love and money this year sticks.',
-    slow: 'Venus is moving slowly — love and money matters unfold gradually, with more depth and consideration than usual.',
-    fast: 'Venus is moving quickly — social life picks up, attraction flows easily, and money moves with less friction.',
+    stationed: 'Venus is nearly stationary: your values, relationships, and sense of beauty are in a deep review. A relationship or financial matter is being examined at the deepest level. What you decide about love and money this year sticks.',
+    slow: 'Venus is moving slowly: love and money matters unfold gradually, with more depth and consideration than usual.',
+    fast: 'Venus is moving quickly: social life picks up, attraction flows easily, and money moves with less friction.',
   },
   Mars: {
-    stationed: 'Mars is nearly stationary — your drive, anger, and ambition are amplified to maximum intensity. This is a year where you feel stuck or explosive. Physical energy needs deliberate outlets. What you fight for (or against) this year defines you.',
-    slow: 'Mars is moving slowly — actions take longer to manifest, frustration may build, but results are more thorough.',
-    fast: 'Mars is moving quickly — you act decisively, energy flows freely, and physical vitality is strong. Things get done.',
+    stationed: 'Mars is nearly stationary: your drive, anger, and ambition are amplified to maximum intensity. This is a year where you feel stuck or explosive. Physical energy needs deliberate outlets. What you fight for (or against) this year defines you.',
+    slow: 'Mars is moving slowly: actions take longer to manifest, frustration may build, but results are more thorough.',
+    fast: 'Mars is moving quickly: you act decisively, energy flows freely, and physical vitality is strong. Things get done.',
   },
   Jupiter: {
-    stationed: 'Jupiter is nearly stationary — growth, faith, and opportunity are intensely focused. A specific area of life is being flooded with meaning and expansion. The benefits (or excesses) are magnified.',
-    slow: 'Jupiter is moving slowly — opportunities develop gradually but with greater depth and honesty.',
-    fast: 'Jupiter is moving quickly — luck and opportunity come and go swiftly. Catch them while they pass.',
+    stationed: 'Jupiter is nearly stationary: growth, faith, and opportunity are intensely focused. A specific area of life is being flooded with meaning and expansion. The benefits (or excesses) are magnified.',
+    slow: 'Jupiter is moving slowly: opportunities develop gradually but with greater depth and honesty.',
+    fast: 'Jupiter is moving quickly: luck and opportunity come and go swiftly. Catch them while they pass.',
   },
   Saturn: {
-    stationed: 'Saturn is nearly stationary — responsibility, structure, and limits are at maximum intensity. A specific obligation or life-structure is demanding all your attention. What you build or endure this year is permanent.',
-    slow: 'Saturn is moving slowly — commitments and responsibilities deepen, requiring patience and persistence.',
-    fast: 'Saturn is moving quickly — duties and structures shift with less friction than usual. Progress is steady.',
+    stationed: 'Saturn is nearly stationary: responsibility, structure, and limits are at maximum intensity. A specific obligation or life-structure is demanding all your attention. What you build or endure this year is permanent.',
+    slow: 'Saturn is moving slowly: commitments and responsibilities deepen, requiring patience and persistence.',
+    fast: 'Saturn is moving quickly: duties and structures shift with less friction than usual. Progress is steady.',
   },
 };
 
@@ -987,11 +987,11 @@ export interface SRHeliacalRising {
 }
 
 const SCOUT_INTERPS: Record<string, string> = {
-  Mercury: 'Mercury rises before the Sun as your Scout Planet — your year is led by curiosity, communication, and mental agility. You perceive what others miss. Information, conversations, and learning open doors first.',
-  Venus: 'Venus rises before the Sun as your Scout Planet — your year is led by relationships, beauty, and values. Charm and diplomacy open doors before anything else. Follow what attracts you.',
-  Mars: 'Mars rises before the Sun as your Scout Planet — your year is led by action, courage, and initiative. You charge forward before thinking twice. Physical energy and competitive drive set the tone.',
-  Jupiter: 'Jupiter rises before the Sun as your Scout Planet — your year is led by faith, expansion, and opportunity. Optimism and big-picture thinking open doors. Trust your instincts about growth.',
-  Saturn: 'Saturn rises before the Sun as your Scout Planet — your year is led by discipline, structure, and responsibility. Maturity and hard work open doors. Patience is your superpower this year.',
+  Mercury: 'Mercury rises before the Sun as your Scout Planet: your year is led by curiosity, communication, and mental agility. You perceive what others miss. Information, conversations, and learning open doors first.',
+  Venus: 'Venus rises before the Sun as your Scout Planet: your year is led by relationships, beauty, and values. Charm and diplomacy open doors before anything else. Follow what attracts you.',
+  Mars: 'Mars rises before the Sun as your Scout Planet: your year is led by action, courage, and initiative. You charge forward before thinking twice. Physical energy and competitive drive set the tone.',
+  Jupiter: 'Jupiter rises before the Sun as your Scout Planet: your year is led by faith, expansion, and opportunity. Optimism and big-picture thinking open doors. Trust your instincts about growth.',
+  Saturn: 'Saturn rises before the Sun as your Scout Planet: your year is led by discipline, structure, and responsibility. Maturity and hard work open doors. Patience is your superpower this year.',
 };
 
 /**

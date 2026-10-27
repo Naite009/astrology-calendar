@@ -43,7 +43,7 @@ const nodeBody: Record<number, string> = {
   1: 'Your soul is pulled toward independence. The universe rewards honest self-assertion.',
   2: 'Growth through building your own resources. Develop financial and material independence.',
   3: 'Growth through curiosity and communication. Engage with your immediate world.',
-  4: 'Growth through vulnerability and nurturing. Create emotional safety — for yourself first.',
+  4: 'Growth through vulnerability and nurturing. Create emotional safety: for yourself first.',
   5: 'Growth through creative self-expression and emotional risk. Allow yourself to be seen.',
   6: 'Growth through practical service and daily mastery. The details matter.',
   7: 'Growth through genuine partnership. Collaboration and diplomacy are the skills being developed.',
@@ -131,7 +131,7 @@ function drawPortraitCard(
     doc.roundedRect(margin + 18, badgeY, 140, 20, 3, 3, 'S');
     doc.setFont('times', 'italic'); doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    doc.text('Retrograde — the testing is internal', margin + 28, badgeY + 13);
+    doc.text('Retrograde: the testing is internal', margin + 28, badgeY + 13);
   }
 
   doc.setDrawColor(...RULE); doc.setLineWidth(0.3);

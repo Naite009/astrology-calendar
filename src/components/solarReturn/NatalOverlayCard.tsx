@@ -84,7 +84,7 @@ export function NatalOverlayCard({ analysis }: Props) {
           9: 'The year expands through travel, study, publishing, or shifts in worldview.',
           10: 'The year is shaped by career visibility, public roles, and ambitions.',
           11: 'The year is channeled through community, friendships, and collective goals.',
-          12: 'The year moves inward — retreat, healing, spiritual work, and hidden processes dominate.',
+          12: 'The year moves inward: retreat, healing, spiritual work, and hidden processes dominate.',
         },
         'SR Sun': {
           1: 'The core purpose of the year centers on identity, new beginnings, and personal visibility.',
@@ -133,7 +133,7 @@ export function NatalOverlayCard({ analysis }: Props) {
     if (dominant && dominant.count >= 2) {
       pats.push({
         type: 'stacked',
-        message: `${dominant.labels.join(', ')} all land in your natal ${dominant.house}${ordinal(dominant.house)} house — this is a major arena of the year.`,
+        message: `${dominant.labels.join(', ')} all land in your natal ${dominant.house}${ordinal(dominant.house)} house: this is a major arena of the year.`,
       });
     }
 
@@ -141,7 +141,7 @@ export function NatalOverlayCard({ analysis }: Props) {
     if (ascHouse && ANGULAR_HOUSES.includes(ascHouse)) {
       pats.push({
         type: 'angular',
-        message: 'The SR Ascendant falls in an angular natal house — this year is likely to be externally visible, active, and consequential.',
+        message: 'The SR Ascendant falls in an angular natal house: this year is likely to be externally visible, active, and consequential.',
       });
     }
 
@@ -150,7 +150,7 @@ export function NatalOverlayCard({ analysis }: Props) {
     if ((sunH === 12 || sunH === 4) || (moonH === 12 || moonH === 4)) {
       pats.push({
         type: 'private',
-        message: 'Key placements land in natal 4th or 12th — the year may emphasize interior development, home life, or private transitions.',
+        message: 'Key placements land in natal 4th or 12th: the year may emphasize interior development, home life, or private transitions.',
       });
     }
 
@@ -182,7 +182,7 @@ export function NatalOverlayCard({ analysis }: Props) {
           What This Means
         </p>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Your birth chart is like a permanent map of your life, divided into 12 sections (houses), each covering a different area — money, relationships, career, etc. Every birthday, a new chart is created. When we place this year's planets onto your permanent map, we can see <strong className="text-foreground">which parts of your life will get the most attention</strong>. Below, we show where each key planet falls and what it activates for you.
+          Your birth chart is like a permanent map of your life, divided into 12 sections (houses), each covering a different area: money, relationships, career, etc. Every birthday, a new chart is created. When we place this year's planets onto your permanent map, we can see <strong className="text-foreground">which parts of your life may get more attention</strong>. Below, we show where each key planet falls and what it activates for you.
         </p>
       </div>
 
@@ -191,7 +191,7 @@ export function NatalOverlayCard({ analysis }: Props) {
         <div className="bg-primary/5 border border-primary/10 rounded-sm p-3 mb-4">
           <p className="text-xs font-medium text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
             <Layers size={12} />
-            Main Arena of the Year — Natal {dominantHouse.house}{ordinal(dominantHouse.house)} House
+            Main Arena of the Year: Natal {dominantHouse.house}{ordinal(dominantHouse.house)} House
           </p>
           <p className="text-sm text-foreground leading-relaxed">
             This Solar Return lands most strongly in your natal {dominantHouse.house}{ordinal(dominantHouse.house)} house, emphasizing <em>{HOUSE_MEANINGS[dominantHouse.house]}</em>.
@@ -199,7 +199,7 @@ export function NatalOverlayCard({ analysis }: Props) {
           <p className="text-[10px] text-muted-foreground mt-1.5 flex items-start gap-1">
             <HelpCircle size={10} className="flex-shrink-0 mt-0.5" />
             <span>
-              Why this house? {dominantHouse.count} of this year's key planets ({dominantHouse.labels.join(', ')}) all fall into your birth chart's {dominantHouse.house}{ordinal(dominantHouse.house)} house. When multiple planets pile up in the same section of your chart, that area of life becomes the main storyline of the year — it's where the biggest events, decisions, and changes show up.
+              Why this house? {dominantHouse.count} of this year's key planets ({dominantHouse.labels.join(', ')}) all fall into your birth chart's {dominantHouse.house}{ordinal(dominantHouse.house)} house. When multiple planets pile up in the same section of your chart, that area of life becomes the main storyline of the year: it's where the biggest events, decisions, and changes show up.
             </span>
           </p>
         </div>

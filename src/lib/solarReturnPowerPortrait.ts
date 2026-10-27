@@ -139,7 +139,7 @@ function detectPowerLeaks(analysis: SolarReturnAnalysis, natalChart: NatalChart)
   if (analysis.retrogrades?.planets?.includes('Mars')) {
     leaks.push({
       pattern: 'Forcing',
-      trigger: 'Your drive and motivation energy is in review mode this year — pushing harder does not get results faster',
+      trigger: 'Your drive and motivation energy is in review mode this year: pushing harder does not get results faster',
       antidote: 'Slow down, revisit old plans, and let frustrated energy redirect itself before acting',
     });
   }
@@ -266,7 +266,7 @@ export function generatePowerPortrait(
       planet: 'Commitment & responsibility (lifelong)',
       sign: saturn.sign,
       house: null,
-      reason: 'Your lifelong pressure point — the area where you naturally overwork and under-rest',
+      reason: 'Your lifelong pressure point: the area where you naturally overwork and under-rest',
     });
   }
   if (saturnSRHouse) {

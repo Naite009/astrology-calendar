@@ -1,40 +1,51 @@
-/** Executive summaries reuse the ranked year story, never benefic/malefic event forecasts. */
+/**
+ * Executive summary = a view over the ranked, validated year story. It has no
+ * interpretation language of its own: no benefic/malefic opportunity-vs-challenge
+ * split, no archetype certainty, no eclipse or cycle-repetition claims.
+ */
 import type { SolarReturnAnalysis } from './solarReturnAnalysis';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import { buildYearStory } from './solarReturnYearStory';
-export interface OpportunityChallenge {
-  type: 'opportunity' | 'challenge';
-  title: string;
-  description: string;
-  source: string;       // what generated this (e.g. "Jupiter in 10th", "Venus trine Sun")
-  house?: number | null;
-  intensity: number;     // 1-10
-}
+import { validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
 
-export interface PatternRecognition {
-  pattern: string;
+export interface RankedPriority {
+  rank: number;
+  title: string;
+  /** Client meaning from the shared, quality-gated translator ('' when withheld). */
   description: string;
-  connection: string;    // how it links to natal/past
-  category: 'recurring' | 'eclipse' | 'cycle' | 'natal-echo';
+  /** Exact chart evidence labels, never rewritten. */
+  source: string;
+  house: number | null;
+  /** Number of different kinds of chart evidence pointing here. */
+  reinforcements: number;
 }
 
 export interface ExecutiveSummary {
-  coreFocus: string;                    // 1 sentence
-  opportunities: OpportunityChallenge[];  // top 3
-  challenges: OpportunityChallenge[];     // top 3
-  patterns: PatternRecognition[];
-  yearArchetype: string;                // e.g. "A Builder's Year", "A Year of Harvest"
-  yearArchetypeDescription: string;
+  leadTheme: string;
+  coreFocus: string;
+  priorities: RankedPriority[];
+  /** Factual emphasis labels from the year story hierarchy. */
+  evidenceHierarchy: { label: string; detail: string }[];
+  methodNote: string;
 }
 
+const safe = (text: string) => (text && !validateSolarReturnProse(text).length ? text : '');
 
-export function generateExecutiveSummary(analysis: SolarReturnAnalysis, _natalChart: NatalChart): ExecutiveSummary {
+export function generateExecutiveSummary(analysis: SolarReturnAnalysis, _natalChart?: NatalChart): ExecutiveSummary {
   const story = buildYearStory(analysis);
-  const opportunities: OpportunityChallenge[] = story.themes.slice(0, 3).map(theme => ({
-    type: 'opportunity', title: theme.title, description: theme.summary, house: theme.house,
-    source: theme.signatures.join(' '), intensity: Math.min(10, theme.reinforcements),
+  const priorities = story.themes.slice(0, 3).map((theme, i) => ({
+    rank: i + 1,
+    title: theme.title,
+    description: safe(theme.summary),
+    source: theme.signatures.join('; '),
+    house: theme.house ?? null,
+    reinforcements: theme.reinforcements,
   }));
-  return { coreFocus: story.coreStory, opportunities, challenges: [], patterns: [],
-    yearArchetype: story.themes[0]?.title || 'Annual priorities',
-    yearArchetypeDescription: story.themes[0]?.summary || '' };
+  return {
+    leadTheme: story.themes[0]?.title || '',
+    coreFocus: story.coreStory.split('\n').map(safe).filter(Boolean).join('\n'),
+    priorities,
+    evidenceHierarchy: story.hierarchy,
+    methodNote: 'Ranked by how many different kinds of chart evidence repeat a life area (profection, Sun house, angles, tight contacts). The ranking shows emphasis, not good or bad outcomes.',
+  };
 }

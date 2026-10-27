@@ -11,6 +11,18 @@ import {
 } from '@/lib/solarReturnLunarTimeline';
 import { getMoonPhaseBlending, srMoonPhaseInterp } from '@/lib/solarReturnMoonData';
 
+/** Hedged, concrete reading of the Solar Return Sun-Moon cycle stage (no certainty claims). */
+const STAGE_MEANING: Record<string, string> = {
+  Beginning: 'you may want to start a plan or project rather than finish old ones',
+  Growth: 'a plan you started may need steady effort to keep going',
+  Action: 'you may face a decision about a plan that asks you to act rather than wait',
+  Refinement: 'you may want to review and adjust a project before you show it to others',
+  Culmination: 'you may see the results of a plan more clearly, including in your relationships',
+  Sharing: 'you may want to share or teach what you have learned from a recent project',
+  Reevaluation: 'you may decide to change or stop a routine that no longer fits your plans',
+};
+const stageMeaning = (stage: string) => STAGE_MEANING[stage] || 'you may want to finish projects and clear your schedule before starting something new';
+
 // ── Color mapping for phase stages ──────────────────────────────────
 const PHASE_COLORS: Record<string, string> = {
   beginning: 'bg-chart-1/20 text-chart-1 border-chart-1/30',
@@ -63,6 +75,8 @@ function BalsamicDetailPanel({ entry }: { entry: TimelineEntry }) {
   );
 
   const isBridge = entry.moonSign !== entry.sunSign;
+  // Sign-only release/emerge narratives are not published; hide the panel when empty.
+  if (!blending.releasing && !blending.emerging) return null;
 
   return (
     <div className="space-y-3 pt-2 border-t border-border/50">
@@ -72,7 +86,7 @@ function BalsamicDetailPanel({ entry }: { entry: TimelineEntry }) {
 
       {isBridge && (
         <p className="text-[10px] text-muted-foreground italic leading-relaxed">
-          This year bridges two different psychological territories — a threshold year where one completed chapter dissolves while another quietly forms.
+          The Sun and Moon are in different signs at this return.
         </p>
       )}
 
@@ -151,7 +165,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Header */}
       <div className="p-4 pb-0">
         <p className="text-[10px] uppercase tracking-widest font-medium text-primary">
-          Solar Return Moon Phase — Year by Year
+          Solar Return Moon Phase: Year by Year
         </p>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
           {summary}
@@ -181,7 +195,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                   {currentEntry.year} SR Moon Phase
                 </p>
                 <p className="text-xs text-primary font-medium">
-                  {currentEntry.phase} — {currentEntry.cycleStage}
+                  {currentEntry.phase}: {currentEntry.cycleStage}
                   <span className="ml-2 text-muted-foreground font-normal">{currentEntry.phaseAngle}° separation</span>
                 </p>
               </div>
@@ -200,35 +214,26 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
             </div>
 
             {/* What is completing */}
-            <div>
+            {blending.releasing && (<div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
               <p className="text-xs text-foreground leading-relaxed">
                 Your {currentEntry.moonSign} Moon points to what is being released this year: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
               </p>
-            </div>
+            </div>)}
 
             {/* What is emerging */}
-            <div>
+            {blending.emerging && (<div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
               <p className="text-xs text-foreground leading-relaxed">
                 Your {currentEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
               </p>
-            </div>
+            </div>)}
 
             {/* Theme of the year */}
             <div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
               <p className="text-xs text-foreground leading-relaxed">
-                {blending.themeLabel}. The {currentEntry.cycleStage.toLowerCase()} stage of the lunar cycle means this year is about {
-                  currentEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
-                  currentEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
-                  currentEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
-                  currentEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
-                  currentEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
-                  currentEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
-                  currentEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
-                  'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
-                }.
+                {blending.themeLabel}. The {currentEntry.cycleStage.toLowerCase()} stage of the lunar cycle suggests that {stageMeaning(currentEntry.cycleStage)}.
               </p>
             </div>
 
@@ -250,18 +255,18 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
                     <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="bg-secondary/20 rounded-sm p-2">
+                      {blending.releasing && (<div className="bg-secondary/20 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {currentEntry.moonSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
-                          The Moon sign describes the emotional style active during this phase — specifically: {blending.releasing}.
+                          The Moon sign describes the emotional style active during this phase: specifically: {blending.releasing}.
                         </p>
-                      </div>
-                      <div className="bg-accent/10 rounded-sm p-2">
+                      </div>)}
+                      {blending.emerging && (<div className="bg-accent/10 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {currentEntry.sunSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
-                          The Sun sign describes the spiritual orientation — specifically: {blending.emerging}.
+                          The Sun sign describes the spiritual orientation: specifically: {blending.emerging}.
                         </p>
-                      </div>
+                      </div>)}
                     </div>
                     <p className="text-[10px] text-muted-foreground/70 italic">
                       Phase angle: {currentEntry.phaseAngle}° · {currentEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
@@ -278,7 +283,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Phase Reference Guide */}
       <div className="mx-4 p-3 bg-secondary/20 rounded-sm">
         <p className="text-[9px] uppercase tracking-widest font-medium text-muted-foreground mb-2">
-          Moon Phase Reference — What Each Phase Means
+          Moon Phase Reference: What Each Phase Means
         </p>
         <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
           {[
@@ -303,7 +308,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
           })}
         </div>
         <p className="text-[9px] text-muted-foreground mt-2 leading-relaxed italic">
-          The phase is determined by the Moon-Sun separation angle at the exact Solar Return moment each year. Because the Moon moves ~13° per day, each year's phase is independent — it does not follow a sequential progression.
+          The phase is determined by the Moon-Sun separation angle at the exact Solar Return moment each year. Because the Moon moves ~13° per day, each year's phase is independent: it does not follow a sequential progression.
         </p>
       </div>
 
@@ -324,7 +329,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                   ${isSelected ? 'bg-accent/20' : 'hover:bg-muted/30'}
                   ${entry.isMajorTransition ? 'opacity-100' : 'opacity-70 hover:opacity-100'}
                 `}
-                title={`${entry.year} — ${entry.phase} (${entry.cycleStage}) · ${entry.phaseAngle}°`}
+                title={`${entry.year}: ${entry.phase} (${entry.cycleStage}) · ${entry.phaseAngle}°`}
               >
                 <span className="text-[9px] text-muted-foreground">{entry.year}</span>
                 <span className="text-sm leading-none">{PHASE_ICONS[entry.phase] || '☽'}</span>
@@ -369,7 +374,7 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 <span className="text-xl">{PHASE_ICONS[detailEntry.phase] || '☽'}</span>
                 <div>
                   <p className="text-sm font-serif text-foreground">
-                    {detailEntry.year} — {detailEntry.phase}
+                    {detailEntry.year}: {detailEntry.phase}
                   </p>
                   <p className="text-xs font-medium">
                     {detailEntry.cycleStage} · Age {detailEntry.age}
@@ -386,33 +391,24 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                 <p className="text-xs text-foreground leading-relaxed">{detailEntry.shortMeaning}</p>
               </div>
 
-              <div>
+              {blending.releasing && (<div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Completing</p>
                 <p className="text-xs text-foreground leading-relaxed">
                   Your {detailEntry.moonSign} Moon points to what is being released: {blending.releasing}. These patterns have served their purpose and are naturally dissolving.
                 </p>
-              </div>
+              </div>)}
 
-              <div>
+              {blending.emerging && (<div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">What Is Emerging</p>
                 <p className="text-xs text-foreground leading-relaxed">
                   Your {detailEntry.sunSign} Sun reveals the deeper direction forming: {blending.emerging}. This may feel subtle now but will become clearer in the years ahead.
                 </p>
-              </div>
+              </div>)}
 
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Theme of the Year</p>
                 <p className="text-xs text-foreground leading-relaxed">
-                  {blending.themeLabel}. The {detailEntry.cycleStage.toLowerCase()} stage means this year is about {
-                    detailEntry.cycleStage === 'Beginning' ? 'planting new seeds and trusting fresh instincts — even when you can\'t see the outcome yet' :
-                    detailEntry.cycleStage === 'Growth' ? 'pushing through early resistance and building momentum — the effort is real but so is the traction' :
-                    detailEntry.cycleStage === 'Action' ? 'making decisive moves and committing to a path — hesitation costs more than imperfection' :
-                    detailEntry.cycleStage === 'Refinement' ? 'fine-tuning what\'s almost ready — small adjustments now prevent bigger corrections later' :
-                    detailEntry.cycleStage === 'Culmination' ? 'harvesting what you\'ve built — results become visible and relationships reach turning points' :
-                    detailEntry.cycleStage === 'Sharing' ? 'teaching and giving back — what you\'ve learned becomes valuable to others' :
-                    detailEntry.cycleStage === 'Reevaluation' ? 'questioning what no longer works — old structures need to be released or rebuilt' :
-                    'releasing and resting — this is preparation, not failure. The next beginning is forming in the quiet'
-                  }.
+                  {blending.themeLabel}. The {detailEntry.cycleStage.toLowerCase()} stage suggests that {stageMeaning(detailEntry.cycleStage)}.
                 </p>
               </div>
 
@@ -436,18 +432,18 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{deepInterp.theme}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">{deepInterp.description}</p>
                     <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="bg-secondary/20 rounded-sm p-2">
+                      {blending.releasing && (<div className="bg-secondary/20 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Moon Sign: {detailEntry.moonSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
-                          The Moon sign describes the emotional style and psychological pattern active during this phase — specifically: {blending.releasing}.
+                          The Moon sign describes the emotional style and psychological pattern active during this phase: specifically: {blending.releasing}.
                         </p>
-                      </div>
-                      <div className="bg-accent/10 rounded-sm p-2">
+                      </div>)}
+                      {blending.emerging && (<div className="bg-accent/10 rounded-sm p-2">
                         <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Sun Sign: {detailEntry.sunSign}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
-                          The Sun sign describes the spiritual orientation and life direction — specifically: {blending.emerging}.
+                          The Sun sign describes the spiritual orientation and life direction: specifically: {blending.emerging}.
                         </p>
-                      </div>
+                      </div>)}
                     </div>
                     <p className="text-[10px] text-muted-foreground/70 italic">
                       Phase angle: {detailEntry.phaseAngle}° · {detailEntry.waxingOrWaning === 'waxing' ? 'Waxing (building energy)' : 'Waning (releasing energy)'}
@@ -463,9 +459,9 @@ export function LunarPhaseTimeline({ natalChart, srChart }: Props) {
       {/* Pattern Detection Panel — All 8 phases in cycle order */}
       <div className="px-4 pb-4 space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Phase History — Your SR Moon by Category</p>
+          <p className="text-[10px] uppercase tracking-widest font-medium text-primary">Phase History: Your SR Moon by Category</p>
           <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-            Looking back across every Solar Return, these are the years that shared the same Moon phase. Years in the same category had a similar emotional tone at the birthday return — though they are not part of a sequential cycle.
+            Looking back across every Solar Return, these are the years that shared the same Moon phase. Years in the same category had a similar emotional tone at the birthday return: though they are not part of a sequential cycle.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

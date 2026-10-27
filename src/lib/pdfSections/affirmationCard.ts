@@ -136,7 +136,7 @@ const SR_SUN_HOUSE_FOCUS: Record<number, string> = {
   6: 'the daily work and the body that carries it',
   7: 'partnership and the people across the table from you',
   8: 'what is ending, what is changing, and what is being shared',
-  9: 'a wider life — travel, study, belief, perspective',
+  9: 'a wider life: travel, study, belief, perspective',
   10: 'your work in the world and how it is being seen',
   11: 'your people, your circle, and what you are building together',
   12: 'inner work, rest, and the quiet things that are not yet visible',
@@ -146,7 +146,7 @@ const ASPECT_ASK: Record<string, string> = {
   Conjunction: 'fuse this part of you with what the year is doing',
   Opposition: 'hold the tension instead of collapsing one side of it',
   Square: 'do the thing the friction is pointing at, not the easier thing',
-  Trine: 'use the ease — do not mistake it for permission to coast',
+  Trine: 'use the ease: do not mistake it for permission to coast',
   Sextile: 'take the opening when it shows up; it will not knock twice',
 };
 
@@ -202,8 +202,8 @@ function buildClosingSendOff(
   // Send-off: specific, warm, earned. References SR Ascendant + Sun house so
   // it reads as written for this chart, not as a template.
   const sendOff = sunFocus
-    ? `Go live the year, ${name} — the one with ${srAscSign} on the door and the work happening in ${sunFocus}. I will see you on the other side of it.`
-    : `Go live the year, ${name} — the one with ${srAscSign} on the door. I will see you on the other side of it.`;
+    ? `Go live the year, ${name}: the one with ${srAscSign} on the door and the work happening in ${sunFocus}. I will see you on the other side of it.`
+    : `Go live the year, ${name}: the one with ${srAscSign} on the door. I will see you on the other side of it.`;
 
   return { line1: definingTheme, line2: ask, line3: sendOff };
 }

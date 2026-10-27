@@ -29,7 +29,7 @@ export const ActivationTimeline = ({ data }: Props) => {
       <div className="p-5 border-b border-border">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
           <Clock size={16} className="text-primary" />
-          Activation Windows — When Themes Peak
+          Activation Windows: When Themes Peak
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
           Exact dates when transiting planets activate your Solar Return points
@@ -103,7 +103,7 @@ export const ActivationTimeline = ({ data }: Props) => {
                             {t.transitPlanet} {t.aspect} {t.srTarget}
                           </span>
                           <span className="text-muted-foreground ml-1">
-                            — {formatDate(t.exactDate)} ({t.orb}° orb)
+                           : {formatDate(t.exactDate)} ({t.orb}° orb)
                           </span>
                           <p className="text-muted-foreground mt-0.5">{t.interpretation}</p>
                         </div>

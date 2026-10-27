@@ -4,9 +4,7 @@ import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
 import { SolarReturnAnalysis } from '@/lib/solarReturnAnalysis';
 import { PLANET_SYMBOLS, SIGN_SYMBOLS } from '@/lib/solarReturnConstants';
 import { generateIdentityShift } from '@/lib/solarReturnIdentityShift';
-import { generatePowerPortrait } from '@/lib/solarReturnPowerPortrait';
 import { IdentityShiftCard } from '@/components/solarReturn/IdentityShiftCard';
-import { PowerPortraitCard } from '@/components/solarReturn/PowerPortraitCard';
 import { PsychologicalProfileCard } from '@/components/solarReturn/PsychologicalProfileCard';
 import { DominantPlanetsCard } from '@/components/DominantPlanetsCard';
 import { Flame, Repeat, Layers, Compass } from 'lucide-react';
@@ -19,7 +17,6 @@ interface Props {
 
 export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
   const identityShift = useMemo(() => generateIdentityShift(analysis, srChart, natalChart), [analysis, srChart, natalChart]);
-  const powerPortrait = useMemo(() => generatePowerPortrait(analysis, natalChart, srChart), [analysis, natalChart, srChart]);
 
   return (
     <div className="space-y-6 mt-4">
@@ -42,7 +39,7 @@ export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-4">
           <div>
             <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
-              <Layers size={14} className="text-primary" /> Stelliums — Concentrated Energy
+              <Layers size={14} className="text-primary" /> Stelliums: Concentrated Energy
             </h4>
             <p className="text-xs text-muted-foreground">3+ true planets in the same sign or house.</p>
           </div>
@@ -168,7 +165,7 @@ export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
           </div>
 
           <div className="border border-primary/30 rounded-sm p-4 bg-primary/5">
-            <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Combined Axis Synthesis</p>
+            <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Combined counts</p>
             <p className="text-xs text-foreground leading-relaxed">{analysis.hemisphericEmphasis.combinedInsight}</p>
           </div>
         </div>

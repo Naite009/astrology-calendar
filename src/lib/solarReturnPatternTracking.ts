@@ -29,80 +29,59 @@ export function buildPatternTracking(
   const eclipseConnections: string[] = [];
   const repeatingThemes: string[] = [];
 
-  // Eclipse connections
+  // Factual cycle labels only. Eclipses, cycles and echoes are listed as timing
+  // context; no event forecasts, destiny claims or "fast-forward" language.
   for (const ecl of (analysis.eclipseSensitivity || [])) {
     const sign = (ecl as any).sign || (ecl as any).eclipseSign || '';
-    const type = (ecl as any).type || 'eclipse';
-    eclipseConnections.push(`${type} in ${sign} activates your chart — fast-forward button for life events in this area.`);
+    const type = (ecl as any).type || 'Eclipse';
+    eclipseConnections.push(`${type}${sign ? ` in ${sign}` : ''} is listed as a sensitive point for this chart.`);
   }
 
-  // Saturn cycle — does SR Saturn return to natal Saturn's sign or house?
   const natalSaturnSign = natalChart.planets?.Saturn?.sign || '';
   const srSaturnSign = srChart.planets?.Saturn?.sign || '';
-  const srSaturnHouse = analysis.planetSRHouses?.Saturn;
-
-  const saturnCycleConnection = natalSaturnSign === srSaturnSign;
-
+  const saturnCycleConnection = !!natalSaturnSign && natalSaturnSign === srSaturnSign;
   let saturnCycleNote = '';
-  if (natalSaturnSign === srSaturnSign) {
-    saturnCycleNote = 'The part of your chart focused on commitment and responsibility is echoing a familiar pattern — themes around maturity, structure, and hard-earned growth are especially resonant this year.';
+  if (saturnCycleConnection) {
+    saturnCycleNote = `Solar Return Saturn is in ${srSaturnSign}, the same sign as natal Saturn.`;
   } else {
     const nIdx = SIGNS.indexOf(natalSaturnSign);
     const sIdx = SIGNS.indexOf(srSaturnSign);
     if (nIdx >= 0 && sIdx >= 0) {
       const dist = ((sIdx - nIdx) + 12) % 12;
-      if (dist === 3 || dist === 9) {
-        saturnCycleNote = 'You\'re at a quarter-cycle pressure point for responsibility and commitment — expect structures in your life to be tested.';
-      } else if (dist === 6) {
-        saturnCycleNote = 'You\'re at a half-cycle reckoning for responsibility and commitment — what you\'ve built is being evaluated. What holds up stays; what doesn\'t gets rebuilt.';
-      }
+      if (dist === 3 || dist === 9) saturnCycleNote = `Solar Return Saturn in ${srSaturnSign} is a square sign from natal Saturn in ${natalSaturnSign} (quarter of the Saturn cycle, by sign).`;
+      else if (dist === 6) saturnCycleNote = `Solar Return Saturn in ${srSaturnSign} is opposite natal Saturn's sign, ${natalSaturnSign} (half of the Saturn cycle, by sign).`;
     }
   }
 
-  // Jupiter cycle — does SR Jupiter return to natal Jupiter's sign?
   const natalJupiterSign = natalChart.planets?.Jupiter?.sign || '';
   const srJupiterSign = srChart.planets?.Jupiter?.sign || '';
-  const jupiterCycleConnection = natalJupiterSign === srJupiterSign;
-  const jupiterCycleNote = jupiterCycleConnection
-    ? 'Your growth and expansion cycle is completing and restarting — a 12-year loop comes full circle. Opportunities this year may echo themes from roughly 12 years ago.'
-    : '';
+  const jupiterCycleConnection = !!natalJupiterSign && natalJupiterSign === srJupiterSign;
+  const jupiterCycleNote = jupiterCycleConnection ? `Solar Return Jupiter is in ${srJupiterSign}, the same sign as natal Jupiter (roughly a 12-year cycle).` : '';
 
-  // Metonic return (19-year Moon cycle)
   const metonicAges = analysis.moonMetonicAges || [];
   const metonicReturn = metonicAges.length > 0;
-  const metonicNote = metonicReturn
-    ? `Your SR Moon echoes the position from age${metonicAges.length > 1 ? 's' : ''} ${metonicAges.join(', ')}. Emotional patterns from those periods resurface.`
-    : '';
+  const metonicNote = metonicReturn ? `The Solar Return Moon is near its position at age${metonicAges.length > 1 ? 's' : ''} ${metonicAges.join(', ')} (19-year Moon cycle).` : '';
 
-  // Repeating themes from node positions
   const natalNNSign = natalChart.planets?.NorthNode?.sign || '';
   const srNNSign = srChart.planets?.NorthNode?.sign || '';
   if (natalNNSign && srNNSign) {
-    if (natalNNSign === srNNSign) {
-      repeatingThemes.push(`North Node returns to ${natalNNSign} — a nodal return year. Destiny-level events possible. This only happens every ~18.6 years.`);
-    }
+    if (natalNNSign === srNNSign) repeatingThemes.push(`Solar Return North Node is in ${srNNSign}, the same sign as the natal North Node (sign-level nodal return).`);
     const nIdx = SIGNS.indexOf(natalNNSign);
     const sIdx = SIGNS.indexOf(srNNSign);
-    if (nIdx >= 0 && sIdx >= 0 && ((sIdx - nIdx + 12) % 12) === 6) {
-      repeatingThemes.push(`North Node opposes your natal nodes — a nodal reversal year. What felt destined now requires conscious choice.`);
-    }
+    if (nIdx >= 0 && sIdx >= 0 && ((sIdx - nIdx + 12) % 12) === 6) repeatingThemes.push(`Solar Return North Node in ${srNNSign} is opposite the natal North Node sign, ${natalNNSign}.`);
   }
 
-  // Profection echoes
   const profYear = analysis.profectionYear;
-  if (profYear) {
-    const house = (profYear as any).house || (profYear as any).houseNumber;
-    if (house) {
-      repeatingThemes.push(`Profection year activates House ${house} — themes from age ${((profYear as any).age || 0) - 12} may echo.`);
-    }
+  if (profYear?.houseNumber && profYear.age >= 12) {
+    repeatingThemes.push(`Annual profection house ${profYear.houseNumber} was also the profection house at age ${profYear.age - 12}.`);
   }
 
   const notes = [
-    eclipseConnections.length > 0 ? `${eclipseConnections.length} eclipse connection(s) this year — significant turning points.` : '',
-    saturnCycleConnection ? 'Responsibility cycle is active.' : '',
-    jupiterCycleConnection ? 'Growth cycle return year.' : '',
-    metonicReturn ? '19-year emotional cycle echo active.' : '',
-  ].filter(Boolean).join(' ') || 'No major cycle connections detected this year — a relatively independent chapter.';
+    eclipseConnections.length ? `${eclipseConnections.length} eclipse sensitive point(s) listed.` : '',
+    saturnCycleConnection ? 'Saturn sign repeat.' : '',
+    jupiterCycleConnection ? 'Jupiter sign repeat.' : '',
+    metonicReturn ? '19-year Moon cycle echo.' : '',
+  ].filter(Boolean).join(' ') || 'No sign-level cycle repeats detected.';
 
   return {
     eclipseConnections,

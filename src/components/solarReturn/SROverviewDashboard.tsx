@@ -95,34 +95,34 @@ const getShiftTags = (natal: string, sr: string): { label: string; cls: string }
 
 // ─── Expert-level opposite axis interpretations ─────────────────
 const OPPOSITE_AXIS_DEPTH: Record<string, string> = {
-  'Aries-Libra': 'The Aries-Libra axis is the axis of self versus other. Aries acts from personal will; Libra negotiates through relationship. When a planet shifts across this axis, the year demands you reconcile independence with compromise — the tension between "what I need" and "what the relationship needs." Neither side is wrong, but the year won\'t let you default to one without addressing the other.',
-  'Scorpio-Taurus': 'The Taurus-Scorpio axis is the axis of possession and release. Taurus holds, stabilizes, and builds material security; Scorpio strips away, transforms, and demands psychological honesty. A shift across this axis forces a reckoning between comfort and truth — what you cling to versus what must die so something more honest can emerge. This is one of the most intense axes in astrology.',
-  'Gemini-Sagittarius': 'The Gemini-Sagittarius axis is the axis of information versus meaning. Gemini gathers data, asks questions, stays curious; Sagittarius synthesizes, draws conclusions, seeks ultimate truth. A shift here pushes you from collecting to concluding (or vice versa) — you either need more facts before deciding, or you need to stop researching and commit to a belief.',
-  'Cancer-Capricorn': 'The Cancer-Capricorn axis is the axis of private life versus public life. Cancer nurtures, protects, and roots into family; Capricorn builds, achieves, and earns public authority. A shift here forces you to weigh emotional security against ambition — the year asks whether your professional climb supports or undermines the people who matter most.',
-  'Aquarius-Leo': 'The Leo-Aquarius axis is the axis of personal creativity versus collective contribution. Leo radiates individual brilliance and demands recognition; Aquarius serves the group and questions whether personal glory matters. A shift here recalibrates your relationship between self-expression and community — shine without overshadowing, or contribute without losing yourself.',
-  'Pisces-Virgo': 'The Virgo-Pisces axis is the axis of analysis versus surrender. Virgo refines, organizes, and fixes; Pisces dissolves, accepts, and trusts the invisible. A shift here demands you balance precision with intuition — either you\'ve been over-analyzing and need to let go, or you\'ve been drifting and need to get practical.',
+  'Aries-Libra': 'The Aries-Libra axis is the axis of self versus other. Aries acts from personal will; Libra negotiates through relationship. When a planet shifts across this axis, the year demands you reconcile independence with compromise: the tension between "what I need" and "what the relationship needs." Neither side is wrong, but the year won\'t let you default to one without addressing the other.',
+  'Scorpio-Taurus': 'The Taurus-Scorpio axis is the axis of possession and release. Taurus holds, stabilizes, and builds material security; Scorpio strips away, transforms, and demands psychological honesty. A shift across this axis forces a reckoning between comfort and truth: what you cling to versus what must die so something more honest can emerge. This is one of the most intense axes in astrology.',
+  'Gemini-Sagittarius': 'The Gemini-Sagittarius axis is the axis of information versus meaning. Gemini gathers data, asks questions, stays curious; Sagittarius synthesizes, draws conclusions, seeks ultimate truth. A shift here pushes you from collecting to concluding (or vice versa): you either need more facts before deciding, or you need to stop researching and commit to a belief.',
+  'Cancer-Capricorn': 'The Cancer-Capricorn axis is the axis of private life versus public life. Cancer nurtures, protects, and roots into family; Capricorn builds, achieves, and earns public authority. A shift here forces you to weigh emotional security against ambition: the year asks whether your professional climb supports or undermines the people who matter most.',
+  'Aquarius-Leo': 'The Leo-Aquarius axis is the axis of personal creativity versus collective contribution. Leo radiates individual brilliance and demands recognition; Aquarius serves the group and questions whether personal glory matters. A shift here recalibrates your relationship between self-expression and community: shine without overshadowing, or contribute without losing yourself.',
+  'Pisces-Virgo': 'The Virgo-Pisces axis is the axis of analysis versus surrender. Virgo refines, organizes, and fixes; Pisces dissolves, accepts, and trusts the invisible. A shift here demands you balance precision with intuition: either you\'ve been over-analyzing and need to let go, or you\'ve been drifting and need to get practical.',
 };
 
 const getAxisKey = (a: string, b: string): string => [a, b].sort().join('-');
 
 // ─── Same-element expert depth ──────────────────────────────────
 const SAME_ELEMENT_DEPTH: Record<string, string> = {
-  Fire: 'Both signs speak Fire — initiative, passion, and forward motion. The shift isn\'t a shock; it\'s a change in how that fire burns. Aries fire is a match strike (fast, personal, competitive). Leo fire is a bonfire (sustained, creative, performative). Sagittarius fire is a wildfire (expansive, philosophical, restless). The underlying drive remains action-oriented, but the style and target shift noticeably.',
-  Earth: 'Both signs share Earth\'s concern with tangible results, material stability, and practical execution. The shift changes the method, not the goal. Taurus Earth is sensory and accumulative. Virgo Earth is analytical and service-oriented. Capricorn Earth is structural and ambitious. You\'ll still be building — but with different tools and for different reasons.',
-  Air: 'Both signs operate through Air — ideas, communication, and social connection. Gemini Air is curious and scattered across many topics. Libra Air is relational and aesthetic, focused on fairness and beauty. Aquarius Air is systemic and unconventional, concerned with reform and innovation. There\'s a shared intellectual restlessness, but the conversation changes topics entirely.',
-  Water: 'Both signs process through Water — emotion, intuition, and deep feeling. The shift changes the depth and direction of that emotional current. Cancer Water is protective and familial. Scorpio Water is investigative and transformative. Pisces Water is boundaryless and spiritual. The feeling tone is familiar, but what triggers your emotions and how you process them shifts significantly.',
+  Fire: 'Both signs speak Fire: initiative, passion, and forward motion. The shift isn\'t a shock; it\'s a change in how that fire burns. Aries fire is a match strike (fast, personal, competitive). Leo fire is a bonfire (sustained, creative, performative). Sagittarius fire is a wildfire (expansive, philosophical, restless). The underlying drive remains action-oriented, but the style and target shift noticeably.',
+  Earth: 'Both signs share Earth\'s concern with tangible results, material stability, and practical execution. The shift changes the method, not the goal. Taurus Earth is sensory and accumulative. Virgo Earth is analytical and service-oriented. Capricorn Earth is structural and ambitious. You\'ll still be building: but with different tools and for different reasons.',
+  Air: 'Both signs operate through Air: ideas, communication, and social connection. Gemini Air is curious and scattered across many topics. Libra Air is relational and aesthetic, focused on fairness and beauty. Aquarius Air is systemic and unconventional, concerned with reform and innovation. There\'s a shared intellectual restlessness, but the conversation changes topics entirely.',
+  Water: 'Both signs process through Water: emotion, intuition, and deep feeling. The shift changes the depth and direction of that emotional current. Cancer Water is protective and familial. Scorpio Water is investigative and transformative. Pisces Water is boundaryless and spiritual. The feeling tone is familiar, but what triggers your emotions and how you process them shifts significantly.',
 };
 
 // ─── Expert intercepted sign interpretations ────────────────────
 const INTERCEPTION_SIGN_THEMES: Record<string, string> = {
-  Aries: 'Aries interception contains your capacity for direct, assertive action — buried inside a house rather than announcing itself at the cusp. You can\'t just "be bold" easily this year. Courage and initiative require deliberate cultivation. The first half of the year often feels frustratingly passive in this area; the Aries energy typically breaks through mid-year when enough internal pressure builds that it can no longer be suppressed.',
-  Taurus: 'Taurus interception contains your ability to stabilize, possess, and build material security. What you value and how you ground yourself isn\'t readily accessible — it takes conscious work to feel settled. Financial or sensory comfort may feel elusive until mid-year when the contained Taurus energy finds its outlet.',
+  Aries: 'Aries interception contains your capacity for direct, assertive action: buried inside a house rather than announcing itself at the cusp. You can\'t just "be bold" easily this year. Courage and initiative require deliberate cultivation. The first half of the year often feels frustratingly passive in this area; the Aries energy typically breaks through mid-year when enough internal pressure builds that it can no longer be suppressed.',
+  Taurus: 'Taurus interception contains your ability to stabilize, possess, and build material security. What you value and how you ground yourself isn\'t readily accessible: it takes conscious work to feel settled. Financial or sensory comfort may feel elusive until mid-year when the contained Taurus energy finds its outlet.',
   Gemini: 'Gemini interception suppresses your natural curiosity and communication style. You may struggle to articulate what you know or feel mentally foggy in the intercepted house\'s domain. The Gemini energy emerges later when you\'ve accumulated enough experience to finally name what you\'ve been processing.',
-  Cancer: 'Cancer interception contains your nurturing instincts and emotional security needs. The area of life ruled by this house feels emotionally unsafe at first — you can\'t easily access comfort or create belonging there. The Cancer energy breaks through when vulnerability is finally allowed.',
-  Leo: 'Leo interception suppresses your creative self-expression and visibility in this area. You want to shine here but the energy is locked — it feels like performing behind a curtain. The Leo energy emerges when you stop waiting for permission and create your own stage.',
+  Cancer: 'Cancer interception contains your nurturing instincts and emotional security needs. The area of life ruled by this house feels emotionally unsafe at first: you can\'t easily access comfort or create belonging there. The Cancer energy breaks through when vulnerability is finally allowed.',
+  Leo: 'Leo interception suppresses your creative self-expression and visibility in this area. You want to shine here but the energy is locked: it feels like performing behind a curtain. The Leo energy emerges when you stop waiting for permission and create your own stage.',
   Virgo: 'Virgo interception means your analytical and problem-solving abilities are contained. You see what needs fixing but can\'t easily act on it. The Virgo energy activates later when accumulated observation finally produces a clear, actionable plan.',
-  Libra: 'Libra interception contains your relational intelligence and diplomatic instincts. Partnerships and negotiations in this house\'s domain feel strained or one-sided early in the year — you can\'t easily find balance or fairness. The Libra energy surfaces when you stop over-accommodating and advocate for genuine equity.',
-  Scorpio: 'Scorpio interception locks your transformative power and psychological depth inside this house. Surface-level approaches don\'t work here, but going deep feels blocked. The Scorpio energy erupts — often suddenly — when the truth can no longer be contained.',
+  Libra: 'Libra interception contains your relational intelligence and diplomatic instincts. Partnerships and negotiations in this house\'s domain feel strained or one-sided early in the year: you can\'t easily find balance or fairness. The Libra energy surfaces when you stop over-accommodating and advocate for genuine equity.',
+  Scorpio: 'Scorpio interception locks your transformative power and psychological depth inside this house. Surface-level approaches don\'t work here, but going deep feels blocked. The Scorpio energy erupts, often suddenly, when the truth can no longer be contained.',
   Sagittarius: 'Sagittarius interception contains your ability to find meaning, see the big picture, and expand. The area feels confined or purposeless at first. The Sagittarius energy breaks through when a single experience or insight suddenly unlocks an entirely new perspective.',
   Capricorn: 'Capricorn interception suppresses your structural ambition and authority. You want to build something lasting but can\'t find traction. The Capricorn energy activates later when you\'ve earned enough credibility through patient, unglamorous work.',
   Aquarius: 'Aquarius interception contains your innovative thinking and desire for change. The status quo in this area feels immovable. The Aquarius energy breaks through when you stop trying to reform the system from within and find an unconventional side door.',
@@ -134,9 +134,9 @@ const getInterceptionTeaching = (intercepted: string[]): string => {
   let axisNote = '';
   if (axisPairs.length > 0) {
     const [a, b] = axisPairs[0];
-    axisNote = ` Interceptions always occur in opposite pairs. The ${a}-${b} axis being intercepted means an entire polarity is operating beneath the surface — neither the ${a} principle nor its counterbalance in ${b} has easy expression. The year's work is to consciously develop both sides. Usually one emerges first and pulls the other into awareness by mid-year.`;
+    axisNote = ` Interceptions occur in opposite pairs, so ${b} is intercepted along with ${a}. Neither sign appears on a house cusp in this chart.`;
   }
-  return `In solar return work, interception is a technical condition with real psychological consequences. When a sign is intercepted, it appears entirely within a house — no house cusp carries that sign. This means the sign's energy has no "front door." It can't announce itself; it must be excavated. You may not even recognize these needs exist until the second half of the year, when enough internal pressure forces them to the surface.${axisNote}`;
+  return `An intercepted sign sits entirely inside one house, so no house cusp in this Solar Return chart carries that sign. Some astrologers read this as a theme that may take longer to notice, because it does not rule any house cusp.${axisNote}`;
 };
 const ordinal = (n: number) => {
   const s = ['th','st','nd','rd'];
@@ -158,20 +158,20 @@ const aspectCategory = (type: string) => {
 };
 
 const getShiftHeadline = (planet: string, natalSign: string, srSign: string): string => {
-  if (natalSign === srSign) return `Staying in ${natalSign} — a year of deepening`;
-  if (isOpposite(natalSign, srSign)) return `${natalSign} → ${srSign} — the polarity axis activates`;
-  if (SIGN_ELEMENT[natalSign] === SIGN_ELEMENT[srSign]) return `${natalSign} → ${srSign} — same element, different expression`;
-  if (SIGN_MODALITY[natalSign] === SIGN_MODALITY[srSign]) return `${natalSign} → ${srSign} — same drive, different arena`;
-  return `${natalSign} → ${srSign} — a fundamentally different lens`;
+  if (natalSign === srSign) return `Staying in ${natalSign}: a year of deepening`;
+  if (isOpposite(natalSign, srSign)) return `${natalSign} → ${srSign}: the polarity axis activates`;
+  if (SIGN_ELEMENT[natalSign] === SIGN_ELEMENT[srSign]) return `${natalSign} → ${srSign}: same element, different expression`;
+  if (SIGN_MODALITY[natalSign] === SIGN_MODALITY[srSign]) return `${natalSign} → ${srSign}: same drive, different arena`;
+  return `${natalSign} → ${srSign}: a fundamentally different lens`;
 };
 
 const getShiftBody = (planet: string, natalSign: string, srSign: string): string => {
   const planetLabel = planet === 'Rising' ? 'your Ascendant (the mask you wear and how others first experience you)' : planet === 'Sun' ? 'your core identity and vitality' : 'your emotional needs and instinctive reactions';
 
   if (natalSign === srSign) {
-    if (planet === 'Sun') return 'Your core identity stays in its natal sign. In solar return work, this is a year of consolidation — the Sun reinforces patterns you already know. The gift is confidence and consistency; the risk is stagnation if you don\'t push into new territory within familiar ground.';
-    if (planet === 'Moon') return 'Your emotional needs this year mirror your natal Moon. What comforts you remains consistent — the same foods, people, and environments feel right. This is stabilizing for emotional health, but watch for complacency. The Moon in its natal sign deepens rather than disrupts.';
-    return 'Others see you much as they always have. The SR Ascendant matching your natal Rising means your public persona is reinforced — there\'s no cognitive dissonance between who you are and how you present. "What you see is what you get" works in your favor this year.';
+    if (planet === 'Sun') return 'Your core identity stays in its natal sign. In solar return work, this is a year of consolidation: the Sun reinforces patterns you already know. The gift is confidence and consistency; the risk is stagnation if you don\'t push into new territory within familiar ground.';
+    if (planet === 'Moon') return 'Your emotional needs this year mirror your natal Moon. What comforts you remains consistent: the same foods, people, and environments feel right. This is stabilizing for emotional health, but watch for complacency. The Moon in its natal sign deepens rather than disrupts.';
+    return 'Others see you much as they always have. The SR Ascendant matching your natal Rising means your public persona is reinforced: there\'s no cognitive dissonance between who you are and how you present. "What you see is what you get" works in your favor this year.';
   }
 
   const base = `This year, ${planetLabel} shifts from ${natalSign} to ${srSign}.`;
@@ -179,13 +179,13 @@ const getShiftBody = (planet: string, natalSign: string, srSign: string): string
   if (isOpposite(natalSign, srSign)) {
     const axisKey = getAxisKey(natalSign, srSign);
     const depth = OPPOSITE_AXIS_DEPTH[axisKey] || `The ${natalSign}-${srSign} axis activates a fundamental polarity. What was dominant becomes secondary, and what was unconscious rises to the surface. Expect to see the "other side" of your ${planet.toLowerCase()} nature this year.`;
-    return `${base} This is a full polarity reversal — one of the most significant shifts in solar return work. ${depth}`;
+    return `${base} This is a full polarity reversal: one of the most significant shifts in solar return work. ${depth}`;
   }
 
   if (SIGN_ELEMENT[natalSign] === SIGN_ELEMENT[srSign]) {
     const el = SIGN_ELEMENT[natalSign];
     const depth = SAME_ELEMENT_DEPTH[el] || '';
-    return `${base} Because both signs share the ${el} element, this isn't a jarring transition — it's more like changing rooms in the same house. The fundamental language is the same, but the dialect changes. ${depth}`;
+    return `${base} Because both signs share the ${el} element, this isn't a jarring transition: it's more like changing rooms in the same house. The fundamental language is the same, but the dialect changes. ${depth}`;
   }
 
   if (SIGN_MODALITY[natalSign] === SIGN_MODALITY[srSign]) {
@@ -193,10 +193,10 @@ const getShiftBody = (planet: string, natalSign: string, srSign: string): string
     const modDesc = mod === 'Cardinal' ? 'Both signs initiate action, but the arena and motivation change completely. You\'re still a starter, but what you\'re starting and why has shifted.' :
       mod === 'Fixed' ? 'Both signs commit with determination, but what they\'re committed to and why shifts dramatically. Your tenacity is intact; the target is different.' :
       'Both signs adapt and adjust, but the information they\'re processing and how they communicate it transforms. Flexibility is your constant; what bends around you changes.';
-    return `${base} They share the ${mod} modality — ${modDesc} The underlying operating system is familiar, but the content is entirely new.`;
+    return `${base} They share the ${mod} modality: ${modDesc} The underlying operating system is familiar, but the content is entirely new.`;
   }
 
-  return `${base} This is a significant recalibration — different element, different modality, no shared ground. The way ${planetLabel} operates this year has almost no overlap with your natal pattern. This can feel disorienting in the first months, but it's the solar return's way of forcing growth in areas you wouldn't naturally explore.`;
+  return `${base} This is a significant recalibration: different element, different modality, no shared ground. The way ${planetLabel} operates this year has almost no overlap with your natal pattern. This can feel disorienting in the first months, but it's the solar return's way of forcing growth in areas you wouldn't naturally explore.`;
 };
 
 interface Props {
@@ -255,7 +255,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
       {/* ─── 1. Screen Header ─── */}
       <div className="border-b border-border pb-3">
         <h2 className="text-xl font-serif text-foreground">
-          Solar Return {srChart.solarReturnYear} — {natalChart.name}
+          Solar Return {srChart.solarReturnYear}: {natalChart.name}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
           {SIGN_SYMBOLS[natalSunSign]} {natalSunSign} Sun · {SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign} Moon · {SIGN_SYMBOLS[natalRisingSign]} {natalRisingSign} Rising · Born {formatDateMMDDYYYY(natalChart.birthDate)}
@@ -343,7 +343,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
               })}
               <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">
                 {dominants.length > 1
-                  ? `${dominants.join(' and ')} are tied — the year balances both elemental styles equally.`
+                  ? `${dominants.join(' and ')} are tied: the year balances both elemental styles equally.`
                   : eb.interpretation?.split('.').slice(0, 1).join('.') + '.'}
               </p>
             </div>
@@ -471,18 +471,18 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
             Pluto: 'power, transformation, intense preoccupation, and where you undergo psychological death and rebirth',
           };
           const SIGN_STYLE: Record<string, string> = {
-            Aries: 'impulsively, directly, and with raw courage — acting before thinking',
-            Taurus: 'slowly, sensually, and with stubborn persistence — prioritizing comfort and stability',
-            Gemini: 'verbally, adaptively, and with intellectual curiosity — through conversation and information-gathering',
-            Cancer: 'protectively, emotionally, and with deep sensitivity — through nurturing and emotional attunement',
-            Leo: 'dramatically, generously, and with creative confidence — through self-expression and warm-hearted leadership',
-            Virgo: 'analytically, precisely, and with practical service — through improvement and attention to detail',
-            Libra: 'diplomatically, aesthetically, and through partnership — seeking fairness and harmony in all interactions',
-            Scorpio: 'intensely, strategically, and with psychological depth — through investigation and emotional honesty',
-            Sagittarius: 'expansively, philosophically, and with restless optimism — through exploration and meaning-making',
-            Capricorn: 'methodically, ambitiously, and with structural discipline — through long-term planning and earned authority',
-            Aquarius: 'unconventionally, collectively, and with detached innovation — through reform and group consciousness',
-            Pisces: 'intuitively, compassionately, and with fluid boundaries — through imagination, empathy, and surrender to what cannot be controlled',
+            Aries: 'impulsively, directly, and with raw courage: acting before thinking',
+            Taurus: 'slowly, sensually, and with stubborn persistence: prioritizing comfort and stability',
+            Gemini: 'verbally, adaptively, and with intellectual curiosity: through conversation and information-gathering',
+            Cancer: 'protectively, emotionally, and with deep sensitivity: through nurturing and emotional attunement',
+            Leo: 'dramatically, generously, and with creative confidence: through self-expression and warm-hearted leadership',
+            Virgo: 'analytically, precisely, and with practical service: through improvement and attention to detail',
+            Libra: 'diplomatically, aesthetically, and through partnership: seeking fairness and harmony in all interactions',
+            Scorpio: 'intensely, strategically, and with psychological depth: through investigation and emotional honesty',
+            Sagittarius: 'expansively, philosophically, and with restless optimism: through exploration and meaning-making',
+            Capricorn: 'methodically, ambitiously, and with structural discipline: through long-term planning and earned authority',
+            Aquarius: 'unconventionally, collectively, and with detached innovation: through reform and group consciousness',
+            Pisces: 'intuitively, compassionately, and with fluid boundaries: through imagination, empathy, and surrender to what cannot be controlled',
           };
           const HOUSE_WHERE: Record<number, string> = {
             1: 'in matters of personal identity, physical body, and how you initiate new beginnings',
@@ -504,7 +504,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           const where = house ? (HOUSE_WHERE[house] || `in the ${ordinal(house)} house domain`) : '';
           
           if (role === 'lord') {
-            return `As the ruler of your natal Ascendant, ${planet} governs your overall vitality and life direction. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `Placed in the ${ordinal(house)} house, you feel this most directly ${where}. This is where the year's energy concentrates — this house becomes the stage where your identity is most actively tested and developed.` : ''}`;
+            return `As the ruler of your natal Ascendant, ${planet} governs your overall vitality and life direction. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `Placed in the ${ordinal(house)} house, you feel this most directly ${where}. This is where the year's energy concentrates: this house becomes the stage where your identity is most actively tested and developed.` : ''}`;
           }
           return `As Time Lord, ${planet} sets the year's agenda and determines the conditions under which life delivers its lessons. ${planet} represents ${drive}. In ${sign}, it operates ${style}. ${house ? `In the ${ordinal(house)} house, the agenda plays out ${where}.` : ''}`;
         };
@@ -518,11 +518,11 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
           const opposite = OPPOSITE_PAIRS.find(([a, b]) => a === sign || b === sign);
           const oppSign = opposite ? (opposite[0] === sign ? opposite[1] : opposite[0]) : null;
 
-          return `However, ${sign} is intercepted in this Solar Return chart — it has no house cusp to call its own. This fundamentally changes how ${planet} as ${roleLabel} delivers its lessons. Instead of direct, immediate expression, ${planet}'s ${sign} agenda operates under pressure: contained, delayed, and building force beneath the surface. The first half of the year may feel frustratingly blocked in this area — you know what you need to do, but the path is not straightforward. The ${sign} energy typically breaks through mid-year when enough internal pressure accumulates that it can no longer be suppressed.${oppSign ? ` Because interceptions occur in axis pairs, ${oppSign} is also intercepted — the opposite polarity is equally contained. Often the ${oppSign} side surfaces first and pulls ${sign} into awareness by contrast.` : ''} This is paradoxically very ${planet} in nature: the lesson isn't handed to you — it must be earned through patience, pressure, and deliberate cultivation.`;
+          return `However, ${sign} is intercepted in this Solar Return chart, it has no house cusp to call its own. This fundamentally changes how ${planet} as ${roleLabel} delivers its lessons. Instead of direct, immediate expression, ${planet}'s ${sign} agenda operates under pressure: contained, delayed, and building force beneath the surface. The first half of the year may feel frustratingly blocked in this area, you know what you need to do, but the path is not straightforward. The ${sign} energy typically breaks through mid-year when enough internal pressure accumulates that it can no longer be suppressed.${oppSign ? ` Because interceptions occur in axis pairs, ${oppSign} is also intercepted, the opposite polarity is equally contained. Often the ${oppSign} side surfaces first and pulls ${sign} into awareness by contrast.` : ''} This is paradoxically very ${planet} in nature: the lesson isn't handed to you, it must be earned through patience, pressure, and deliberate cultivation.`;
         };
 
         const getDoubleEmphasisExpert = (planet: string, sign: string, house: number | null): string => {
-          return `When the same planet serves as both the natal chart ruler (ruler of the natal Ascendant) and the Annual Profection Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme — your vitality, your timing, your opportunities, and your challenges — routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year — they function as master switches for the entire solar return.`;
+          return `When the same planet serves as both the natal chart ruler (ruler of the natal Ascendant) and the Annual Profection Time Lord (ruler of the profected house), the year becomes a single-planet year. Every major theme, your vitality, your timing, your opportunities, and your challenges, routes through ${planet}. This is extraordinarily focused. Instead of two different planets pulling you in different directions, ${planet} is the sole gatekeeper. What ${planet} touches, thrives. What ${planet} ignores, stalls. In ${sign}${house ? ` in the ${ordinal(house)} house` : ''}, the style and arena are clear: every door opens or closes through ${planet}'s condition. Pay attention to transits hitting ${planet} this year, they function as master switches for the entire solar return.`;
         };
 
         return (
@@ -578,7 +578,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                         return (
                           <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
                             <span className="text-foreground font-medium">{a.type} {other}</span> ({a.orb.toFixed(1)}° orb)
-                            {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                            {a.interpretation ? `: ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
                           </p>
                         );
                       })}
@@ -643,7 +643,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                         return (
                           <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
                             <span className="text-foreground font-medium">{a.type} {other}</span> ({a.orb.toFixed(1)}° orb)
-                            {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                            {a.interpretation ? `: ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
                           </p>
                         );
                       })}
@@ -661,7 +661,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
               <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{PLANET_SYMBOLS[lord.planet]}</span>
-                  <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">Double Emphasis — Single-Planet Year</p>
+                  <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">Double Emphasis: Single-Planet Year</p>
                 </div>
                 <p className="text-xs font-medium text-foreground">
                   {lord.planet} serves as both the natal chart ruler and the Annual Profection Time Lord
@@ -677,7 +677,7 @@ export const SROverviewDashboard = ({ analysis, natalChart, srChart }: Props) =>
                       return (
                         <p key={i} className="text-[11px] text-muted-foreground leading-relaxed">
                           <span className="text-foreground font-medium">{PLANET_SYMBOLS[other] || ''} {a.type} {other}</span> ({a.orb.toFixed(1)}°)
-                          {a.interpretation ? ` — ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
+                          {a.interpretation ? `: ${a.interpretation.split('.').slice(0, 1).join('.')}.` : ''}
                         </p>
                       );
                     })}

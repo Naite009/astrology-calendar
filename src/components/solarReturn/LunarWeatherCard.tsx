@@ -26,7 +26,7 @@ export const LunarWeatherCard = ({ weather }: Props) => {
           <Moon size={12} /> Lunar Emotional Weather Map
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Your emotional rhythm mapped month by month — natal Moon in {weather.natalMoonSign}
+          Your emotional rhythm mapped month by month: natal Moon in {weather.natalMoonSign}
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export const LunarWeatherCard = ({ weather }: Props) => {
           {/* Lunar Return */}
           <div className="bg-card p-3 rounded-sm border border-border">
             <div className="text-[9px] uppercase tracking-widest text-primary font-medium mb-1 flex items-center gap-1">
-              <Droplets size={10} /> Lunar Return — Moon in {weather.natalMoonSign}
+              <Droplets size={10} /> Lunar Return: Moon in {weather.natalMoonSign}
             </div>
             <p className="text-[11px] text-foreground leading-relaxed">{weather.months[expandedMonth].lunarReturn.emotionalTheme}</p>
             <div className="flex items-center gap-1 mt-2">
