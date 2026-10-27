@@ -80,5 +80,7 @@ export function solarReturnContactMeaning(c: { planet1: string; planet2: string;
         .replace(/They may/g, 'You may').replace(/they /g, 'you ').replace(/their /g, 'your ').replace(/themselves/g, 'yourself');
     } catch { return ''; }
   }
+  const scene = c.house1 ? life[c.house1] : undefined;
+  if (text && scene && !/\b(?:Pluto)\b/.test(pair.join())) text = `${text} This year it may show up around ${scene.area.replace(/^your /, 'your ')}, for example if you ${scene.action}.`;
   return text && !validateSolarReturnProse(text).length ? text : '';
 }

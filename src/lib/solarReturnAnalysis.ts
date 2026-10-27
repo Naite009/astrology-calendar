@@ -945,7 +945,7 @@ export const analyzeSolarReturn = (
           type: asp.type, orb: asp.orb, exact: 0,
           source: 'sr-to-natal',
           label: buildAspectLabel(srPlanet, 'SR', asp.type, natPlanet, 'Natal'),
-          interpretation: solarReturnContactMeaning({ planet1: srPlanet, planet2: natPlanet, type: asp.type, orb: asp.orb, sign1: srPos.sign, sign2: natPos.sign, house1: null }),
+          interpretation: solarReturnContactMeaning({ planet1: srPlanet, planet2: natPlanet, type: asp.type, orb: asp.orb, sign1: srPos.sign, sign2: natPos.sign, house1: planetSRHouses[srPlanet] ?? null }),
         });
       }
     }
@@ -972,7 +972,7 @@ export const analyzeSolarReturn = (
           type: asp.type, orb: asp.orb, exact: 0,
           source: 'sr-internal',
           label: buildAspectLabel(p1, 'SR', asp.type, p2, 'SR'),
-          interpretation: solarReturnContactMeaning({ planet1: p1, planet2: p2, type: asp.type, orb: asp.orb, sign1: pos1.sign, sign2: pos2.sign, house1: null }),
+          interpretation: solarReturnContactMeaning({ planet1: p1, planet2: p2, type: asp.type, orb: asp.orb, sign1: pos1.sign, sign2: pos2.sign, house1: planetSRHouses[p1] ?? null }),
         });
       }
     }
