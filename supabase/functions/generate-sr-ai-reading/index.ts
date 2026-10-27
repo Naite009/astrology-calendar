@@ -42,16 +42,16 @@ serve(async (req) => {
     // placements, so it cannot mix natal and Solar Return layers.
     const units = (d.prioritizedSynthesis?.themes || []).slice(0, 4)
       .filter((t: any) => typeof t?.meaning === 'string' && t.meaning.trim())
-      .map((t: any, i: number) => ({ unit: i + 1, heading: String(t.title || `Priority ${i + 1}`), meaning: t.meaning, layer: t.layer || '' }));
+      .map((t: any, i: number) => ({ unit: i + 1, meaning: t.meaning, planets: (String(t.title || '').match(/\b(?:Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)\b/g) || []) }));
     const longer = d.prioritizedSynthesis?.longerTerm?.meaning ? { meaning: d.prioritizedSynthesis.longerTerm.meaning, note: 'Longer-term progressed context, not a return placement.' } : null;
     if (!units.length) return new Response(JSON.stringify({ error: 'Reading withheld: no validated interpretation units' }), { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const ctx = JSON.stringify({ name: d.name, year: d.solarReturnYear, units, longerTerm: longer });
     const systemPrompt = `${SOLAR_RETURN_PROSE_STANDARD}
 Age: ${age ?? 'unknown'}. Adapt examples to age without assuming marriage, children, occupation or life events. Keep minors' examples nonsexual and age appropriate.
-TASK: You receive numbered interpretation units whose meaning has already been checked against the chart. Write exactly one "## " section per unit, in the given order, using the unit heading (you may shorten it to plain words), then ${longer ? 'one "## Longer-term context" section from longerTerm, then ' : ''}one "## How these fit together" section.
+TASK: You receive numbered interpretation units whose meaning has already been checked against the chart. Write exactly one "## " section per unit, in the given order, each with your own plain 3 to 6 word heading naming its life area, then ${longer ? 'one "## Longer-term context" section from longerTerm, then ' : ''}one "## How these fit together" section.
 For each unit section: 2 or 3 sentences, at most 70 words, written to "you". Keep the unit's life area and its concrete example (the specific thing you might do, review, discuss, schedule or choose), and say why it may matter this year. You may reword for flow but must not add new events, people, outcomes, health, money amounts or predictions.
 "How these fit together": 2 or 3 sentences naming one practical way two of the units connect in an ordinary week (for example the same plan, conversation or schedule decision). Do not invent a conflict or tension, and do not use bridge phrases.
-NEVER write degrees, signs, house numbers, aspect names, orbs, dates, "natal", "Solar Return", "return chart", retrograde or dignity. ${mode === 'astro' ? 'You may name a planet only if it appears in the unit heading.' : 'Use no astrological terms at all.'}
+NEVER write degrees, signs, house numbers, aspect names, orbs, dates, "natal", "Solar Return", "return chart", retrograde or dignity. ${mode === 'astro' ? 'You may name a planet only if it is listed in that unit\'s planets.' : 'Use no astrological terms at all.'}
 Use "may", "might" or "could"; no certainty words (will, always, never, guaranteed, destined, inevitable). No em dashes.`;
     const userPrompt = `Write the yearly reading for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''} from these units only.\n\n${ctx}`;
 
