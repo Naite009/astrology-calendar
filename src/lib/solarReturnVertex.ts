@@ -139,131 +139,21 @@ export function parseLatitudeFromLocation(location: string): number | null {
   return null;
 }
 
-// ─── Vertex in Sign Interpretations ─────────────────────────────────
 
-export const vertexInSign: Record<string, {
-  title: string;
-  fatedTheme: string;
-  encounters: string;
-  lesson: string;
-}> = {
-  Aries: {
-    title: 'Significant-feeling Self-Assertion',
-    fatedTheme: 'This year\'s Vertex placement may point toward courage, independence, and taking the initiative. Significant-feeling events require you to stand on your own, fight for yourself, and claim your personal power — even when you would prefer to defer.',
-    encounters: 'You may encounter bold, pioneering individuals who catalyze your own assertiveness. A warrior figure, entrepreneur, or someone who forces you to compete may appear at a turning point.',
-    lesson: 'The universe is teaching you that waiting for permission is no longer an option. The fated encounters of this year demand that you ACT, even imperfectly, rather than deliberate endlessly.',
-  },
-  Taurus: {
-    title: 'Significant-feeling Grounding',
-    fatedTheme: 'This year\'s Vertex placement may point toward matters of material security, beauty, and sensual experience. Significant-feeling events connect you to the physical world — land, money, the body, art, and what endures.',
-    encounters: 'You may meet someone who embodies stability, sensuality, or artistic mastery. A business partner, artisan, or someone connected to the earth (farming, real estate, crafts) may appear as a significant-feeling figure.',
-    lesson: 'The lesson is permanence — building something that lasts rather than chasing what is exciting but ephemeral. Value what is real and tangible.',
-  },
-  Gemini: {
-    title: 'Significant-feeling Connection',
-    fatedTheme: 'This year\'s Vertex placement may point toward communication, ideas, and unexpected information this year. A single conversation, letter, email, or piece of news may change the course of your year.',
-    encounters: 'A messenger figure — a writer, teacher, sibling, neighbor, or communicator — appears at a pivotal moment. Twins, duality, and choosing between two paths are themes.',
-    lesson: 'The universe is teaching you to listen, learn, and remain curious. The significant-feeling path runs through information and exchange, not isolation.',
-  },
-  Cancer: {
-    title: 'Significant-feeling Belonging',
-    fatedTheme: 'This year\'s Vertex placement may point toward home, family, and emotional roots. A significant-feeling event may involve a parent, your living situation, or the creation of a family structure.',
-    encounters: 'A maternal or nurturing figure may appear with uncanny timing. Family members you did not expect to reconnect with may become central. Real estate transactions have a "meant to be" quality.',
-    lesson: 'The lesson is about belonging — not just having a house, but having a HOME. Emotional safety is the foundation from which everything else grows.',
-  },
-  Leo: {
-    title: 'Significant-feeling Self-Expression',
-    fatedTheme: 'This year may ask you to be SEEN this year. Creative expression, performance, romance, and leadership are the arenas where significant-feeling encounters occur.',
-    encounters: 'A lover, creative collaborator, or someone who reflects your magnificence back to you may appear at a crucial moment. Children may be central to the significant-feeling narrative.',
-    lesson: 'You are being taught that your light is not optional — hiding it serves no one. The significant-feeling events of this year push you onto the stage of your own life.',
-  },
-  Virgo: {
-    title: 'Significant-feeling Service',
-    fatedTheme: 'This year\'s Vertex placement may point toward health, healing, and meaningful work. A significant-feeling event may involve a health crisis, a work opportunity, or a call to service that you cannot refuse.',
-    encounters: 'A healer, mentor, or master craftsperson may appear with perfect timing. Someone who needs your specific skills may cross your path in a way that feels orchestrated by fate.',
-    lesson: 'The lesson is that your gifts are not just for you — they are meant to serve something larger. Precision, humility, and devotion to craft are the significant-feeling curriculum.',
-  },
-  Libra: {
-    title: 'Significant-feeling Partnership',
-    fatedTheme: 'This year\'s Vertex placement may point toward relationships this year. A significant-feeling encounter with a significant other — romantic, business, or artistic — is one of the strongest possibilities of the entire Solar Return.',
-    encounters: 'A partner, collaborator, or even an adversary appears at the exact moment when balance in your life is most needed. Marriage, contracts, and legal agreements carry a significant-feeling quality.',
-    lesson: 'The lesson is that you cannot do this year alone. Relationship IS the curriculum. Fairness, beauty, and the courage to truly partner define the significant-feeling path.',
-  },
-  Scorpio: {
-    title: 'Significant-feeling Transformation',
-    fatedTheme: 'This year\'s Vertex placement may point toward psychological death and rebirth. Significant-feeling events strip away what is no longer honest, forcing transformation through crisis, intimacy, or confrontation with power.',
-    encounters: 'An intensely transformative individual — a therapist, lover, financial partner, or power figure — enters your life at a pivotal moment. The encounter is unforgettable and irreversible.',
-    lesson: 'The universe is teaching you about surrender. What must die cannot be saved, and what is being born cannot be stopped. Trust the process of destruction and renewal.',
-  },
-  Sagittarius: {
-    title: 'Significant-feeling Expansion',
-    fatedTheme: 'This year\'s Vertex placement may point toward travel, education, and encounters with foreign cultures or philosophies. A significant-feeling journey — physical or intellectual — changes your worldview permanently.',
-    encounters: 'A teacher, guru, foreign national, or philosopher appears at the perfect moment. A travel experience or academic opportunity arrives as if orchestrated by fate.',
-    lesson: 'The lesson is that your current worldview is too small. The significant-feeling events of this year stretch you beyond comfortable beliefs into a broader understanding of truth.',
-  },
-  Capricorn: {
-    title: 'Significant-feeling Responsibility',
-    fatedTheme: 'This year\'s Vertex placement may point toward authority, career, and the assumption of serious responsibility. A significant-feeling event involves your professional life, public reputation, or relationship with institutions.',
-    encounters: 'A boss, mentor, authority figure, or institution becomes the catalyst for significant-feeling developments. Promotions, demotions, or career turning points arrive with a sense of inevitability.',
-    lesson: 'The lesson is about mastery and accountability. The significant-feeling path runs through accepting the weight of responsibility and building something that matters in the real world.',
-  },
-  Aquarius: {
-    title: 'Significant-feeling Liberation',
-    fatedTheme: 'This year\'s Vertex placement may point toward sudden breaks, innovations, and encounters with unconventional people or groups. A significant-feeling event disrupts the status quo and forces evolution.',
-    encounters: 'A revolutionary, iconoclast, or visionary enters your life at a turning point. Technology, science, or progressive social movements may be the vehicle for significant-feeling change.',
-    lesson: 'The universe is teaching you that freedom IS the path. The significant-feeling events of this year liberate you from structures, beliefs, or relationships that have become prisons.',
-  },
-  Pisces: {
-    title: 'Significant-feeling Surrender',
-    fatedTheme: 'This year\'s Vertex placement may point toward spiritual experience, artistic inspiration, and compassionate service. Significant-feeling events dissolve boundaries and connect you to something transcendent.',
-    encounters: 'A spiritual teacher, artist, healer, or someone in need of compassion appears at a crucial moment. The encounter may feel mystical, dreamlike, or beyond rational explanation.',
-    lesson: 'The lesson is that control is an illusion. The significant-feeling events of this year teach you to trust the flow, serve without expectation, and find meaning in surrender.',
-  },
-};
+import { solarReturnHouseMeaning } from './solarReturnClientMeaning';
 
-// ─── Vertex in House Interpretations ────────────────────────────────
+// The Vertex is a secondary point. Sign alone cannot establish an encounter, event or lesson,
+// so no sign-only client prose is published. House meaning uses the shared client-meaning gate.
+export const vertexInSign: Record<string, { title: string; fatedTheme: string; encounters: string; lesson: string }> = {};
 
-export const vertexInHouse: Record<number, {
-  title: string;
-  description: string;
-  fatedArea: string;
-}> = {
-  5: {
-    title: 'Significant-feeling Creativity & Romance',
-    description: 'The Vertex in the 5th house is one of the most common and powerful placements for significant-feeling romantic encounters, creative breakthroughs, and significant events involving children. Love that arrives this year may carry a "destined" quality — you feel compelled toward someone or something creative without understanding why.',
-    fatedArea: 'Romance, children, creative projects, self-expression, performance',
-  },
-  6: {
-    title: 'Significant-feeling Work & Health Turning Points',
-    description: 'The Vertex in the 6th house brings significant-feeling events through daily work, health matters, or service encounters. A job opportunity, health crisis, or someone you serve may change your trajectory. The "ordinary" becomes the vehicle for the notable.',
-    fatedArea: 'Work opportunities, health events, service encounters, daily routine changes',
-  },
-  7: {
-    title: 'Significant-feeling Partnerships & Contracts',
-    description: 'The Vertex in the 7th house is the most classically "significant-feeling" placement for relationships. Significant others — romantic partners, business partners, or even open adversaries — appear with uncanny timing. Marriage, contracts, and legal agreements carry a destined quality.',
-    fatedArea: 'Marriage, partnerships, contracts, legal matters, significant one-on-one encounters',
-  },
-  8: {
-    title: 'Significant-feeling Transformation & Crisis',
-    description: 'The Vertex in the 8th house brings significant-feeling encounters through crisis, intimacy, shared resources, or psychological transformation. Events involving death, inheritance, sexuality, or deep psychological change feel orchestrated by forces beyond your control.',
-    fatedArea: 'Intimacy, shared finances, inheritance, crisis events, psychological transformation',
-  },
-};
+const HOUSE_TITLES = ['', 'Self-presentation', 'Income and spending', 'Conversations and learning', 'Home and private life', 'Enjoyment and creative work', 'Workload and routines', 'Close relationships and agreements', 'Shared money and responsibilities', 'Study and travel plans', 'Work and public responsibilities', 'Friendships and group plans', 'Private time and unfinished work'];
+export const vertexInHouse: Record<number, { title: string; description: string; fatedArea: string }> = Object.fromEntries(
+  Array.from({ length: 12 }, (_, i) => i + 1).map(h => [h, {
+    title: `Vertex in ${HOUSE_TITLES[h]}`,
+    description: solarReturnHouseMeaning(h, 'Vertex').replace(/^This year, /, 'This year, as a secondary point, the Vertex suggests '),
+    fatedArea: HOUSE_TITLES[h].toLowerCase(),
+  }]),
+);
 
-// ─── Vertex Aspects ─────────────────────────────────────────────────
-
-export const vertexAspectMeanings: Record<string, string> = {
-  Sun: 'A significant-feeling encounter with an authority figure, leader, or someone who illuminates your identity. Meeting your "other self" — someone who reflects who you are meant to become.',
-  Moon: 'A significant-feeling emotional connection — someone who instinctively understands your needs. A woman or nurturing figure appears at a pivotal moment. Family events carry a destined quality.',
-  Mercury: 'A significant-feeling message, conversation, or piece of information changes everything. A sibling, writer, or communicator is the catalyst. Words heard at the right moment alter your path.',
-  Venus: 'One of the strongest indicators of a significant-feeling love encounter. Meeting someone who embodies beauty, love, or artistic inspiration. Financial windfalls through destined connections.',
-  Mars: 'A significant-feeling confrontation or passionate encounter. Someone pushes you into action you would not have taken alone. A competitor or lover appears with irresistible force.',
-  Jupiter: 'A significant-feeling opportunity or encounter with a benefactor, teacher, or generous soul. Luck arrives through someone else\'s intervention. Travel or education opens a destined door.',
-  Saturn: 'A significant-feeling encounter with responsibility, limitation, or an authority figure who shapes your maturity. A difficult but necessary lesson arrives through relationship.',
-  Uranus: 'A sudden, unexpected significant-feeling encounter that shatters the status quo. Someone or something disrupts your life in a way that ultimately liberates you. The most "electric" vertex contact.',
-  Neptune: 'A significant-feeling spiritual, artistic, or compassionate encounter. Meeting a soulmate or spiritual teacher. The danger of idealization — is this destiny or delusion?',
-  Pluto: 'The most transformative significant-feeling encounter possible. Meeting someone who permanently alters your psychological landscape. Power, death, rebirth, and irreversible change through another person.',
-  NorthNode: 'A supremely significant-feeling encounter — the Vertex and North Node together indicate a person or event that is directly connected to your soul\'s evolutionary purpose this year.',
-  Chiron: 'A fated encounter with a healing-through-understanding or a situation that triggers an area of deep sensitivity for you — but this time, for the purpose of healing rather than re-wounding.',
-  Ascendant: 'A significant-feeling encounter that changes how you see yourself and how others see you. Someone appears who mirrors your identity back to you in a new way.',
-};
+// Pair-only Vertex contact meanings lacked orbs, houses and chart layers; contacts are listed as evidence only.
+export const vertexAspectMeanings: Record<string, string> = {};
