@@ -2537,20 +2537,9 @@ const SRNarrativeBox = ({ analysis, srChart, natalChart }: {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('generate-sr-narrative', {
-        body: {
-          analysisData: analysis,
-          chartName: natalChart.name,
-          srYear: srChart.solarReturnYear,
-          referenceExcerpts: buildRefBlock(),
-        },
-      });
-      if (fnError) throw fnError;
-      if (data?.narrative) {
-        setNarrative(data.narrative);
-      } else {
-        throw new Error('No narrative returned');
-      }
+      const controller = new AbortController();
+      const text = await fetchReading(buildFullJsonStandalone(analysis, srChart, natalChart), 'plain', controller.signal, () => {});
+      setNarrative(text);
     } catch (err: any) {
       console.error('SR narrative error:', err);
       setError(err.message || 'Failed to generate narrative');
