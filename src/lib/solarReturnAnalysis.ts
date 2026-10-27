@@ -1,4 +1,5 @@
 import { guardSolarReturnProse } from './solarReturnProseBoundary';
+import { solarReturnContactMeaning } from './solarReturnClientMeaning';
 import { signPositionToLongitude } from "./ephemerisEngine";
 import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
@@ -610,30 +611,7 @@ const PLANET_THEMES: Record<string, { domain: string; drive: string; body: strin
   Eris: { domain: 'disruption, whistleblowing, and necessary confrontation', drive: 'to expose what is hidden and demand honesty', body: '' },
 };
 
-const ASPECT_FEEL: Record<string, { verb: string; quality: string; experience: string }> = {
-  Conjunction: { verb: 'combines with', quality: 'a single blended motive', experience: 'These two motives tend to move together this year, so it can be hard to tell where one ends and the other begins.' },
-  Opposition: { verb: 'sits opposite', quality: 'two valid needs asking for balance', experience: 'These two needs pull in different directions, and choosing only one side rarely settles it. Other people may voice the side you are not expressing.' },
-  Trine: { verb: 'works easily with', quality: 'a natural working relationship', experience: 'These two work together without much strain, which is useful but easy to leave unused. It tends to reward deliberate attention.' },
-  Square: { verb: 'grinds against', quality: 'productive friction', experience: 'These two ask for different things at the same time, which can show up as frustration or a decision you keep postponing. Handled directly, it usually leads to a change in how you operate.' },
-  Sextile: { verb: 'quietly supports', quality: 'an opening that needs to be used', experience: 'This is an opportunity rather than a result. It tends to show up when you initiate.' },
-  Quincunx: { verb: 'sits awkwardly with', quality: 'ongoing small adjustments', experience: 'These two do not translate neatly into each other, so it can feel like a low level mismatch that asks for repeated small adjustments rather than one decision.' },
-};
-
-const aspectMeaning = (p1: string, p2: string, type: string): string => {
-  const t1 = PLANET_THEMES[p1] || { domain: `${p1} themes`, drive: `${p1}'s drive`, body: '' };
-  const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
-  const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
-
-  return `Solar Return ${p1} (${t1.domain}) ${feel.verb} natal ${p2} (${t2.domain}). ${feel.experience} In practice, your longstanding ${p2} pattern, the drive ${t2.drive}, is likely to be more active this year. Read this as ${feel.quality} rather than as a fixed outcome.`;
-};
-
-const internalAspectMeaning = (p1: string, p2: string, type: string): string => {
-  const t1 = PLANET_THEMES[p1] || { domain: `${p1} themes`, drive: `${p1}'s drive`, body: '' };
-  const t2 = PLANET_THEMES[p2] || { domain: `${p2} themes`, drive: `${p2}'s drive`, body: '' };
-  const feel = ASPECT_FEEL[type] || ASPECT_FEEL.Conjunction;
-
-  return `${p1} (${t1.domain}) ${feel.verb} ${p2} (${t2.domain}) inside the Solar Return chart itself. ${feel.experience} This one sits in the background of the whole year rather than in one life area, so it can color how the more specific themes play out.`;
-};
+// Pair-only aspect templates were replaced by solarReturnContactMeaning (shared client meaning).
 
 // ─── Stellium interpretation helpers ────────────────────────────────
 
@@ -967,7 +945,7 @@ export const analyzeSolarReturn = (
           type: asp.type, orb: asp.orb, exact: 0,
           source: 'sr-to-natal',
           label: buildAspectLabel(srPlanet, 'SR', asp.type, natPlanet, 'Natal'),
-          interpretation: aspectMeaning(srPlanet, natPlanet, asp.type),
+          interpretation: solarReturnContactMeaning({ planet1: srPlanet, planet2: natPlanet, type: asp.type, orb: asp.orb, sign1: srPos.sign, sign2: natPos.sign, house1: null }),
         });
       }
     }
@@ -994,7 +972,7 @@ export const analyzeSolarReturn = (
           type: asp.type, orb: asp.orb, exact: 0,
           source: 'sr-internal',
           label: buildAspectLabel(p1, 'SR', asp.type, p2, 'SR'),
-          interpretation: internalAspectMeaning(p1, p2, asp.type),
+          interpretation: solarReturnContactMeaning({ planet1: p1, planet2: p2, type: asp.type, orb: asp.orb, sign1: pos1.sign, sign2: pos2.sign, house1: null }),
         });
       }
     }

@@ -1,10 +1,8 @@
 import type { SolarReturnAnalysis } from './solarReturnAnalysis';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import type { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { getNatalAspectExpression } from './interpretation/psychologicalFunctions';
-import type { RankedAspect } from './aspectRanking';
 import { buildSolarReturnProgressionContext, resolveSolarReturnProvenance } from './solarReturnProvenance';
-import { solarReturnHouseMeaning, solarReturnProfectionMeaning } from './solarReturnClientMeaning';
+import { solarReturnHouseMeaning, solarReturnProfectionMeaning, solarReturnContactMeaning } from './solarReturnClientMeaning';
 import { validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
 import { guardSolarReturnProse } from './solarReturnProseBoundary';
 
@@ -38,9 +36,7 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
   for (const contact of contacts) {
     const chartB = contact.source === 'sr-to-natal' ? natal : sr;
     const a = sr.planets[contact.planet1 as keyof typeof sr.planets], b = chartB.planets[contact.planet2 as keyof typeof chartB.planets];
-    const canonical = getNatalAspectExpression({ a: contact.planet1, b: contact.planet2, aspect: contact.type.toLowerCase(), orb: contact.orb, aSign: a?.sign || '', bSign: b?.sign || '', aHouse: analysis.planetSRHouses[contact.planet1], bHouse: null } as RankedAspect)
-      .replace(/They may/g, 'You may').replace(/they /g, 'you ').replace(/their /g, 'your ').replace(/themselves/g, 'yourself');
-    const meaning = [contact.planet1,contact.planet2].includes('Pluto') && [contact.planet1,contact.planet2].includes('Moon') ? 'You may stay engaged with an emotionally important conversation rather than immediately turning away. That can support honesty, while the need to understand what is at stake may remain stronger than you show.' : [contact.planet1,contact.planet2].includes('Pluto') && [contact.planet1,contact.planet2].includes('Mars') ? 'You may put sustained effort behind a decision when it matters personally. Commitment can help you follow through, while the strength of your investment may make it harder to notice when a smaller response would be enough.' : canonical;
+    const meaning = solarReturnContactMeaning({ planet1: contact.planet1, planet2: contact.planet2, type: contact.type, orb: contact.orb, sign1: a?.sign, sign2: b?.sign, house1: analysis.planetSRHouses[contact.planet1] });
     themes.push({ title: contact.source === 'sr-to-natal' ? `SR ${contact.planet1} ${contact.type.toLowerCase()} natal ${contact.planet2}` : `SR ${contact.planet1} ${contact.type.toLowerCase()} SR ${contact.planet2}`, layer: contact.source === 'sr-to-natal' ? 'Solar Return-to-natal contact' : 'Solar Return-to-Solar Return aspect',
       meaning,
       evidence: [`Solar Return ${format(sr, contact.planet1)}, House ${analysis.planetSRHouses[contact.planet1] || 'unknown'}; ${contact.source === 'sr-to-natal' ? 'natal' : 'Solar Return'} ${format(chartB, contact.planet2)}.`, `${contact.source === 'sr-to-natal' ? `SR ${contact.planet1} ${contact.type.toLowerCase()} natal ${contact.planet2} (SR-to-natal)` : `SR ${contact.planet1} ${contact.type.toLowerCase()} SR ${contact.planet2} (SR-to-SR)`}; orb ${contact.orb}°.`] });

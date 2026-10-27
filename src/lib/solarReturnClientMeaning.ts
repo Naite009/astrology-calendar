@@ -1,4 +1,6 @@
 import { validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
+import { getNatalAspectExpression } from './interpretation/psychologicalFunctions';
+import type { RankedAspect } from './aspectRanking';
 
 /** Interpretive possibilities, not events. Input houses must already be verified by the caller. */
 const life: Record<number, { area: string; action: string; purpose: string }> = {
@@ -59,4 +61,24 @@ export function solarReturnProfectionMeaning(house: number, lord: string, routeH
   const text = `This year, ${entry.area} may need more attention. You might ${entry.action}; pursuing that could also lead you to ${route.action}. ${change}, helping you ${entry.purpose}.`;
   if (validateSolarReturnProse(text).length) throw new Error('Solar Return profection meaning failed quality validation');
   return text;
+}
+const MAJOR_BODIES = new Set(['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']);
+/**
+ * Single client meaning for any Solar Return contact (SR-to-natal or SR-to-SR).
+ * Uses the canonical psychological-function aspect expression; minor bodies,
+ * angles and nodes get no pair-only prose. Returns '' when the text fails the gate.
+ */
+export function solarReturnContactMeaning(c: { planet1: string; planet2: string; type: string; orb: number; sign1?: string; sign2?: string; house1?: number | null }): string {
+  if (!MAJOR_BODIES.has(c.planet1) || !MAJOR_BODIES.has(c.planet2)) return '';
+  const pair = [c.planet1, c.planet2];
+  let text: string;
+  if (pair.includes('Pluto') && pair.includes('Moon')) text = 'You may stay engaged with an emotionally important conversation rather than immediately turning away. That can support honesty, while the need to understand what is at stake may remain stronger than you show.';
+  else if (pair.includes('Pluto') && pair.includes('Mars')) text = 'You may put sustained effort behind a decision when it matters personally. Commitment can help you follow through, while the strength of your investment may make it harder to notice when a smaller response would be enough.';
+  else {
+    try {
+      text = getNatalAspectExpression({ a: c.planet1, b: c.planet2, aspect: c.type.toLowerCase(), orb: c.orb, aSign: c.sign1 || '', bSign: c.sign2 || '', aHouse: c.house1 ?? null, bHouse: null } as RankedAspect)
+        .replace(/They may/g, 'You may').replace(/they /g, 'you ').replace(/their /g, 'your ').replace(/themselves/g, 'yourself');
+    } catch { return ''; }
+  }
+  return text && !validateSolarReturnProse(text).length ? text : '';
 }
