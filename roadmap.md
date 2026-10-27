@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Solar Return concrete interpretation repair
+- [ ] Extend consolidation to active overlay, Sun/Moon/sign/planet/angular tables and executive summaries; audit Lauren across all current tabs and exports before acceptance.
 - [x] Replace the active deterministic keyword/meta-synthesis source, consolidate the narrative/modal authors and PDF story summaries; preserve factual checks.
 - [x] Add shared paragraph-quality rejection with one regeneration, nine representative combinations and 34 new cases.
 - [x] Relevant 167 tests and full 737 tests passed; signed-in saved Lauren 2026 deterministic UI inspected. Exact audit: `qa-reports/solar-return-prose-repair.md`.
