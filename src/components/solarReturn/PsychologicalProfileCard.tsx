@@ -248,9 +248,9 @@ function SpectrumBar({
               </div>
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 The blended score is 60% your natal baseline + 40% this year's energy.
-                {bd.blendType === 'tension' && ' These energies pull in opposite directions — expect inner friction.'}
-                {bd.blendType === 'reinforced' && ' Both charts agree — this quality is amplified this year.'}
-                {bd.blendType === 'shift' && ' This year gently nudges you from your baseline.'}
+                {bd.blendType === 'tension' && ' The two charts lean in different directions on this scale.'}
+                {bd.blendType === 'reinforced' && ' Both charts lean the same way on this scale.'}
+                {bd.blendType === 'shift' && ' This year differs slightly from your baseline.'}
               </p>
               {bd.blendDescription && (
                 <p className="text-[10px] text-muted-foreground leading-relaxed">{bd.blendDescription}</p>
