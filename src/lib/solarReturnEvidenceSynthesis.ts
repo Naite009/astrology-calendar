@@ -1,10 +1,11 @@
 import type { SolarReturnAnalysis } from './solarReturnAnalysis';
 import type { NatalChart } from '@/hooks/useNatalChart';
 import type { SolarReturnChart } from '@/hooks/useSolarReturnChart';
-import { getHouseLivedInterpretation, getNatalAspectExpression } from './interpretation/psychologicalFunctions';
+import { getNatalAspectExpression } from './interpretation/psychologicalFunctions';
 import type { RankedAspect } from './aspectRanking';
 import { buildSolarReturnProgressionContext, resolveSolarReturnProvenance } from './solarReturnProvenance';
 import { solarReturnHouseMeaning, solarReturnProfectionMeaning } from './solarReturnClientMeaning';
+import { validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
 
 const majors = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Ascendant','MC','IC','Descendant']);
 export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis, sr: SolarReturnChart, natal: NatalChart) {
@@ -27,6 +28,8 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
       evidence: [`Solar Return ${format(sr, 'Sun')}, House ${sunHouse}.`, `Solar Return ${format(sr, 'Moon')}, House ${moonHouse || 'unknown'}; ${analysis.moonPhase?.phase || 'phase unknown'} at ${analysis.moonPhase?.phaseAngle ?? '?'}°.`] });
   }
   if (moonHouse && moonHouse !== sunHouse) themes.push({ title: 'What affects your day-to-day sense of ease', layer: 'Solar Return', meaning: solarReturnHouseMeaning(moonHouse, 'Moon'), evidence: [`Solar Return ${format(sr, 'Moon')}, House ${moonHouse}.`] });
+  const angular = (analysis.angularPlanetsDetailed || []).filter(a => majors.has(a.planet)).sort((a,b) => a.orb - b.orb)[0];
+  if (angular && analysis.planetSRHouses[angular.planet]) themes.push({ title: 'Where your choices may be more visible', layer: 'Solar Return angular emphasis', meaning: solarReturnHouseMeaning(analysis.planetSRHouses[angular.planet], angular.planet), evidence: [`Solar Return ${format(sr, angular.planet)}, House ${analysis.planetSRHouses[angular.planet]}; near ${angular.angle}, orb ${angular.orb}°.`] });
   const key = new Set(['Sun','Moon',analysis.yearlyTheme?.ascendantRuler,prof?.timeLord].filter(Boolean));
   const contacts = [...analysis.srToNatalAspects, ...analysis.srInternalAspects]
     .filter(a => majors.has(a.planet1) && majors.has(a.planet2) && a.orb <= 3 && (key.has(a.planet1) || key.has(a.planet2)))
@@ -38,7 +41,7 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
       .replace(/They may/g, 'You may').replace(/they /g, 'you ').replace(/their /g, 'your ').replace(/themselves/g, 'yourself');
     const meaning = [contact.planet1,contact.planet2].includes('Pluto') && [contact.planet1,contact.planet2].includes('Moon') ? 'You may stay engaged with an emotionally important conversation rather than immediately turning away. That can support honesty, while the need to understand what is at stake may remain stronger than you show.' : [contact.planet1,contact.planet2].includes('Pluto') && [contact.planet1,contact.planet2].includes('Mars') ? 'You may put sustained effort behind a decision when it matters personally. Commitment can help you follow through, while the strength of your investment may make it harder to notice when a smaller response would be enough.' : canonical;
     themes.push({ title: contact.source === 'sr-to-natal' ? `SR ${contact.planet1} ${contact.type.toLowerCase()} natal ${contact.planet2}` : `SR ${contact.planet1} ${contact.type.toLowerCase()} SR ${contact.planet2}`, layer: contact.source === 'sr-to-natal' ? 'Solar Return-to-natal contact' : 'Solar Return-to-Solar Return aspect',
-      meaning: `${contact.source === 'sr-to-natal' ? 'This annual contact may make an existing natal pattern more noticeable, rather than replacing your birth-chart temperament. ' : 'Read this as an annual emphasis, not a permanent personality description. '}${meaning}`,
+      meaning: validateSolarReturnProse(meaning).length ? solarReturnHouseMeaning(analysis.planetSRHouses[contact.planet1], contact.planet1) : meaning,
       evidence: [`Solar Return ${format(sr, contact.planet1)}, House ${analysis.planetSRHouses[contact.planet1] || 'unknown'}; ${contact.source === 'sr-to-natal' ? 'natal' : 'Solar Return'} ${format(chartB, contact.planet2)}.`, `${contact.source === 'sr-to-natal' ? `SR ${contact.planet1} ${contact.type.toLowerCase()} natal ${contact.planet2} (SR-to-natal)` : `SR ${contact.planet1} ${contact.type.toLowerCase()} SR ${contact.planet2} (SR-to-SR)`}; orb ${contact.orb}°.`] });
   }
   const progressions = buildSolarReturnProgressionContext(sr, natal);
@@ -48,7 +51,5 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
     meaning: `${solarReturnHouseMeaning(moon.house, 'Moon')} You may notice this developing beyond one birthday year; the calculated sign change is a timing reference, not a promise of an event.`,
     evidence: [`Reference ${progressions.referenceDate}; progressed ephemeris date ${progressions.progressedDate}.`, `Progressed Moon ${moon.exactDegree.toFixed(3)}° ${moon.sign}, natal House ${moon.house || 'unknown'}; ${moon.detailedPhase.phaseName}, ${moon.detailedPhase.phaseAngle.toFixed(3)}°.`, `Next progressed sign ingress ${moon.signChangeDate.toISOString().slice(0,10)}.`, ...(moon.houseChange.houseChangeDate ? [`Next natal house cusp crossing ${moon.houseChange.houseChangeDate.toISOString()}.`] : [])],
   } : null;
-  const dedupe = (t: string) => t.replace(/\b(\w+)\s+\1\b/gi, '$1');
-  for (const t of themes) t.meaning = dedupe(t.meaning);
-  return { houseMethodology: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.', methodology: 'Major planets and key rulers, tight contacts first; no minor-body themes or invented event dates. Interpretations are symbolic hypotheses.', themes, longerTerm, progressions, calculationMetadata: resolveSolarReturnProvenance(sr, natal) };
+  return { houseMethodology: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.', methodology: 'Major planets and key rulers, tight contacts first; no minor-body themes or invented event dates. Interpretations are symbolic hypotheses.', themes: themes.filter(t => t.meaning && !validateSolarReturnProse(t.meaning).length), longerTerm: longerTerm && !validateSolarReturnProse(longerTerm.meaning).length ? longerTerm : null, progressions, calculationMetadata: resolveSolarReturnProvenance(sr, natal) };
 }
