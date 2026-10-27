@@ -6,6 +6,7 @@ import type { RankedAspect } from './aspectRanking';
 import { buildSolarReturnProgressionContext, resolveSolarReturnProvenance } from './solarReturnProvenance';
 import { solarReturnHouseMeaning, solarReturnProfectionMeaning } from './solarReturnClientMeaning';
 import { validateSolarReturnProse } from '../../supabase/functions/_shared/solarReturnProseQuality';
+import { guardSolarReturnProse } from './solarReturnProseBoundary';
 
 const majors = new Set(['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','Ascendant','MC','IC','Descendant']);
 export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis, sr: SolarReturnChart, natal: NatalChart) {
@@ -51,5 +52,5 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
     meaning: `${solarReturnHouseMeaning(moon.house, 'Moon')} You may notice this developing beyond one birthday year; the calculated sign change is a timing reference, not a promise of an event.`,
     evidence: [`Reference ${progressions.referenceDate}; progressed ephemeris date ${progressions.progressedDate}.`, `Progressed Moon ${moon.exactDegree.toFixed(3)}° ${moon.sign}, natal House ${moon.house || 'unknown'}; ${moon.detailedPhase.phaseName}, ${moon.detailedPhase.phaseAngle.toFixed(3)}°.`, `Next progressed sign ingress ${moon.signChangeDate.toISOString().slice(0,10)}.`, ...(moon.houseChange.houseChangeDate ? [`Next natal house cusp crossing ${moon.houseChange.houseChangeDate.toISOString()}.`] : [])],
   } : null;
-  return { houseMethodology: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.', methodology: 'Major planets and key rulers, tight contacts first; no minor-body themes or invented event dates. Interpretations are symbolic hypotheses.', themes: themes.filter(t => t.meaning && !validateSolarReturnProse(t.meaning).length), longerTerm: longerTerm && !validateSolarReturnProse(longerTerm.meaning).length ? longerTerm : null, progressions, calculationMetadata: resolveSolarReturnProvenance(sr, natal) };
+  return guardSolarReturnProse({ houseMethodology: 'Natal & Solar Return houses: Placidus. Annual profection: Whole Sign.', methodology: 'Major planets and key rulers, tight contacts first; no minor-body themes or invented event dates. Interpretations are symbolic hypotheses.', themes: themes.filter(t => t.meaning && !validateSolarReturnProse(t.meaning).length), longerTerm: longerTerm && !validateSolarReturnProse(longerTerm.meaning).length ? longerTerm : null, progressions, calculationMetadata: resolveSolarReturnProvenance(sr, natal) });
 }

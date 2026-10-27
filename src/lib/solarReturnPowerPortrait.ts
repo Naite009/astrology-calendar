@@ -1,3 +1,4 @@
+import { guardSolarReturnProse } from './solarReturnProseBoundary';
 import { SolarReturnAnalysis } from './solarReturnAnalysis';
 import { NatalChart, NatalPlanetPosition } from '@/hooks/useNatalChart';
 import { SolarReturnChart } from '@/hooks/useSolarReturnChart';
@@ -331,7 +332,7 @@ export function generatePowerPortrait(
     Water: 'I feel everything. My power is using that depth as fuel, not drowning in it.',
   };
 
-  return {
+  return guardSolarReturnProse({
     driveEngine: {
       title: 'Where Your Drive Comes From',
       emoji: '🔥',
@@ -358,5 +359,5 @@ export function generatePowerPortrait(
     },
     powerLeaks,
     oneLineMantra: mantras[element] || mantras.Fire,
-  };
+  });
 }

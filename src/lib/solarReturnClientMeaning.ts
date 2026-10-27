@@ -27,6 +27,23 @@ const changes: Record<string, string> = {
   Neptune: 'You may need to check what was actually agreed here before acting on an assumption',
   Pluto: 'You may reconsider a commitment here when it takes more time or money than you want to give',
 };
+export function solarReturnOverlayMeaning(planet: string, srHouse: number | null, natalHouse: number | null): string {
+  const annual = srHouse ? life[srHouse] : undefined, natal = natalHouse ? life[natalHouse] : undefined;
+  if (!annual || !natal) return '';
+  const body = planet.replace(/^the\s+/i, '');
+  if (srHouse === natalHouse) return solarReturnHouseMeaning(srHouse, body);
+  const text = `This year, choices about ${annual.area.replace(/^your /, '')} may affect ${natal.area}. For example, if you ${annual.action}, consider whether that changes how you ${natal.action}. ${changes[body] || changes.Sun}; checking that practical effect can help you ${natal.purpose}.`;
+  if (validateSolarReturnProse(text).length) throw new Error('Solar Return overlay failed quality validation');
+  return text;
+}
+export function solarReturnHouseDetail(house: number, planet: string) {
+  const entry = life[house];
+  if (!entry) return null;
+  return { title: entry.area.replace(/^your /, ''), overview: solarReturnHouseMeaning(house, planet),
+    experience: `You might ${entry.action}; notice whether this helps you ${entry.purpose}.`,
+    focus: `If you choose to ${entry.action}, check how much time the plan needs before you commit.`,
+    caution: `You can review the plan with the people involved before you take on another responsibility.` };
+}
 export function solarReturnHouseMeaning(house: number | null | undefined, planet = 'Sun'): string {
   const entry = house ? life[house] : undefined;
   if (!entry) return '';

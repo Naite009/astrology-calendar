@@ -1,3 +1,4 @@
+import { guardSolarReturnProse } from './solarReturnProseBoundary';
 import { signPositionToLongitude } from "./ephemerisEngine";
 import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
@@ -1909,7 +1910,7 @@ export const analyzeSolarReturn = (
   const planetarySpeeds = calculatePlanetarySpeeds(srChart);
   const heliacalRising = calculateHeliacalRising(srChart);
 
-  return {
+  return guardSolarReturnProse({
     srCuspSigns: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, normalizeSign(srChart.houseCusps?.[`house${i + 1}` as keyof typeof srChart.houseCusps]?.sign || '')])),
     natalChartRuler: lordOfTheYear,
     profectionLord: profectionYear?.timeLord || null,
@@ -1967,5 +1968,5 @@ export const analyzeSolarReturn = (
     prenatalEclipse,
     planetarySpeeds,
     heliacalRising,
-  };
+  });
 };

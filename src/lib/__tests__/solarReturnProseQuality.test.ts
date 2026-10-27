@@ -7,9 +7,63 @@ import { buildYearStory } from '../solarReturnYearStory';
 import { analyzeSolarReturn } from '../solarReturnAnalysis';
 import { buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
+import { laurenRejectedReportExcerpts } from '@/test/fixtures/solarReturnLaurenRejectedProse';
+import { srOverlayNarrative, srSunInHouse, srMoonInHouse, srMoonInSign, srPlanetInHouse, angularPlanetMeaning } from '../solarReturnInterpretations';
+import { generateExecutiveSummary } from '../solarReturnExecutiveSummary';
+import { srJupiterInHouseDeep, srSaturnInHouseDeep } from '../solarReturnPlanetInHouseDeep';
+import { auditSolarReturnProse, guardSolarReturnProse } from '../solarReturnProseBoundary';
+import { generateLunarWeatherMap } from '../solarReturnLunarWeather';
+import { buildYearSummary } from '../solarReturnYearSummary';
+import { generateSRtoNatalInterpretation } from '../solarReturnAspectInterp';
+import { generateSettingNarrative } from '../solarReturnRulerNarratives';
 
 const bad = 'Attention may return to questions, words, school or everyday information, siblings or peers, and the details people exchange each day. The return placement of Jupiter connects this with building a worldview large enough to guide your choices. The point is how those areas meet in actual choices, not that one cancels the other.';
 describe('Solar Return client-meaning gate', () => {
+  it('does not invent lunar-return dates or best months from calendar rotations and tone scores', () => {
+    const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
+    expect(generateLunarWeatherMap(analysis,laurenReturn,laurenNatal).months).toEqual([]);
+    expect(buildYearSummary(analysis,laurenNatal,laurenReturn).advice.bestMonths).toEqual([]);
+  });
+  it('pair-only aspect compatibility never guarantees all-year feelings or mislabels internal contacts', () => {
+    expect(generateSRtoNatalInterpretation('Moon','Venus','Square',0.3).whatItMeans).toBe('');
+    expect(generateSRtoNatalInterpretation('Moon','Venus','Square',0.3).howItFeels).toBe('');
+  });
+  it('ruler sign alone cannot establish grudges or behavioral history', () => {
+    const text = generateSettingNarrative('Mars','Scorpio',1);
+    expect(text).not.toMatch(/grudge|fight to win|calculated precision/);
+    expect(validateSolarReturnProse(text)).toEqual([]);
+  });
+  it.each(laurenRejectedReportExcerpts)('rejects supplied Lauren report excerpt: %s', text => {
+    expect(validateSolarReturnProse(text)).not.toEqual([]);
+  });
+  it('every SR/natal house overlay uses a practical connection, never external versus emotional rooms', () => {
+    for (let sr = 1; sr <= 12; sr++) for (let natal = 1; natal <= 12; natal++) {
+      const text = srOverlayNarrative('The Moon', sr, natal);
+      expect(validateSolarReturnProse(text)).toEqual([]);
+      expect(text).not.toMatch(/two.*rooms|gap|double activation|external|emotional hit/);
+    }
+    expect(srOverlayNarrative('Sun', null, 4)).toBe('');
+    expect(srOverlayNarrative('Sun', 11, 1)).toMatch(/team project/);
+    expect(srOverlayNarrative('Sun', 11, 1)).toMatch(/introduce yourself/);
+  });
+  it('current prediction tables and deep banks cannot leak medical, fate or sign-only claims', () => {
+    expect(srMoonInSign).toEqual({});
+    expect(auditSolarReturnProse([srSunInHouse,srMoonInHouse,srPlanetInHouse,angularPlanetMeaning,srJupiterInHouseDeep,srSaturnInHouseDeep])).toEqual([]);
+    for (const row of Object.values(srSunInHouse)) for (const field of ['overview','experience','focus','caution'] as const) expect(validateSolarReturnProse(row[field])).toEqual([]);
+  });
+  it('executive summary retains ranked story evidence, not benefic events or invented conflicts', () => {
+    const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
+    const summary = generateExecutiveSummary(analysis,laurenNatal);
+    expect(summary.coreFocus).toBe(buildYearStory(analysis).coreStory);
+    expect(summary.challenges).toEqual([]);
+    expect(summary.patterns).toEqual([]);
+    expect(auditSolarReturnProse(summary)).toEqual([]);
+    expect(summary.opportunities[0].source.length).toBeGreaterThan(0);
+  });
+  it('withholding composed prose leaves deterministic facts and source labels byte-identical', () => {
+    const raw = {orb:0.267, source:'sr-to-natal', label:'SR Moon square natal Venus', date:'2026-10-21', sign:'Pisces', house:3, narrative:'Dreams are prophetic.'};
+    expect(guardSolarReturnProse(raw)).toEqual({...raw,narrative:''});
+  });
   it('rejects the reported deterministic paragraph rather than cleaning it into a false interpretation', () => {
     expect(validateSolarReturnProse(bad)).toContain('Paragraph 1: empty meta-synthesis or astrology machinery');
     expect(validateSolarReturnProse(bad)).toContain('Paragraph 1: no concrete life manifestation');

@@ -52,7 +52,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
           </div>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed italic">
-          The Moon in your Solar Return is the single most important planet for understanding how you will <em>feel</em> this year.
+          The Moon is read with its verified house and contacts, not as a prediction of your feelings.
         </p>
       </div>
 
@@ -63,13 +63,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
           <div className="border border-border rounded-sm p-4 bg-muted/10 space-y-2">
             <p className="text-[10px] uppercase tracking-widest font-medium text-primary">{ang.position} Moon</p>
             <p className="text-xs text-muted-foreground leading-relaxed">{ang.meaning}</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {analysis.moonAngularity === 'angular'
-                ? 'Angular Moons produce event-driven years. Your emotions are on the surface and trigger visible changes.'
-                : analysis.moonAngularity === 'succedent'
-                ? 'Succedent Moons produce years of consolidation. Emotional satisfaction comes from deepening commitments.'
-                : 'Cadent Moons produce years of inner work. The most important changes happen inside you.'}
-            </p>
+
           </div>
         );
       })()}
@@ -128,51 +122,6 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
         <div className="border border-border rounded-sm p-4">
           <p className="text-[10px] uppercase tracking-widest text-primary font-medium mb-1">Emotional Temperament — Moon in {analysis.moonSign}</p>
           <p className="text-sm text-muted-foreground leading-relaxed">{srMoonInSign[analysis.moonSign]}</p>
-        </div>
-      )}
-
-      {/* Moon Sign Shift */}
-      {natalMoonSign && srMoonSign && natalMoonSign !== srMoonSign && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {natalDeep && (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <div className="bg-secondary/60 border-b border-border px-4 py-2">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Natal Moon</p>
-                  <p className="text-lg font-serif text-foreground">{SIGN_SYMBOLS[natalMoonSign]} {natalMoonSign}</p>
-                </div>
-                <div className="p-4 space-y-2">
-                  <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Processing</p><p className="text-xs text-muted-foreground">{natalDeep.emotional}</p></div>
-                  <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Body Sensations</p><p className="text-xs text-muted-foreground">{natalDeep.body}</p></div>
-                </div>
-              </div>
-            )}
-            {srDeep && (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
-                  <p className="text-[10px] uppercase tracking-widest text-primary">This Year's Moon</p>
-                  <p className="text-lg font-serif text-foreground">{SIGN_SYMBOLS[srMoonSign]} {srMoonSign}</p>
-                </div>
-                <div className="p-4 space-y-2">
-                  <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Emotional Processing</p><p className="text-xs text-muted-foreground">{srDeep.emotional}</p></div>
-                  <div><p className="text-[10px] uppercase tracking-widest text-primary mb-1">Body Sensations</p><p className="text-xs text-muted-foreground">{srDeep.body}</p></div>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="border-l-4 border-primary bg-primary/5 rounded-r-lg p-4">
-            <p className="text-[10px] uppercase tracking-widest text-primary mb-2">The Shift: {natalMoonSign} → {srMoonSign}</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {shiftNarr || `Your natal ${natalMoonSign} Moon is your emotional home. This year, the SR ${srMoonSign} Moon layers a different emotional frequency on top.`}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {natalMoonSign === srMoonSign && natalDeep && (
-        <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">
-          <p className="text-[10px] uppercase tracking-widest text-primary mb-2">☽ Moon Stays in {natalMoonSign} — Emotional Continuity</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">Your SR Moon matches your natal Moon sign. This year reinforces your emotional instincts. Trust your gut.</p>
         </div>
       )}
 
@@ -287,7 +236,7 @@ export const TheMoonTab = ({ analysis, srChart, natalChart }: Props) => {
       )}
 
       {/* Lunar Weather */}
-      <LunarWeatherCard weather={lunarWeather} />
+      {lunarWeather.months.length > 0 && <LunarWeatherCard weather={lunarWeather} />}
     </div>
   );
 };

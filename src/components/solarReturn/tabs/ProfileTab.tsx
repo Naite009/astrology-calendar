@@ -30,7 +30,7 @@ export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
       <IdentityShiftCard shift={identityShift} />
 
       {/* Power Portrait */}
-      <PowerPortraitCard portrait={powerPortrait} />
+      {/* Sign-only psychological/burnout claims are withheld. Verified annual priorities remain above. */}
 
       {/* Dominant Planets */}
       {analysis.dominantPlanets && (

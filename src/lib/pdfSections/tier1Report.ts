@@ -1,3 +1,5 @@
+import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
+import { solarReturnHouseMeaning } from '@/lib/solarReturnClientMeaning';
 /**
  * Tier 1 Solar Return PDF — "Year at a Glance" — v3
  * 2 pages only: Cover + Snapshot. No quarterly. No monthly.
@@ -202,6 +204,7 @@ export async function generateTier1SolarReturnPDF(
   const profAge = analysis.profectionYear?.age;
 
   const t = getTheme(natalSunSign);
+  const synthesis = buildSolarReturnEvidenceSynthesis(analysis,srChart,natalChart);
 
   // ════════════════════════════════════════════════════════════════
   // PAGE 1 — COVER (editorial)
@@ -314,7 +317,7 @@ export async function generateTier1SolarReturnPDF(
 
   const risingQuality = RISING_QUALITY[srRisingSign] || 'Fresh, evolving';
   const profThemePlain = PROFECTION_THEME_PLAIN[profHouse] || 'growth and renewal';
-  const themeHeadline = `${risingQuality} energy leads this year — a time for ${profThemePlain}.`;
+  const themeHeadline = synthesis.themes[0]?.title || 'Annual priorities';
 
   doc.setFont('times', 'normal'); doc.setFontSize(22);
   doc.setTextColor(...INK);
@@ -323,7 +326,7 @@ export async function generateTier1SolarReturnPDF(
   for (const hl of headLines) { doc.text(hl, MARGIN, y); y += 27; }
   y += 4;
 
-  const themeBody = `This year invites you into a season of ${profThemePlain}. The energy is ${risingQuality.toLowerCase()}, and the invitation is to trust what emerges naturally rather than forcing outcomes.`;
+  const themeBody = synthesis.themes[0]?.meaning || ''; 
   doc.setFont('times', 'normal'); doc.setFontSize(9.5);
   doc.setTextColor(...INK);
   const bodyLines: string[] = doc.splitTextToSize(themeBody, contentW);
@@ -339,13 +342,13 @@ export async function generateTier1SolarReturnPDF(
   const cardH = 88;
 
   const sunHouseTheme = HOUSE_THEME_SHORT[sunHouse] || 'A new focus area';
-  const moonKeyword = MOON_KEYWORD[srMoonSign] || 'Emotionally attuned';
-  const moonPhaseDesc = MOON_PHASE_PLAIN[analysis.moonPhase?.phase || ''] || 'A year of steady inner rhythm';
+  const moonKeyword = `SR Moon ${srMoonSign}`;
+  const moonPhaseDesc = analysis.moonPhase?.phase || ''; 
   const profThemeShort = HOUSE_THEME_SHORT[profHouse] || 'A new chapter';
 
   interface SnapCard { micro: string; value: string; sub: string }
   const cards: SnapCard[] = [
-    { micro: 'WHERE YOUR ENERGY GOES', value: sunHouseTheme, sub: SUN_HOUSE_BODY[sunHouse]?.split('.')[0] + '.' || '' },
+    { micro: 'WHERE YOUR ENERGY GOES', value: sunHouseTheme, sub: `Solar Return Sun, House ${sunHouse}` },
     { micro: 'YOUR EMOTIONAL WEATHER', value: moonKeyword, sub: moonPhaseDesc },
     { micro: 'THE FOCUS OF THIS YEAR', value: profThemeShort, sub: profAge != null ? `Year ${profAge}` : '' },
   ];
@@ -402,20 +405,20 @@ export async function generateTier1SolarReturnPDF(
     {
       label: 'YOUR SUN',
       natalTag: natalSunSign, srTag: `H${sunHouse}`,
-      headline: getBigThreeSunHeadline(natalSunSign, sunHouse),
-      body: SUN_HOUSE_BODY[sunHouse] || 'This year draws your energy toward a meaningful new focus.',
+      headline: `Solar Return Sun in House ${sunHouse}`,
+      body: solarReturnHouseMeaning(analysis.sunHouse.house,'Sun'),
     },
     {
       label: 'YOUR MOON',
       natalTag: natalMoonSign, srTag: srMoonSign,
-      headline: getBigThreeMoonHeadline(natalMoonSign, srMoonSign),
-      body: MOON_SIGN_BODY[srMoonSign] || 'Your emotional world shifts into a new rhythm this year.',
+      headline: `Solar Return Moon in House ${analysis.moonHouse.house || 'unknown'}`,
+      body: solarReturnHouseMeaning(analysis.moonHouse.house,'Moon'),
     },
     {
       label: 'YOUR PRESENCE THIS YEAR',
       natalTag: natalRisingSign, srTag: srRisingSign,
-      headline: getBigThreeRisingHeadline(natalRisingSign, srRisingSign),
-      body: RISING_BODY[srRisingSign] || 'The way you show up in the world takes on a new quality this year.',
+      headline: `Solar Return ruler: ${analysis.yearlyTheme.ascendantRuler}`,
+      body: solarReturnHouseMeaning(analysis.planetSRHouses[analysis.yearlyTheme.ascendantRuler],analysis.yearlyTheme.ascendantRuler),
     },
   ];
 
@@ -452,7 +455,7 @@ export async function generateTier1SolarReturnPDF(
     doc.setFont('times', 'normal'); doc.setFontSize(9);
     doc.setTextColor(...INK);
     const bdLines: string[] = doc.splitTextToSize(card.body, contentW - 16);
-    for (const bl of bdLines.slice(0, 2)) { doc.text(bl, MARGIN + 8, y); y += 13; }
+    for (const bl of bdLines) { doc.text(bl, MARGIN + 8, y); y += 13; }
     y += 4;
 
     // Hairline rule
