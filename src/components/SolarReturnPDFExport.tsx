@@ -1,5 +1,6 @@
 import { signPositionToLongitude } from '@/lib/ephemerisEngine';
 import { guardSolarReturnProse } from '@/lib/solarReturnProseBoundary';
+import { solarReturnHouseMeaning } from '@/lib/solarReturnClientMeaning';
 import { buildAllRulerChains } from '@/lib/rulerChains';
 import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
@@ -402,7 +403,7 @@ function generateHowThisYearMeetsYou(
   const srSunSign = srChart.planets.Sun?.sign || natalSun;
   const srMoonSign = a.moonSign || srChart.planets.Moon?.sign || '';
   const srRisingSign = srChart.houseCusps?.house1?.sign || a.yearlyTheme?.ascendantSign || srChart.planets.Ascendant?.sign || '';
-  const sunH = a.sunHouse?.house || 1;
+  const sunH = a.sunHouse?.house ?? null;
 
   ctx.sectionTitle(doc, 'HOW THIS YEAR MEETS YOU', 'Natal vs Solar Return');
 
@@ -418,19 +419,19 @@ function generateHowThisYearMeetsYou(
 
   const cards = [
     {
-      label: 'YOUR SUN', natalTag: natalSun, srTag: `${srSunSign} · H${sunH}`,
+      label: 'YOUR SUN', natalTag: natalSun, srTag: sunH ? `${srSunSign} · H${sunH}` : srSunSign,
       headline: `Your core self ${sunH === 1 ? 'takes center stage' : sunH === 7 ? 'meets itself through others' : sunH === 10 ? 'steps into the spotlight' : 'enters new territory'}`,
-      body: HTYM_SUN_BODY[sunH] || 'Your energy is directed toward a new area of life this year.',
+      body: solarReturnHouseMeaning(a.sunHouse?.house, 'Sun'),
     },
     {
       label: 'YOUR MOON', natalTag: natalMoon, srTag: srMoonSign,
       headline: natalMoon === srMoonSign ? 'Your emotional world stays in familiar territory' : `Your emotional world shifts from ${natalMoon} to ${srMoonSign}`,
-      body: HTYM_MOON_BODY[srMoonSign] || 'Your emotional world enters a new rhythm this year.',
+      body: solarReturnHouseMeaning(a.moonHouse?.house, 'Moon'),
     },
     {
       label: 'YOUR RISING', natalTag: natalRising, srTag: srRisingSign,
       headline: natalRising === srRisingSign ? 'Your natural presence amplifies' : `Your presence shifts from ${natalRising} to ${srRisingSign}`,
-      body: HTYM_RISING_BODY[srRisingSign] || 'The way you show up in the world takes on a new quality.',
+      body: solarReturnHouseMeaning(1, 'Sun'),
     },
   ];
 
@@ -819,7 +820,7 @@ export function buildFullJsonStandalone(
     srMoonDesc: SIGN_DESCRIPTIONS[analysis.moonSign || '']?.moon || '',
     srRising: srRisingSign2,
     srRisingDesc: SIGN_DESCRIPTIONS[srRisingSign2]?.rising || '',
-    srRisingContrast: buildSrRisingContrast(natalRisingSign2, srRisingSign2),
+    srRisingContrast: '',
     yearlyTheme: analysis.yearlyTheme,
     sunHouse: analysis.sunHouse,
     sunNatalHouse: analysis.sunNatalHouse,
