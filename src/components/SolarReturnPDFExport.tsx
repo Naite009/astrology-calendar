@@ -1,6 +1,6 @@
 import { signPositionToLongitude } from '@/lib/ephemerisEngine';
 import { guardSolarReturnProse } from '@/lib/solarReturnProseBoundary';
-import { solarReturnHouseMeaning } from '@/lib/solarReturnClientMeaning';
+import { solarReturnHouseMeaning, solarReturnProfectionMeaning } from '@/lib/solarReturnClientMeaning';
 import { buildAllRulerChains } from '@/lib/rulerChains';
 import { buildSolarReturnEvidenceSynthesis } from '@/lib/solarReturnEvidenceSynthesis';
 import { SR_REPORT_VERSION, resolveSolarReturnProvenance, buildSolarReturnProgressionContext } from '@/lib/solarReturnProvenance';
@@ -119,116 +119,49 @@ export const S: Record<string, string> = {
 };
 
 export const MOON_PHASE_EXPLANATIONS: Record<string, string> = {
-  'New Moon': 'Fresh start energy. A year of planting seeds and beginning new chapters. Act on impulse toward what feels genuinely alive.',
-  'Waxing Crescent': 'Gathering momentum. Push through doubt. This year rewards early effort and showing up before you feel ready.',
-  'First Quarter': 'Crisis of action. Decisions are required — sitting on the fence creates more stress than choosing.',
-  'Waxing Gibbous': 'Refining and adjusting. The gap between where you are and where you want to be is productive. Edit, don\'t scrap.',
-  'Full Moon': 'Peak illumination. Everything becomes visible — relationships, results, truths. Culmination of something that began years ago.',
-  'Waning Gibbous': 'Time to teach and share. Generosity opens unexpected doors. You have something the world needs.',
-  'Last Quarter': 'Old structures that no longer serve you become intolerable. The discomfort is pushing you to evolve.',
-  'Balsamic': 'Completion phase. The Sun-Moon cycle is ending, and a new one begins next year. Balsamic years are historically associated with tying up unfinished business, releasing what no longer serves the next chapter, and consolidating lessons from the past several years. Energy is lower — not because something is wrong, but because the system is preparing for a reset. Practically: finish projects rather than starting new ones, reduce overcommitments, and make space. The Balsamic phase precedes a New Moon year, which will bring fresh momentum.',
-  'Balsamic Moon': 'Completion phase. The Sun-Moon cycle is ending, and a new one begins next year. Balsamic years are historically associated with tying up unfinished business, releasing what no longer serves the next chapter, and consolidating lessons from the past several years. Energy is lower — not because something is wrong, but because the system is preparing for a reset. Practically: finish projects rather than starting new ones, reduce overcommitments, and make space. The Balsamic phase precedes a New Moon year, which will bring fresh momentum.',
+  'New Moon': 'Cycle phase: New Moon (0 to 45 degrees). You may want to start a plan or project rather than finish old ones this year.',
+  'Waxing Crescent': 'Cycle phase: Crescent (45 to 90 degrees). You may notice that a plan you started needs steady effort to keep going.',
+  'First Quarter': 'Cycle phase: First Quarter (90 to 135 degrees). You may face a decision about a plan that asks you to act rather than wait.',
+  'Waxing Gibbous': 'Cycle phase: Gibbous (135 to 180 degrees). You may want to review and adjust a project before you show it to others.',
+  'Full Moon': 'Cycle phase: Full (180 to 225 degrees). You may see the results of a plan more clearly, including in your relationships.',
+  'Waning Gibbous': 'Cycle phase: Disseminating (225 to 270 degrees). You may want to share or teach what you have learned from a recent project.',
+  'Last Quarter': 'Cycle phase: Last Quarter (270 to 315 degrees). You may decide to change or stop a routine that no longer fits your plans.',
+  'Balsamic': 'Cycle phase: Balsamic (315 to 360 degrees). You may want to finish projects and clear your schedule before starting something new.',
+  'Balsamic Moon': 'Cycle phase: Balsamic (315 to 360 degrees). You may want to finish projects and clear your schedule before starting something new.',
 };
 
 export const stelliumPlanetRoles: Record<string, string> = {
-  Sun: 'your core identity and sense of purpose',
-  Moon: 'your emotional needs and instinctive reactions',
-  Mercury: 'how you think, communicate, and process information',
-  Venus: 'what you love, value, and find beautiful',
-  Mars: 'your drive, ambition, and how you assert yourself',
-  Jupiter: 'where you expand, grow, and find opportunity',
-  Saturn: 'where you face limits, responsibility, and mastery',
-  Uranus: 'where you rebel, innovate, and break free',
-  Neptune: 'where you dream, dissolve boundaries, and access intuition',
-  Pluto: 'where deep transformation and power dynamics play out',
-  Chiron: 'an area of deep sensitivity for you and greatest healing gift',
-  NorthNode: 'your soul\'s growth direction this lifetime',
+  Sun: 'priorities and where you spend effort',
+  Moon: 'what helps you feel settled day to day',
+  Mercury: 'conversations, information and decisions',
+  Venus: 'the people and activities you enjoy',
+  Mars: 'where you take action and set limits',
+  Jupiter: 'plans you want to grow, and their time and cost',
+  Saturn: 'commitments and limits you can maintain',
+  Uranus: 'routines you may want to change',
+  Neptune: 'agreements worth checking before you act',
+  Pluto: 'commitments you may reconsider',
+  Chiron: 'a sensitive area you may handle with more care',
+  NorthNode: 'a secondary direction point',
 };
 
-export const stelliumHouseMeaning: Record<number, string> = {
-  1: 'This is YOUR year. Your identity, body, and personal direction are being completely rewired. You may change your appearance, take bold action, or feel an irresistible urge to reinvent yourself.',
-  2: 'Money, possessions, and self-worth are consuming your attention. Financial decisions carry enormous weight. You are being forced to answer: what do I actually VALUE?',
-  3: 'Your mind is on fire. Communication, learning, writing, and daily connections absorb most of your energy. Expect more conversations that change your perspective.',
-  4: 'Home and family dominate. You may move, renovate, deal with family issues, or feel a powerful pull to nest. What does "home" really mean to you?',
-  5: 'Creative self-expression, romance, and joy are center stage. Multiple planets here demand you PLAY, create, and take emotional risks.',
-  6: 'Daily routines, health, and work are being overhauled. Your body is sending messages — listen to them. Small daily changes create the biggest transformation.',
-  7: 'Relationships are the main event. Partnerships demand your full attention. The lesson: balancing your needs with someone else\'s.',
-  8: 'Deep transformation, shared finances, and psychological intensity define this year. Something needs to die so something honest can be born.',
-  9: 'Your worldview is expanding. Travel, education, publishing, and philosophical exploration absorb your energy. You are searching for MEANING.',
-  10: 'Career and public reputation are being forged. The world is watching. Professional responsibilities increase, but so does recognition.',
-  11: 'Community, friendships, and collective purpose are center stage. Your social circle is being reshuffled.',
-  12: 'The most deeply private year possible. Inner work, spiritual exploration, and solitude are the assignment. Dreams may be vivid, intuition heightened.',
-};
+export const stelliumHouseMeaning: Record<number, string> = Object.fromEntries(
+  Array.from({ length: 12 }, (_, i) => [i + 1, solarReturnHouseMeaning(i + 1, 'Sun')]),
+);
 
-export const timeLordDetailedMeaning: Record<string, string> = {
-  Sun: 'The Sun as Time Lord puts your IDENTITY center stage. This year is about YOU — your confidence, your creativity, your sense of purpose. You will feel more visible, more scrutinized, and more alive.',
-  Moon: 'The Moon as Time Lord makes this an EMOTIONAL year. Your feelings are running the show. Intuition is stronger but so is reactivity. Home, family, and nurturing relationships dominate.',
-  Mercury: 'Mercury as Time Lord makes your MIND the main character. How you think, communicate, and process information determines everything this year. Conversations, writing, contracts, and learning are amplified. When Mercury is your Time Lord AND retrograde in the SR chart, the year has a built-in "review and revise" quality — ideas from the past may hold the key to breakthroughs.',
-  Venus: 'Venus as Time Lord makes this a year about RELATIONSHIPS, VALUES, and PLEASURE. What you love, who you love, and how you spend your money are all being examined. The question: does your daily life reflect what you actually value?',
-  Mars: 'Mars as Time Lord brings ENERGY, DRIVE, and potentially CONFLICT. You have more fuel than usual — channel it into projects, exercise, or bold moves. The question: what are you fighting for, and is it worth it?',
-  Jupiter: 'Jupiter as Time Lord is a gift — expansion, opportunity, and optimism. Something in your life is ready to grow. The danger: overcommitment or saying yes to everything.',
-  Saturn: 'Saturn as Time Lord means this year is SERIOUS. Responsibilities increase. Structures you have been building are tested. Shortcuts fail. What is real survives; what is superficial collapses. The reward for doing the work: lasting achievement.',
-};
+/** Superseded by solarReturnProfectionMeaning(house, lord, route); planet alone cannot define a year. */
+export const timeLordDetailedMeaning: Record<string, string> = {};
 
-export const stelliumSignMeaning: Record<string, string> = {
-  'Aries': 'Identity rebuilt from scratch. Everything feels personal. Decisions faster but need impulse control.',
-  'Taurus': 'Material reality dominates — money, body, possessions. Build slowly; not a year for shortcuts.',
-  'Gemini': 'Mind is the main character. Learning, communicating, networking dominate.',
-  'Cancer': 'Home, family, emotional foundations. Emotional world is the priority.',
-  'Leo': 'Creative self-expression and visibility. Step into the spotlight.',
-  'Virgo': 'Systems, health, daily function under review. Master the mundane.',
-  'Libra': 'Relationships and balance of giving and receiving.',
-  'Scorpio': 'Power dynamics, financial entanglements, transformation.',
-  'Sagittarius': 'Expand your world. Searching for MEANING in work, beliefs, life direction.',
-  'Capricorn': 'Ambition, authority, lasting structures. Career and reputation are priority.',
-  'Aquarius': 'Your place in the collective. Friendships, groups, technology become central.',
-  'Pisces': 'Boundaries dissolve. Creativity, spirituality, healing dominate.',
-};
+// Sign-only concentration meanings and body sensations are not published.
+export const stelliumSignMeaning: Record<string, string> = {};
 
-export const stelliumFeltSense: Record<string, string> = {
-  'Aries': 'Restless energy, constant urge to START. Patience drops. Courage surges.',
-  'Taurus': 'Deep craving for stability and sensory pleasure. Body wants comfort and security.',
-  'Gemini': 'Mental overstimulation, racing thoughts. Mind has 40 tabs open.',
-  'Cancer': 'Emotional waves, sensitivity to atmosphere. Gut tells you things before your mind catches up.',
-  'Leo': 'Warm expansion in your chest, need to create and be seen.',
-  'Virgo': 'Tension in stomach and shoulders, compulsion to organize and perfect.',
-  'Libra': 'Heightened sensitivity to discord. Crave harmony in environment and relationships.',
-  'Scorpio': 'Intensity in your gut, magnetic pull toward hidden truths.',
-  'Sagittarius': 'Restlessness in your legs, urge to GO somewhere and learn something.',
-  'Capricorn': 'Weight on shoulders, sobering awareness of time and responsibility.',
-  'Aquarius': 'Electric buzzing under your skin, sudden insights, urge to break free.',
-  'Pisces': 'Dissolving of normal boundaries, heightened empathy, vivid dreams.',
-};
+export const stelliumFeltSense: Record<string, string> = {};
 
-export const saturnHouseMeaning: Record<number, string> = {
-  1: 'YOU are the project. Your body, appearance, and sense of self are being restructured from the ground up. You feel heavier, more serious, older. Others may perceive you as more authoritative. Health demands attention — dental work, bones, skin, chronic issues. The gift: genuine self-authority that no one can take from you. The test: doing the hard inner work instead of performing confidence.',
-  2: 'Finances, values, and self-worth are under Saturn\'s microscope. You may earn less, spend more carefully, or face financial limits that force you to distinguish needs from wants. The real lesson: what you genuinely value vs. what you spend on out of habit or anxiety. Building a real budget, paying off debt, or establishing financial independence are the assignments.',
-  3: 'Communication requires more effort and carries more weight. You may struggle to express yourself clearly, deal with difficult conversations, or face a demanding learning curve. Sibling or neighbor relationships may feel strained. The growth: learning to say what matters with precision and authority.',
-  4: 'Home and family are the classroom. You may renovate, move, deal with aging parents, or confront deep family patterns that have shaped you. The domestic sphere feels heavy but productive. Building real emotional foundations — not just decorating the surface — is the assignment.',
-  5: 'Creativity, romance, and fun require WORK. Joy doesn\'t come easily — spontaneity feels blocked. Dating is serious, creative projects need discipline, and your relationship to pleasure is being matured. Children may demand more responsibility. The reward: creative output with real substance and lasting relationships built on reality.',
-  6: 'Daily routines, work habits, and health are being restructured. Bad habits catch up. The body insists on better care. Work may feel burdensome or demand systems you\'ve been avoiding. Building sustainable health practices and efficient work systems is the assignment.',
-  7: 'Partnerships are tested. Relationships lacking real commitment or genuine reciprocity may end. Solid partnerships deepen through shared struggle. You may attract a more serious partner, or an existing partner becomes more demanding. The lesson: what does real partnership actually require?',
-  8: 'Deep transformation. Shared finances, debts, inheritances, and psychological patterns are under review. Power dynamics in intimate relationships demand honest reckoning. Therapy works harder this year. The area where you\'ve been avoiding depth is exactly where Saturn insists you go.',
-  9: 'Beliefs are tested against reality. Higher education demands serious commitment. Travel may be restricted or purposeful rather than recreational. You are being asked: do you actually believe what you say you believe?',
-  10: 'Career and professional reputation are THE priority. Responsibilities increase — you may be promoted, scrutinized, or given more authority than you feel ready for. Professional standards are higher. The world is watching. Build something real.',
-  11: 'Friendships restructured. Fair-weather friends fall away. The groups you belong to either prove their worth or become obligations. You may feel isolated or take on leadership. Quality over quantity in every social connection.',
-  12: 'The most deeply internal Saturn placement. Unconscious patterns, hidden fears, and spiritual foundations are under review. Solitude may be imposed. Dreams may be heavy. Therapy, meditation, and inner work are productive but demanding.',
-};
+export const saturnHouseMeaning: Record<number, string> = Object.fromEntries(
+  Array.from({ length: 12 }, (_, i) => [i + 1, solarReturnHouseMeaning(i + 1, 'Saturn')]),
+);
 
-export const nodeHouseMeaning: Record<number, string> = {
-  1: 'Growth edge: SELF-assertion. Your soul is being pulled toward independence and defining yourself on your own terms. Stop deferring to others. The universe rewards you every time you choose yourself — not selfishly, but honestly. What do YOU want?',
-  2: 'Growth: building financial independence and clarifying your values. What is worth your time, money, and energy? Stop borrowing from others\' value systems. Develop your own resources and trust your own worth.',
-  3: 'Growth: communication, learning, and intellectual curiosity. Speak up. Write. Teach. Ask questions. The growth happens in everyday conversations, not grand gestures. Your local environment holds the lessons.',
-  4: 'Growth: home, family, emotional foundations. Put down roots — emotionally and literally. Stop chasing external achievement at the expense of inner security. What does "home" mean to you on a soul level?',
-  5: 'Growth: creative self-expression, romance, and taking emotional risks. Stop playing it safe. Create something. Love someone. Let yourself be seen in your joy and your vulnerability.',
-  6: 'Growth: daily habits, health, and service to others. Mastery of the mundane IS the spiritual path this year. Your body is your teacher. Build routines that actually serve your wellbeing.',
-  7: 'Growth: partnership, collaboration, and learning to receive. Stop doing everything alone. The lesson is in the mirror of relationship — what a committed other shows you about yourself.',
-  8: 'Growth: emotional depth, shared vulnerability, and letting someone truly know you. Intimacy requires surrender. Financial entanglements teach you about trust. Let something old die so something real can live.',
-  9: 'Growth: expanding your worldview through travel, education, or encounter with the unfamiliar. Your current perspective is too small. Something out there — a place, an idea, a teacher — will crack you open.',
-  10: 'Growth: stepping into authority and accepting public responsibility. You are being called to lead, to build, to create a legacy. Stop hiding behind others\' authority.',
-  11: 'Growth: community, friendship, and collective purpose. Your individual ambitions are being redirected toward something larger. Find your people. Contribute to a cause bigger than yourself.',
-  12: 'Growth: surrender, release, and spiritual trust. The ego\'s agenda is being dissolved — not destroyed, but softened. Meditation, dreams, and quiet contemplation reveal what striving cannot.',
-};
+export const nodeHouseMeaning: Record<number, string> = {};
 
 // ─── How This Year Meets You (v3 section) ───────────────────────────
 import type jsPDF from 'jspdf';
@@ -486,24 +419,8 @@ const SPOTLIGHT_ORDER = ['Mercury','Venus','Mars','Jupiter','Saturn','Uranus','N
 // Personalized stellium interpretation based on sign + house + planets
 function getPersonalizedStelliumText(sign: string, house: number | null, planets: string[]): string {
   const planetNames = planets.map(p => P[p] || p).join(', ');
-  const houseContext = house ? ` in your ${house}${house === 1 ? 'st' : house === 2 ? 'nd' : house === 3 ? 'rd' : 'th'} house` : '';
-  
-  const signPersonal: Record<string, string> = {
-    'Aries': `With ${planetNames} clustered in Aries${houseContext}, your identity is being rebuilt from the ground up this year. Decisions come faster. Patience drops. Everything feels personal: career decisions feel like identity decisions, relationship conversations feel like self-definition moments. Your body may feel restless, charged, or like it needs to MOVE. The risk is impulsivity. The gift is courage you did not know you had.`,
-    'Taurus': `With ${planetNames} clustered in Taurus${houseContext}, material reality is the main event. Your body, your bank account, your physical space — these are the arenas. You will feel a deep pull toward stability and things you can TOUCH. The challenge: resistance to necessary change. The gift: anything you build this year has staying power.`,
-    'Gemini': `With ${planetNames} clustered in Gemini${houseContext}, your mind is the main character. You will feel mentally overstimulated — processing multiple streams of information, having conversations that shift your perspective. Writing, teaching, and networking are amplified. The challenge: scattered attention. The gift: ideas that connect dots no one else sees.`,
-    'Cancer': `With ${planetNames} clustered in Cancer${houseContext}, home, family, and emotional foundations dominate. Gut instincts are louder, emotional reactions are stronger, and your need for safety is non-negotiable. Family dynamics may require your full attention. The challenge: mood swings and emotional overwhelm. The gift: deep emotional wisdom and the ability to create sanctuary.`,
-    'Leo': `With ${planetNames} clustered in Leo${houseContext}, creative self-expression and visibility are the assignment. You will feel an expanding warmth, a need to CREATE and be SEEN. Whether through art, romance, children, or leadership — step forward. The challenge: needing external validation. The gift: honest creative power that inspires.`,
-    'Virgo': `With ${planetNames} clustered in Virgo${houseContext}, systems, health, and daily function are under review. You will feel a compulsion to organize, fix, and improve. Your analytical powers are at peak strength. The body sends clear messages. The challenge: paralysis through perfectionism. The gift: mastery of the practical.`,
-    'Libra': `With ${planetNames} clustered in Libra${houseContext}, relationships and balance are central. You will feel heightened sensitivity to discord. Partnership decisions carry enormous weight. The challenge: people-pleasing. The gift: the ability to create genuine harmony.`,
-    'Scorpio': `With ${planetNames} clustered in Scorpio${houseContext}, transformation and intensity define the year. You are pulled toward hidden truths and situations that demand depth. Surface-level engagement is not an option. The challenge: controlling tendencies. The gift: profound psychological insight and capacity for rebirth.`,
-    'Sagittarius': `With ${planetNames} clustered in Sagittarius${houseContext}, your worldview is expanding. You will feel restlessness — a physical urge to GO, learn, find MEANING. Travel, education, and philosophical exploration absorb your energy. The challenge: overcommitting. The gift: breakthroughs in understanding.`,
-    'Capricorn': `With ${planetNames} clustered in Capricorn${houseContext}, ambition, structure, and lasting achievement are the focus. You will feel the weight of responsibility — in your shoulders, jaw, and spine. Professional demands increase. The challenge: emotional suppression. The gift: building something that lasts.`,
-    'Aquarius': `With ${planetNames} clustered in Aquarius${houseContext}, your place in the collective is being restructured. Sudden insights, unconventional ideas, and a pull toward innovation. The challenge: emotional detachment. The gift: original thinking that solves problems no one else can.`,
-    'Pisces': `With ${planetNames} clustered in Pisces${houseContext}, your sensitivity is amplified — this does NOT mean your identity dissolves. It means you absorb the emotional frequency of every room. Creativity, intuition, and spiritual awareness are heightened. Dreams may be vivid and meaningful. The challenge: knowing which feelings are yours vs someone else's. Boundaries require conscious effort. The gift: access to compassion and creative vision most people never reach. Practically: you may need more solitude, and meditation or artistic expression become essential rather than optional.`,
-  };
-  
-  return signPersonal[sign] || `${planetNames} are clustered in ${sign}${houseContext}, concentrating this year's energy into a focused area.`;
+  const meaning = house ? solarReturnHouseMeaning(house, 'Sun') : '';
+  return `${planetNames} are grouped in ${sign}${house ? `, Solar Return house ${house}` : ''}. ${meaning}`.trim();
 }
 
 // ─── Chart Wheel Data Builder (for SVG rendering by external tools) ──
@@ -1377,7 +1294,7 @@ export async function generateBirthdayGiftPDF(
           ctx.writeBody(doc, personalizedStellium, ctx.colors.bodyText, 9.5, 13);
           ctx.y += 4;
           const felt = stelliumFeltSense[s.location];
-          if (felt) ctx.writeCardSection(doc, 'How You Will Feel This', felt, ctx.colors.accentGreen);
+          if (felt) ctx.writeCardSection(doc, 'What you may notice', felt, ctx.colors.accentGreen);
         } else if (!isNaN(houseNum)) {
           const houseMeaning = stelliumHouseMeaning[houseNum];
           if (houseMeaning) ctx.writeBody(doc, houseMeaning, ctx.colors.bodyText, 9.5, 13);
@@ -1499,15 +1416,15 @@ export async function generateBirthdayGiftPDF(
         explanation += ` Your natal ${ordH} house cusp is in ${natalCuspSign}.`;
         const expectedRuler = SIGN_RULERS[natalCuspSign];
         if (expectedRuler) {
-          explanation += ` ${natalCuspSign} is ruled by ${expectedRuler}, which makes ${expectedRuler} the planet running the show this year.`;
+          explanation += ` ${natalCuspSign} is ruled by ${expectedRuler}, which makes ${expectedRuler} the annual time lord.`;
         }
       } else {
-        explanation += ` The traditional ruler of your natal ${ordH} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show.`;
+        explanation += ` The traditional ruler of your natal ${ordH} house cusp is ${P[tlPlanet] || tlPlanet}, which makes it the annual time lord.`;
       }
       ctx.writeBody(doc, explanation, ctx.colors.bodyText, 10, 14);
     });
 
-    const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
+    const detailedMeaning = analysis.profectionYear ? solarReturnProfectionMeaning(analysis.profectionYear.houseNumber, tlPlanet, analysis.profectionYear.timeLordSRHouse) : '';
     if (detailedMeaning) {
       ctx.drawCard(doc, () => {
         ctx.writeBold(doc, 'What This Means For Your Year', ctx.colors.accentGreen, 11);
@@ -1871,7 +1788,7 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
 
               const felt = stelliumFeltSense[s.location];
               if (felt) {
-                ctx.writeCardSection(doc, 'How You Will Feel This', felt, ctx.colors.accentGreen);
+                ctx.writeCardSection(doc, 'What you may notice', felt, ctx.colors.accentGreen);
               }
 
               // Compact planet roles — inline list instead of individual boxes
@@ -2213,11 +2130,11 @@ export const SolarReturnPDFExport = ({ analysis, srChart, natalChart, narrative 
         ctx.drawCard(doc, () => {
           ctx.writeBold(doc, `Why ${P[tlPlanet] || tlPlanet} Is Your Annual Profection Time Lord`, ctx.colors.gold, 11);
           ctx.y += 2;
-          ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, making it the planet running the show — every transit to or from ${P[tlPlanet] || tlPlanet} hits harder this year.`, ctx.colors.bodyText, 10, 14);
+          ctx.writeBody(doc, `You are ${analysis.profectionYear!.age} years old, placing you in a ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house profection year. The traditional ruler of your natal ${houseNum}${houseNum === 1 ? 'st' : houseNum === 2 ? 'nd' : houseNum === 3 ? 'rd' : 'th'} house cusp is ${P[tlPlanet] || tlPlanet}, which makes it the annual time lord. You may notice transits involving ${P[tlPlanet] || tlPlanet} more easily this year.`, ctx.colors.bodyText, 10, 14);
         });
 
         // Detailed meaning
-        const detailedMeaning = timeLordDetailedMeaning[tlPlanet];
+        const detailedMeaning = analysis.profectionYear ? solarReturnProfectionMeaning(analysis.profectionYear.houseNumber, tlPlanet, analysis.profectionYear.timeLordSRHouse) : '';
         if (detailedMeaning) {
           ctx.drawCard(doc, () => {
             ctx.writeBold(doc, 'What This Means For Your Year', ctx.colors.accentGreen, 11);
