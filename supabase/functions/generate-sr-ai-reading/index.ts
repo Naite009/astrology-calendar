@@ -37,22 +37,23 @@ serve(async (req) => {
     const age = calculateAge(d.birthDate, d.solarReturnYear || new Date().getFullYear());
     // Only validated evidence reaches the prose writer. Legacy tables and
     // unverified eclipse/quarter templates are not treated as calculated facts.
-    const selectedThemes = (d.prioritizedSynthesis?.themes || []).slice(0, 5);
-    const ctx = JSON.stringify({ reportVersion:d.reportVersion, name:d.name, year:d.solarReturnYear,
-      rulers:{natalChartRuler:d.rulers?.natalChartRuler,solarReturnChartRuler:d.rulers?.solarReturnChartRuler,profectionLord:d.rulers?.profectionLord},
-      moonPhase:d.moonPhase,
-      provenance:d.calculationMetadata,
-      prioritizedSynthesis:{themes:selectedThemes,longerTerm:d.prioritizedSynthesis?.longerTerm},
-      verifiedFacts,
-      timingStatus:'Only the supplied progression ingress dates are permitted. Other forecasts are withheld.' });
+    // Fact-safe interpretation units: each meaning already passed the shared prose gate
+    // deterministically. The model only connects and organizes them; it never restates
+    // placements, so it cannot mix natal and Solar Return layers.
+    const units = (d.prioritizedSynthesis?.themes || []).slice(0, 4)
+      .filter((t: any) => typeof t?.meaning === 'string' && t.meaning.trim())
+      .map((t: any, i: number) => ({ unit: i + 1, heading: String(t.title || `Priority ${i + 1}`), meaning: t.meaning, layer: t.layer || '' }));
+    const longer = d.prioritizedSynthesis?.longerTerm?.meaning ? { meaning: d.prioritizedSynthesis.longerTerm.meaning, note: 'Longer-term progressed context, not a return placement.' } : null;
+    if (!units.length) return new Response(JSON.stringify({ error: 'Reading withheld: no validated interpretation units' }), { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const ctx = JSON.stringify({ name: d.name, year: d.solarReturnYear, units, longerTerm: longer });
     const systemPrompt = `${SOLAR_RETURN_PROSE_STANDARD}
 Age: ${age ?? 'unknown'}. Adapt examples to age without assuming marriage, children, occupation or life events. Keep minors' examples nonsexual and age appropriate.
-Use ## headings. Each section has at most 3 sentences and 80 words. Explain the main annual priorities first, then supported modifiers and what you may notice. Do not require a central tension unless verified contacts actually establish it. Progressions are separate longer-term context, never return placements. No fabricated dates, VOC, dignity, retrograde status or new aspects. Write ONLY client interpretation paragraphs, not evidence lines; the application will attach the exact supplied evidence without asking you to copy or reformat positions. Planet names are allowed in astrology mode but do not write degrees, signs, houses, aspect names or dates in the interpretive paragraph. Longer-term context must explain a concrete possible experience rather than only a timing label.
-${mode === 'astro' ? 'Explain the supplied planet functions in plain language. Exact source labels and orbs will be attached by the application.' : 'Use ordinary language for experience. Exact evidence will be attached by the application.'}`;
-
-    const userPrompt = mode === 'astro'
-      ? `Write a concise Solar Return synthesis for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''}. Use FULL astrological terminology and prioritize the strongest verified placements, tight aspects, and relevant dignity facts from the data below. Use only the supplied theme evidence and distinct ruler names.\n\n${ctx}`
-      : `Write a personalized yearly reading for ${d.name || 'this person'}${age ? ` who is turning ${age}` : ''}. Use the prioritized evidence below. Choose only the strongest themes; do not recite every technique or score. Translate everything into plain language with zero astrological terms.\n\n${ctx}`;
+TASK: You receive numbered interpretation units whose meaning has already been checked against the chart. Write exactly one "## " section per unit, in the given order, using the unit heading (you may shorten it to plain words), then ${longer ? 'one "## Longer-term context" section from longerTerm, then ' : ''}one "## How these fit together" section.
+For each unit section: 2 or 3 sentences, at most 70 words, written to "you". Keep the unit's life area and its concrete example (the specific thing you might do, review, discuss, schedule or choose), and say why it may matter this year. You may reword for flow but must not add new events, people, outcomes, health, money amounts or predictions.
+"How these fit together": 2 or 3 sentences naming one practical way two of the units connect in an ordinary week (for example the same plan, conversation or schedule decision). Do not invent a conflict or tension, and do not use bridge phrases.
+NEVER write degrees, signs, house numbers, aspect names, orbs, dates, "natal", "Solar Return", "return chart", retrograde or dignity. ${mode === 'astro' ? 'You may name a planet only if it appears in the unit heading.' : 'Use no astrological terms at all.'}
+Use "may", "might" or "could"; no certainty words (will, always, never, guaranteed, destined, inevitable). No em dashes.`;
+    const userPrompt = `Write the yearly reading for ${d.name || 'this person'}${age ? ` (turning ${age})` : ''} from these units only.\n\n${ctx}`;
 
     const requestDraft = async (feedback: string[]) => {
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -68,7 +69,7 @@ ${mode === 'astro' ? 'Explain the supplied planet functions in plain language. E
           { role: "user", content: userPrompt },
           ...(feedback.length ? [{ role: "user", content: `Regenerate from the SAME verified facts. Fix these failed checks, do not delete factual evidence or add new claims: ${feedback.join("; ")}` }] : []),
         ],
-        temperature: mode === 'astro' ? 0.3 : 0.4,
+        temperature: 0.3,
         stream: true,
       }),
       signal: req.signal,
