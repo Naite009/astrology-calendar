@@ -26,7 +26,13 @@ export function buildSolarReturnEvidenceSynthesis(analysis: SolarReturnAnalysis,
       meaning: solarReturnHouseMeaning(sunHouse, 'Sun'),
       evidence: [`Solar Return ${format(sr, 'Sun')}, House ${sunHouse}.`, `Solar Return ${format(sr, 'Moon')}, House ${moonHouse || 'unknown'}; ${analysis.moonPhase?.phase || 'phase unknown'} at ${analysis.moonPhase?.phaseAngle ?? '?'}°.`] });
   }
-  if (moonHouse && moonHouse !== sunHouse) themes.push({ title: 'What affects your day-to-day sense of ease', layer: 'Solar Return', meaning: solarReturnHouseMeaning(moonHouse, 'Moon'), evidence: [`Solar Return ${format(sr, 'Moon')}, House ${moonHouse}.`] });
+  // A life area repeated by a second technique reinforces the existing theme (with its own
+  // labelled evidence line) instead of producing a duplicate paragraph.
+  const profHouseTheme = prof ? themes[0] : undefined;
+  if (moonHouse && moonHouse !== sunHouse) {
+    if (profHouseTheme && prof && moonHouse === prof.houseNumber) profHouseTheme.evidence.push(`Also emphasized by Solar Return ${format(sr, 'Moon')}, Solar Return House ${moonHouse} (separate chart layer, same life area).`);
+    else themes.push({ title: 'What affects your day-to-day sense of ease', layer: 'Solar Return', meaning: solarReturnHouseMeaning(moonHouse, 'Moon'), evidence: [`Solar Return ${format(sr, 'Moon')}, House ${moonHouse}.`] });
+  }
   const angular = (analysis.angularPlanetsDetailed || []).filter(a => majors.has(a.planet)).sort((a,b) => a.orb - b.orb)[0];
   if (angular && analysis.planetSRHouses[angular.planet]) themes.push({ title: 'Where your choices may be more visible', layer: 'Solar Return angular emphasis', meaning: solarReturnHouseMeaning(analysis.planetSRHouses[angular.planet], angular.planet), evidence: [`Solar Return ${format(sr, angular.planet)}, House ${analysis.planetSRHouses[angular.planet]}; near ${angular.angle}, orb ${angular.orb}°.`] });
   const key = new Set(['Sun','Moon',analysis.yearlyTheme?.ascendantRuler,prof?.timeLord].filter(Boolean));
