@@ -168,7 +168,7 @@ export const ProfileTab = ({ analysis, srChart, natalChart }: Props) => {
           </div>
 
           <div className="border border-primary/30 rounded-sm p-4 bg-primary/5">
-            <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Combined Axis Synthesis</p>
+            <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Combined counts</p>
             <p className="text-xs text-foreground leading-relaxed">{analysis.hemisphericEmphasis.combinedInsight}</p>
           </div>
         </div>
