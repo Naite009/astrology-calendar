@@ -59,7 +59,7 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
       {/* SR to Natal Aspects — fully expanded */}
       <div className="border border-primary/20 rounded-sm p-5 bg-card space-y-3">
         <h3 className="text-sm uppercase tracking-widest font-medium text-foreground">SR Planets → Natal Chart</h3>
-        <p className="text-xs text-muted-foreground mb-3">How this year's planets connect to your birth chart — the most important predictive technique.</p>
+        <p className="text-xs text-muted-foreground mb-3">Verified connections between this year's chart and your natal chart.</p>
         {analysis.srToNatalAspects.filter(a => !(a.planet1 === 'Sun' && a.planet2 === 'Sun' && a.type === 'Conjunction')).map((asp, i) => {
           const interp = generateSRtoNatalInterpretation(asp.planet1, asp.planet2, asp.type, asp.orb);
           const aspInfo = aspectTypeMeanings[asp.type];
@@ -74,12 +74,12 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
                 <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
               </div>
               {asp.label && <p className="text-xs text-foreground/80">{asp.label}</p>}
-              <p className="text-xs text-muted-foreground leading-relaxed">{interp.howItFeels}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{asp.interpretation}</p>
               <p className="text-xs text-muted-foreground leading-relaxed">{interp.whatItMeans}</p>
-              <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
+              {interp.whatToDo && <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
                 <p className="text-[10px] uppercase tracking-widest text-primary mb-0.5">What To Do</p>
                 <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
-              </div>
+              </div>}}
             </div>
           );
         })}
@@ -103,11 +103,11 @@ export const AspectsTimingTab = ({ analysis, srChart, natalChart }: Props) => {
                 <span className="text-[10px] text-muted-foreground ml-auto">orb {asp.orb}°</span>
               </div>
               {asp.label && <p className="text-xs text-foreground/80">{asp.label}</p>}
-              <p className="text-xs text-muted-foreground leading-relaxed">{interp.howItFeels}</p>
-              <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">{asp.interpretation}</p>
+              {interp.whatToDo && <div className="bg-primary/10 border border-primary/20 rounded-sm p-2">
                 <p className="text-[10px] uppercase tracking-widest text-primary mb-0.5">What To Do</p>
                 <p className="text-xs leading-relaxed">{interp.whatToDo}</p>
-              </div>
+              </div>}}
             </div>
           );
         })}
