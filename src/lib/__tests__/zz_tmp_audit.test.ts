@@ -9,12 +9,14 @@ import { detectContradictions } from '../solarReturnContradictions';
 import { generateActionGuidance } from '../solarReturnActionGuidance';
 import { auditSolarReturnProse } from '../solarReturnProseBoundary';
 import * as fs from 'fs';
+import { buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
 it('audit', () => {
   const a = analyzeSolarReturn(laurenReturn, laurenNatal) as any;
   const out: any = {};
   const run = (k: string, f: () => unknown) => { try { out[k] = f(); } catch (e) { out[k] = 'ERR ' + e; } };
   run('domain', () => (generateDomainDeepDives as any)(a, laurenReturn, laurenNatal));
-  run('power', () => (generatePowerPortrait as any)(laurenNatal, laurenReturn, a));
+  run('power', () => (generatePowerPortrait as any)(a, laurenNatal, laurenReturn));
+  run('full', () => (buildFullJsonStandalone as any)(a, laurenReturn, laurenNatal));
   run('scores', () => (calculateLifeDomainScores as any)(a, laurenReturn, laurenNatal));
   run('identity', () => (generateIdentityShift as any)(a, laurenReturn, laurenNatal));
   run('contra', () => (detectContradictions as any)(a, laurenReturn, laurenNatal));
