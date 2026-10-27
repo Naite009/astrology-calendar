@@ -15,39 +15,6 @@ function calculateAge(birthDate: string, srYear: number): number | null {
   return srYear - birthYear;
 }
 
-function ageGroup(age: number | null): string {
-  if (!age) return 'adult';
-  if (age <= 12) return 'child';
-  if (age <= 17) return 'teen';
-  if (age <= 25) return 'young_adult';
-  if (age <= 40) return 'adult';
-  if (age <= 55) return 'midlife';
-  if (age <= 70) return 'senior';
-  return 'elder';
-}
-
-function ageContextInstructions(group: string, age: number | null): string {
-  const ageStr = age ? `${age} years old` : 'unknown age';
-  switch (group) {
-    case 'child':
-      return `This person is ${ageStr}. Write as if explaining to a smart child. Use simple words, short sentences. Talk about school, friends, family, hobbies, sports, imagination. No romance, career pressure, or adult responsibilities. Frame challenges as "things that might feel confusing or hard."`;
-    case 'teen':
-      return `This person is ${ageStr}. They care about identity, friendships, school, fitting in, independence from parents. Mention dating only lightly. Career = "what you might want to do someday." Frame growth as self-discovery. Use casual but respectful tone.`;
-    case 'young_adult':
-      return `This person is ${ageStr}. They're navigating early career, relationships, possibly first serious partnerships, finding independence, maybe grad school or first jobs. Be direct and actionable. "This is a year to..." format works well.`;
-    case 'adult':
-      return `This person is ${ageStr}. They likely have established relationships, career momentum, possibly children. Focus on deepening existing commitments, career advancement, work-life balance, and personal fulfillment beyond achievement.`;
-    case 'midlife':
-      return `This person is ${ageStr}. They may be reassessing life direction, dealing with aging parents, children leaving home, career pivots, health awareness, and legacy questions. Focus on wisdom, recalibration, and "what matters most now." Don't assume they're slowing down — many people this age are starting new chapters.`;
-    case 'senior':
-      return `This person is ${ageStr}. Focus on wisdom, mentorship, health and vitality, relationships with grandchildren or community, creative pursuits, travel, legacy, and enjoying life on their own terms. Physical activity suggestions should be realistic (walking, yoga, swimming, dance classes — not extreme sports). Don't patronize. Many people this age are vibrant and active. Frame this year's energy around what brings joy, meaning, and connection.`;
-    case 'elder':
-      return `This person is ${ageStr}. Focus on legacy, spiritual meaning, close relationships, comfort, health management, creativity, and peace. Suggestions should be gentle and dignified. Honor their life experience. Frame the year around reflection, connection, and savoring life.`;
-    default:
-      return `This person is ${ageStr}. Write for a general adult audience with practical, grounded advice.`;
-  }
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
