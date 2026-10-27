@@ -363,22 +363,11 @@ function calculateTone(toneScore: number, activityLevel: number): DomainTone {
   return 'mixed';
 }
 
-function activityLabel(level: number, tone: DomainTone): string {
+/** Activity-only label: how many chart factors point here, never a good/bad forecast. */
+function activityLabel(level: number, _tone: DomainTone): string {
   if (level < 2) return 'Quiet Background';
-  if (level < 4) {
-    if (tone === 'supportive') return 'Gently Supportive';
-    if (tone === 'challenging') return 'Getting Real';
-    return 'Gently Active';
-  }
-  if (level < 7) {
-    if (tone === 'supportive') return 'Steadily Building';
-    if (tone === 'challenging') return 'Deeply Engaged';
-    if (tone === 'transformative') return 'Evolving';
-    return 'In Motion';
-  }
-  if (tone === 'supportive') return 'Flourishing';
-  if (tone === 'challenging') return 'In the Spotlight';
-  if (tone === 'transformative') return 'Major Evolution';
+  if (level < 4) return 'Some Activity';
+  if (level < 7) return 'Active';
   return 'Highly Active';
 }
 
