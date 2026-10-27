@@ -1,5 +1,5 @@
 import { guardSolarReturnProse } from './solarReturnProseBoundary';
-import { solarReturnContactMeaning } from './solarReturnClientMeaning';
+import { solarReturnContactMeaning, solarReturnHouseMeaning } from './solarReturnClientMeaning';
 import { signPositionToLongitude } from "./ephemerisEngine";
 import { lunarPhaseName, lunarPhaseIndex, LUNAR_PHASE_MEANINGS, LUNAR_PHASE_CONVENTION, astronomicalAppearance } from './lunarPhaseConvention';
 import { angularSeparation, classifyAspect } from './aspects/classifyAspect';
@@ -796,7 +796,7 @@ export const analyzeSolarReturn = (
 
     const rulerTheme = PLANET_THEMES[ruler] || { domain: `${ruler} themes`, drive: `${ruler}'s drive`, body: '' };
     const houseArea = rulerHouse ? SR_HOUSE_LIFE_AREA[rulerHouse] || `your ${ordinalNumber(rulerHouse)} house affairs` : '';
-    const themeDesc = `${srAsc.sign} Rising this year means ${ruler}, the planet of ${rulerTheme.domain}, steers how you meet every situation. With ${ruler} in ${rulerSign}${rulerHouse ? ` (SR ${ordinalNumber(rulerHouse)} house)` : ''}, your instinctive drive all year is ${rulerTheme.drive}${houseArea ? `, and that drive plays out most visibly in ${houseArea}` : ''}. This may show up as a recurring pull, with decisions and reactions often filtering through ${rulerSign} energy, ${getSignFeltSense(rulerSign)}.`;
+    const themeDesc = `${srAsc.sign} rises in the Solar Return chart, so ${ruler} is the Solar Return chart ruler${rulerHouse ? `, placed in Solar Return house ${rulerHouse}` : ''}. ${solarReturnHouseMeaning(rulerHouse, ruler)}`.trim();
     yearlyTheme = {
       ascendantSign: srAsc.sign,
       ascendantRuler: ruler,
@@ -1701,26 +1701,9 @@ export const analyzeSolarReturn = (
   const buildMoonAspectInterp = (
     planet: string, aspectType: string, targetHouse: number | null, targetSign: string
   ): string => {
-    const planetTheme = PLANET_THEMES[planet] || { domain: `${planet} themes`, drive: `${planet}'s drive`, body: '' };
-    const targetHouseTheme = targetHouse ? (SR_HOUSE_LIFE_AREA[targetHouse] || '') : '';
-    const moonHouseDesc = moonSRHouse ? `Your Moon sits in your ${moonSRHouse}${moonSRHouse === 1 ? 'st' : moonSRHouse === 2 ? 'nd' : moonSRHouse === 3 ? 'rd' : 'th'} house (${moonSRHouseTheme})` : 'Your Moon';
-    const targetHouseDesc = targetHouse ? ` in your ${targetHouse}${targetHouse === 1 ? 'st' : targetHouse === 2 ? 'nd' : targetHouse === 3 ? 'rd' : 'th'} house (${targetHouseTheme})` : '';
-    const feel = ASPECT_FEEL[aspectType] || ASPECT_FEEL.Conjunction;
-
-    // Special handling for Sun conjunction: check moon phase
-    if (planet === 'Sun' && aspectType === 'Conjunction') {
-      const phase = moonPhase?.phase || '';
-      if (phase === 'Balsamic') {
-        return `${moonHouseDesc}, and the Sun${targetHouseDesc} are in a Balsamic conjunction. This is the END of a cycle, not a beginning. Your emotional life this year is about surrender, completion, and letting go. You are closing out old patterns and preparing the ground for something new that has not yet arrived. Rest, reflection, and release are the work. Resist the urge to start new things. Honor what is finishing.`;
-      }
-      if (phase === 'Last Quarter') {
-        return `${moonHouseDesc}, and the Sun${targetHouseDesc} are conjunct in a late-cycle phase. This is a year of reorientation. Old emotional patterns are being released. You are shedding what no longer fits before a new direction emerges.`;
-      }
-      // True New Moon (phase angle < 22.5)
-      return `${moonHouseDesc}, and the Sun${targetHouseDesc} are in a true New Moon conjunction. This is a powerful fresh start. Your emotional needs and conscious purpose are fused into a single drive. A year of planting seeds and new emotional beginnings.`;
-    }
-
-    return `${moonHouseDesc}. ${planet} in ${targetSign}${targetHouseDesc} ${feel.verb} your emotional baseline. ${planetTheme.domain.charAt(0).toUpperCase() + planetTheme.domain.slice(1)} directly shapes how you feel day-to-day. The ${aspectType.toLowerCase()} creates ${feel.quality} between your emotional needs and ${planet}'s themes.`;
+    // Shared contact meaning only; no phase-based "surrender" or "fresh start" certainty.
+    void targetHouse; void targetSign;
+    return solarReturnContactMeaning({ planet1: 'Moon', planet2: planet, type: aspectType, orb: 0, house1: moonSRHouse });
   };
 
   if (moonPos) {
