@@ -186,28 +186,18 @@ export function generateTopThemes(scoredAspects: ScoredAspect[]): TopTheme[] {
     mixed: 'Multiple Life Areas',
   };
 
-  const AREA_DESC: Record<string, (drivers: string[]) => string> = {
-    career: (d) => `Your professional life is activated by ${d.join(' and ')}. Expect shifts in how you work and what you aim for.`,
-    relationship: (d) => `Relationship dynamics intensify through ${d.join(' and ')}. Partnerships demand attention and honesty.`,
-    money: (d) => `Financial patterns shift through ${d.join(' and ')}. Your relationship with money and value is evolving.`,
-    emotional: (d) => `Your emotional landscape is reshaped by ${d.join(' and ')}. Feelings run deeper and demand processing.`,
-    health: (d) => `Physical energy and wellbeing are influenced by ${d.join(' and ')}. Body awareness becomes important.`,
-    identity: (d) => `Who you are is transforming through ${d.join(' and ')}. Others will notice the change before you do.`,
-    spiritual: (d) => `Spiritual and purpose themes emerge through ${d.join(' and ')}. Trust the inner compass.`,
-    mixed: (d) => `Multiple life areas activate simultaneously through ${d.join(' and ')}.`,
-  };
 
   const themes: TopTheme[] = [];
   for (const [area, aspects] of Object.entries(areaGroups)) {
     const totalImportance = aspects.reduce((sum, a) => sum + a.importance, 0);
     const avgImportance = Math.round(totalImportance / aspects.length);
     const drivers = [...new Set(aspects.flatMap(a => [a.srPlanet, a.natalPlanet]))].slice(0, 3);
-    const descFn = AREA_DESC[area] || AREA_DESC.mixed;
+
 
     themes.push({
       theme: AREA_LABELS[area] || area,
       area,
-      description: descFn(drivers),
+      description: aspects.map(a => a.interpretation).filter(Boolean).slice(0, 1).join(' '),
       importance: avgImportance,
       drivers,
     });
