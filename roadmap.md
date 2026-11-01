@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Solar Return concrete interpretation repair
+- [ ] Finish reachable checked reading PDF, confirm all major-planet contact meanings, rerun fresh saved Lauren UI/JSON/PDF acceptance and full tests.
 - [x] Consolidate active overlay, Sun/Moon/sign/planet/deep tables, executive/story/ruler/closing generators and snapshot PDF text; remove invented axis conflicts and average-calendar lunar weather. Full suite: 755 tests; preview build OK.
 - [x] Full-output acceptance (Lauren 2026, signed in): all 8 tabs with sections expanded, fresh AI reading (both versions accepted by factual and wording gates, not withheld), and every tier's downloaded report scanned clean for the rejected phrases; chart positions, houses, aspects/orbs, profection, rulers unchanged. 772 tests. The app's tier buttons currently download the report data only; the old in-app PDF writers are not reachable from the UI and were not rendered.
 - [x] Replace the active deterministic keyword/meta-synthesis source, consolidate the narrative/modal authors and PDF story summaries; preserve factual checks.

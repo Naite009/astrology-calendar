@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { downloadBirthdayJSONStandalone, buildFullJsonStandalone } from '@/components/SolarReturnPDFExport';
+import { downloadSolarReturnReadingPDF } from '@/lib/solarReturnReadingPDF';
 
 import { AiReadingModal } from '@/components/solarReturn/AiReadingModal';
 import { fetchReading } from '@/components/solarReturn/AiReadingModal';
@@ -127,18 +128,23 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
     return analyzeSolarReturn(selectedSR, selectedNatal);
   }, [selectedSR, selectedNatal]);
 
-  const handleBirthdayGiftExport = useCallback(async () => {
+  const handleBirthdayGiftExport = useCallback(async (format: 'json' | 'pdf' = 'json') => {
     if (!analysis || !selectedSR || !selectedNatal) return;
+
+    const download = async (readings: { plain: string; astro: string }) => {
+      if (format === 'pdf') await downloadSolarReturnReadingPDF(buildFullJsonStandalone(analysis, selectedSR, selectedNatal, readings));
+      else downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, readings);
+    };
 
     // If AI readings already exist, download immediately
     if (aiReadings.plain && aiReadings.astro) {
-      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, aiReadings);
+      try { await download(aiReadings); } catch (error) { toast.error(error instanceof Error ? error.message : 'The reading could not be downloaded'); }
       return;
     }
 
     // Auto-generate both readings first
     setIsGeneratingForExport(true);
-    toast.info('Generating AI readings before export… this takes about a minute.');
+    toast.info('Generating checked readings before download.');
     const controller = new AbortController();
     abortExportRef.current = controller;
 
@@ -152,8 +158,8 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
 
       const finalReadings = { plain: plainResult, astro: astroResult };
       setAiReadings(finalReadings);
-      toast.success('AI readings generated: downloading JSON');
-      downloadBirthdayJSONStandalone(analysis, selectedSR, selectedNatal, finalReadings);
+      await download(finalReadings);
+      toast.success(`Checked readings downloaded as ${format.toUpperCase()}`);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Auto-generate AI error:', err);
@@ -368,7 +374,7 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
         {/* Top-level export buttons */}
         <div className="flex items-center gap-3 p-3 border border-border rounded-sm bg-card/60">
           <button
-            onClick={handleBirthdayGiftExport}
+            onClick={() => handleBirthdayGiftExport()}
             disabled={isGeneratingForExport}
             className="flex items-center gap-2.5 px-6 py-3 rounded-lg text-base font-semibold transition-all hover:opacity-80 disabled:opacity-50 shadow-sm"
             style={{ backgroundColor: '#FFF8E1', color: '#5D4037', border: '2px solid #D4A574' }}
@@ -376,6 +382,9 @@ export const SolarReturnView = ({ userNatalChart, savedCharts }: Props) => {
             {isGeneratingForExport ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
             {isGeneratingForExport ? 'Generating…' : 'Download JSON'}
           </button>
+          <Button variant="outline" disabled={isGeneratingForExport} onClick={() => handleBirthdayGiftExport('pdf')}>
+            <Download size={16} className="mr-2" /> Download Reading PDF
+          </Button>
           <span className="text-xs text-muted-foreground">
             {aiReadings.plain && aiReadings.astro
               ? '✓ AI readings included'
