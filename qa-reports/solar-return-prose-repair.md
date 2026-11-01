@@ -1,5 +1,32 @@
 # Solar Return implementation audit, October 27, 2026
 
+## Follow-up completion, November 1, 2026
+
+This section supersedes the earlier PDF limitation below. A new reachable **Download Reading PDF** button now downloads the checked reading, source information, placements and every contact with its exact label/orb. It does not revive the dormant legacy PDF generators or pretend to provide five distinct PDF tiers. T1 through T5 remain on-screen previews; their JSON downloads remain the full report.
+
+### Exact current changes
+
+- `src/components/SolarReturnView.tsx`: `handleBirthdayGiftExport(format)` now shares accepted reading generation between JSON and the new reading PDF; the existing JSON button and tier-preview JSON actions retain their original behavior. New PDF action calls `downloadSolarReturnReadingPDF(buildFullJsonStandalone(...))`.
+- `src/lib/solarReturnReadingDocument.ts`: validates the report, both AI readings with wording and factual gates, each synthesis meaning and each published contact meaning before creating a document. Includes canonical prioritized synthesis/evidence, accepted readings, source metadata, rulers, placements and both full contact lists. Copies, never changes, factual fields.
+- `src/lib/solarReturnReadingPDF.ts`: paginated renderer of that checked document only. No independent interpretation author, legacy tables or chart calculations. ASCII substitutions are limited to PDF typography; JSON facts remain untouched.
+- `supabase/functions/_shared/solarReturnProseQuality.ts`: additionally rejects the previously observed “will strongly influence”, “most visible angle” and related certainty phrases. Both reading endpoints redeployed before live acceptance. Neither factual nor concrete-scene gate was relaxed.
+- `src/lib/__tests__/solarReturnReadingDocument.test.ts`: eight cases for checked PDF parity, missing/unsafe/factually wrong reading rejection, residual certainty classes, and complete major-planet contact meaning coverage. `AGENTS.md` records the shared-document rule.
+
+### Fresh signed-in acceptance
+
+- Selected the actual saved Lauren Newman 2026 Solar Return. No test chart saved, positions recomputed or birth/return details edited.
+- Freshly generated both Plain Language and Astrology readings twice after deployment. Both runs displayed “Both readings generated”, meaning the server gates and final browser factual/prose gates accepted both readings, not withheld. Final accepted lengths: 1,784 and 2,193 characters.
+- Inspected all eight tabs with available collapsed sections opened, and all five tier previews. Scanned the complete captured text, downloaded JSON and entire extracted PDF for all fourteen supplied banned strings plus the residual certainty classes: zero hits.
+- Clicked actual JSON and Reading PDF buttons and obtained both downloads. Rendered and visually inspected all fifteen PDF pages; no blank pages, clipped text or overlapping footer/content were observed. This verifies the new reading PDF, not dormant legacy tier PDF writers.
+- Compared exact saved-report facts before/after: source metadata, rulers, Sun/Moon houses, planet positions, natal/SR cusps, raw placements, SR house mappings, profection, Moon phase, angular contacts, both aspect lists' identities/source labels/orbs all identical.
+- All 55 major-planet contacts have concrete meanings passing the shared prose gate. Previously described missing meanings are minor bodies/angles outside the supported major-body translator, not remaining major-planet failures. Those retain exact factual contact labels/orbs without speculative explanations.
+- Runtime page errors: zero. Latest preview build: OK.
+- Full suite: **780 tests across 41 files passed**, using `bunx vitest run --maxWorkers=2`. Initial unrestricted parallel run had five calculation-heavy test timeouts; the complete two-worker rerun passed without changing assertions or increasing test timeouts.
+
+### Limits
+
+The lexical gate is a bounded heuristic, not proof against every possible semantic overclaim. Minor-body/angle pair meanings remain intentionally fact-only. Legacy PDF generators remain unreachable, so no claim is made that every historical PDF writer is certified. Other natal/relationship audit tasks on the roadmap are separate from this Solar Return follow-up.
+
 ## Expanded active-generator pass: acceptance remains open
 
 Additional exact active sources were confirmed: `srOverlayNarrative` and prediction banks in `solarReturnInterpretations.ts`, `solarReturnExecutiveSummary.ts`, deep planet/Moon banks, `StoryOfTheYear.tsx`, `solarReturnRulerNarratives.ts`, and closing/year-summary generators. The visible aspect tab independently called `generateSRtoNatalInterpretation` for both cross-chart and internal contacts, including guaranteed all-year feelings and unsupported psychological/medical claims. Merely guarding the analysis object did not guard that direct renderer.
