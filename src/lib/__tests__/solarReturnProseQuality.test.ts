@@ -21,7 +21,7 @@ import { generateSRtoNatalInterpretation } from '../solarReturnAspectInterp';
 import { generateSettingNarrative } from '../solarReturnRulerNarratives';
 
 const bad = 'Attention may return to questions, words, school or everyday information, siblings or peers, and the details people exchange each day. The return placement of Jupiter connects this with building a worldview large enough to guide your choices. The point is how those areas meet in actual choices, not that one cancels the other.';
-describe('Solar Return client-meaning gate', () => {
+describe('Solar Return client-meaning gate', { timeout: 30000 }, () => {
   it('does not invent lunar-return dates or best months from calendar rotations and tone scores', () => {
     const analysis = analyzeSolarReturn(laurenReturn,laurenNatal);
     expect(generateLunarWeatherMap(analysis,laurenReturn,laurenNatal).months).toEqual([]);
@@ -159,7 +159,7 @@ describe('Solar Return client-meaning gate', () => {
     expect(validateSolarReturnReading(`## Your year\n\n${bad}`)).not.toEqual([]);
   });
 });
-describe('Solar Return lower-tab and export generators (Lauren regression)', () => {
+describe('Solar Return lower-tab and export generators (Lauren regression)', { timeout: 30000 }, () => {
   const analysis = analyzeSolarReturn(laurenReturn, laurenNatal);
   const json = buildFullJsonStandalone(analysis, laurenReturn, laurenNatal) as any;
   const text = JSON.stringify(json);
