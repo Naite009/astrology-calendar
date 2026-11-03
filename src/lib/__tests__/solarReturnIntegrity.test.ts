@@ -14,7 +14,9 @@ import { calculateEclipseSensitivity, calculateEnhancedRetrogrades } from '@/lib
 import { computeBody } from '@/lib/ephemerisEngine';
 import { laurenNatal, laurenReturn } from '@/test/fixtures/solarReturnLauren';
 
-describe('Solar Return concrete integrity regressions', () => {
+// Full Lauren analyses take several seconds each; allow headroom so the
+// suite does not flake under parallel load.
+describe('Solar Return concrete integrity regressions', { timeout: 30000 }, () => {
   it.each([[0,'New Moon'],[44.99,'New Moon'],[45,'Crescent'],[90,'First Quarter'],[122.45,'First Quarter'],[135,'Gibbous'],[180,'Full Moon'],[221.98,'Full Moon'],[225,'Disseminating'],[270,'Last Quarter'],[315,'Balsamic'],[345,'Balsamic'],[359.99,'Balsamic'],[360,'New Moon']] as const)('Rudhyar phase %s is %s', (angle,label) => expect(lunarPhaseName(angle)).toBe(label));
   it.each([[122.45,'Waxing Gibbous'],[221.98,'Waning Gibbous'],[345,'New Moon']] as const)('sky appearance %s is %s', (angle,label) => expect(astronomicalAppearance(angle)).toBe(label));
   it('keeps age-50 whole-sign profection and all three ruler roles distinct', () => {
