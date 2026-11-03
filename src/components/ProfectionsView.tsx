@@ -129,7 +129,6 @@ export const ProfectionsView = ({ userNatalChart, savedCharts, selectedChartId, 
                 {data.lordPos?.sign && (
                   <p className="mt-1 text-xs text-muted-foreground">
                     In your birth chart: {data.lordPos.sign}
-                    {data.lordPos.house ? `, house ${data.lordPos.house}` : ""}
                     {data.lordPos.isRetrograde ? ", retrograde" : ""}
                   </p>
                 )}
