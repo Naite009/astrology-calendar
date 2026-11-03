@@ -140,3 +140,5 @@
 - [x] Run full tests, TypeScript, production build, and rendered QA.
 
 - [x] Natal Portrait "Who this person is" whole-chart narrative (chained evidence + named signatures + current transits).
+- [x] Audit transit/timing math app-wide; fixed: outer-planet cache key rounding, 0.5° near-miss "exact" passes, LifeCycles milestone 1° first-day hits, average-speed applying/separating, retrograde shadow-date false brackets, yearly calendar 0.05° "exact", sampled Mercury stations, profections sign rounding.
+- [ ] Remaining known approximations (acceptable, documented): relationship calendar 2-7 day sampling (detection only, not exact dates), JPL 10-day table for Chiron/Ceres/Pallas/Juno/Vesta/Eris (0.6 arcmin), Moon house-crossing linear interpolation within 24h windows, VOC Moon 2-minute grid.

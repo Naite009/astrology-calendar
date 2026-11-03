@@ -50,9 +50,17 @@ const SCAN_MONTHS_BY_PLANET: Record<string, number> = {
   Jupiter: 6,
 };
 
+/** Signed shortest distance from the transit longitude to the exact aspect point. */
+const signedOffset = (lon: number, targetLon: number): number => {
+  const d = normalizeLongitude(lon - targetLon);
+  return d > 180 ? d - 360 : d;
+};
+
 /**
- * Find all dates where the transit planet's orb to the natal point reaches a local minimum
- * (i.e., exact passes, including retrogrades).
+ * Find all dates where the transit planet is exactly on the aspect point,
+ * including retrograde passes. Daily scan for sign changes of the offset,
+ * then bisection to sub-second precision with a verified residual. A station
+ * that never quite reaches the target is NOT reported as a pass.
  */
 function findExactPasses(
   body: Astronomy.Body,
@@ -63,47 +71,51 @@ function findExactPasses(
 ): ExactPass[] {
   const startMs = center.getTime() - scanMonths * 30.44 * 86400000;
   const endMs = center.getTime() + scanMonths * 30.44 * 86400000;
-  const stepMs = 3 * 86400000; // 3-day steps
+  const DAY = 86400000;
 
-  // Sample orb over the window
-  const samples: { ms: number; orb: number }[] = [];
-  for (let ms = startMs; ms <= endMs; ms += stepMs) {
-    const lon = getPlanetLongitudeExact(body, new Date(ms));
-    samples.push({ ms, orb: aspectOrb(lon, natalLon, aspectAngle) });
-  }
+  // Conjunctions/oppositions have one target point; other aspects two.
+  const targets = aspectAngle === 0 || aspectAngle === 180
+    ? [normalizeLongitude(natalLon + aspectAngle)]
+    : [normalizeLongitude(natalLon + aspectAngle), normalizeLongitude(natalLon - aspectAngle)];
 
-  // Find local minima where orb < 1° (candidate exact passes)
   const passes: ExactPass[] = [];
-  for (let i = 1; i < samples.length - 1; i++) {
-    if (samples[i].orb < samples[i - 1].orb && samples[i].orb < samples[i + 1].orb && samples[i].orb < 2) {
-      // Refine with ternary search
-      let lo = samples[i - 1].ms;
-      let hi = samples[i + 1].ms;
-      for (let iter = 0; iter < 30; iter++) {
-        const m1 = lo + (hi - lo) / 3;
-        const m2 = hi - (hi - lo) / 3;
-        const o1 = aspectOrb(getPlanetLongitudeExact(body, new Date(m1)), natalLon, aspectAngle);
-        const o2 = aspectOrb(getPlanetLongitudeExact(body, new Date(m2)), natalLon, aspectAngle);
-        if (o1 < o2) hi = m2; else lo = m1;
+  for (const target of targets) {
+    let prevMs = startMs;
+    let prev = signedOffset(getPlanetLongitudeExact(body, new Date(prevMs)), target);
+    for (let ms = startMs + DAY; ms <= endMs + DAY; ms += DAY) {
+      const curMs = Math.min(ms, endMs);
+      const cur = signedOffset(getPlanetLongitudeExact(body, new Date(curMs)), target);
+      if (prev !== 0 && Math.sign(prev) !== Math.sign(cur) && Math.abs(cur - prev) < 30) {
+        // Bracketed crossing: bisect to sub-second precision.
+        let lo = prevMs, hi = curMs, flo = prev;
+        for (let i = 0; i < 50 && hi - lo > 1; i++) {
+          const mid = (lo + hi) / 2;
+          const fm = signedOffset(getPlanetLongitudeExact(body, new Date(mid)), target);
+          if (Math.sign(fm) === Math.sign(flo)) { lo = mid; flo = fm; } else hi = mid;
+        }
+        const exactMs = (lo + hi) / 2;
+        const residual = Math.abs(signedOffset(getPlanetLongitudeExact(body, new Date(exactMs)), target));
+        if (residual <= 0.000001 && !passes.some(p => Math.abs(p.date.getTime() - exactMs) < 1000)) {
+          passes.push({ date: new Date(exactMs), orb: residual, label: '' });
+        }
       }
-      const bestMs = (lo + hi) / 2;
-      const bestOrb = aspectOrb(getPlanetLongitudeExact(body, new Date(bestMs)), natalLon, aspectAngle);
-      if (bestOrb < 0.5) {
-        passes.push({ date: new Date(bestMs), orb: bestOrb, label: '' });
-      }
+      prevMs = curMs; prev = cur;
+      if (curMs >= endMs) break;
     }
   }
 
-  // Label passes
-  if (passes.length === 1) {
-    passes[0].label = 'Exact';
-  } else {
-    passes.forEach((p, i) => {
-      if (i === 0) p.label = '1st pass (direct)';
-      else if (i === passes.length - 1) p.label = `${i + 1}${i === 1 ? 'nd' : 'rd'} pass (direct)`;
-      else p.label = `${i + 1}${i === 1 ? 'nd' : 'rd'} pass (℞)`;
-    });
-  }
+  passes.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Label passes by measured motion at each crossing.
+  const ordinal = (n: number) => `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
+  passes.forEach((p, i) => {
+    const before = getPlanetLongitudeExact(body, new Date(p.date.getTime() - 3600000));
+    const after = getPlanetLongitudeExact(body, new Date(p.date.getTime() + 3600000));
+    const retro = signedOffset(after, before) < 0;
+    p.label = passes.length === 1
+      ? `Exact (${retro ? '℞' : 'direct'})`
+      : `${ordinal(i + 1)} pass (${retro ? '℞' : 'direct'})`;
+  });
 
   return passes;
 }
@@ -170,7 +182,9 @@ export function getOuterTransitTiming(
   const body = BODY_MAP[transitPlanet];
   if (!body) return null;
 
-  const cacheKey = `${transitPlanet}-${natalPlanetName}-${aspectName}-${Math.round(natalLongitude)}`;
+  // Full-precision key: two natal points within the same rounded degree have
+  // different exact dates, and the reference date changes the scan window.
+  const cacheKey = `${transitPlanet}-${natalPlanetName}-${aspectName}-${natalLongitude.toFixed(6)}-${referenceDate.getTime()}`;
   const cached = timingCache.get(cacheKey);
   if (cached) return cached;
 

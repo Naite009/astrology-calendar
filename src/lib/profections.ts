@@ -203,10 +203,14 @@ const wholeSignHouse = (sign: string, risingSign: string): number => {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
+/** Sign index from the raw unrounded longitude; display rounding must never decide a boundary. */
+const signIndexOf = (longitude: number): number =>
+  Math.floor(((longitude % 360) + 360) % 360 / 30) % 12;
+
 const signAt = (key: BodyKey, at: Date): { sign: string; retrograde: boolean } | null => {
   const r = computeBody(key, at);
   if (!r.ok) return null;
-  return { sign: longitudeToSignPosition(r.longitude).sign, retrograde: r.retrograde };
+  return { sign: SIGNS[signIndexOf(r.longitude)], retrograde: r.retrograde };
 };
 
 /**

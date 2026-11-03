@@ -605,26 +605,39 @@ export const AnnualTablesView = ({ year: yearProp, activeChart }: AnnualTablesVi
       }
     };
 
+    const mercuryLon = (date: Date): number => {
+      const vec = Astronomy.GeoVector(Astronomy.Body.Mercury, date, false);
+      return Astronomy.Ecliptic(vec).elon;
+    };
+
+    // Signed hourly motion from a 2-hour centered difference (°/hour).
+    const mercuryVelocity = (date: Date): number => {
+      const HOUR = 3600000;
+      let diff = mercuryLon(new Date(date.getTime() + HOUR)) - mercuryLon(new Date(date.getTime() - HOUR));
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      return diff / 2;
+    };
+
     const isRetrograde = (date: Date): boolean => {
       try {
-        const yesterday = new Date(date);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const todayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, date, false);
-        const yesterdayMercury = Astronomy.GeoVector(Astronomy.Body.Mercury, yesterday, false);
-
-        const todayEcliptic = Astronomy.Ecliptic(todayMercury);
-        const yesterdayEcliptic = Astronomy.Ecliptic(yesterdayMercury);
-
-        // Normalize across the 0°/360° boundary so an Aries-cusp crossing
-        // (e.g. 359° → 1°) is not falsely flagged as retrograde motion.
-        let diff = todayEcliptic.elon - yesterdayEcliptic.elon;
-        if (diff > 180) diff -= 360;
-        if (diff < -180) diff += 360;
-        return diff < 0;
+        return mercuryVelocity(date) < 0;
       } catch {
         return false;
       }
+    };
+
+    // Bisect a detected station bracket (velocity sign change) to the hour,
+    // so station dates are solved, not just the first sampled day.
+    const solveStation = (before: Date, after: Date, beforeRetro: boolean): Date => {
+      let lo = before.getTime();
+      let hi = after.getTime();
+      while (hi - lo > 3600000) {
+        const mid = (lo + hi) / 2;
+        const midRetro = mercuryVelocity(new Date(mid)) < 0;
+        if (midRetro === beforeRetro) lo = mid; else hi = mid;
+      }
+      return new Date(hi);
     };
 
     // Check every day of the year
@@ -635,15 +648,20 @@ export const AnnualTablesView = ({ year: yearProp, activeChart }: AnnualTablesVi
       const isRetro = isRetrograde(date);
 
       if (isRetro && !inRetro) {
-        retroStart = new Date(date);
-        startSign = getMercurySign(date);
+        const prev = new Date(date);
+        prev.setDate(prev.getDate() - 1);
+        retroStart = solveStation(prev, date, false);
+        startSign = getMercurySign(retroStart);
         inRetro = true;
       } else if (!isRetro && inRetro && retroStart) {
+        const prev = new Date(date);
+        prev.setDate(prev.getDate() - 1);
+        const stationEnd = solveStation(prev, date, true);
         periods.push({
           start: retroStart,
-          end: new Date(date),
+          end: stationEnd,
           startSign,
-          endSign: getMercurySign(date),
+          endSign: getMercurySign(stationEnd),
         });
         inRetro = false;
       }
