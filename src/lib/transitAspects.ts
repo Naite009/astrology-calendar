@@ -309,19 +309,30 @@ export const calculateTransitAspects = (
           );
 
           // ─── Applying vs separating + felt-window estimate ───
-          // Project the transit forward by 1 day; natal points are static.
-          const speed = DAILY_SPEED[transit.name] ?? 0.5;
-          const futureLon = (transitLon + speed) % 360;
+          // Real 1-day motion from the ephemeris (signed: negative = retrograde).
+          // Natal points are static. Never project with average speeds: that
+          // gets applying/separating wrong near stations.
+          const astroBody = ASTRO_BODY[transit.name];
+          const realNextLon = astroBody
+            ? getPlanetLongitudeExact(astroBody, new Date(now.getTime() + 86400000))
+            : (transitLon + (DAILY_SPEED[transit.name] ?? 0.5)) % 360;
+          let signedSpeed = realNextLon - transitLon;
+          if (signedSpeed > 180) signedSpeed -= 360;
+          if (signedSpeed < -180) signedSpeed += 360;
+          const speed = Math.abs(signedSpeed);
+          const futureLon = realNextLon;
           let futureDiff = Math.abs(futureLon - natal.longitude);
           if (futureDiff > 180) futureDiff = 360 - futureDiff;
           const futureAngleDiff = Math.abs(futureDiff - aspectType.angle);
           const applying = futureAngleDiff < angleDiff;
 
-          // Days to exact = current orb ÷ daily speed (rough; ignores retrograde stations).
-          const daysToExact = speed > 0 ? angleDiff / speed : 999;
+          // Days to exact = current orb ÷ real current speed. This is a
+          // linear estimate from today's motion; near a station the planet
+          // slows, so treat it as approximate, not a solved date.
+          const daysToExact = speed > 0.0005 ? angleDiff / speed : 999;
           const signedDaysToExact = applying ? daysToExact : -daysToExact;
           // Total felt-window: time to traverse the full orb on either side of exact.
-          const feltDurationDays = speed > 0 ? (effectiveOrb * 2) / speed : 999;
+          const feltDurationDays = speed > 0.0005 ? (effectiveOrb * 2) / speed : 999;
 
           const verb = applying
             ? (angleDiff < 1 ? `peaks now` : `builds toward exact in ${describeDuration(daysToExact)}`)
