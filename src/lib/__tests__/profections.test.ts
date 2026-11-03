@@ -100,6 +100,45 @@ describe('getYearTransits', () => {
     expect(pluto.startSign).toBe('Aquarius');
     expect(pluto.startHouse).toBe(9);
   });
+
+  it('solves exact ingress dates, including retrograde dips in and back out', () => {
+    // Year: June 15, 2025 to June 15, 2026. Uranus enters Gemini in July 2025,
+    // retrogrades back into Taurus in November 2025, and re-enters Gemini in
+    // April 2026. All three crossings must appear, in order.
+    const annual = getAnnualProfection(BIRTH, 'Gemini', new Date(2025, 11, 1))!;
+    expect(annual.yearStart.getFullYear()).toBe(2025);
+    const transits = getYearTransits(annual, 'Gemini');
+    const uranus = transits.find((t) => t.planet === 'Uranus')!;
+
+    expect(uranus.startSign).toBe('Taurus');
+    expect(uranus.endSign).toBe('Gemini');
+    expect(uranus.ingresses.length).toBe(3);
+
+    const [into, backOut, reEntry] = uranus.ingresses;
+    // Into Gemini: early July 2025, direct motion
+    expect(into.toSign).toBe('Gemini');
+    expect(into.date.getMonth()).toBe(6); // July
+    expect(into.retrograde).toBe(false);
+    // Back into Taurus: November 2025, retrograde
+    expect(backOut.toSign).toBe('Taurus');
+    expect(backOut.date.getMonth()).toBe(10); // November
+    expect(backOut.retrograde).toBe(true);
+    // Re-entry into Gemini: spring 2026, direct
+    expect(reEntry.toSign).toBe('Gemini');
+    expect(reEntry.date.getFullYear()).toBe(2026);
+    expect(reEntry.retrograde).toBe(false);
+    // Ingresses are chronological
+    expect(into.date.getTime()).toBeLessThan(backOut.date.getTime());
+    expect(backOut.date.getTime()).toBeLessThan(reEntry.date.getTime());
+  });
+
+  it('reports no ingresses for a planet that holds its sign all year', () => {
+    const annual = getAnnualProfection(BIRTH, 'Gemini', new Date(2026, 2, 1))!;
+    const transits = getYearTransits(annual, 'Gemini');
+    const pluto = transits.find((t) => t.planet === 'Pluto')!;
+    expect(pluto.changesSign).toBe(false);
+    expect(pluto.ingresses).toHaveLength(0);
+  });
 });
 
 describe('lastBirthday', () => {

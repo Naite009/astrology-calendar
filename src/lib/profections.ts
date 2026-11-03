@@ -156,6 +156,17 @@ export const getMonthlyProfections = (
   return months;
 };
 
+export interface SignIngress {
+  /** Exact moment the planet crosses the sign boundary (ephemeris-solved). */
+  date: Date;
+  fromSign: string;
+  toSign: string;
+  /** Whole-sign house of the new sign, from the natal rising sign. */
+  toHouse: number;
+  /** True when the planet is retrograde at the crossing. */
+  retrograde: boolean;
+}
+
 export interface YearTransit {
   planet: string;
   glyph: string;
@@ -167,6 +178,11 @@ export interface YearTransit {
   startHouse: number;
   endHouse: number;
   changesSign: boolean;
+  /**
+   * Every sign crossing inside the year, in order, solved against the
+   * ephemeris. Includes retrograde dips in and back out of a sign.
+   */
+  ingresses: SignIngress[];
 }
 
 const TRANSIT_BODIES: { key: BodyKey; glyph: string }[] = [
@@ -184,30 +200,91 @@ const wholeSignHouse = (sign: string, risingSign: string): number => {
   return ((s - a + 12) % 12) + 1;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+
+const signAt = (key: BodyKey, at: Date): { sign: string; retrograde: boolean } | null => {
+  const r = computeBody(key, at);
+  if (!r.ok) return null;
+  return { sign: longitudeToSignPosition(r.longitude).sign, retrograde: r.retrograde };
+};
+
 /**
- * Where the five slow planets sit at the start and end of the profection
- * year, mapped to whole-sign houses from the natal rising sign. Uses the
- * same astronomy-engine positions as the rest of the app.
+ * Bisect a known sign change between `before` (in fromSign) and `after`
+ * (in the next sign) down to about one hour of precision.
+ */
+const solveIngress = (
+  key: BodyKey,
+  before: Date,
+  after: Date,
+  fromSign: string,
+): { date: Date; toSign: string; retrograde: boolean } | null => {
+  let lo = before.getTime();
+  let hi = after.getTime();
+  const to = signAt(key, after);
+  if (!to) return null;
+  while (hi - lo > HOUR_MS) {
+    const mid = new Date((lo + hi) / 2);
+    const atMid = signAt(key, mid);
+    if (!atMid) return null;
+    if (atMid.sign === fromSign) lo = mid.getTime();
+    else hi = mid.getTime();
+  }
+  return { date: new Date(hi), toSign: to.sign, retrograde: to.retrograde };
+};
+
+/**
+ * Exact sign positions and ingresses for the five slow planets across the
+ * profection year, mapped to whole-sign houses from the natal rising sign.
+ * Scans the ephemeris day by day and solves each crossing to the hour, so
+ * retrograde dips into a sign and back out are all reported. Uses the same
+ * astronomy-engine positions as the rest of the app; no AI math.
  */
 export const getYearTransits = (
   annual: AnnualProfection,
   risingSign: string,
 ): YearTransit[] => {
   const out: YearTransit[] = [];
+  const startMs = annual.yearStart.getTime();
+  const endMs = annual.yearEnd.getTime() - HOUR_MS;
+
   for (const { key, glyph } of TRANSIT_BODIES) {
-    const start = computeBody(key, annual.yearStart);
-    const end = computeBody(key, new Date(annual.yearEnd.getTime() - 24 * 60 * 60 * 1000));
-    if (!start.ok || !end.ok) continue;
-    const startSign = longitudeToSignPosition(start.longitude).sign;
-    const endSign = longitudeToSignPosition(end.longitude).sign;
+    const first = signAt(key, annual.yearStart);
+    const last = signAt(key, new Date(endMs));
+    if (!first || !last) continue;
+
+    const ingresses: SignIngress[] = [];
+    let prevDate = new Date(startMs);
+    let prevSign = first.sign;
+
+    for (let t = startMs + DAY_MS; t <= endMs; t += DAY_MS) {
+      const cur = signAt(key, new Date(t));
+      if (!cur) break;
+      if (cur.sign !== prevSign) {
+        const solved = solveIngress(key, prevDate, new Date(t), prevSign);
+        if (solved) {
+          ingresses.push({
+            date: solved.date,
+            fromSign: prevSign,
+            toSign: solved.toSign,
+            toHouse: wholeSignHouse(solved.toSign, risingSign),
+            retrograde: solved.retrograde,
+          });
+          prevSign = solved.toSign;
+        }
+      }
+      prevDate = new Date(t);
+    }
+
     out.push({
       planet: key,
       glyph,
-      startSign,
-      endSign,
-      startHouse: wholeSignHouse(startSign, risingSign),
-      endHouse: wholeSignHouse(endSign, risingSign),
-      changesSign: startSign !== endSign,
+      startSign: first.sign,
+      endSign: last.sign,
+      startHouse: wholeSignHouse(first.sign, risingSign),
+      endHouse: wholeSignHouse(last.sign, risingSign),
+      changesSign: ingresses.length > 0,
+      ingresses,
     });
   }
   return out;
