@@ -1182,7 +1182,7 @@ export const AstroCalendar = () => {
             <ProfectionsView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
-              selectedChartId={selectedChartForTiming}
+              selectedChartId={selectedChartForTiming === 'general' ? 'user' : selectedChartForTiming}
               onSelectChart={selectChartForTiming}
             />
           </Suspense>
