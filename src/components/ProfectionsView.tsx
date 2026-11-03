@@ -188,29 +188,33 @@ export const ProfectionsView = ({ userNatalChart, savedCharts, selectedChartId, 
             <h2 className="font-serif text-xl text-foreground">The year's big transits in your chart</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               The slow planets set the background weather of the year. This shows which sign and which area
-              of your chart each one moves through between this birthday and the next. When one of them
-              changes sign during your year, both positions are listed.
+              of your chart each one moves through between this birthday and the next, with the exact date
+              of every sign change, including retrograde dips in and back out. Dates come from the same
+              built-in ephemeris as the rest of the app.
             </p>
             <div className="space-y-2">
               {data.transits.map((t) => (
                 <div
                   key={t.planet}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-sm bg-secondary/40 px-4 py-3"
+                  className="rounded-sm bg-secondary/40 px-4 py-3 space-y-1"
                 >
-                  <span className="font-medium text-foreground">
-                    {t.glyph} {t.planet}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {t.changesSign ? (
-                      <>
-                        {t.startSign} (house {t.startHouse}) → {t.endSign} (house {t.endHouse})
-                      </>
-                    ) : (
-                      <>
-                        {t.startSign} · house {t.startHouse}: {PROFECTION_HOUSE_THEMES[t.startHouse].label.toLowerCase()}
-                      </>
-                    )}
-                  </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium text-foreground">
+                      {t.glyph} {t.planet}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      Starts in {t.startSign} · house {t.startHouse}: {PROFECTION_HOUSE_THEMES[t.startHouse].label.toLowerCase()}
+                    </span>
+                  </div>
+                  {t.ingresses.map((ing, i) => (
+                    <p key={i} className="text-sm text-muted-foreground">
+                      {fmt(ing.date)}: enters {ing.toSign} (house {ing.toHouse}
+                      {ing.retrograde ? ", retrograde" : ""}): {PROFECTION_HOUSE_THEMES[ing.toHouse].label.toLowerCase()}
+                    </p>
+                  ))}
+                  {!t.changesSign && (
+                    <p className="text-xs text-muted-foreground">Stays in {t.startSign} all year.</p>
+                  )}
                 </div>
               ))}
             </div>
