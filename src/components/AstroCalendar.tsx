@@ -57,9 +57,10 @@ const ReadingGuideView = lazy(() => import("./ReadingGuideView").then(m => ({ de
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
 const VedicView = lazy(() => import("./vedic/VedicView").then(m => ({ default: m.VedicView })));
 const AspectsView = lazy(() => import("./AspectsView").then(m => ({ default: m.AspectsView })));
+const ProfectionsView = lazy(() => import("./ProfectionsView").then(m => ({ default: m.ProfectionsView })));
 
 
-type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "reading-guide" | "family" | "aspects" | "vedic";
+type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "reading-guide" | "family" | "aspects" | "vedic" | "profections";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -242,6 +243,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "vedic") {
       return "Vedic Astrology";
+    }
+    if (viewMode === "profections") {
+      return "Year Cycles & Timelord";
     }
     if (viewMode === "family") {
       return "👪 Parent ↔ Child";
@@ -686,6 +690,30 @@ export const AstroCalendar = () => {
               >
                <Sun size={14} />
                 Solar Return
+              </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("profections");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "profections"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Profection year, timelord, and month-by-month calendar"
+                    : "Add a chart to use Profections"
+                }
+              >
+                <Clock size={14} />
+                Timelord
               </button>
               <button
                 onClick={() => {
@@ -1145,6 +1173,17 @@ export const AstroCalendar = () => {
             <SolarReturnView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "profections" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <ProfectionsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartForTiming === 'general' ? 'user' : selectedChartForTiming}
+              onSelectChart={selectChartForTiming}
             />
           </Suspense>
         )}
