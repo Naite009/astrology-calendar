@@ -694,6 +694,30 @@ export const AstroCalendar = () => {
               <button
                 onClick={() => {
                   if (userNatalChart || savedCharts.length > 0) {
+                    setViewMode("profections");
+                  } else {
+                    setViewMode("charts");
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-sm px-3 py-2 text-[11px] uppercase tracking-widest transition-all ${
+                  viewMode === "profections"
+                    ? "bg-primary text-primary-foreground"
+                    : userNatalChart || savedCharts.length > 0
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                }`}
+                title={
+                  userNatalChart || savedCharts.length > 0
+                    ? "Profection year, timelord, and month-by-month calendar"
+                    : "Add a chart to use Profections"
+                }
+              >
+                <Clock size={14} />
+                Timelord
+              </button>
+              <button
+                onClick={() => {
+                  if (userNatalChart || savedCharts.length > 0) {
                     setViewMode("natal-portrait");
                   } else {
                     setViewMode("charts");
@@ -1149,6 +1173,17 @@ export const AstroCalendar = () => {
             <SolarReturnView
               userNatalChart={userNatalChart}
               savedCharts={savedCharts}
+            />
+          </Suspense>
+        )}
+
+        {viewMode === "profections" && (
+          <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
+            <ProfectionsView
+              userNatalChart={userNatalChart}
+              savedCharts={savedCharts}
+              selectedChartId={selectedChartForTiming}
+              onSelectChart={selectChartForTiming}
             />
           </Suspense>
         )}
