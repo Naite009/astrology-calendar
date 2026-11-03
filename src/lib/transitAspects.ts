@@ -314,7 +314,7 @@ export const calculateTransitAspects = (
           // gets applying/separating wrong near stations.
           const astroBody = ASTRO_BODY[transit.name];
           const realNextLon = astroBody
-            ? getPlanetLongitudeExact(astroBody, new Date(now.getTime() + 86400000))
+            ? getPlanetLongitudeExact(astroBody, new Date(transitDate.getTime() + 86400000))
             : (transitLon + (DAILY_SPEED[transit.name] ?? 0.5)) % 360;
           let signedSpeed = realNextLon - transitLon;
           if (signedSpeed > 180) signedSpeed -= 360;
