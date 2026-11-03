@@ -57,9 +57,10 @@ const ReadingGuideView = lazy(() => import("./ReadingGuideView").then(m => ({ de
 const FamilyTab = lazy(() => import("./family/FamilyTab").then(m => ({ default: m.FamilyTab })));
 const VedicView = lazy(() => import("./vedic/VedicView").then(m => ({ default: m.VedicView })));
 const AspectsView = lazy(() => import("./AspectsView").then(m => ({ default: m.AspectsView })));
+const ProfectionsView = lazy(() => import("./ProfectionsView").then(m => ({ default: m.ProfectionsView })));
 
 
-type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "reading-guide" | "family" | "aspects" | "vedic";
+type ViewMode = "month" | "week" | "year" | "year-ahead" | "annual-tables" | "guide" | "charts" | "timing" | "colors" | "patterns" | "sacred-script" | "voice-memos" | "decoder" | "speeds" | "dwarf-planets" | "synastry" | "health" | "timeline" | "ask" | "structural" | "combos" | "human-design" | "narrative" | "transit-calendar" | "cosmic-kitchen" | "hexagram" | "solar-return" | "retrogrades" | "moon-encyclopedia" | "foundations" | "tarot-functions" | "cosmic-sounds" | "moon-cycle" | "natal-portrait" | "reading-guide" | "family" | "aspects" | "vedic" | "profections";
 
 export const AstroCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -242,6 +243,9 @@ export const AstroCalendar = () => {
     }
     if (viewMode === "vedic") {
       return "Vedic Astrology";
+    }
+    if (viewMode === "profections") {
+      return "Year Cycles & Timelord";
     }
     if (viewMode === "family") {
       return "👪 Parent ↔ Child";
