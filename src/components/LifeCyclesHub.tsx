@@ -275,7 +275,9 @@ function getPlanetHouse(chart: NatalChart, planetLongitude: number): number | nu
   return null;
 }
 
-// Find when a transiting planet hits a target degree (rough estimate)
+// Find when a transiting planet exactly crosses a target degree.
+// Daily scan for a sign change of the offset, then bisection to the minute.
+// A near approach without a crossing returns null rather than a made-up date.
 function findTransitDate(
   body: Astronomy.Body,
   targetDegree: number,
@@ -285,35 +287,40 @@ function findTransitDate(
 ): { date: Date; age: number } | null {
   const startDate = addYears(new Date(birthDate), startAge);
   const endDate = addYears(new Date(birthDate), endAge);
-  
-  let currentDate = new Date(startDate);
-  const stepDays = 30; // Monthly steps for outer planets
-  
-  while (currentDate < endDate) {
-    const lon = getPlanetLongitude(body, currentDate);
-    let diff = Math.abs(lon - targetDegree);
-    if (diff > 180) diff = 360 - diff;
-    
-    if (diff < 2) {
-      // Found approximate date, refine with smaller steps
-      const refinedDate = new Date(currentDate);
-      for (let i = 0; i < 60; i++) {
-        const testDate = new Date(refinedDate.getTime() - (30 - i) * 24 * 60 * 60 * 1000);
-        const testLon = getPlanetLongitude(body, testDate);
-        let testDiff = Math.abs(testLon - targetDegree);
-        if (testDiff > 180) testDiff = 360 - testDiff;
-        if (testDiff < 1) {
-          const ageInYears = (testDate.getTime() - new Date(birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
-          return { date: testDate, age: Math.round(ageInYears * 10) / 10 };
-        }
+  const DAY = 24 * 60 * 60 * 1000;
+
+  const offset = (d: Date): number => {
+    let diff = getPlanetLongitude(body, d) - targetDegree;
+    diff = ((diff % 360) + 360) % 360;
+    return diff > 180 ? diff - 360 : diff;
+  };
+
+  let prevDate = new Date(startDate);
+  let prev = offset(prevDate);
+
+  for (let ms = startDate.getTime() + DAY; ms <= endDate.getTime(); ms += DAY) {
+    const curDate = new Date(ms);
+    const cur = offset(curDate);
+
+    if (prev !== 0 && Math.sign(prev) !== Math.sign(cur) && Math.abs(cur - prev) < 30) {
+      // Bracketed crossing: bisect to the minute.
+      let lo = prevDate.getTime();
+      let hi = curDate.getTime();
+      let flo = prev;
+      for (let i = 0; i < 40 && hi - lo > 60000; i++) {
+        const mid = (lo + hi) / 2;
+        const fm = offset(new Date(mid));
+        if (Math.sign(fm) === Math.sign(flo)) { lo = mid; flo = fm; } else hi = mid;
       }
-      const ageInYears = (currentDate.getTime() - new Date(birthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000);
-      return { date: currentDate, age: Math.round(ageInYears * 10) / 10 };
+      const exact = new Date((lo + hi) / 2);
+      const ageInYears = (exact.getTime() - new Date(birthDate).getTime()) / (365.25 * DAY);
+      return { date: exact, age: Math.round(ageInYears * 10) / 10 };
     }
-    
-    currentDate = new Date(currentDate.getTime() + stepDays * 24 * 60 * 60 * 1000);
+
+    prevDate = curDate;
+    prev = cur;
   }
-  
+
   return null;
 }
 

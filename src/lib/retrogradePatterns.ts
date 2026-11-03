@@ -217,13 +217,14 @@ const findDateForLongitude = (
     if (nowDiff > 180) nowDiff -= 360;
     if (nowDiff < -180) nowDiff += 360;
     
-    // Signs changed = crossed the degree (only match correct motion direction)
+    // Signs changed = crossed the degree (only match correct motion direction).
+    // A near approach without a crossing is NOT a hit: bisecting a bracket
+    // with no root would converge to the bracket edge and invent a date.
     const isForwardCrossing = prevDiff >= 0 && nowDiff < 0;
     const isBackwardCrossing = prevDiff <= 0 && nowDiff > 0;
-    
+
     if ((direction === 'forward' && isForwardCrossing) ||
-        (direction === 'backward' && isBackwardCrossing) ||
-        (Math.abs(nowDiff) < 0.5 && Math.abs(prevDiff) > Math.abs(nowDiff))) {
+        (direction === 'backward' && isBackwardCrossing)) {
       windowStart = prevTime;
       windowEnd = new Date(current);
       break;
