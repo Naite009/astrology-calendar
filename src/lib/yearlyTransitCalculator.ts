@@ -335,7 +335,10 @@ export const calculateYearTransits = (
       ...t,
       date,
       orb,
-      isExact: orb < 0.05,
+      // "Exact" means the aspect actually perfected. A station that stops
+      // 0.04° short is a close approach, not an exact hit, and must not be
+      // labeled as one.
+      isExact: orb < 0.001,
       transitSign: transitSignDegree.sign,
       transitDegree: transitSignDegree.degree,
       natalSign: natalSignDegree.sign,
