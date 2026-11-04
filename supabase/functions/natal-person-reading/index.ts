@@ -55,7 +55,7 @@ HOW TO READ
 - Preserve each chosen theme's mustAddress contradictions IN THAT signature's tension, with the exact aspect ID in tensionEvidenceIds. Do not cancel one need with another. Explain both. Sun is sign + house + house rulership + contacts + dispositor; Moon is the same full chain applied to reassurance, safety, instinct, stress response and restoration. A sign adjective list is not a story.
 - Every signature must draw on at least TWO DIFFERENT chains (different planets), e.g. a Venus chain plus a Saturn aspect. One placement never earns a signature.
 - plainMeaning: 1-2 everyday sentences stating the defining pattern or the apparent contradiction, e.g. "{Name} has the signature of someone who craves partnership and harmony, but when relying on someone feels uncertain, she would rather take over and do it herself." No astrology words here.
-- howItWorks (THE ASTROLOGY): a walkthrough in the form "Because X ... then Y ... but Z ...", naming exact placements with degrees, houses, the ruler or dispositor chain and the aspect with its orb exactly as supplied.
+- howItWorks (THE ASTROLOGY): a walkthrough in the form "Because X ... then Y ... but Z ...", naming exact placements with degrees, houses, the ruler or dispositor chain and the aspect with its orb exactly as supplied. Name an aspect ONLY if it appears in allowedAspects, copied exactly (same bodies, type, orb); when no aspect is listed for a chain, walk the placement, house, ruler and dispositor path without mentioning any aspect.
 - inLife, inRelationships, inWork, underStress, inDecisions (HOW IT SHOWS UP): concrete scenes of what the person does, says, chooses, avoids. "When a plan changes last minute, she quietly redoes it herself" beats "she is independent".
 - tension (THE TENSION): which competing placement wants something different, and how that feels. tensionEvidenceIds cites that competing placement's evidence ids (from a different chain).
 - healthyExpression (HEALTHY EXPRESSION): how both sides can work together, concretely.
@@ -109,12 +109,24 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(apiKey: string, messages: { role: string; content: string }[], signal: AbortSignal): Promise<{ ok: true; text: string } | { ok: false; status: number; message: string }> {
-  const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: MODEL, messages, stream: true, response_format: { type: 'json_object' } }),
-    signal,
-  });
+  // Fail fast instead of hanging past the gateway's 150s idle limit: the client
+  // retries 504s, so a clean early timeout is recoverable while a hang is not.
+  const timeout = AbortSignal.timeout(115_000);
+  const combined = typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, timeout]) : timeout;
+  let res: Response;
+  try {
+    res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: MODEL, messages, stream: true, response_format: { type: 'json_object' } }),
+      signal: combined,
+    });
+  } catch (e) {
+    if ((e as Error).name === 'AbortError' || (e as Error).name === 'TimeoutError') {
+      return { ok: false, status: 504, message: 'The reading service took too long. Trying again.' };
+    }
+    throw e;
+  }
   if (!res.ok) {
     const t = await res.text();
     let message = 'The reading service rejected the request.';
@@ -128,19 +140,26 @@ async function callModel(apiKey: string, messages: { role: string; content: stri
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = '', text = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let nl: number;
-    while ((nl = buf.indexOf('\n')) >= 0) {
-      const line = buf.slice(0, nl).trim();
-      buf = buf.slice(nl + 1);
-      if (!line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]') continue;
-      try { text += JSON.parse(data).choices?.[0]?.delta?.content ?? ''; } catch { /* partial */ }
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try { text += JSON.parse(data).choices?.[0]?.delta?.content ?? ''; } catch { /* partial */ }
+      }
     }
+  } catch (e) {
+    if ((e as Error).name === 'AbortError' || (e as Error).name === 'TimeoutError') {
+      return { ok: false, status: 504, message: 'The reading service took too long. Trying again.' };
+    }
+    throw e;
   }
   return { ok: true, text };
 }
@@ -195,7 +214,7 @@ Deno.serve(async (req) => {
     if (repair) {
       messages.push(
         { role: 'assistant', content: JSON.stringify(repair.draft) },
-        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 40).join('\n- ')}\nYou MUST repair conclusionEvidence too, not only wording. If a field uses only dispositor IDs, add the actual relevant placement IDs or omit that claim. Background qualifications can appear in the same astrology paragraph. Do not add unrelated evidence to pass. Make each behavioral field conditional.` },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 40).join('\n- ')}\nYou MUST repair conclusionEvidence too, not only wording. If a field uses only dispositor IDs, add the actual relevant placement IDs or omit that claim. Background qualifications can appear in the same astrology paragraph. Do not add unrelated evidence to pass. Make each behavioral field conditional. Delete every aspect mention that is not in allowedAspects exactly as listed (same two bodies, same type, same orb); never describe an aspect from memory. If howItWorks cites an aspect, that aspect's evidence ID must appear in conclusionEvidence.howItWorks.` },
       );
     }
     let lastErrors: string[] = [];
@@ -219,7 +238,7 @@ Deno.serve(async (req) => {
       lastDraft = reading;
       messages.push(
         { role: 'assistant', content: JSON.stringify(reading) },
-        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}` },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}\nDelete every aspect mention that is not in allowedAspects exactly as listed (same two bodies, same type, same orb). If a field names an aspect, cite that aspect's evidence ID in that field's conclusionEvidence.` },
       );
     }
     return json({ error: 'The written reading did not pass the accuracy check.', errors: lastErrors }, 422);
