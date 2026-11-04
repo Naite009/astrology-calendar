@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
     if (repair) {
       messages.push(
         { role: 'assistant', content: JSON.stringify(repair.draft) },
-        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 40).join('\n- ')}\nYou MUST repair conclusionEvidence too, not only wording. If a field uses only dispositor IDs, add the actual relevant placement IDs or omit that claim. Background qualifications can appear in the same astrology paragraph. Do not add unrelated evidence to pass. Make each behavioral field conditional.` },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${repair.errors.slice(0, 40).join('\n- ')}\nYou MUST repair conclusionEvidence too, not only wording. If a field uses only dispositor IDs, add the actual relevant placement IDs or omit that claim. Background qualifications can appear in the same astrology paragraph. Do not add unrelated evidence to pass. Make each behavioral field conditional. Delete every aspect mention that is not in allowedAspects exactly as listed (same two bodies, same type, same orb); never describe an aspect from memory. If howItWorks cites an aspect, that aspect's evidence ID must appear in conclusionEvidence.howItWorks.` },
       );
     }
     let lastErrors: string[] = [];
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
       lastDraft = reading;
       messages.push(
         { role: 'assistant', content: JSON.stringify(reading) },
-        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}` },
+        { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}\nDelete every aspect mention that is not in allowedAspects exactly as listed (same two bodies, same type, same orb). If a field names an aspect, cite that aspect's evidence ID in that field's conclusionEvidence.` },
       );
     }
     return json({ error: 'The written reading did not pass the accuracy check.', errors: lastErrors }, 422);
