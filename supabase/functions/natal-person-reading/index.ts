@@ -109,12 +109,24 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(apiKey: string, messages: { role: string; content: string }[], signal: AbortSignal): Promise<{ ok: true; text: string } | { ok: false; status: number; message: string }> {
-  const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: MODEL, messages, stream: true, response_format: { type: 'json_object' } }),
-    signal,
-  });
+  // Fail fast instead of hanging past the gateway's 150s idle limit: the client
+  // retries 504s, so a clean early timeout is recoverable while a hang is not.
+  const timeout = AbortSignal.timeout(115_000);
+  const combined = typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, timeout]) : timeout;
+  let res: Response;
+  try {
+    res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: MODEL, messages, stream: true, response_format: { type: 'json_object' } }),
+      signal: combined,
+    });
+  } catch (e) {
+    if ((e as Error).name === 'AbortError' || (e as Error).name === 'TimeoutError') {
+      return { ok: false, status: 504, message: 'The reading service took too long. Trying again.' };
+    }
+    throw e;
+  }
   if (!res.ok) {
     const t = await res.text();
     let message = 'The reading service rejected the request.';
