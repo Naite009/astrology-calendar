@@ -140,19 +140,26 @@ async function callModel(apiKey: string, messages: { role: string; content: stri
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = '', text = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let nl: number;
-    while ((nl = buf.indexOf('\n')) >= 0) {
-      const line = buf.slice(0, nl).trim();
-      buf = buf.slice(nl + 1);
-      if (!line.startsWith('data:')) continue;
-      const data = line.slice(5).trim();
-      if (data === '[DONE]') continue;
-      try { text += JSON.parse(data).choices?.[0]?.delta?.content ?? ''; } catch { /* partial */ }
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try { text += JSON.parse(data).choices?.[0]?.delta?.content ?? ''; } catch { /* partial */ }
+      }
     }
+  } catch (e) {
+    if ((e as Error).name === 'AbortError' || (e as Error).name === 'TimeoutError') {
+      return { ok: false, status: 504, message: 'The reading service took too long. Trying again.' };
+    }
+    throw e;
   }
   return { ok: true, text };
 }
