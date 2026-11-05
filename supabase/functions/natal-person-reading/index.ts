@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
         return json({ needsRepair: true, draft: lastDraft, errors: lastErrors, model: MODEL });
       }
       const out = await callModel(apiKey, messages, req.signal);
-      if (!out.ok) return json({ error: out.message }, out.status === 402 || out.status === 429 || out.status === 403 ? out.status : 502);
+      if (!out.ok) return json({ error: out.message, retryable: !(out.status === 402 || out.status === 429 || out.status === 403) });
       let reading: PersonReading;
       try { reading = cleanPersonReading(extractJson(out.text) as PersonReading); } catch (e) {
         lastErrors = [`Output was not valid JSON: ${(e as Error).message}`];
