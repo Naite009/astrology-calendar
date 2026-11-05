@@ -44,7 +44,8 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
           });
           if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < 2) continue;
           const body = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(body.error || 'The reading could not be written.');
+          if (body.retryable && attempt < 2) continue;
+          if (!res.ok || body.error) throw new Error(body.error || 'The reading could not be written.');
           return body;
         }
         throw new Error('The reading could not be written.');
