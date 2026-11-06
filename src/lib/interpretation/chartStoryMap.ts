@@ -144,7 +144,7 @@ function positions(chart: NatalChart): Record<string, Pos> {
       const own = cusps[house - 1], next = cusps[house % 12];
       const dOwn = ((lon - own) % 360 + 360) % 360;
       const dNext = ((next - lon) % 360 + 360) % 360;
-      if (dNext < dOwn) { cuspDistance = dNext; nextHouse = (house % 12) + 1; } else { cuspDistance = dOwn; nextHouse = house === 1 ? 12 : house - 1; }
+      if (dNext < dOwn) { cuspDistance = dNext; nextHouse = (house % 12) + 1; } else { cuspDistance = dOwn; nextHouse = house; } // nearest is this house's own starting cusp
     }
     out[body] = { body, sign: p.sign, lon, house, retro: !!p.isRetrograde, cuspDistance, nextHouse };
   }
