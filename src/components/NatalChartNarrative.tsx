@@ -301,14 +301,25 @@ interface NatalChartNarrativeProps {
 
 const OriginalChartImage = ({ natalChart }: { natalChart: NatalChart }) => {
   const image = natalChart.chartImageBase64;
-  if (!image || image.length < 100) return null;
-
-  const isPdf = image.startsWith('data:application/pdf');
-  const isImage = image.startsWith('data:image/');
-  if (!isPdf && !isImage) return null;
+  const isPdf = image?.startsWith('data:application/pdf');
+  const isImage = image?.startsWith('data:image/');
+  if (!image || image.length < 100 || (!isPdf && !isImage)) {
+    return (
+      <section className="mb-8 border-b border-border pb-6" aria-label="Original chart image">
+        <h3 className="text-sm font-medium text-foreground">Original chart image</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No original image is attached to {natalChart.name}'s saved chart.
+          {' '}Your birth details and planet positions are still saved.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          To attach it, close this window and drop your chart image onto {natalChart.name}'s card in the Chart Library.
+        </p>
+      </section>
+    );
+  }
 
   return (
-    <details className="mb-8 rounded-sm border border-border bg-muted/30">
+    <details open className="mb-8 rounded-sm border border-border bg-muted/30">
       <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground">
         Original chart image
         <span className="ml-2 text-xs font-normal text-muted-foreground">
