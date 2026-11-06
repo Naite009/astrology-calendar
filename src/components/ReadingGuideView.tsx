@@ -8,6 +8,7 @@ import { formatDateMMDDYYYY } from '@/lib/localDate';
 import { downloadSectionJson } from '@/lib/sectionExport';
 import { Button } from '@/components/ui/button';
 import { PractitionerWalkthroughSections } from '@/components/PractitionerWalkthroughSections';
+import { downloadWalkthrough } from '@/lib/readingGuide/downloadWalkthrough';
 import { Compass, Download } from 'lucide-react';
 
 interface ReadingGuideViewProps {
@@ -95,6 +96,14 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
             </p>
           </div>
           <Button
+            onClick={() => downloadWalkthrough(guide)}
+            title="Download an easy-to-read copy to open in your browser"
+            variant="outline" size="sm" className="ml-auto shrink-0 text-xs"
+          >
+            <Download size={13} />
+            Download reading
+          </Button>
+          <Button
             onClick={() =>
               downloadSectionJson(
                 `${guide.subject.name || 'chart'} Chart Walkthrough`,
@@ -109,7 +118,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
               )
             }
             title="Download this walkthrough as a JSON data file"
-            variant="outline" size="sm" className="ml-auto shrink-0 text-xs"
+            variant="outline" size="sm" className="shrink-0 text-xs"
           >
             <Download size={13} />
             Download JSON
