@@ -241,10 +241,10 @@ Deno.serve(async (req) => {
         { role: 'user', content: `Fix these problems and return the full corrected JSON only:\n- ${errors.slice(0, 25).join('\n- ')}\nDelete every aspect mention that is not in allowedAspects exactly as listed (same two bodies, same type, same orb). If a field names an aspect, cite that aspect's evidence ID in that field's conclusionEvidence.` },
       );
     }
-    return json({ error: 'The written reading did not pass the accuracy check.', errors: lastErrors }, 422);
+    return json({ error: 'The written reading did not pass the accuracy check.', errors: lastErrors, withheld: true });
   } catch (e) {
     if ((e as Error).name === 'AbortError') return json({ error: 'Cancelled' }, 499);
     console.error(e);
-    return json({ error: (e as Error).message || 'Unexpected error' }, 500);
+    return json({ error: (e as Error).message || 'Unexpected error', withheld: true });
   }
 });

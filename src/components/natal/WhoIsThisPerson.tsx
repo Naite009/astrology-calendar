@@ -45,6 +45,7 @@ export function WhoIsThisPerson({ chart }: { chart: NatalChart }) {
           if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < 2) continue;
           const body = await res.json().catch(() => ({}));
           if (body.retryable && attempt < 2) continue;
+          if (body.withheld) throw new Error('The written reading was held back because it did not pass the accuracy check. Try "Write reading" again.');
           if (!res.ok || body.error) throw new Error(body.error || 'The reading could not be written.');
           return body;
         }
