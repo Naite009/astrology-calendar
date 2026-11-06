@@ -297,6 +297,46 @@ interface NatalChartNarrativeProps {
 }
 
 // ============================================================================
+// ORIGINAL CHART IMAGE (snapshot of the file this chart was imported from)
+
+const OriginalChartImage = ({ natalChart }: { natalChart: NatalChart }) => {
+  const image = natalChart.chartImageBase64;
+  if (!image || image.length < 100) return null;
+
+  const isPdf = image.startsWith('data:application/pdf');
+  const isImage = image.startsWith('data:image/');
+  if (!isPdf && !isImage) return null;
+
+  return (
+    <details className="mb-8 rounded-sm border border-border bg-muted/30">
+      <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground">
+        Original chart image
+        <span className="ml-2 text-xs font-normal text-muted-foreground">
+          the file this chart was imported from
+        </span>
+      </summary>
+      <div className="border-t border-border p-4">
+        {isPdf ? (
+          <a
+            href={image}
+            download={`${natalChart.name.replace(/\s+/g, '-').toLowerCase()}-natal-chart.pdf`}
+            className="text-sm text-primary underline"
+          >
+            Download the original PDF
+          </a>
+        ) : (
+          <img
+            src={image}
+            alt={`Original chart image for ${natalChart.name}`}
+            className="mx-auto max-h-[60vh] w-auto max-w-full rounded-sm"
+          />
+        )}
+      </div>
+    </details>
+  );
+};
+
+// ============================================================================
 // NATAL PLANETS SUMMARY
 // ============================================================================
 
@@ -1519,7 +1559,10 @@ export const NatalChartNarrative = ({ natalChart, currentDate = new Date() }: Na
           {natalChart.birthLocation}
         </div>
       </div>
-      
+
+      {/* Original dropped chart image, when this chart was imported from a file */}
+      <OriginalChartImage natalChart={natalChart} />
+
       {/* Chart Ruler */}
       <ChartRulerSection natalChart={natalChart} />
       

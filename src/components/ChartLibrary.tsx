@@ -1210,6 +1210,34 @@ export const ChartLibrary = ({
     }
   }, [editingChart]);
 
+  // The original dropped chart image is stripped from local copies to save
+  // storage. When the viewer opens a chart that has none in memory, pull it
+  // from the cloud backup so the snapshot is still viewable.
+  const viewingChartId = viewingChart?.id;
+  const viewingChartHasImage = Boolean(viewingChart?.chartImageBase64);
+  useEffect(() => {
+    if (!viewingChartId || viewingChartHasImage) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('device_charts')
+        .select('chart_data')
+        .eq('chart_id', viewingChartId)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      if (cancelled || error) return;
+      const img = (data?.[0]?.chart_data as { chartImageBase64?: string } | undefined)?.chartImageBase64;
+      if (img) {
+        setViewingChart(prev =>
+          prev && prev.id === viewingChartId && !prev.chartImageBase64
+            ? { ...prev, chartImageBase64: img }
+            : prev
+        );
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewingChartId, viewingChartHasImage]);
+
   // Render a planet row
   const renderPlanetRow = (planet: string) => (
     <div key={planet} className="grid grid-cols-[40px_110px_1fr_70px_70px_70px_90px] gap-2 items-center">

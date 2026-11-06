@@ -398,6 +398,10 @@ export const useCloudBackup = (
         } else if (planetCount(cloudVersion) > planetCount(existing)) {
           // Cloud has richer data — prefer it.
           mergedByIdentity.set(identity, cloudVersion);
+        } else if (!existing.chartImageBase64 && cloudVersion.chartImageBase64) {
+          // Local copies strip the heavy original image to save storage;
+          // reattach it from the cloud copy so the viewer can show it.
+          mergedByIdentity.set(identity, { ...existing, chartImageBase64: cloudVersion.chartImageBase64 });
         }
         // else: keep local copy (preserves locally-added charts not yet synced)
       }
