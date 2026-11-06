@@ -14,6 +14,7 @@ import { getEffectiveOrb as getEffectiveOrbNarr } from '@/lib/aspectOrbs';
 import { classifyAspect } from '@/lib/aspects/classifyAspect';
 import { chartRulerNote } from '@/lib/interpretation/chartRuler';
 import { getHouseArena } from '@/lib/interpretation/psychologicalFunctions';
+import { parseBirthTime } from '@/lib/birthDataNormalization';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -1553,7 +1554,10 @@ export const NatalChartNarrative = ({ natalChart, currentDate = new Date() }: Na
   
   // Parse birth date/time for header display
   const birthParts = natalChart.birthDate?.split('-') || [];
-  const timeParts = natalChart.birthTime?.split(':') || [];
+  const birthTime = parseBirthTime(natalChart.birthTime);
+  const timeLabel = birthTime
+    ? `${birthTime.hour % 12 || 12}:${String(birthTime.minute).padStart(2, '0')}${birthTime.precision === 'second' ? `:${String(birthTime.second).padStart(2, '0')}` : ''} ${birthTime.hour >= 12 ? 'PM' : 'AM'}`
+    : 'Birth time not recorded';
   
   return (
     <div className="p-8 bg-background max-h-[80vh] overflow-auto">
@@ -1565,7 +1569,7 @@ export const NatalChartNarrative = ({ natalChart, currentDate = new Date() }: Na
         <div className="text-sm text-muted-foreground">
           {birthParts[1] || ''}/{birthParts[2] || ''}/{birthParts[0] || ''}
           {' • '}
-          {timeParts[0] || ''}:{timeParts[1] || '00'}
+          {timeLabel}
           {' • '}
           {natalChart.birthLocation}
         </div>
