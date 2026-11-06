@@ -1,5 +1,10 @@
 # Roadmap
 
+## Tab distinctiveness phase
+- [x] Inventory actual pathways and define distinct contracts without merging or renaming tabs.
+- [x] Differentiate three pathways: individual Aspects mechanisms, verified Combos matching/placement comparison, and Walkthrough consultation agenda with HTML/JSON parity.
+- [x] Signed-in Maria and Lauren changed-tab checks, distinct-chart semantic regressions, mobile/download/filter verification, full suite: 821 tests / 45 files. Remaining legacy banks and overlaps documented in `qa-reports/tab-distinctiveness-phase.md`; this subset does not certify all natal prose.
+
 ## Limited precision-aware house phase
 - [x] Verify prior solver and own-cusp fix; add structured regression and whole-sign boundary verification.
 - [x] Share calculation-backed house sensitivity across Decoder, Portrait, Walkthrough and Ask; unknown-time reading copies omit houses, stored charts and tab names unchanged.

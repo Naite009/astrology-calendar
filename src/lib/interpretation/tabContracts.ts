@@ -1,0 +1,12 @@
+/** Responsibilities for future changes, not user-facing promotional copy. */
+export const NATAL_TAB_CONTRACTS = {
+  decoder: { owns: 'Technical facts, dignity, dispositor diagnostics, calculation evidence and house sensitivity', avoids: 'Another broad identity portrait', sources: ['chartDecoderLogic', 'cuspSensitivityRecord'] },
+  aspects: { owns: 'One measured contact, its psychological mechanism, observable expressions and exact orb', avoids: 'Whole-chart conclusions from one aspect', sources: ['aspectRanking', 'psychologicalFunctions'] },
+  patterns: { owns: 'Validated complete configurations, repeated circuits and symbolic balancing points; natal and sky layers kept separate', avoids: 'Interpreting an incomplete configuration or repeating isolated contacts', sources: ['chartPatterns', 'transitPatterns', 'practitionerSynthesis'] },
+  combos: { owns: 'Contrast and integration of two or more placements using verified contacts; manual library exploration remains separate', avoids: 'Treating independent placement keywords or unverified pair matches as chart synthesis', sources: ['placementInteractions', 'planetaryCombinations'] },
+  portrait: { owns: 'Coherent person-centered whole-chart synthesis with evidence, strengths and contradictions', avoids: 'Unverified biography, diagnosis, or isolated slow-sign destiny', sources: ['chartStoryMap', 'natalMainPlot', 'personReadingValidator', 'natalPortraitEngine'] },
+  walkthrough: { owns: 'Evidence-ranked consultation priorities, open client questions, counterchecks and practitioner threads', avoids: 'Copied portrait paragraphs, leading biography questions or coaching homework', sources: ['practitionerSynthesis', 'consultationAgenda', 'cuspSensitivityRecord'] },
+  sacredScript: { owns: 'Explicitly symbolic development, Saturn, elements and mature expression', avoids: 'Another personality profile or spiritual claims presented as measured facts', sources: ['sacredScriptHelpers', 'characterSynthesis'] },
+  ask: { owns: 'Answer the selected question using relevant verified facts and client context', avoids: 'Generic all-chart dumps unrelated to the question', sources: ['quickTopicRouting', 'relationshipFactContext', 'verifiedReadingFacts'] },
+  chartStory: { owns: 'Whole-chart narrative inside Natal Portrait, not a competing standalone report', avoids: 'Independent facts or bypassing the portrait validator', sources: ['chartStoryMap', 'personReadingValidator'] },
+} as const;

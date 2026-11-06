@@ -540,3 +540,23 @@ export function isPsychologicalBody(body: string): body is PsychologicalBody {
 }
 
 export const PSYCHOLOGICAL_BODIES = Object.keys(FUNCTIONS) as PsychologicalBody[];
+
+/** Single-contact presentation boundary: unsupported banks stay factual, not filler. */
+export function getCheckedNatalAspectReading(aspect: RankedAspect): PsychologicalAspectSynthesis {
+  const base = synthesisFromRankedAspect(aspect);
+  if (!getPsychologicalFunction(aspect.a) || !getPsychologicalFunction(aspect.b)) {
+    return { ...base, aspectDynamic: 'The measured contact is listed as secondary evidence. A checked interpretation for this pair is not available.', signHouseContext: '', howThisCanShowUp: [], watchFor: 'Do not use this contact alone to describe the person or infer a life event.', whenIntegrated: 'Interpret the supported major-planet contacts first.' };
+  }
+  const angle = [aspect.a, aspect.b].find(body => body === 'Ascendant' || body === 'MC');
+  if (angle) {
+    const body = aspect.a === angle ? aspect.b : aspect.a;
+    const functionMeaning = getPsychologicalFunction(body);
+    const setting = angle === 'MC' ? 'what they take responsibility for publicly' : 'how they respond when first meeting someone';
+    return { ...base,
+      aspectDynamic: `${body} connects ${functionMeaning?.shortFunction.toLowerCase()} with ${setting}. ${['square', 'opposition'].includes(aspect.aspect) ? 'They may show one response while wanting something different privately; ask about both rather than assuming other people see the whole person.' : 'That response may be visible early, while other needs take longer to explain.'}`,
+      howThisCanShowUp: [`Someone may notice ${functionMeaning?.shortFunction.toLowerCase()} in ${setting}, yet miss what the person wants to keep private.`],
+      watchFor: 'A visible response is not the whole personality. Compare this contact with the Moon, Sun and traditional chart ruler.',
+    };
+  }
+  return { ...base, aspectDynamic: getNatalAspectExpression(aspect) };
+}

@@ -1,0 +1,63 @@
+# Tab distinctiveness, measured implementation phase
+
+Date: 2026-11-06. Preserves the completed precision-aware house phase. This is a completed three-pathway subset, not a claim that every legacy reading bank has been repaired.
+
+## Actual pathway inventory and responsibilities
+
+All tabs are retained, with no merges, deletions or renames. Machine-readable responsibilities are in `src/lib/interpretation/tabContracts.ts`.
+
+| Surface | Actual rendering and data source | Unique responsibility and remaining overlap |
+| --- | --- | --- |
+| Natal Portrait | `NatalPortraitView.tsx` -> `natalPortraitEngine`, `ChartSynthesisSection`, `WhoIsThisPerson` -> `chartStoryMap` and server/client `personReadingValidator` | Coherent person-centered synthesis. Fixed Big Three lines in the view, purpose sections and balance explanations still overlap with Script and Walkthrough. No AI authoring or functions changed here. |
+| Chart Decoder | `ChartDecoderView.tsx` -> `chartDecoderLogic`, dignity, dispositor chains, `psychologicalFunctions`, `cuspSensitivityRecord`; overview, characters, relationships, progressions, patterns, synthesis | Technical facts/diagnostics. Existing “Story of Self” heading, “Core Inner Dynamics”, “Your Chart in Simple Words” and `HighestPotentialSynthesis` still create a broad profile. Preserved pending a focused presentation change, not renamed. |
+| Reading Guide / Chart Walkthrough | `ReadingGuideView.tsx` -> `buildReadingGuide` -> `practitionerSynthesis`, `developmentalSynthesis`, `signExpressionModifiers`; `PractitionerWalkthroughSections` | Practitioner delivery, priorities, open questions and exact evidence. New consultation agenda appears first. All existing deeper sections remain, so developmental conclusions still repeat across several sections and overlap with Portrait. |
+| Patterns | `PatternsView.tsx` -> `astrology` current positions, `InteractiveAspectExplorer`, `PhaseWheelPanel`, natal selector, historical/static retrograde/conjunction lists | Existing screen is sky cycles plus a natal phase-wheel reference, not a purely natal configuration report. Natal circuits are also shown in Decoder/Walkthrough via pattern helpers. Static dates and live sky/natal distinctions require another focused audit; not certified in this phase. |
+| Combos | `CombosView.tsx` -> `planetaryCombinations`, `aspectModifiers`, `patternMirrorCombos`, `LifePatternsTab`, `classicalPlacementStatements`; now `placementInteractions` | Specific placement comparison and integration. New prioritized interaction section uses shared meaning and measured contacts. Legacy single-placement, category, mirror and light/shadow libraries remain below it and still overlap with other profiles. |
+| Aspects | `AspectsView.tsx` -> `computeRankedAspects` -> `buildAspectCopy` -> canonical `getCheckedNatalAspectReading` in `psychologicalFunctions` | One contact at a time: mechanism, placement context, examples, strain and measured orb. Replaces the separate repeated “two energies” author. Unsupported pairs retain facts without invented meanings. |
+| Sacred Script | `SacredScriptView.tsx` -> `sacredScriptHelpers`, `characterSynthesis`, Saturn-cycle helpers, element/decan teaching, directives | Intended symbolic development and mature expression. Current “Character” Big Three and independent element/lesson/directive prose remain overlapping. Psychic claims and slow-sign generalizations need a separate bounded repair. |
+| Ask | `AskView.tsx` -> `quickTopicRouting`, selected-chart fact contexts, `ask-astrology`, `verifiedReadingFacts` | Targeted answer to the client's question, not another all-chart profile. Many topic-specific prompt branches remain; no unrelated function changes. |
+| Chart Story where present | `WhoIsThisPerson` within Portrait -> `chartStoryMap` -> `natal-person-reading` -> shared validator | Whole-chart identity narrative inside Portrait, not a new competing tab. Generation reliability was not retested or claimed repaired this phase. |
+
+## Implemented changes and exact active callers
+
+1. **Aspects mechanism and safety boundary.** `src/lib/aspectPersonalization.ts` now delegates to `getCheckedNatalAspectReading` in `src/lib/interpretation/psychologicalFunctions.ts`. `src/components/AspectsView.tsx` displays the mechanism, pair-specific examples, strain and source separation/target/allowed orb. Orb minutes now carry correctly, e.g. 1.9999° prints 2°00', not 1°60'. Retrograde is a motion fact, not proof of inwardness. Out-of-sign explanations no longer assert Astro.com drawing behavior or that the person necessarily feels the contact. Unsupported Lilith pairs keep their measured facts but withhold canned interpretation. Angle contacts have explicit first-response/public-direction meanings rather than “covers” filler. Unknown-time aspect reading uses the existing house-safe copy.
+
+2. **Combos matching and interaction projection.** `src/lib/interpretation/placementInteractions.ts` uses the existing full-precision `computeRankedAspects`, shared orb limits, and unknown-time reading copy. `src/components/CombosView.tsx` routes ALL seven local pair-matching sites through those contacts: chart-factor discovery, aspect filter/coverage, card modifier selection, Pattern Mirror aspect and combined matching, and both empty-state checks. This removes its private 10° square/trine/opposition classifier; the common formulas and thresholds themselves are unchanged. `src/components/PlacementInteractions.tsx` shows up to three supported personal-planet interactions with side-by-side placement responses, combined expression, evidence, tension and integration. Unsupported pairs do not consume these priority slots. Manual library/category exploration and all existing sections remain.
+
+3. **Walkthrough consultation delivery.** `src/lib/readingGuide/consultationAgenda.ts` projects the existing evidence-ranked themes into up to three conversation priorities, open experience questions, follow-up, possible expression, countercheck and practitioner thread. It does not create a new portrait, infer biography, mutate the reading, or add homework. `src/components/ConsultationAgenda.tsx` is used by `ReadingGuideView.tsx` and `src/lib/readingGuide/downloadWalkthrough.tsx`; JSON export adds the same `consultationAgenda`. Existing practitioner schema 4 fields, deeper sections, evidence, HTML download and birth-time notice are preserved.
+
+## Concrete before and after
+
+- **Individual aspect:** old square mechanic: “These two energies grind against each other until you build a structure that holds both.” Old quincunx ending: “Neither side will compromise and you will keep recalibrating for the rest of your life.” These separate canned templates are gone from the active Aspects author. Maria's Mercury/Mars contact now draws on the shared mechanism, with examples such as answering before the other person has finished and sounding harsher than intended. The measured 2.883° conjunction is displayed beside that interpretation.
+- **Unsupported fallback caught in browser QA:** initial shared output for Moon/Lilith was “Moon covers, Moon, and Lilith covers Lilith. Read them together rather than separately.” This is now withheld on Aspects, and excluded from prioritized Combos interpretations. Measured Moon/Lilith facts remain visible; no speculative replacement was invented.
+- **Combos false match:** the old local calculator called Mercury 0° Aries / Mars 9° Cancer a square. Canonical Mercury/Mars square limit is 7°, so that 9°-orb match is now absent. A full-precision 97.0001° separation is also excluded, even if the printed minute value looks like the boundary.
+- **Maria practitioner priority:** “When you think about money, possessions, practical stability, and what makes you feel capable or valuable, what stands out from your own experience?” Follow-up asks what she wanted to do versus did. The evidence-linked hypothesis and alternative are expandable rather than stated as known history.
+- **Lauren distinction:** priority topics are “Reading the room without agreeing to disappear into it”, “The life that happens out of view”, and “What makes security feel real”, rather than Maria's quick-response/everyday-life/understanding topics. Both charts use their own evidence and placements.
+
+## QA actually performed
+
+- Full final suite: **821 tests passed across 45 files**, 98.60 seconds. Adds 12 semantic/data regressions in `src/lib/__tests__/tabDistinctiveness.test.ts`; existing 809 tests retained. Focused first run: 26 tests across two files passed.
+- Tests cover exact canonical contact parity, false match exclusion, full-precision boundaries, canonical mechanisms/examples, absence of the old boilerplate and “covers” fallback, minute carry, wide weighting disclosure, neutral retrograde/out-of-sign claims, separate interaction/evidence, original reading immutability, open counterchecks, distinct charts and unknown-time house omission.
+- Actual signed-in browser: selected **Maria Vezos** and **Lauren Newman** in Aspects, Combos and Chart Walkthrough; inspected all rendered text for the changed content, clicked Square filtering, downloaded both standalone readings, inspected desktop screenshots and Maria's 390x844 mobile agenda. No page errors; mobile horizontal overflow false. Browser scripts/text/screenshots are temporary QA artifacts in `/tmp/browser/tab-phase`, not saved chart data.
+- Final Maria Aspects text has zero matches for `covers,`, `two energies`, `rest of your life`, `stop outsourcing`, or `the room opens`.
+- Maria's imported facts stay **Moon Aquarius, House 6**, separate opposition to Ascendant **0.417°** in stored ranked-aspect output. The existing recalculated sensitivity notice remains **Descendant 0.419°**, boundary **4:07:46 AM EDT**. The small stored-versus-recalculated orb difference is disclosed here, not silently normalized or claimed equal. Houses, birth coordinates, records and longitudes were not edited.
+- Constructed distinct adult reference uses 1993-11-07 11:30 at Livingston solely in tests; it is not asserted to be a saved person's birth data. Maria fixture uses the previous saved-coordinate calculation and existing solver expectations.
+- Preview's final observed build entry: **build OK**. `git diff --check` clean. No manually invoked build or typecheck. Accuracy suite's generated report changes are timestamp-only.
+
+## Remaining findings, not a completion claim for the whole app
+
+**High:** Combos' older library still displays “Moon in detriment in Aquarius”, which is not traditional Moon detriment (Capricorn), and inheritance/psychic/generalized slow-sign prose. These are confirmed in Maria's remaining library output. This phase replaces the prioritized interaction and match pathways, NOT every legacy bank; it would be dishonest to certify the entire Combos reading. Repair those libraries through a shared checked bank boundary in the next coherent pass, including traditional dignity assertions and secondary/generational support.
+
+**High:** Sacred Script still independently authors broad Character, element, directive and psychic material. Keep the tab, but refocus its symbolic-development sections and explicitly separate symbolic lenses from measured facts. No spiritual or fate claims are certified by these passing tests.
+
+**Medium:** Decoder's overview and synthesis still behave like another broad portrait. Keep its diagnostics/conditions/dispositor facts and move existing long interpretation behind reference details in a separate measured change, not remove sections now.
+
+**Medium:** Walkthrough preserves substantial repeated developmental content. The new agenda differentiates live consultation delivery without deleting prior requested depth. Section-to-section deduplication remains. Some canonical curated aspect sentences are still long or abstract; this was not a 2,000-line library rewrite.
+
+**Unverified:** Fresh whole-chart Portrait AI acceptance, Ask answers, every Patterns date/configuration, independent astronomical certification and all report/email paths. No new AI calls or edge functions were modified. Existing complete-pattern regressions remain passing; no new configuration mathematics introduced.
+
+## Next bounded order
+
+1. Shared checked Combos bank boundary for classical dignity and generational/esoteric evidence, preserving exploration and all sections.
+2. Decoder presentation as diagnostics, and Sacred Script symbolic-development projection, retaining tabs and functionality.
+3. Deduplicate existing Walkthrough developmental paragraphs by evidence ownership; then fresh adult Portrait/Ask acceptance and natal-versus-sky Patterns verification.

@@ -3,6 +3,7 @@ import type { ReadingGuide } from './readingGuideEngine';
 import { PractitionerWalkthroughSections } from '@/components/PractitionerWalkthroughSections';
 import { parseBirthTime } from '@/lib/birthDataNormalization';
 import { BirthTimeSensitivityNotice } from '@/components/BirthTimeSensitivityNotice';
+import { ConsultationAgenda } from '@/components/ConsultationAgenda';
 
 function birthTimeLabel(value: string | undefined) {
   const time = value ? parseBirthTime(value) : null;
@@ -21,6 +22,7 @@ export function buildWalkthroughDocument(guide: ReadingGuide): string {
         <p>Reading level: {guide.age.stage}{guide.age.years != null ? ` · Age ${guide.age.years}` : ''}</p>
       </header>
       <BirthTimeSensitivityNotice record={guide.birthTimeSensitivity} />
+      <ConsultationAgenda reading={guide.practitioner} />
       <PractitionerWalkthroughSections reading={guide.practitioner} />
     </main>,
   );

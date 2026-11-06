@@ -11,6 +11,8 @@ import { PractitionerWalkthroughSections } from '@/components/PractitionerWalkth
 import { downloadWalkthrough } from '@/lib/readingGuide/downloadWalkthrough';
 import { Compass, Download } from 'lucide-react';
 import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
+import { ConsultationAgenda } from './ConsultationAgenda';
+import { buildConsultationAgenda } from '@/lib/readingGuide/consultationAgenda';
 
 interface ReadingGuideViewProps {
   userNatalChart: NatalChart | null;
@@ -115,6 +117,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
                    schemaVersion: guide.practitioner.schemaVersion,
                   placements: guide.placements,
                   walkthrough: guide.practitioner,
+                  consultationAgenda: buildConsultationAgenda(guide.practitioner),
                   birthTimeSensitivity: guide.birthTimeSensitivity,
                 },
               )
@@ -151,6 +154,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
       </div>
 
       <BirthTimeSensitivityNotice record={guide.birthTimeSensitivity} />
+      <ConsultationAgenda reading={guide.practitioner} />
       <PractitionerWalkthroughSections reading={guide.practitioner} />
     </div>
   );

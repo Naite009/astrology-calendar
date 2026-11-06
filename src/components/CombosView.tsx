@@ -34,6 +34,8 @@ import { PatternMirrorCard } from '@/components/PatternMirrorCard';
 import { LifePatternsTab } from '@/components/LifePatternsTab';
 import { ChartSelector } from '@/components/ChartSelector';
 import { getClassicalPlacementsForChart } from '@/lib/classicalPlacementStatements';
+import { verifiedCombinationAspects, combinationAspectName } from '@/lib/interpretation/placementInteractions';
+import { PlacementInteractions } from './PlacementInteractions';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -76,28 +78,10 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     return allCharts.find((c) => c.id === selectedChartId) || null;
   }, [selectedChartId, allCharts, userChart]);
 
-  // Helper to calculate aspect between two planets
-  const calculateAspect = (
-    planet1Sign: string, planet1Degree: number,
-    planet2Sign: string, planet2Degree: number
-  ): string | null => {
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    
-    const long1 = signs.indexOf(planet1Sign) * 30 + planet1Degree;
-    const long2 = signs.indexOf(planet2Sign) * 30 + planet2Degree;
-    
-    let diff = Math.abs(long1 - long2);
-    if (diff > 180) diff = 360 - diff;
-    
-   // Check aspects with wider orbs (10° for major aspects to catch outer planet aspects)
-   if (diff <= 10) return 'Conjunction'; // 0° with 10° orb
-   if (diff >= 54 && diff <= 66) return 'Sextile'; // 60° with 6° orb
-   if (diff >= 80 && diff <= 100) return 'Square'; // 90° with 10° orb
-   if (diff >= 110 && diff <= 130) return 'Trine'; // 120° with 10° orb
-   if (diff >= 170 && diff <= 190) return 'Opposition'; // 180° with 10° orb
-    
-    return null;
+  const verifiedAspects = useMemo(() => selectedChart ? verifiedCombinationAspects(selectedChart) : [], [selectedChart]);
+  const calculateAspect = (a: string, b: string): string | null => {
+    const contact = verifiedAspects.find(item => (item.a === a && item.b === b) || (item.a === b && item.b === a));
+    return contact ? combinationAspectName(contact.aspect) : null;
   };
 
   const getChartPos = (planetName: string) => {
@@ -164,7 +148,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
         const p2 = planetData[j];
-        const aspect = calculateAspect(p1.sign, p1.degree + ((p1 as { minutes?: number }).minutes ?? 0) / 60, p2.sign, p2.degree + ((p2 as { minutes?: number }).minutes ?? 0) / 60);
+        const aspect = calculateAspect(p1.name, p2.name);
         if (aspect) {
           // Add both orderings so matching works either way
           factors.add(`${p1.name}|${p2.name}|${aspect}`);
@@ -201,10 +185,10 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       for (let j = i + 1; j < planetData.length; j++) {
         const p1 = planetData[i];
         const p2 = planetData[j];
-        const aspect = calculateAspect(p1.sign, p1.degree + ((p1 as { minutes?: number }).minutes ?? 0) / 60, p2.sign, p2.degree + ((p2 as { minutes?: number }).minutes ?? 0) / 60);
+        const aspect = calculateAspect(p1.name, p2.name);
         if (aspect) {
           if (!byType.has(aspect)) byType.set(aspect, []);
-          byType.get(aspect)!.push(`${p1.name}-${p2.name}`);
+          byType.get(aspect)?.push(`${p1.name}-${p2.name}`);
           allPairs.push({ p1: p1.name, p2: p2.name, aspect });
         }
       }
@@ -625,7 +609,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         const p1Pos = getChartPos(p1);
         const p2Pos = getChartPos(p2);
         if (p1Pos && p2Pos) {
-          userAspectType = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
+          userAspectType = calculateAspect(p1, p2);
         }
       }
       
@@ -1165,6 +1149,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
               );
             })()}
 
+            {selectedChart && <PlacementInteractions chart={selectedChart} />}
+
             {/* Aspect Type Filter - only show when chart is selected */}
             {selectedChart && chartAspects.allAspectTypes.length > 0 && (
               <div className="mt-4 pt-4 border-t border-primary/20">
@@ -1211,9 +1197,9 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 {selectedAspectFilter && chartAspects.byType.get(selectedAspectFilter) && (
                   <div className="mt-2 text-xs text-muted-foreground">
                     <span className="font-medium">{selectedAspectFilter}s in chart: </span>
-                    {chartAspects.byType.get(selectedAspectFilter)!.slice(0, 8).join(', ')}
-                    {(chartAspects.byType.get(selectedAspectFilter)!.length > 8) && 
-                      ` +${chartAspects.byType.get(selectedAspectFilter)!.length - 8} more`}
+                    {(chartAspects.byType.get(selectedAspectFilter) ?? []).slice(0, 8).join(', ')}
+                    {((chartAspects.byType.get(selectedAspectFilter) ?? []).length > 8) &&
+                      ` +${(chartAspects.byType.get(selectedAspectFilter) ?? []).length - 8} more`}
                   </div>
                 )}
               </div>
@@ -1645,7 +1631,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     const p1Pos = getChartPos(p1);
                     const p2Pos = getChartPos(p2);
                     if (p1Pos && p2Pos) {
-                      const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
+                      const aspect = calculateAspect(p1, p2);
                       if (aspect && combo.aspectTypes.includes(aspect)) {
                         isMatch = true;
                         matchDetails.aspectType = aspect;
@@ -1682,7 +1668,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                       const p1Pos = getChartPos(p1);
                       const p2Pos = getChartPos(p2);
                       if (p1Pos && p2Pos) {
-                        const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
+                        const aspect = calculateAspect(p1, p2);
                         if (aspect && combo.aspectTypes.includes(aspect)) {
                           isMatch = true;
                           matchDetails.aspectType = aspect;
@@ -1756,7 +1742,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                 const p1Pos = getChartPos(p1);
                 const p2Pos = getChartPos(p2);
                 if (p1Pos && p2Pos) {
-                  const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
+                  const aspect = calculateAspect(p1, p2);
                   return aspect && combo.aspectTypes.includes(aspect);
                 }
               }
@@ -1775,7 +1761,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                   const p1Pos = getChartPos(p1);
                   const p2Pos = getChartPos(p2);
                   if (p1Pos && p2Pos) {
-                    const aspect = calculateAspect(p1Pos.sign, p1Pos.degree + ((p1Pos as { minutes?: number }).minutes ?? 0) / 60, p2Pos.sign, p2Pos.degree + ((p2Pos as { minutes?: number }).minutes ?? 0) / 60);
+                    const aspect = calculateAspect(p1, p2);
                     if (aspect && combo.aspectTypes.includes(aspect)) return true;
                   }
                 }

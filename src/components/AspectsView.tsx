@@ -3,6 +3,8 @@ import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from '@/components/ChartSelector';
 import { computeRankedAspects, ASPECT_SYMBOLS, AspectName } from '@/lib/aspectRanking';
 import { buildAspectCopy } from '@/lib/aspectPersonalization';
+import { Button } from '@/components/ui/button';
+import { chartForHouseReading } from '@/lib/chartSignificance/cuspSensitivityRecord';
 
 interface Props {
   userNatalChart: NatalChart | null;
@@ -33,7 +35,7 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
 
   const aspects = useMemo(() => {
     if (!selectedChart) return [];
-    return computeRankedAspects(selectedChart);
+    return computeRankedAspects(chartForHouseReading(selectedChart));
   }, [selectedChart]);
 
   const filtered = useMemo(
@@ -48,7 +50,7 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
           Personalized Aspects
         </h2>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-2xl">
-          Every aspect in your chart, ranked by importance, not just orb. Sun and Moon contacts rank above outer planet contacts even when the orb is wider. Dissociate (out-of-sign) aspects are included, with a note on why Astro.com leaves the line off the wheel.
+          {selectedChart?.name || 'Natal chart'}: measured contacts, strongest first. Wide contacts carry less weight. Sign relationships and degree-based aspects are separate facts.
         </p>
       </div>
 
@@ -72,9 +74,10 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
                 ? aspects.length
                 : aspects.filter(a => a.aspect === f.key).length;
               return (
-                <button
+                <Button variant="outline" size="sm"
                   key={f.key}
                   onClick={() => setFilter(f.key)}
+                  aria-pressed={filter === f.key}
                   className={`px-3 py-1.5 text-xs rounded-sm border transition-all ${
                     filter === f.key
                       ? 'bg-primary text-primary-foreground border-primary'
@@ -82,7 +85,7 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
                   }`}
                 >
                   {f.label} <span className="opacity-60">({count})</span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -125,10 +128,13 @@ export function AspectsView({ userNatalChart, savedCharts }: Props) {
                   <p className="text-sm text-foreground leading-relaxed">
                     {copy.felt}
                   </p>
+                  <ul className="list-disc pl-4 space-y-2 text-sm text-foreground">{copy.examples.map(line => <li key={line}>{line}</li>)}</ul>
+                  <details className="border-t border-border pt-3"><summary className="cursor-pointer text-xs text-primary">Where this can strain</summary><p className="mt-2 text-sm text-muted-foreground">{copy.watchFor}</p></details>
+                  <p className="text-xs text-muted-foreground">{copy.evidenceNote}</p>
 
                   {copy.dissociate && (
                     <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/5 border-l-2 border-amber-500/40 pl-3 py-2 leading-relaxed">
-                      <span className="font-medium uppercase tracking-widest text-[10px] block mb-1">Why this is not drawn on Astro.com</span>
+                      <span className="font-medium uppercase tracking-widest text-[10px] block mb-1">Signs versus measured degrees</span>
                       {copy.dissociate}
                     </div>
                   )}
