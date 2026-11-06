@@ -81,6 +81,10 @@ export interface NatalChart {
   birthDate: string;
   /** Local civil time at the birthplace, HH:MM or HH:MM:SS. Empty when unknown. */
   birthTime: string;
+  /** Source precision, distinct from the number of digits printed in the time. */
+  birthTimeReliability?: 'verified' | 'rounded' | 'approximate' | 'unknown';
+  /** Actual signed interval around the recorded instant; overrides provisional defaults. */
+  birthTimeUncertainty?: { earlierMinutes: number; laterMinutes: number };
   birthLocation: string;
   /**
    * Legacy fixed offset in hours. Kept for old records and for display only;

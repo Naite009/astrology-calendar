@@ -1,4 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { withProfileTimePrecision } from '@/lib/chartSignificance/cuspSensitivityRecord';
 import { ChevronLeft, ChevronRight, User, Download, Calendar, Moon, BookOpen, Book, Printer, Users, Clock, Palette, Orbit, HelpCircle, Scroll, Mic, ScanSearch, Gauge, Globe, Heart, Activity, MessageCircleQuestion, Layers, Combine, Diamond, FileText, CalendarClock, Utensils, Sun, Home, Volume2, LogIn, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { TodaysCosmicEnergy, CosmicEnergyButton } from "./TodaysCosmicEnergy";
@@ -91,6 +92,7 @@ export const AstroCalendar = () => {
     selectChartForTiming,
     setSavedCharts,
   } = useNatalChart();
+  const userHouseReadingChart = useMemo(() => withProfileTimePrecision(userNatalChart, userData?.birthTimeApproximate), [userNatalChart, userData?.birthTimeApproximate]);
 
   // Cloud backup integration
   const cloudBackup = useCloudBackup(
@@ -1064,9 +1066,9 @@ export const AstroCalendar = () => {
         {viewMode === "decoder" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <ChartDecoderView
-              natalChart={userNatalChart || savedCharts[0]}
+              natalChart={userHouseReadingChart || savedCharts[0]}
               allCharts={[
-                ...(userNatalChart ? [userNatalChart] : []),
+                ...(userHouseReadingChart ? [userHouseReadingChart] : []),
                 ...savedCharts
               ]}
               selectedChartId={selectedChartForTiming}
@@ -1114,7 +1116,7 @@ export const AstroCalendar = () => {
 
         {viewMode === "ask" && (
           <AskView
-            userNatalChart={userNatalChart}
+            userNatalChart={userHouseReadingChart}
             savedCharts={savedCharts}
             selectedChartId={selectedChartForTiming}
             solarReturnCharts={solarReturnCharts}
@@ -1191,7 +1193,7 @@ export const AstroCalendar = () => {
         {viewMode === "reading-guide" && (
           <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
             <ReadingGuideView
-              userNatalChart={userNatalChart}
+              userNatalChart={userHouseReadingChart}
               savedCharts={savedCharts}
             />
           </Suspense>
@@ -1201,7 +1203,7 @@ export const AstroCalendar = () => {
           <SectionErrorBoundary sectionName="Natal Portrait">
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-muted-foreground">Loading…</div>}>
               <NatalPortraitView
-                userNatalChart={userNatalChart}
+                userNatalChart={userHouseReadingChart}
                 savedCharts={savedCharts}
               />
             </Suspense>

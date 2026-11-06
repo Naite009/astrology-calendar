@@ -21,6 +21,9 @@ import { ProgressedMoonTimeline } from './chartdecoder/ProgressedMoonTimeline';
 import { ChartSelector } from './ChartSelector';
 
 import { NatalChart } from '@/hooks/useNatalChart';
+import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
+import { chartForHouseReading } from '@/lib/chartSignificance/cuspSensitivityRecord';
+import { houseForLongitude, toAbsoluteLongitude } from '@/lib/houseForLongitude';
 import {
   ChartPlanet,
   AspectOrbs,
@@ -40,57 +43,6 @@ interface ChartDecoderViewProps {
   selectedChartId: string;
 }
 
-// Helper to convert sign + degree to absolute zodiac degree (0-359)
-const toAbsoluteDegree = (sign: string, degree: number): number => {
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const signIndex = signs.indexOf(sign);
-  if (signIndex === -1) return 0;
-  return signIndex * 30 + degree;
-};
-
-// Calculate which house a planet is in based on house cusps
-const calculateHouse = (
-  planetSign: string, 
-  planetDegree: number, 
-  houseCusps: NatalChart['houseCusps']
-): number | null => {
-  if (!houseCusps) return null;
-  
-  const planetAbsDeg = toAbsoluteDegree(planetSign, planetDegree);
-  
-  // Build array of house cusp degrees
-  const cusps: number[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const cusp = houseCusps[`house${i}` as keyof typeof houseCusps];
-    if (cusp) {
-      cusps.push(toAbsoluteDegree(cusp.sign, cusp.degree + (cusp.minutes || 0) / 60));
-    } else {
-      return null; // Missing house cusp data
-    }
-  }
-  
-  // Find which house the planet is in
-  for (let i = 0; i < 12; i++) {
-    const currentCusp = cusps[i];
-    const nextCusp = cusps[(i + 1) % 12];
-    
-    // Handle wrap-around at 0°/360°
-    if (nextCusp < currentCusp) {
-      // Cusp crosses 0° Aries
-      if (planetAbsDeg >= currentCusp || planetAbsDeg < nextCusp) {
-        return i + 1;
-      }
-    } else {
-      if (planetAbsDeg >= currentCusp && planetAbsDeg < nextCusp) {
-        return i + 1;
-      }
-    }
-  }
-  
-  return 1; // Default to 1st house if calculation fails
-};
-
 // Convert NatalChart to ChartPlanet[] format
 const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   const planets: ChartPlanet[] = [];
@@ -103,8 +55,9 @@ const convertNatalChartToPlanets = (chart: NatalChart): ChartPlanet[] => {
   for (const name of planetNames) {
     const pos = chart.planets[name as keyof typeof chart.planets];
     if (pos) {
-      const degree = pos.degree + (pos.minutes || 0) / 60;
-      const house = calculateHouse(pos.sign, degree, chart.houseCusps);
+      const longitude = toAbsoluteLongitude(pos);
+      const degree = longitude == null ? pos.degree : longitude % 30;
+      const house = houseForLongitude(chart, longitude);
       
       planets.push({
         name,
@@ -198,7 +151,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
   // Convert to ChartPlanet[] format
   const planets = useMemo(() => {
     if (!activeChart) return DEFAULT_CHART_DATA;
-    return convertNatalChartToPlanets(activeChart);
+    return convertNatalChartToPlanets(chartForHouseReading(activeChart));
   }, [activeChart]);
 
   // Computed values
@@ -310,6 +263,8 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
           </label>
         </div>
       </div>
+
+      <BirthTimeSensitivityNotice chart={activeChart} />
 
       {/* Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

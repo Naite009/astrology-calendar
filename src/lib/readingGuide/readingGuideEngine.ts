@@ -69,6 +69,7 @@ import {
 } from '@/lib/interpretation/elementBalance';
 import { buildChartSynthesis, type ChartSynthesis } from '@/lib/interpretation/chartSynthesis';
 import { buildPractitionerWalkthrough, type PractitionerWalkthrough } from './practitionerSynthesis';
+import { buildCuspSensitivityRecord, chartForHouseReading, type CuspSensitivityRecord } from '@/lib/chartSignificance/cuspSensitivityRecord';
 
 
 const ZODIAC = [
@@ -173,6 +174,7 @@ export interface ElementProfile {
 }
 
 export interface ReadingGuide {
+  birthTimeSensitivity: CuspSensitivityRecord;
   practitioner: PractitionerWalkthrough;
   subject: { name: string; birthDate: string; birthTime: string; birthLocation: string };
   age: AgeContext;
@@ -473,6 +475,8 @@ export interface ReadingGuideOptions {
 }
 
 export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOptions = {}): ReadingGuide {
+  const birthTimeSensitivity = buildCuspSensitivityRecord(chart);
+  chart = chartForHouseReading(chart);
   const stageCtx = buildAgeContext(chart.birthDate, options.stageOverride ?? null, options.now ?? new Date());
   const stage = stageCtx.stage;
   const placements = collectCoreBodies(chart);
@@ -1168,6 +1172,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
   );
 
   const guide: ReadingGuide = {
+    birthTimeSensitivity,
     practitioner: buildPractitionerWalkthrough(chart, {
       placements, elements, modalities: { counts: modCounts, dominant: dominantModalities, low: lowModalities, note: '', reading: modalityBalance },
       synthesis: buildChartSynthesis(chart, { stage }), age: stageCtx,
@@ -1272,7 +1277,7 @@ export function buildReadingGuide(chart: NatalChart, options: ReadingGuideOption
     story: storyParts.filter(Boolean).join(' '),
   };
 
-  return sanitizeInterpretiveDeep(guide);
+  return { ...sanitizeInterpretiveDeep(guide), birthTimeSensitivity };
 }
 
 /** Plain-language function names used when several personal planets share a sign. */

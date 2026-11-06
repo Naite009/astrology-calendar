@@ -17,6 +17,8 @@ import { ReadingExportButtons } from '@/components/ReadingExportButtons';
 import { TryThisAction } from '@/components/TryThisAction';
 import { ChartSynthesisSection } from '@/components/ChartSynthesisSection';
 import { WhoIsThisPerson } from '@/components/natal/WhoIsThisPerson';
+import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
+import { buildCuspSensitivityRecord, chartForHouseReading } from '@/lib/chartSignificance/cuspSensitivityRecord';
 import { buildSelectableCharts, resolveSelectedChart } from '@/lib/charts/chartSelection';
 import { exportDomainPdf, exportDomainJson } from '@/lib/natalDomainExport';
 import type { ExportMeta } from '@/lib/pdfDocEngine';
@@ -639,13 +641,15 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
   }, [allCharts, selectedChartId]);
 
   const selectedChart = resolveSelectedChart(allCharts, selectedChartId);
+  const sensitivity = useMemo(() => selectedChart ? buildCuspSensitivityRecord(selectedChart) : null, [selectedChart]);
+  const readingChart = useMemo(() => selectedChart ? chartForHouseReading(selectedChart) : null, [selectedChart]);
 
   const hasCoreBodies = Boolean(selectedChart?.planets?.Sun?.sign && selectedChart?.planets?.Moon?.sign);
 
   const portrait = useMemo(() => {
     if (!selectedChart || !hasCoreBodies) return null;
     try {
-      return generateNatalPortrait(selectedChart);
+      return generateNatalPortrait(chartForHouseReading(selectedChart));
     } catch (e) {
       console.error('[NatalPortrait] Failed to build portrait for', selectedChart?.name, e);
       return null;
@@ -759,11 +763,14 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
               birthLocation: selectedChart.birthLocation,
             },
             portrait,
+            birthTimeSensitivity: sensitivity,
           }}
         />
       </div>
 
-      <WhoIsThisPerson key={selectedChart.id} chart={selectedChart} />
+      {sensitivity && <BirthTimeSensitivityNotice record={sensitivity} />}
+
+      {readingChart && <WhoIsThisPerson key={selectedChart.id} chart={readingChart} />}
 
       <ChartSynthesisSection synthesis={portrait.synthesis} />
 
@@ -784,7 +791,7 @@ export const NatalPortraitView = ({ userNatalChart, savedCharts }: NatalPortrait
             <span className="text-[10px] text-muted-foreground">{archetypes.soulAgreements.why}</span>
           </div>
         )}
-        <SoulAgreementsSection chart={selectedChart} />
+        {readingChart && <SoulAgreementsSection chart={readingChart} />}
       </div>
 
       {/* 3-8. Domain Deep Dives */}

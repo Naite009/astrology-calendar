@@ -36,6 +36,8 @@ import { AskReplayDialog } from "@/components/AskReplayDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { AskGenerationStatus } from "@/components/AskGenerationStatus";
 import { findMatchingSolarReturn } from "@/lib/findMatchingSolarReturn";
+import { BirthTimeSensitivityNotice } from '@/components/BirthTimeSensitivityNotice';
+import { buildCuspSensitivityRecord, chartForHouseReading, cuspSensitivityContext } from '@/lib/chartSignificance/cuspSensitivityRecord';
 // REMOVED (Operating Rule 6 — No ephemeris override of verified chart data):
 // `correctSrPlanetsRetrograde` recomputed retrograde flags from astronomy-engine
 // and overwrote user-verified SR data. Verified chart data is canonical;
@@ -783,9 +785,12 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
     suppressTransits: boolean = false,
   ): string => {
     if (!chart) return "No chart data available.";
+    const sensitivity = buildCuspSensitivityRecord(chart);
+    chart = chartForHouseReading(chart);
     const planets = chart.planets || {};
     const houseCusps = chart.houseCusps || {};
     let context = `Chart for ${chart.name}:\n`;
+    context += `BIRTH-TIME HOUSE CHECK (do not turn conditional alternate houses into established placements):\n${cuspSensitivityContext(sensitivity)}\n`;
     context += `Birth: ${displayBirthDate(chart.birthDate)}`;
     if (chart.birthTime) context += ` at ${chart.birthTime}`;
     if (chart.birthLocation) context += ` in ${formatLocationTitleCase(chart.birthLocation)}`;
@@ -2975,6 +2980,8 @@ export const AskView = ({ userNatalChart, savedCharts, selectedChartId: initialC
               </p>
             </div>
           )}
+
+          {activeChartId !== 'general' && selectedChart && <BirthTimeSensitivityNotice chart={selectedChart} />}
 
           {/* Quick Topics — chart-specific, hidden in general mode */}
           {activeChartId !== "general" && selectedChart && (() => {

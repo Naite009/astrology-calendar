@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PractitionerWalkthroughSections } from '@/components/PractitionerWalkthroughSections';
 import { downloadWalkthrough } from '@/lib/readingGuide/downloadWalkthrough';
 import { Compass, Download } from 'lucide-react';
+import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
 
 interface ReadingGuideViewProps {
   userNatalChart: NatalChart | null;
@@ -114,6 +115,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
                    schemaVersion: guide.practitioner.schemaVersion,
                   placements: guide.placements,
                   walkthrough: guide.practitioner,
+                  birthTimeSensitivity: guide.birthTimeSensitivity,
                 },
               )
             }
@@ -148,6 +150,7 @@ export const ReadingGuideView = ({ userNatalChart, savedCharts }: ReadingGuideVi
         </div>
       </div>
 
+      <BirthTimeSensitivityNotice record={guide.birthTimeSensitivity} />
       <PractitionerWalkthroughSections reading={guide.practitioner} />
     </div>
   );

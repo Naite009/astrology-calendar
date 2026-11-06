@@ -22,6 +22,7 @@ import { scorePersonEvidence, type EvidenceStrength } from '../../../supabase/fu
 import { buildNatalMainPlot, type NatalMainPlot } from '../../../supabase/functions/_shared/natalMainPlot';
 import { buildAllRulerChains } from '@/lib/rulerChains';
 import { getPsychologicalFunction, getNatalSignExpression, getHouseArena } from './psychologicalFunctions';
+import { chartForHouseReading, nearestHouseCusp } from '@/lib/chartSignificance/cuspSensitivityRecord';
 
 export type StoryEvidenceKind = 'angle' | 'placement' | 'rulership' | 'aspect' | 'concentration' | 'balance' | 'sign' | 'house' | 'condition' | 'angularity' | 'configuration';
 
@@ -141,10 +142,9 @@ function positions(chart: NatalChart): Record<string, Pos> {
     let cuspDistance: number | null = null, nextHouse: number | null = null;
     if (cusps && house) {
       // Distance to the nearest cusp (its own or the next) for near-cusp warnings.
-      const own = cusps[house - 1], next = cusps[house % 12];
-      const dOwn = ((lon - own) % 360 + 360) % 360;
-      const dNext = ((next - lon) % 360 + 360) % 360;
-      if (dNext < dOwn) { cuspDistance = dNext; nextHouse = (house % 12) + 1; } else { cuspDistance = dOwn; nextHouse = house; } // nearest is this house's own starting cusp
+      const nearest = nearestHouseCusp(lon, house, cusps);
+      cuspDistance = nearest.distance;
+      nextHouse = nearest.cusp;
     }
     out[body] = { body, sign: p.sign, lon, house, retro: !!p.isRetrograde, cuspDistance, nextHouse };
   }
@@ -170,6 +170,7 @@ export function usableAspects(chart: NatalChart): RankedAspect[] {
 const MIRROR: Record<string, string> = { conjunction: 'opposition', opposition: 'conjunction', square: 'square', trine: 'sextile', sextile: 'trine' };
 
 export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transitDays?: number } = {}): ChartStoryMap {
+  chart = chartForHouseReading(chart);
   const evidence: Record<string, StoryEvidence> = {};
   const add = (e: StoryEvidence) => { evidence[e.id] = e; return e.id; };
   const pos = positions(chart);
@@ -207,7 +208,7 @@ export function buildChartStoryMap(chart: NatalChart, opts: { now?: Date; transi
     const dig = isDignityAssigned(body) ? getEssentialDignity(body, p.sign) : 'NotAssigned';
     const digText = dig === 'Domicile' || dig === 'Exaltation' || dig === 'Detriment' || dig === 'Fall' ? `, traditional ${dig.toLowerCase()}` : '';
     const cusp = p.cuspDistance != null && p.cuspDistance < 1 && p.nextHouse
-      ? `; within ${p.cuspDistance.toFixed(1)}° of the ${ordinalHouse(p.nextHouse)} cusp, so the house is birth-time sensitive`
+      ? `; within ${p.cuspDistance.toFixed(1)}° of the ${ordinalHouse(p.nextHouse)} cusp (proximity alone does not establish birth-time uncertainty)`
       : '';
     add({ id: `sign:${body}`, kind: 'sign', fact: `${body} in ${p.sign}: ${PERSONAL.has(body) ? 'personal style, not a complete portrait' : 'cohort/background sign tone, not an individualized conclusion'}`, bodies: [body] });
     if (p.house) add({ id: `house:${body}`, kind: 'house', fact: `${body} occupies the ${ordinalHouse(p.house)}${cusp}`, bodies: [body] });

@@ -1,5 +1,10 @@
 # Roadmap
 
+## Limited precision-aware house phase
+- [x] Verify prior solver and own-cusp fix; add structured regression and whole-sign boundary verification.
+- [x] Share calculation-backed house sensitivity across Decoder, Portrait, Walkthrough and Ask; unknown-time reading copies omit houses, stored charts and tab names unchanged.
+- [x] Execute actual saved Maria and two constructed near-cusp/system comparisons, full suite (809 tests / 44 files), authenticated four-view checks and Walkthrough HTML/JSON/mobile checks. Exact results and limitations: `qa-reports/precision-aware-house-phase.md`.
+
 ## Solar Return concrete interpretation repair
 - [x] Finish reachable checked reading PDF, confirm all 55 major-planet contacts have meanings, and rerun fresh signed-in Lauren acceptance: 8 tabs, 5 previews, JSON and all 15 PDF pages inspected; both AI readings accepted, 0 rejected-phrase/class hits, facts unchanged. Full suite: 780 tests across 41 files passed with two workers.
 - [x] Consolidate active overlay, Sun/Moon/sign/planet/deep tables, executive/story/ruler/closing generators and snapshot PDF text; remove invented axis conflicts and average-calendar lunar weather. Full suite: 755 tests; preview build OK.
