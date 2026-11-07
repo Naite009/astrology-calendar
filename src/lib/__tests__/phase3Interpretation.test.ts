@@ -7,6 +7,7 @@ import { checkedCombination } from '@/lib/interpretation/checkedCombination';
 import { checkedLegacyDisplay, checkedLegacyText, unsupportedLegacyClaim } from '@/lib/interpretation/legacyClaimGate';
 import { buildSymbolicDevelopment } from '@/lib/interpretation/symbolicDevelopment';
 import { calculateNatalFromInput, toStoredPosition } from '@/lib/natalChartCalculation';
+import { PLANET_DIGNITIES } from '@/lib/planetDignities';
 
 const makeChart = (date: string, time: string): NatalChart => {
   const input = { birthDate: date, birthTime: time, birthLocation: 'Livingston, NJ', latitude: 40.8, longitude: -74.31666666666666, timezoneId: 'America/New_York', houseSystem: 'placidus' as const };
@@ -39,6 +40,8 @@ describe('Phase 3 checked legacy claims', () => {
     for (const body of ['Uranus', 'Neptune', 'Pluto']) {
       expect(getEssentialDignity(body, 'Aquarius')).toBe('NotAssigned');
       expect(checkedLegacyText(`${body} in domicile in Aquarius.`)).toBe('');
+      expect(PLANET_DIGNITIES[body].rulership).toEqual([]);
+      expect(PLANET_DIGNITIES[body].exaltation).toBe('');
     }
   });
   it.each([
@@ -69,6 +72,14 @@ describe('Phase 3 checked legacy claims', () => {
       for (const e of checked.energies) expect(unsupportedLegacyClaim(e.expression)).toBe(false);
     }
   });
+  it('factor order cannot change dignity or traditional versus modern ruler labels', () => {
+    const entry = moonSignCombinations.find(e => e.id === 'moon-aquarius');
+    if (!entry) throw new Error('Moon Aquarius entry missing');
+    const a = checkedCombination(entry);
+    const b = checkedCombination({ ...entry, factors: [...entry.factors].reverse() });
+    expect(a.summary).toBe(b.summary);
+    expect(a.summary).toContain('traditionally ruled by Saturn, with Uranus as modern co-ruler');
+  });
 });
 
 describe('checked symbolic development rather than biography', () => {
@@ -80,6 +91,20 @@ describe('checked symbolic development rather than biography', () => {
     expect(Object.values(reading.elements.counts).reduce((a, b) => a + b, 0)).toBe(10);
     expect(reading.saturn?.evidence).toContain('Saturn in Cancer');
     expect(JSON.stringify(maria)).toBe(before);
+  });
+  it('growth provides observable practice and contact-specific integration without invented history', () => {
+    for (const c of [maria, other]) {
+      const r = buildSymbolicDevelopment(c);
+      expect(r.saturn?.example).toContain('one responsibility you can complete');
+      expect(r.saturn?.takeaway).toContain('state what done means');
+      expect(r.saturn?.contacts.length).toBeGreaterThan(0);
+      for (const contact of r.saturn?.contacts ?? []) {
+        expect(contact.evidence).toContain('Saturn');
+        expect(contact.integration.length).toBeGreaterThan(20);
+        expect(unsupportedLegacyClaim(contact.integration)).toBe(false);
+      }
+      expect(JSON.stringify(r.saturn)).not.toMatch(/something.*missing|psyche.*lopsided|nothing was given freely|fate.*destroy/i);
+    }
   });
   it('retains tie-aware canonical elements and distinct Saturn evidence', () => {
     expect(buildSymbolicDevelopment(maria).saturn?.evidence).not.toBe(buildSymbolicDevelopment(other).saturn?.evidence);

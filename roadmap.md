@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Phase 3 interpretation accuracy
-- [ ] Gate legacy Combos dignity and unsupported ability/biography claims; preserve matching and exploration.
-- [ ] Prioritize Sacred Script's checked Saturn/element growth and optional symbolism; demote Decoder profile references.
-- [ ] Run semantic regressions, full suite and signed-in Maria/second-chart browser checks; document remaining limits.
+- [x] Gate legacy Combos dignity and unsupported ability/biography claims; preserve matching and exploration.
+- [x] Prioritize Sacred Script's checked Saturn/element growth and optional symbolism; demote Decoder profile references.
+- [x] Run semantic regressions, full suite and signed-in Maria/Harrison browser checks; document remaining limits in qa-reports/phase3-interpretation-accuracy.md.
 
 ## Tab distinctiveness phase
 - [x] Inventory actual pathways and define distinct contracts without merging or renaming tabs.
