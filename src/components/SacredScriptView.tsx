@@ -2,6 +2,10 @@
 // Based on Debra Silverman methodology with 9-section structure
 
 import { useState, useRef, useEffect } from 'react';
+import { SymbolicDevelopmentPanel } from './sacredscript/SymbolicDevelopmentPanel';
+import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
+import { chartForHouseReading } from '@/lib/chartSignificance/cuspSensitivityRecord';
+import { checkedLegacyDisplay } from '@/lib/interpretation/legacyClaimGate';
 import { NatalChart } from '@/hooks/useNatalChart';
 import { ChartSelector } from './ChartSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -216,7 +220,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   })();
   
   // Get the selected chart
-  const natalChart = sortedCharts.find(c => c.id === selectedChartId) || initialChart;
+  const sourceChart = sortedCharts.find(c => c.id === selectedChartId) || initialChart;
+  const natalChart = chartForHouseReading(sourceChart);
 
   useEffect(() => {
     if (!sortedCharts.some(chart => chart.id === selectedChartId) && initialChart?.id) {
@@ -229,21 +234,21 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
   const detailedSaturnCycles = calculateDetailedSaturnCycles(natalChart, currentDate);
   const elements = calculateElementalBalance(natalChart);
   const modalities = calculateModalityBalance(natalChart);
-  const characterCards = getCharacterCards(natalChart);
+  const characterCards = checkedLegacyDisplay(getCharacterCards(natalChart));
   const patterns = detectChartPatterns(natalChart);
   const stelliums = detectNatalStelliums(natalChart);
-  const psychicIndicators = detectPsychicIndicators(natalChart);
+  const psychicIndicators = checkedLegacyDisplay(detectPsychicIndicators(natalChart));
   const bigThreeAspects = detectBigThreeAspects(natalChart);
-  const lifeLesson = getLifeLesson(natalChart);
-  const finalDirective = generateFinalDirective(natalChart, elements);
-  const fullDirective = generateFullFinalDirective(natalChart, elements);
+  const lifeLesson = checkedLegacyDisplay(getLifeLesson(natalChart));
+  const finalDirective = checkedLegacyDisplay(generateFinalDirective(natalChart, elements));
+  const fullDirective = checkedLegacyDisplay(generateFullFinalDirective(natalChart, elements));
   
   // Get house positions for deep synthesis
   const sunHouse = getPlanetHouse(natalChart, 'Sun');
   const moonHouse = getPlanetHouse(natalChart, 'Moon');
   
   // Generate deep character synthesis
-  const characterSynthesis = generateCharacterSynthesis(natalChart, sunHouse, moonHouse);
+  const characterSynthesis = checkedLegacyDisplay(generateCharacterSynthesis(natalChart, sunHouse, moonHouse));
   
   // Progressed Moon
   const progressions = calculateSecondaryProgressions(natalChart, currentDate);
@@ -275,7 +280,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
           <div>
             <h2 className="text-2xl font-serif tracking-wide">{natalChart.name}'s Sacred Script</h2>
             <p className="text-sm text-muted-foreground">
-              Born {natalChart.birthDate} at {natalChart.birthTime} • {natalChart.birthLocation} • Age {age}
+              Born {sourceChart.birthDate} at {sourceChart.birthTime} • {natalChart.birthLocation} • Age {age}
             </p>
           </div>
         </div>
@@ -288,6 +293,9 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
         </button>
       </div>
       
+      <BirthTimeSensitivityNotice chart={sourceChart} />
+      <SymbolicDevelopmentPanel chart={sourceChart} />
+
       {/* Reference Documents Upload */}
       <div className="print:hidden">
         <DocumentUploader />
@@ -295,7 +303,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 1. Introduction */}
       <Section 
-        title="1. Introduction" 
+        title="1. Introduction"
+        defaultOpen={false} 
         color="border-l-blue-500" 
         icon={<div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 text-xs font-bold">1</div>}
       >
@@ -324,7 +333,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 2. Saturn Cycles */}
       <Section 
-        title="2. Saturn Cycles (Timing)" 
+        title="2. Saturn Cycles (Timing)"
+        defaultOpen={false} 
         color="border-l-green-500" 
         icon={<div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-600 text-xs font-bold">♄</div>}
       >
@@ -408,7 +418,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 3. Character */}
       <Section 
-        title="3. Character (Sun/Moon/Rising)" 
+        title="3. Character (Sun/Moon/Rising)"
+        defaultOpen={false} 
         color="border-l-amber-500" 
         icon={<Sun className="text-amber-500" size={20} />}
       >
@@ -1106,7 +1117,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 3.5 Mercury / The Mindset - NEW SECTION */}
       <Section 
-        title="3.5 Mercury & The Mindset" 
+        title="3.5 Mercury & The Mindset"
+        defaultOpen={false} 
         color="border-l-sky-500" 
         icon={<Wind className="text-sky-500" size={20} />}
       >
@@ -1196,7 +1208,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 4. What Stands Out */}
       <Section 
-        title="4. What Stands Out" 
+        title="4. What Stands Out"
+        defaultOpen={false} 
         color="border-l-purple-500" 
         icon={<Star className="text-purple-500" size={20} />}
       >
@@ -1342,7 +1355,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 5. Missing/Abundant Elements - Enhanced with Debra Silverman Teachings */}
       <Section 
-        title="5. Elemental Wisdom (Debra Silverman)" 
+        title="5. Elemental Wisdom (Debra Silverman)"
+        defaultOpen={false} 
         color="border-l-rose-500" 
         icon={<div className="w-6 h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-600 text-xs font-bold">5</div>}
       >
@@ -1570,7 +1584,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 6. Current Transits */}
       <Section 
-        title="6. Current Transits" 
+        title="6. Current Transits"
+        defaultOpen={false} 
         color="border-l-cyan-500" 
         icon={<div className="w-6 h-6 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-600 text-xs font-bold">6</div>}
       >
@@ -1689,7 +1704,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 7. Progressed Moon */}
       <Section 
-        title="7. Progressed Moon" 
+        title="7. Progressed Moon"
+        defaultOpen={false} 
         color="border-l-indigo-500" 
         icon={<Moon className="text-indigo-500" size={20} />}
       >
@@ -1706,7 +1722,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 8. Life Lesson (Saturn) */}
       <Section 
-        title="8. Life Lesson (Saturn)" 
+        title="8. Life Lesson (Saturn)"
+        defaultOpen={false} 
         color="border-l-slate-500" 
         icon={<div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-600 text-xs font-bold">♄</div>}
       >
@@ -1716,11 +1733,11 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
           </p>
           
           {lifeLesson.saturn && (() => {
-            const saturnTeaching = getSaturnTeaching(lifeLesson.saturn.sign);
+            const saturnTeaching = checkedLegacyDisplay(getSaturnTeaching(lifeLesson.saturn.sign));
             const saturnArchetype = getSignArchetype(lifeLesson.saturn.sign);
             const age = calculateAge(natalChart.birthDate);
             const saturnHouse = lifeLesson.saturn.house;
-            const saturnHouseGreene = saturnHouse ? SATURN_IN_HOUSES_GREENE[saturnHouse] : null;
+            const saturnHouseGreene = saturnHouse ? checkedLegacyDisplay(SATURN_IN_HOUSES_GREENE[saturnHouse]) : null;
             
             // Find Saturn's natal aspects
             const signals = computeAllSignals(natalChart);
@@ -1731,7 +1748,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
               .map(a => {
                 const otherPlanet = a.planet1 === 'Saturn' ? a.planet2 : a.planet1;
                 const key = `Saturn-${otherPlanet}`;
-                const entry = SATURN_ASPECTS_GREENE[key];
+                const entry = checkedLegacyDisplay(SATURN_ASPECTS_GREENE[key]);
                 return entry ? { aspect: a, greene: entry } : null;
               })
               .filter(Boolean) as { aspect: typeof saturnAspects[0]; greene: typeof SATURN_ASPECTS_GREENE['Saturn-Sun'] }[];
@@ -1747,7 +1764,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                         Saturn in {lifeLesson.saturn.sign}
                         {lifeLesson.saturn.house && <span className="text-muted-foreground ml-2">(House {lifeLesson.saturn.house})</span>}
                       </h4>
-                      <p className="text-sm text-muted-foreground">Your Soul's Purpose</p>
+                      <p className="text-sm text-muted-foreground">Optional symbolic growth reference</p>
                     </div>
                   </div>
                   
@@ -1755,7 +1772,7 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
                     <div className="space-y-4">
                       {/* Soul Purpose */}
                       <div className="bg-white/50 dark:bg-black/30 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Soul Purpose:</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Symbolic theme:</p>
                         <p className="text-sm leading-relaxed">{saturnTeaching.soulPurpose}</p>
                       </div>
                       
@@ -1965,7 +1982,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 8.5 Lunar Nodes — What Are You Here to Learn? */}
       <Section 
-        title="8.5 The Lunar Nodes — What Are You Here to Learn?" 
+        title="8.5 The Lunar Nodes — What Are You Here to Learn?"
+        defaultOpen={false} 
         color="border-l-indigo-500" 
         icon={<div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-600 text-xs font-bold">☊</div>}
       >
@@ -1979,7 +1997,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 8.6 Midheaven & Career Path */}
       <Section 
-        title="8.6 Your Path to Success — Midheaven" 
+        title="8.6 Your Path to Success — Midheaven"
+        defaultOpen={false} 
         color="border-l-amber-500" 
         icon={<div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600 text-xs font-bold">MC</div>}
       >
@@ -1989,7 +2008,8 @@ export const SacredScriptView = ({ natalChart: initialChart, allCharts = [] }: S
       
       {/* 8.7 Karmic Past Life Patterns */}
       <Section 
-        title="8.7 Past Lives & Karmic Memory" 
+        title="8.7 Past Lives & Karmic Memory"
+        defaultOpen={false} 
         color="border-l-purple-500" 
         icon={<div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-600 text-xs font-bold">♇</div>}
       >

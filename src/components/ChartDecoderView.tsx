@@ -213,9 +213,9 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
         <div className="flex items-center gap-3">
           <Sparkles className="text-primary" size={24} />
           <div>
-            <h2 className="text-2xl font-serif">Story of Self</h2>
+            <h2 className="text-2xl font-serif">Chart Decoder</h2>
             <p className="text-sm text-muted-foreground">
-              Your cinematic chart interpretation — discover your cast of characters
+              Placements, measured contacts and traditional dignities
             </p>
           </div>
         </div>
@@ -314,6 +314,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             useTraditional={useTraditional}
           />
 
+          <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm font-medium">Aspect meaning reference: Core Inner Dynamics</summary>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Core Inner Dynamics</CardTitle></CardHeader>
             <CardContent className="space-y-3">
@@ -332,6 +333,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
               ))}
             </CardContent>
           </Card>
+          </details>
 
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Psychological Map</CardTitle></CardHeader>
@@ -352,6 +354,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
           </Card>
           
           {/* Quick Summary */}
+          <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm font-medium">Personality reference: Your Chart in Simple Words</summary>
           <Card className="bg-primary/5 border-primary/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Your Chart in Simple Words</CardTitle>
@@ -367,6 +370,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
               </ul>
             </CardContent>
           </Card>
+          </details>
         </TabsContent>
 
         {/* CHARACTERS TAB */}
@@ -492,6 +496,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
           )}
 
           {/* Reading Script Generator */}
+          <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm font-medium">Reading script reference</summary>
           <ReadingScriptGenerator
             planets={planets}
             aspects={aspects}
@@ -500,6 +505,7 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
             natalChart={activeChart}
             age={calculatedAge}
           />
+          </details>
         </TabsContent>
 
         {/* PROGRESSIONS TAB */}
@@ -525,12 +531,14 @@ export const ChartDecoderView: React.FC<ChartDecoderViewProps> = ({
 
         {/* SYNTHESIS TAB */}
         <TabsContent value="synthesis" className="mt-6">
+          <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm font-medium">Developmental synthesis reference</summary>
           <HighestPotentialSynthesis
             chart={activeChart}
             planets={planets}
             aspects={aspects}
             useTraditional={useTraditional}
           />
+          </details>
         </TabsContent>
       </Tabs>
     </div>

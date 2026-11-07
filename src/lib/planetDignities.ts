@@ -51,22 +51,22 @@ export const PLANET_DIGNITIES: Record<string, {
     fall: 'Aries (21°)'
   },
   Uranus: {
-    rulership: 'Aquarius',
-    exaltation: 'Scorpio',
-    detriment: 'Leo',
-    fall: 'Taurus'
+    rulership: [],
+    exaltation: '',
+    detriment: [],
+    fall: ''
   },
   Neptune: {
-    rulership: 'Pisces',
-    exaltation: 'Cancer',
-    detriment: 'Virgo',
-    fall: 'Capricorn'
+    rulership: [],
+    exaltation: '',
+    detriment: [],
+    fall: ''
   },
   Pluto: {
-    rulership: 'Scorpio',
-    exaltation: 'Aries',
-    detriment: 'Taurus',
-    fall: 'Libra'
+    rulership: [],
+    exaltation: '',
+    detriment: [],
+    fall: ''
   }
 };
 

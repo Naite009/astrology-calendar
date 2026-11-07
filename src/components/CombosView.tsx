@@ -36,6 +36,9 @@ import { ChartSelector } from '@/components/ChartSelector';
 import { getClassicalPlacementsForChart } from '@/lib/classicalPlacementStatements';
 import { verifiedCombinationAspects, combinationAspectName } from '@/lib/interpretation/placementInteractions';
 import { PlacementInteractions } from './PlacementInteractions';
+import { checkedCombination } from '@/lib/interpretation/checkedCombination';
+import { checkedLegacyDisplay } from '@/lib/interpretation/legacyClaimGate';
+import { BirthTimeSensitivityNotice } from './BirthTimeSensitivityNotice';
 
 const SIGN_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -211,7 +214,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         const specificAspect = modifier.aspects.find(a => a.aspectType === pair.aspect);
         withModifiers.push({
           ...pair,
-          modifierName: specificAspect?.name || modifier.coreSignature
+          modifierName: checkedLegacyDisplay(specificAspect?.name || modifier.coreSignature)
         });
       } else {
         universal.push(pair);
@@ -512,7 +515,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
         house: getNatalPlanetHouse(planet, selectedChart) || undefined,
       };
     }).filter(p => p.sign);
-    return getClassicalPlacementsForChart(positions);
+    return checkedLegacyDisplay(getClassicalPlacementsForChart(positions));
   }, [selectedChart]);
 
   // Helper to check if combo involves a specific aspect type
@@ -582,7 +585,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
     );
   };
 
-  const renderCombinationCard = (combo: CombinationEntry) => {
+  const renderCombinationCard = (rawCombo: CombinationEntry) => {
+    const combo = checkedCombination(rawCombo);
     const lightEnergies = combo.energies.filter(e => e.polarity === 'light');
     const shadowEnergies = combo.energies.filter(e => e.polarity === 'shadow');
     const neutralEnergies = combo.energies.filter(e => e.polarity === 'neutral');
@@ -600,7 +604,8 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
       if (comboPlanets.length !== 2) return null;
       
       const [p1, p2] = comboPlanets;
-      const modifierPair = findAspectModifiers(p1, p2);
+      const rawModifier = findAspectModifiers(p1, p2);
+      const modifierPair = rawModifier ? checkedLegacyDisplay(rawModifier) : null;
       if (!modifierPair) return null;
       
       // Find what aspect this pair has in the selected chart (compute directly so the label never goes missing)
@@ -856,7 +861,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
             
             if (!signForInterpretation) {
               // Just show generic retrograde info without sign
-              const modifier = RETROGRADE_PLANET_MODIFIERS[planet];
+              const modifier = checkedLegacyDisplay(RETROGRADE_PLANET_MODIFIERS[planet]);
               if (!modifier) return null;
               
               return (
@@ -895,7 +900,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
             }
             
             // Get specific retrograde+sign interpretation
-            const interpretation = getRetrogradeInterpretation(planet, signForInterpretation);
+            const interpretation = checkedLegacyDisplay(getRetrogradeInterpretation(planet, signForInterpretation));
             
             return (
               <div key={planet} className="space-y-2 p-3 rounded-lg bg-warning/10 border border-warning/20">
@@ -1150,6 +1155,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
             })()}
 
             {selectedChart && <PlacementInteractions chart={selectedChart} />}
+            {selectedChart && <BirthTimeSensitivityNotice chart={selectedChart} />}
 
             {/* Aspect Type Filter - only show when chart is selected */}
             {selectedChart && chartAspects.allAspectTypes.length > 0 && (
@@ -1718,7 +1724,7 @@ export const CombosView = ({ className = '', savedCharts = [], userChart = null 
                     }}
                   >
                     <PatternMirrorCard
-                      combo={combo}
+                      combo={checkedLegacyDisplay(combo)}
                       isMatch={isMatch}
                       matchDetails={matchDetails}
                       onNavigateToCombo={(planets) => {

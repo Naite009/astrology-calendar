@@ -399,7 +399,7 @@ export const moonSignCombinations: CombinationEntry[] = [
     id: 'moon-aquarius',
     factors: ['Moon', 'Aquarius'],
     title: 'The Detached Heart',
-    summary: 'Moon in detriment in Aquarius creates intellectual, unconventional emotions. The inner child is unique, progressive, and needs freedom to feel safe.',
+    summary: 'Moon in Aquarius may talk through feelings before naming what hurts. Taking a step back can help, but explaining a feeling is not the same as asking for comfort. Aquarius is ruled traditionally by Saturn, with Uranus as modern co-ruler. The Moon is not in detriment here.',
     energies: [
       { expression: 'Objective perspective on emotions', polarity: 'light' },
       { expression: 'Emotionally independent and unique', polarity: 'light' },
@@ -410,7 +410,7 @@ export const moonSignCombinations: CombinationEntry[] = [
       { expression: 'May intellectualize emotions away', polarity: 'shadow' },
       { expression: 'Friends and groups provide safety', polarity: 'neutral' },
     ],
-    tags: ['fixed', 'air', 'detriment', 'emotional', 'spiritual', 'children'],
+    tags: ['fixed', 'air', 'emotional', 'spiritual', 'children'],
   },
   {
     id: 'moon-pisces',

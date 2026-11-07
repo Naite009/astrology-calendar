@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { checkedLegacyDisplay } from '@/lib/interpretation/legacyClaimGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -106,12 +107,12 @@ const ScoreBar = ({ planet, score, maxScore, reasons }: DominantPlanetResult & {
 
 export const LifePatternsTab = ({ chart }: LifePatternsTabProps) => {
   const dominantReport = useMemo(() => calculateNatalDominantPlanets(chart), [chart]);
-  const psychic = useMemo(() => analyzePsychicAbilities(chart), [chart]);
-  const children = useMemo(() => analyzeChildren(chart), [chart]);
-  const career = useMemo(() => analyzeCareer(chart), [chart]);
-  const luckyDays = useMemo(() => analyzeLuckyDays(chart), [chart]);
-  const sabotage = useMemo(() => analyzeSelfSabotage(chart), [chart]);
-  const guardian = useMemo(() => analyzeGuardianAngel(chart), [chart]);
+  const psychic = useMemo(() => checkedLegacyDisplay(analyzePsychicAbilities(chart)), [chart]);
+  const children = useMemo(() => checkedLegacyDisplay(analyzeChildren(chart)), [chart]);
+  const career = useMemo(() => checkedLegacyDisplay(analyzeCareer(chart)), [chart]);
+  const luckyDays = useMemo(() => checkedLegacyDisplay(analyzeLuckyDays(chart)), [chart]);
+  const sabotage = useMemo(() => checkedLegacyDisplay(analyzeSelfSabotage(chart)), [chart]);
+  const guardian = useMemo(() => checkedLegacyDisplay(analyzeGuardianAngel(chart)), [chart]);
 
   return (
     <div className="space-y-4">
